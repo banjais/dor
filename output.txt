@@ -1,482 +1,454 @@
-doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && echo '===== ADMIN ROUTE DEFINITIONS =====' && sed -n '1,430p' routes/web.php | grep -nE 'Route::(get|post|put|patch|delete|match|any)|Route::group' && echo '===== ADMIN ROUTE NAMES =====' && grep -nE "'as' *=>|->name\(" routes/web.php | head -180
-===== ADMIN ROUTE DEFINITIONS =====
-6:Route::get('admin/login', array('as' => 'admin.login', 'uses' => 'Admin\LoginController@getLogin'));
-7:Route::post('admin/login', array('uses' => 'Admin\LoginController@postLogin'))->middleware('throttle:5,1');
-10:Route::get('admin/forgot-password', array('as' => 'admin.password.request', 'uses' => 'Admin\PasswordResetOtpController@showForgotPassword'));
-11:Route::post('admin/forgot-password', array('as' => 'admin.password.email', 'uses' => 'Admin\PasswordResetOtpController@sendOtp'))->middleware('throttle:5,1');
-12:Route::get('admin/reset-password', array('as' => 'admin.password.reset', 'uses' => 'Admin\PasswordResetOtpController@showResetForm'));
-13:Route::post('admin/reset-password', array('as' => 'admin.password.verify', 'uses' => 'Admin\PasswordResetOtpController@resetPassword'))->middleware('throttle:10,1');
-15:Route::group(array('middleware' => 'auth', 'prefix' => 'admin'), function () {
-17:    // Route::get('/logout', array('as' => 'admin.logout', 'uses' => 'Admin\LoginController@logoutUser'))
-20:    Route::get('/logout', array('as' => 'admin.logout', 'uses' => 'Admin\LoginController@logoutUser'));
-23:    Route::get('/home', array('as' => 'dashboard', 'uses' => 'Admin\LoginController@getHome'));
-25:    Route::get('website-theme', array(
-29:    Route::post('website-theme', array(
-33:    Route::post('website-theme/reset', array(
-39:    Route::post('website-identity', array(
-44:    Route::get('/', array('uses' => 'Admin\LoginController@getHome'));
-46:    Route::get('users',  array('as' => 'admin.users', 'uses' => 'Admin\UserController@getIndex'));
-47:    Route::get('user/add',  array('as' => 'admin.users.add', 'uses' => 'Admin\UserController@getAddUser'));
-48:    Route::post('user/add',  array('as' => 'admin.users.store', 'uses' => 'Admin\UserController@addUser'));
-49:    Route::get('user/edit/{id}',  array('as' => 'admin.users.edit', 'uses' => 'Admin\UserController@getEditUser'));
-50:    Route::post('user/edit/{id}',  array('as' => 'admin.users.update', 'uses' => 'Admin\UserController@editUser'));
-51:    Route::post('user/delete', array('as' => 'admin.user.delete', 'uses' => 'Admin\UserController@deleteUser'));
-52:    Route::post('user/change-status', array('as' => 'admin.user.change.status', 'uses' => 'Admin\UserController@changeStatus'));
-54:    Route::get('own/change-password', array('as' => 'admin.change.password', 'uses' => 'Admin\UserController@getChangePassword'));
-55:    Route::post('own/change-password', array('as' => 'admin.change.password.post', 'uses' => 'Admin\UserController@changeOwnPassword'));
-56:    Route::get('user/change-password/{id}', array('as' => 'admin.user.change.password', 'as' => 'admin.users.change.password', 'uses' => 'Admin\UserController@getChangePasswordByAdmin'));
-57:    Route::post('user/change-password/{id}', array('as' => 'admin.user.change.password.update', 'uses' => 'Admin\UserController@changePassword'));
-59:    // Route::post('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
-60:    // Route::get('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
-64:    Route::get('usertypes', array('as' => 'admin.usertypes', 'uses' => 'Admin\UserTypeController@getIndex'));
-65:    Route::get('usertype/add',  array('as' => 'admin.usertype.add', 'uses' => 'Admin\UserTypeController@getAddUserType'));
-66:    Route::post('usertype/add',  array('as' => 'admin.usertype.store', 'uses' => 'Admin\UserTypeController@addUserType'));
-67:    Route::post('usertype/edit',  array('as' => 'admin.usertype.update', 'uses' => 'Admin\UserTypeController@editUserType'));
-68:    Route::post('usertype/change-status', array('as' => 'admin.usertype.change.status', 'uses' => 'Admin\UserTypeController@changeStatus'));
-69:    Route::post('usertype/delete', array('as' => 'admin.usertype.delete', 'uses' => 'Admin\UserTypeController@deleteUserType'));
-70:    Route::post('/usertype/get-info-dynamically', array('uses' => 'Admin\UserTypeController@getUserTypeDynamically'));
-74:    Route::get('offices',  array('as' => 'admin.offices', 'uses' => 'Admin\OfficeController@getIndex'));
-75:    Route::get('office/add',  array('as' => 'admin.office.add', 'uses' => 'Admin\OfficeController@getAddOffice'));
-76:    Route::post('office/add',  array('as' => 'admin.office.store', 'uses' => 'Admin\OfficeController@addOffice'));
-77:    Route::get('office/edit/{id}',  array('as' => 'admin.office.edit', 'uses' => 'Admin\OfficeController@getEditOffice'));
-78:    Route::post('office/edit/{id}',  array('as' => 'admin.office.update', 'uses' => 'Admin\OfficeController@editOffice'));
-79:    Route::post('office/delete', array('as' => 'admin.office.delete', 'uses' => 'Admin\OfficeController@deleteOffice'));
-80:    Route::post('office/change-status', array('as' => 'admin.office.change.status', 'uses' => 'Admin\OfficeController@changeStatus'));
-81:    Route::get('office/sort_offices',  array('as' => 'admin.office.sortorder', 'as' => 'office.sortorder', 'uses' => 'Admin\OfficeController@getSortOrder'));
-82:    Route::post('office/sort_offices',  array('as' => 'admin.office.sortorder.update', 'as' => 'office.sortorder.post', 'uses' => 'Admin\OfficeController@sortOrder'));
-84:    // Route::post('/office/get-info-dynamically',array('uses'=>'Admin\OfficeController@getOfficeDetails'));
-85:    // Route::get('/office/get-info-dynamically',array('uses'=>'Admin\OfficeController@getOfficeDetails'));
-88:    Route::get('/access-control', array('as' => 'admin.access.control', 'uses' => 'Admin\AccessListController@getIndex'));
-89:    Route::get('/access-control/edit/{id?}', array('uses' => 'Admin\AccessListController@getEditAccessList'));
-90:    Route::get('/acess-control/change-access-status-dynamically', array('uses' => 'Admin\AccessListController@changeStatus'));
-91:    Route::post('/acess-control/change-access-status-dynamically', array('uses' => 'Admin\AccessListController@changeStatus'));
-93:    Route::get('/access-control-user', array('uses' => 'Admin\AccessListController@getIndexUser'));
-94:    Route::get('/access-control-user/edit/{id?}', array('uses' => 'Admin\AccessListController@getEditAccessListUser'));
-95:    Route::get('/acess-control-user/change-access-status-dynamically', array('uses' => 'Admin\AccessListController@changeStatusUser'));
-96:    Route::post('/acess-control-user/change-access-status-dynamically', array('uses' => 'Admin\AccessListController@changeStatusUser'));
-98:    Route::post('/module/add', array('as' => 'admin.module.add', 'uses' => 'Admin\AccessListController@addModule'));
-101:Route::group(array('middleware' => 'auth', 'prefix' => 'project'), function () {
-102:    Route::get('own/change-password', array('as' => 'project.admin.change.password', 'uses' => 'Admin\Project\UserController@changePassword'));
-103:    Route::post('own/change-password', array('as' => 'project.admin.update.password', 'uses' => 'Admin\Project\UserController@updatePassword'));
-107:Route::group(array('middleware' => 'auth', 'prefix' => 'admin'), function () {
-108:    Route::get('homes', ['as' => 'admin.homes', 'uses' => 'Admin\HomeController@getIndex']);
-109:    Route::get('home/add', ['as' => 'admin.home.add', 'uses' => 'Admin\HomeController@getAddHome']);
-110:    Route::post('home/add', ['as' => 'admin.home.store', 'uses' => 'Admin\HomeController@addHome']);
-111:    Route::get('home/edit/{id}', ['as' => 'admin.home.edit', 'uses' => 'Admin\HomeController@getEditHome']);
-112:    Route::post('home/edit/{id}', ['as' => 'admin.home.update', 'uses' => 'Admin\HomeController@editHome']);
-113:    // Route::post('home/delete', ['as'=>'admin.home.delete','uses'=>'Admin\HomeController@deleteHome']);
-114:    Route::post('home/change-status', ['as' => 'admin.home.change.status', 'uses' => 'Admin\HomeController@changeStatus']);
-116:    Route::get('home/addspoke', 'Admin\HomeController@getAddHomespoke');
-117:    Route::get('home/addworkarea', 'Admin\HomeController@getAddHomework');
-118:    Route::get('home/addgeninfo', 'Admin\HomeController@getAddHomegeneralinfo');
-119:    Route::get('home/addaboutus', 'Admin\HomeController@getAddHomeaboutus');
-121:    Route::get('news-ticker', 'Admin\HomeController@getNewsTicker');
-122:    Route::get('news-ticker/add', 'Admin\HomeController@getAddNewsTicker');
-123:    Route::get('news-ticker/edit/{id}', 'Admin\HomeController@getEditNewsTicker');
-124:    Route::post('news-ticker/add', 'Admin\HomeController@addNewsTicker');
-125:    Route::post('news-ticker/edit/{id}', 'Admin\HomeController@editNewsTicker');
-126:    Route::post('news-ticker/change', 'Admin\HomeController@changeNewsTickerStatus');
-127:    Route::post('news-ticker/delete', 'Admin\HomeController@deleteNewsTicker');
-131:Route::group(array('middleware' => 'auth', 'prefix' => 'admin'), function () {
-132:    Route::get('/contents', ['as' => 'admin.contents', 'uses' => 'Admin\ContentController@getIndex']);
-133:    Route::get('/content/add', ['as' => 'admin.content.add', 'uses' => 'Admin\ContentController@getAddContent']);
-134:    Route::post('/content/add', ['as' => 'admin.content.store', 'uses' => 'Admin\ContentController@addContent']);
-135:    Route::get('/content/edit/{id}', ['as' => 'admin.content.edit', 'uses' => 'Admin\ContentController@getEditContent']);
-136:    Route::post('/content/edit/{id}', ['as' => 'admin.content.update', 'uses' => 'Admin\ContentController@editContent']);
-137:    Route::post('/content/delete', ['as' => 'admin.content.delete', 'uses' => 'Admin\ContentController@deleteContent']);
-138:    Route::post('/content/change-status', ['as' => 'admin.content.change.status', 'uses' => 'Admin\ContentController@changeStatus']);
-139:    Route::post('/content_document/delete', ['as' => 'admin.content.delete.document', 'uses' => 'Admin\ContentController@deleteContentDoc']);
-143:Route::group(array('middleware' => 'auth', 'prefix' => 'admin'), function () {
-144:    Route::get('projects', ['as' => 'admin.projects', 'uses' => 'Admin\ProjectController@getIndex']);
-145:    Route::get('project/add', ['as' => 'admin.project.add', 'uses' => 'Admin\ProjectController@getAddProject']);
-146:    Route::post('project/add', ['as' => 'admin.project.store', 'uses' => 'Admin\ProjectController@addProject']);
-147:    Route::get('project/edit/{id}', ['as' => 'admin.project.edit', 'uses' => 'Admin\ProjectController@getEditProject']);
-148:    Route::post('project/edit/{id}', ['as' => 'admin.project.update', 'uses' => 'Admin\ProjectController@editProject']);
-149:    Route::post('project/delete', ['as' => 'admin.project.delete', 'uses' => 'Admin\ProjectController@deleteProject']);
-150:    Route::post('project/change-status', ['as' => 'admin.project.change.status', 'uses' => 'Admin\ProjectController@changeStatus']);
-153:Route::group(array('middleware' => 'auth', 'prefix' => 'project'), function () {
-154:    Route::get('dashboard', ['as' => 'project.admin.dashboard', 'uses' => 'Project\ProjectController@getIndex']);
-155:    Route::get('edit/{id}', ['as' => 'project.admin.edit', 'uses' => 'Project\ProjectController@getEditProject']);
-156:    Route::post('edit/{id}', ['as' => 'project.admin.update', 'uses' => 'Project\ProjectController@updateProject']);
-160:Route::group(array('middleware' => 'auth', 'prefix' => 'admin'), function () {
-161:    Route::get('news',  array('as' => 'admin.news', 'uses' => 'Admin\NewsController@getIndex'));
-162:    Route::get('news/add',  array('as' => 'admin.news.add', 'uses' => 'Admin\NewsController@getAddNews'));
-163:    Route::post('news/add',  array('as' => 'admin.news.store', 'uses' => 'Admin\NewsController@addNews'));
-164:    Route::get('news/edit/{id}',  array('as' => 'admin.news.edit', 'uses' => 'Admin\NewsController@getEditNews'));
-165:    Route::post('news/edit/{id}',  array('as' => 'admin.news.update', 'uses' => 'Admin\NewsController@editNews'));
-166:    Route::post('news/delete', array('as' => 'admin.news.delete', 'uses' => 'Admin\NewsController@deleteNews'));
-167:    Route::post('news/change-status', array('as' => 'admin.news.change.status', 'uses' => 'Admin\NewsController@changeStatus'));
-171:Route::group(array('middleware' => 'auth', 'prefix' => 'admin'), function () {
-172:    Route::get('notices',  array('as' => 'admin.notices', 'uses' => 'Admin\NoticeController@getIndex'));
-173:    Route::get('notice/add',  array('as' => 'admin.notice.add', 'uses' => 'Admin\NoticeController@getAddNotice'));
-174:    Route::post('notice/add',  array('as' => 'admin.notice.store', 'uses' => 'Admin\NoticeController@addNotice'));
-175:    Route::get('notice/edit/{id}',  array('as' => 'admin.notice.edit', 'uses' => 'Admin\NoticeController@getEditNotice'));
-176:    Route::post('notice/edit/{id}',  array('as' => 'admin.notice.update', 'uses' => 'Admin\NoticeController@editNotice'));
-177:    Route::post('notice/delete', array('as' => 'admin.notice.delete', 'uses' => 'Admin\NoticeController@deleteNotice'));
-178:    Route::post('notice/change-status', array('as' => 'admin.notice.change.status', 'uses' => 'Admin\NoticeController@changeStatus'));
-180:    Route::get('newsletters',  array('as' => 'admin.newsletters', 'uses' => 'Admin\NewsletterController@getNewsletterIndex'));
-181:    Route::get('newsletter/add',  array('as' => 'admin.newsletter.add', 'uses' => 'Admin\NewsletterController@getaddNewsletter'));
-182:    Route::post('newsletter/add',  array('as' => 'admin.newsletter.store', 'uses' => 'Admin\NewsletterController@addNewsletter'));
-183:    Route::get('newsletter/view/{id}',  array('as' => 'admin.newsletter.view', 'uses' => 'Admin\NewsletterController@getviewNewsletter'));
-187:Route::group(array('middleware' => 'auth', 'prefix' => 'admin'), function () {
-188:    Route::get('guidelines',  array('as' => 'admin.guidelines', 'uses' => 'Admin\GuidelineController@getIndex'));
-189:    Route::get('guideline/add',  array('as' => 'admin.guideline.add', 'uses' => 'Admin\GuidelineController@getAddguideline'));
-190:    Route::post('guideline/add',  array('as' => 'admin.guideline.store', 'uses' => 'Admin\GuidelineController@addguideline'));
-191:    Route::get('guideline/edit/{id}',  array('as' => 'admin.guideline.edit', 'uses' => 'Admin\GuidelineController@getEditguideline'));
-192:    Route::post('guideline/edit/{id}',  array('as' => 'admin.guideline.update', 'uses' => 'Admin\GuidelineController@editguideline'));
-193:    Route::post('guideline/delete', array('as' => 'admin.guideline.delete', 'uses' => 'Admin\GuidelineController@deleteguideline'));
-194:    Route::post('guideline/change-status', array('as' => 'admin.guideline.change.status', 'uses' => 'Admin\GuidelineController@changeStatus'));
-196:    Route::get('newsletters',  array('as' => 'admin.newsletters', 'uses' => 'Admin\NewsletterController@getNewsletterIndex'));
-197:    Route::get('newsletter/add',  array('as' => 'admin.newsletter.add', 'uses' => 'Admin\NewsletterController@getaddNewsletter'));
-198:    Route::post('newsletter/add',  array('as' => 'admin.newsletter.store', 'uses' => 'Admin\NewsletterController@addNewsletter'));
-199:    Route::get('newsletter/view/{id}',  array('as' => 'admin.newsletter.view', 'uses' => 'Admin\NewsletterController@getviewNewsletter'));
-203:Route::group(array('middleware' => 'auth', 'prefix' => 'admin'), function () {
-204:    Route::get('tenders',  array('as' => 'admin.tenders', 'uses' => 'Admin\TenderController@getIndex'));
-205:    Route::get('tender/add',  array('as' => 'admin.tender.add', 'uses' => 'Admin\TenderController@getAddTender'));
-206:    Route::post('tender/add',  array('as' => 'admin.tender.store', 'uses' => 'Admin\TenderController@addTender'));
-207:    Route::get('tender/edit/{id}',  array('as' => 'admin.tender.edit', 'uses' => 'Admin\TenderController@getEditTender'));
-208:    Route::post('tender/edit/{id}',  array('as' => 'admin.tender.store.post', 'uses' => 'Admin\TenderController@editTender'));
-209:    Route::post('tender/delete', array('as' => 'admin.tender.delete', 'uses' => 'Admin\TenderController@deleteTender'));
-210:    Route::post('tender/change-status', array('as' => 'admin.tender.change.status', 'uses' => 'Admin\TenderController@changeStatus'));
-214:Route::group(array('middleware' => 'auth', 'prefix' => 'admin'), function () {
-215:    Route::get('presses',  array('as' => 'admin.presses', 'uses' => 'Admin\PressController@getIndex'));
-216:    Route::get('press/add',  array('as' => 'admin.press.add', 'uses' => 'Admin\PressController@getAddPress'));
-217:    Route::post('press/add',  array('as' => 'admin.press.store', 'uses' => 'Admin\PressController@addPress'));
-218:    Route::get('press/edit/{id}',  array('as' => 'admin.press.edit', 'uses' => 'Admin\PressController@getEditPress'));
-219:    Route::post('press/edit/{id}',  array('as' => 'admin.press.update', 'uses' => 'Admin\PressController@editPress'));
-220:    Route::post('press/delete', array('as' => 'admin.press.delete', 'uses' => 'Admin\PressController@deletePress'));
-221:    Route::post('press/change-status', array('as' => 'admin.press.change.status', 'uses' => 'Admin\PressController@changeStatus'));
-225:Route::group(array('middleware' => 'auth', 'prefix' => 'admin'), function () {
-226:    Route::get('downloads',  array('as' => 'admin.downloads', 'uses' => 'Admin\DownloadController@getIndex'));
-227:    Route::get('download/add',  array('as' => 'admin.download.add', 'uses' => 'Admin\DownloadController@getAddDownload'));
-228:    Route::post('download/add',  array('as' => 'admin.download.store', 'uses' => 'Admin\DownloadController@addDownload'));
-229:    Route::get('download/edit/{id}',  array('as' => 'admin.download.edit', 'uses' => 'Admin\DownloadController@getEditDownload'));
-230:    Route::post('download/edit/{id}',  array('as' => 'admin.download.update', 'uses' => 'Admin\DownloadController@editDownload'));
-231:    Route::post('download/delete', array('as' => 'admin.download.delete', 'uses' => 'Admin\DownloadController@deleteDownload'));
-232:    Route::post('download/change-status', array('as' => 'admin.download.change.status', 'uses' => 'Admin\DownloadController@changeStatus'));
-237:Route::group(array('middleware' => 'auth', 'prefix' => 'admin'), function () {
-238:    Route::get('vehicles',  array('as' => 'admin.vehicles', 'uses' => 'Admin\VehicleController@getIndex'));
-239:    Route::get('vehicle/add',  array('as' => 'admin.vehicle.add', 'uses' => 'Admin\VehicleController@getAddVehicle'));
-240:    Route::post('vehicle/add',  array('as' => 'admin.vehicle.store', 'uses' => 'Admin\VehicleController@addVehicle'));
-241:    Route::get('vehicle/edit/{id}',  array('as' => 'admin.vehicle.edit', 'uses' => 'Admin\VehicleController@getEditVehicle'));
-242:    Route::post('vehicle/edit/{id}',  array('as' => 'admin.vehicle.update', 'uses' => 'Admin\VehicleController@editVehicle'));
-243:    Route::post('vehicle/delete', array('as' => 'admin.vehicle.delete', 'uses' => 'Admin\VehicleController@deleteVehicle'));
-244:    Route::post('vehicle/change-status', array('as' => 'admin.vehicle.change.status', 'uses' => 'Admin\VehicleController@changeStatus'));
-248:Route::group(array('middleware' => 'auth', 'prefix' => 'admin'), function () {
-249:    Route::get('categories',  array('as' => 'admin.categories', 'uses' => 'Admin\CategoryController@getIndex'));
-250:    Route::get('category/add',  array('as' => 'admin.category.add', 'uses' => 'Admin\CategoryController@getAddCategory'));
-251:    Route::post('category/add',  array('as' => 'admin.category.store', 'uses' => 'Admin\CategoryController@addCategory'));
-252:    Route::get('category/edit/{id}',  array('as' => 'admin.category.edit', 'uses' => 'Admin\CategoryController@getEditCategory'));
-253:    Route::post('category/edit/{id}',  array('as' => 'admin.category.update', 'uses' => 'Admin\CategoryController@editCategory'));
-254:    Route::post('category/delete', array('as' => 'admin.category.delete', 'uses' => 'Admin\CategoryController@deleteCategory'));
-255:    Route::post('category/change-status', array('as' => 'admin.category.change.status', 'uses' => 'Admin\CategoryController@changeStatus'));
-257:    Route::get('publications',  array('as' => 'admin.publications', 'uses' => 'Admin\PublicationController@getIndex'));
-258:    Route::get('publication/add',  array('as' => 'admin.publication.add', 'uses' => 'Admin\PublicationController@getAddPublication'));
-259:    Route::post('publication/add',  array('as' => 'admin.publication.store', 'uses' => 'Admin\PublicationController@addPublication'));
-260:    Route::get('publication/edit/{id}',  array('as' => 'admin.publication.edit', 'uses' => 'Admin\PublicationController@getEditPublication'));
-261:    Route::post('publication/edit/{id}',  array('as' => 'admin.publication.update', 'uses' => 'Admin\PublicationController@editPublication'));
-262:    Route::post('publication/delete', array('as' => 'admin.publication.delete', 'uses' => 'Admin\PublicationController@deletePublication'));
-263:    Route::post('publication/change-status', array('as' => 'admin.publication.change.status', 'uses' => 'Admin\PublicationController@changeStatus'));
-267:Route::group(array('middleware' => 'auth', 'prefix' => 'admin'), function () {
-268:    Route::get('banners',  array('as' => 'admin.banners', 'uses' => 'Admin\BannerController@getIndex'));
-269:    Route::get('banner/add',  array('as' => 'admin.banner.add', 'uses' => 'Admin\BannerController@getAddBanner'));
-270:    Route::post('banner/add',  array('as' => 'admin.banner.store', 'uses' => 'Admin\BannerController@addBanner'));
-271:    Route::get('banner/edit/{url}',  array('as' => 'admin.banner.edit', 'uses' => 'Admin\BannerController@getEditBanner'));
-272:    Route::post('banner/edit/{url}',  array('as' => 'admin.banner.update', 'uses' => 'Admin\BannerController@editBanner'));
-273:    Route::post('banner/delete', array('as' => 'admin.banner.delete', 'uses' => 'Admin\BannerController@deleteBanner'));
-274:    Route::post('banner/change-status', array('as' => 'admin.banner.change.status', 'uses' => 'Admin\BannerController@changeStatus'));
-278:Route::group(array('middleware' => 'auth', 'prefix' => 'admin'), function () {
-279:    Route::get('albums',  array('as' => 'admin.albums', 'uses' => 'Admin\AlbumController@getIndex'));
-280:    Route::get('album/add',  array('as' => 'admin.album.add', 'uses' => 'Admin\AlbumController@getAddAlbum'));
-281:    Route::post('album/add',  array('as' => 'admin.album.store', 'uses' => 'Admin\AlbumController@addAlbum'));
-282:    Route::get('album/edit/{id}',  array('as' => 'admin.album.edit', 'uses' => 'Admin\AlbumController@getEditAlbum'));
-283:    Route::post('album/edit/{id}',  array('as' => 'admin.album.update', 'uses' => 'Admin\AlbumController@editAlbum'));
-284:    Route::post('album/delete', array('as' => 'admin.album.delete', 'uses' => 'Admin\AlbumController@deleteAlbum'));
-285:    Route::post('album/change-status', array('as' => 'admin.album.change.status', 'uses' => 'Admin\AlbumController@changeStatus'));
-287:    Route::get('album/viewgallery/{id}', array('as' => 'admin.album.view.gallery', 'uses' => 'Admin\GalleryController@getIndex'));
-288:    Route::get('album/addgallery/{id}', array('as' => 'admin.album.add.gallery', 'uses' => 'Admin\GalleryController@getAddGallery'));
-289:    Route::post('album/addgallery/{id}', array('as' => 'admin.album.store.gallery', 'uses' => 'Admin\GalleryController@addGallery'));
-290:    Route::get('gallery/edit/{id}', array('as' => 'admin.gallery.edit', 'uses' => 'Admin\GalleryController@getEditGallery'));
-291:    Route::post('gallery/edit/{id}', array('as' => 'admin.gallery.update', 'uses' => 'Admin\GalleryController@editGallery'));
-292:    Route::post('gallery/change-status', array('as' => 'admin.gallery.change.status', 'uses' => 'Admin\GalleryController@changeStatus'));
-293:    Route::post('gallery/delete', array('as' => 'admin.gallery.delete', 'uses' => 'Admin\GalleryController@deleteGallery'));
-297:Route::group(array('middleware' => 'auth', 'prefix' => 'admin'), function () {
-298:    Route::get('staffs',  array('as' => 'admin.staffs', 'uses' => 'Admin\StaffController@getIndex'));
-299:    Route::get('staff/add',  array('as' => 'admin.staff.add', 'uses' => 'Admin\StaffController@getAddStaff'));
-300:    Route::post('staff/add',  array('as' => 'admin.staff.store', 'uses' => 'Admin\StaffController@addStaff'));
-301:    Route::get('staff/sort_staffs',  array('as' => 'admin.staffs.sortorder', 'uses' => 'Admin\StaffController@getsortStaff'));
-302:    Route::post('staff/sort_staffs',  array('as' => 'admin.staffs.sortorder.update', 'uses' => 'Admin\StaffController@sortStaff'));
-303:    Route::get('staff/edit/{id}',  array('as' => 'admin.staff.edit', 'uses' => 'Admin\StaffController@getEditStaff'));
-304:    Route::post('staff/edit/{id}',  array('as' => 'admin.staff.update', 'uses' => 'Admin\StaffController@editStaff'));
-305:    Route::post('staff/delete', array('as' => 'admin.staff.delete', 'uses' => 'Admin\StaffController@deleteStaff'));
-306:    Route::post('staff/change-status', array('as' => 'admin.staff.change.status', 'uses' => 'Admin\StaffController@changeStatus'));
-308:    Route::get('email/request',  array('as' => 'admin.email.request', 'uses' => 'Admin\EmailRequestController@getEmailRequestForm'));
-309:    Route::post('email/request',  array('as' => 'admin.email.request.store', 'uses' => 'Admin\EmailRequestController@submitEmailRequestForm'));
-310:    Route::get('email/request/forms',  array('as' => 'admin.email.request.forms', 'uses' => 'Admin\EmailRequestController@emailRequestForms'));
-311:    Route::post('email/request/change-status',  array('as' => 'admin.email.request.change.status', 'uses' => 'Admin\EmailRequestController@changeStatus'));
-312:    Route::get('email/request/force/{id}', ['as' => 'admin.email.request.download', 'uses' => 'Admin\EmailRequestController@getForceDownload']);
-314:    Route::get('login-credentials',  array('as' => 'admin.login-credentials.request', 'uses' => 'Admin\LoginRequestController@getAll'));
-315:    Route::post('login-credentials/change-status',  array('as' => 'admin.login-credentials.request.change.status', 'uses' => 'Admin\LoginRequestController@changeStatus'));
-317:    Route::get('office_chiefs',  array('as' => 'admin.office_chiefs', 'uses' => 'Admin\OfficeChiefController@getIndex'));
-318:    Route::get('office_chiefs/add',  array('as' => 'admin.office_chiefs.add', 'uses' => 'Admin\OfficeChiefController@getAddStaff'));
-319:    Route::post('office_chiefs/add',  array('as' => 'admin.office_chiefs.store', 'uses' => 'Admin\OfficeChiefController@addStaff'));
-320:    Route::get('office_chiefs/sort_office_chiefs',  array('as' => 'admin.office_chiefs.sortorder', 'uses' => 'Admin\OfficeChiefController@getsortStaff'));
-321:    Route::post('office_chiefs/sort_office_chiefs',  array('as' => 'admin.office_chiefs.sortorder.update', 'uses' => 'Admin\OfficeChiefController@sortStaff'));
-322:    Route::get('office_chiefs/edit/{id}',  array('as' => 'admin.office_chiefs.edit', 'uses' => 'Admin\OfficeChiefController@getEditStaff'));
-323:    Route::post('office_chiefs/edit/{id}',  array('as' => 'admin.office_chiefs.update', 'uses' => 'Admin\OfficeChiefController@editStaff'));
-324:    Route::post('office_chiefs/delete', array('as' => 'admin.office_chiefs.delete', 'uses' => 'Admin\OfficeChiefController@deleteStaff'));
-325:    Route::post('office_chiefs/change-status', array('as' => 'admin.office_chiefs.change.status', 'uses' => 'Admin\OfficeChiefController@changeStatus'));
-329:Route::group(array('middleware' => 'auth', 'prefix' => 'admin'), function () {
-330:    Route::get('laws',  array('as' => 'admin.laws', 'uses' => 'Admin\LawController@getIndex'));
-331:    Route::get('law/add',  array('as' => 'admin.law.add', 'uses' => 'Admin\LawController@getAddLaw'));
-332:    Route::post('law/add',  array('as' => 'admin.law.store', 'uses' => 'Admin\LawController@addLaw'));
-333:    Route::get('law/edit/{id}',  array('as' => 'admin.law.edit', 'uses' => 'Admin\LawController@getEditLaw'));
-334:    Route::post('law/edit/{id}',  array('as' => 'admin.law.update', 'uses' => 'Admin\LawController@editLaw'));
-335:    Route::post('law/delete', array('as' => 'admin.law.delete', 'uses' => 'Admin\LawController@deleteLaw'));
-336:    Route::post('law/change-status', array('as' => 'admin.law.change.status', 'uses' => 'Admin\LawController@changeStatus'));
-340:Route::group(array('middleware' => 'auth', 'prefix' => 'admin'), function () {
-341:    Route::get('trainings',  array('as' => 'admin.trainings', 'uses' => 'Admin\TrainingController@getIndex'));
-342:    Route::get('training/add',  array('as' => 'admin.training.add', 'uses' => 'Admin\TrainingController@getAddTraining'));
-343:    Route::post('training/add',  array('as' => 'admin.training.store', 'uses' => 'Admin\TrainingController@addTraining'));
-344:    Route::get('training/edit/{id}',  array('as' => 'admin.training.edit', 'uses' => 'Admin\TrainingController@getEditTraining'));
-345:    Route::post('training/edit/{id}',  array('as' => 'admin.training.update', 'uses' => 'Admin\TrainingController@editTraining'));
-346:    Route::post('training/delete', array('as' => 'admin.training.delete', 'uses' => 'Admin\TrainingController@deleteTraining'));
-347:    Route::post('training/change-status', array('as' => 'admin.training.change.status', 'uses' => 'Admin\TrainingController@changeStatus'));
-351:Route::group(array('middleware' => 'auth', 'prefix' => 'admin'), function () {
-352:    Route::get('circulars',  array('as' => 'admin.circulars', 'uses' => 'Admin\CircularController@getIndex'));
-353:    Route::get('circular/add',  array('as' => 'admin.circular.add', 'uses' => 'Admin\CircularController@getAddCircular'));
-354:    Route::post('circular/add',  array('as' => 'admin.circular.store', 'uses' => 'Admin\CircularController@addCircular'));
-355:    Route::get('circular/edit/{id}',  array('as' => 'admin.circular.edit', 'uses' => 'Admin\CircularController@getEditCircular'));
-356:    Route::post('circular/edit/{id}',  array('as' => 'admin.circular.update', 'uses' => 'Admin\CircularController@editCircular'));
-357:    Route::post('circular/delete', array('as' => 'admin.circular.delete', 'uses' => 'Admin\CircularController@deleteCircular'));
-358:    Route::post('circular/change-status', array('as' => 'admin.circular.change.status', 'uses' => 'Admin\CircularController@changeStatus'));
-359:    Route::get('circular/view/{id}',  array('as' => 'admin.circular.view', 'uses' => 'Admin\CircularController@getViewCircular'));
-363:Route::group(array('middleware' => 'auth', 'prefix' => 'admin'), function () {
-364:    Route::get('faqs',  array('as' => 'admin.faqs', 'uses' => 'Admin\FaqController@getIndex'));
-365:    Route::get('faq/add',  array('as' => 'admin.faq.add', 'uses' => 'Admin\FaqController@getAddFaq'));
-366:    Route::post('faq/add',  array('as' => 'admin.faq.store', 'uses' => 'Admin\FaqController@addFaq'));
-367:    Route::get('faq/edit/{url}',  array('as' => 'admin.faq.edit', 'uses' => 'Admin\FaqController@getEditFaq'));
-368:    Route::post('faq/edit/{url}',  array('as' => 'admin.faq.update', 'uses' => 'Admin\FaqController@editFaq'));
-369:    Route::post('faq/delete', array('as' => 'admin.faq.delete', 'uses' => 'Admin\FaqController@deleteFaq'));
-370:    Route::post('faq/change-status', array('as' => 'admin.faq.change.status', 'uses' => 'Admin\FaqController@changeStatus'));
-374:Route::group(array('middleware' => 'auth', 'prefix' => 'admin'), function () {
-375:    Route::get('seos',  array('as' => 'admin.seos', 'uses' => 'Admin\SeoController@getIndex'));
-376:    Route::get('seo/add',  array('as' => 'admin.seo.add', 'uses' => 'Admin\SeoController@getAddSeo'));
-377:    Route::post('seo/add',  array('as' => 'admin.seo.store', 'uses' => 'Admin\SeoController@addSeo'));
-378:    Route::get('seo/edit/{id}',  array('as' => 'admin.seo.edit', 'uses' => 'Admin\SeoController@getEditSeo'));
-379:    Route::post('seo/edit/{id}',  array('as' => 'admin.seo.update', 'uses' => 'Admin\SeoController@editSeo'));
-380:    Route::post('seo/delete', array('as' => 'admin.seo.delete', 'uses' => 'Admin\SeoController@deleteSeo'));
-381:    Route::post('seo/change-status', array('as' => 'admin.seo.change.status', 'uses' => 'Admin\SeoController@changeStatus'));
-385:Route::group(array('middleware' => 'auth', 'prefix' => 'admin'), function () {
-386:    Route::get('equipments',  array('as' => 'admin.equipments', 'uses' => 'Admin\EquipmentController@getIndex'));
-387:    Route::get('equipment/add',  array('as' => 'admin.equipment.add', 'uses' => 'Admin\EquipmentController@getAddEquipment'));
-388:    Route::post('equipment/add',  array('as' => 'admin.equipment.store', 'uses' => 'Admin\EquipmentController@addEquipment'));
-389:    Route::get('equipment/edit/{id}',  array('as' => 'admin.equipment.edit', 'uses' => 'Admin\EquipmentController@getEditEquipment'));
-390:    Route::post('equipment/edit/{id}',  array('as' => 'admin.equipment.update', 'uses' => 'Admin\EquipmentController@editEquipment'));
-391:    Route::post('equipment/delete', array('as' => 'admin.equipment.delete', 'uses' => 'Admin\EquipmentController@deleteEquipment'));
-392:    Route::post('equipment/change-status', array('as' => 'admin.equipment.change.status', 'uses' => 'Admin\EquipmentController@changeStatus'));
-393:    Route::post('equipment/add-log', array('as' => 'admin.equipment.add.log', 'uses' => 'Admin\EquipmentController@addEquipmentLog'));
-394:    Route::post('equipment/find-log', array('as' => 'admin.equipment.find.log', 'uses' => 'Admin\EquipmentController@findEquipmentLog'));
-395:    Route::get('equipment/view-detail/{id}',  array('as' => 'admin.equipment.view.detail', 'uses' => 'Admin\EquipmentController@viewEquipmentDetail'));
-399:Route::group(array('middleware' => 'auth', 'prefix' => 'admin'), function () {
-400:    Route::get('logs',  array('as' => 'admin.logs', 'uses' => 'Admin\LogController@getIndex'));
-404:Route::group(array('middleware' => 'auth', 'prefix' => 'admin'), function () {
-405:    Route::get('tools',  array('as' => 'admin.tools', 'uses' => 'Admin\ExternalToolController@getIndex'));
-406:    Route::get('tools/add',  array('as' => 'admin.tools.add', 'uses' => 'Admin\ExternalToolController@getAddTool'));
-407:    Route::post('tools/add',  array('as' => 'admin.tools.store', 'uses' => 'Admin\ExternalToolController@addTool'));
-408:    Route::get('tools/edit/{id}',  array('as' => 'admin.tools.edit', 'uses' => 'Admin\ExternalToolController@getEditTool'));
-409:    Route::post('tools/edit/{id}',  array('as' => 'admin.tools.update', 'uses' => 'Admin\ExternalToolController@editTool'));
-410:    Route::post('tools/delete', array('as' => 'admin.tools.delete', 'uses' => 'Admin\ExternalToolController@deleteTool'));
-411:    Route::post('tools/change-status', array('as' => 'admin.tools.change.status', 'uses' => 'Admin\ExternalToolController@changeStatus'));
-416:Route::get('/', ['as' => 'root', 'uses' => 'HomeController@getHome']);
-417:Route::get('{subdomain}', ['as' => 'frontend.homepage', 'uses' => 'HomeController@getIndex']);
-419:Route::post('change_language', 'ConfigurationController@changeLangugage');
-421:Route::post('reload_captcha', 'ConfigurationController@changeCaptcha');
-423:Route::post('get_zones_data_for_map', 'ConfigurationController@getMapdata');
-424://Route::get('get_zones_data_for_map', 'ConfigurationController@getMapdata');
-426:Route::get('{subdomain}/changedate', 'ConfigurationController@changeDateFromEngToNep');
-428:Route::get('{subdomain}/search', 'HomeController@getSearch');
-429:Route::get('{subdomain}/feedback', 'HomeController@getFeedback');
-430:Route::post('{subdomain}/feedback', 'HomeController@postFeedback')->name('public.feedback.post');
-===== ADMIN ROUTE NAMES =====
-6:Route::get('admin/login', array('as' => 'admin.login', 'uses' => 'Admin\LoginController@getLogin'));
-10:Route::get('admin/forgot-password', array('as' => 'admin.password.request', 'uses' => 'Admin\PasswordResetOtpController@showForgotPassword'));
-11:Route::post('admin/forgot-password', array('as' => 'admin.password.email', 'uses' => 'Admin\PasswordResetOtpController@sendOtp'))->middleware('throttle:5,1');
-12:Route::get('admin/reset-password', array('as' => 'admin.password.reset', 'uses' => 'Admin\PasswordResetOtpController@showResetForm'));
-13:Route::post('admin/reset-password', array('as' => 'admin.password.verify', 'uses' => 'Admin\PasswordResetOtpController@resetPassword'))->middleware('throttle:10,1');
-17:    // Route::get('/logout', array('as' => 'admin.logout', 'uses' => 'Admin\LoginController@logoutUser'))
-20:    Route::get('/logout', array('as' => 'admin.logout', 'uses' => 'Admin\LoginController@logoutUser'));
-23:    Route::get('/home', array('as' => 'dashboard', 'uses' => 'Admin\LoginController@getHome'));
-26:        'as' => 'admin.website-theme.index',
-30:        'as' => 'admin.website-theme.update',
-34:        'as' => 'admin.website-theme.reset',
-40:        'as' => 'admin.website-identity.update',
-46:    Route::get('users',  array('as' => 'admin.users', 'uses' => 'Admin\UserController@getIndex'));
-47:    Route::get('user/add',  array('as' => 'admin.users.add', 'uses' => 'Admin\UserController@getAddUser'));
-48:    Route::post('user/add',  array('as' => 'admin.users.store', 'uses' => 'Admin\UserController@addUser'));
-49:    Route::get('user/edit/{id}',  array('as' => 'admin.users.edit', 'uses' => 'Admin\UserController@getEditUser'));
-50:    Route::post('user/edit/{id}',  array('as' => 'admin.users.update', 'uses' => 'Admin\UserController@editUser'));
-51:    Route::post('user/delete', array('as' => 'admin.user.delete', 'uses' => 'Admin\UserController@deleteUser'));
-52:    Route::post('user/change-status', array('as' => 'admin.user.change.status', 'uses' => 'Admin\UserController@changeStatus'));
-54:    Route::get('own/change-password', array('as' => 'admin.change.password', 'uses' => 'Admin\UserController@getChangePassword'));
-55:    Route::post('own/change-password', array('as' => 'admin.change.password.post', 'uses' => 'Admin\UserController@changeOwnPassword'));
-56:    Route::get('user/change-password/{id}', array('as' => 'admin.user.change.password', 'as' => 'admin.users.change.password', 'uses' => 'Admin\UserController@getChangePasswordByAdmin'));
-57:    Route::post('user/change-password/{id}', array('as' => 'admin.user.change.password.update', 'uses' => 'Admin\UserController@changePassword'));
-64:    Route::get('usertypes', array('as' => 'admin.usertypes', 'uses' => 'Admin\UserTypeController@getIndex'));
-65:    Route::get('usertype/add',  array('as' => 'admin.usertype.add', 'uses' => 'Admin\UserTypeController@getAddUserType'));
-66:    Route::post('usertype/add',  array('as' => 'admin.usertype.store', 'uses' => 'Admin\UserTypeController@addUserType'));
-67:    Route::post('usertype/edit',  array('as' => 'admin.usertype.update', 'uses' => 'Admin\UserTypeController@editUserType'));
-68:    Route::post('usertype/change-status', array('as' => 'admin.usertype.change.status', 'uses' => 'Admin\UserTypeController@changeStatus'));
-69:    Route::post('usertype/delete', array('as' => 'admin.usertype.delete', 'uses' => 'Admin\UserTypeController@deleteUserType'));
-74:    Route::get('offices',  array('as' => 'admin.offices', 'uses' => 'Admin\OfficeController@getIndex'));
-75:    Route::get('office/add',  array('as' => 'admin.office.add', 'uses' => 'Admin\OfficeController@getAddOffice'));
-76:    Route::post('office/add',  array('as' => 'admin.office.store', 'uses' => 'Admin\OfficeController@addOffice'));
-77:    Route::get('office/edit/{id}',  array('as' => 'admin.office.edit', 'uses' => 'Admin\OfficeController@getEditOffice'));
-78:    Route::post('office/edit/{id}',  array('as' => 'admin.office.update', 'uses' => 'Admin\OfficeController@editOffice'));
-79:    Route::post('office/delete', array('as' => 'admin.office.delete', 'uses' => 'Admin\OfficeController@deleteOffice'));
-80:    Route::post('office/change-status', array('as' => 'admin.office.change.status', 'uses' => 'Admin\OfficeController@changeStatus'));
-81:    Route::get('office/sort_offices',  array('as' => 'admin.office.sortorder', 'as' => 'office.sortorder', 'uses' => 'Admin\OfficeController@getSortOrder'));
-82:    Route::post('office/sort_offices',  array('as' => 'admin.office.sortorder.update', 'as' => 'office.sortorder.post', 'uses' => 'Admin\OfficeController@sortOrder'));
-88:    Route::get('/access-control', array('as' => 'admin.access.control', 'uses' => 'Admin\AccessListController@getIndex'));
-98:    Route::post('/module/add', array('as' => 'admin.module.add', 'uses' => 'Admin\AccessListController@addModule'));
-102:    Route::get('own/change-password', array('as' => 'project.admin.change.password', 'uses' => 'Admin\Project\UserController@changePassword'));
-103:    Route::post('own/change-password', array('as' => 'project.admin.update.password', 'uses' => 'Admin\Project\UserController@updatePassword'));
-108:    Route::get('homes', ['as' => 'admin.homes', 'uses' => 'Admin\HomeController@getIndex']);
-109:    Route::get('home/add', ['as' => 'admin.home.add', 'uses' => 'Admin\HomeController@getAddHome']);
-110:    Route::post('home/add', ['as' => 'admin.home.store', 'uses' => 'Admin\HomeController@addHome']);
-111:    Route::get('home/edit/{id}', ['as' => 'admin.home.edit', 'uses' => 'Admin\HomeController@getEditHome']);
-112:    Route::post('home/edit/{id}', ['as' => 'admin.home.update', 'uses' => 'Admin\HomeController@editHome']);
-113:    // Route::post('home/delete', ['as'=>'admin.home.delete','uses'=>'Admin\HomeController@deleteHome']);
-114:    Route::post('home/change-status', ['as' => 'admin.home.change.status', 'uses' => 'Admin\HomeController@changeStatus']);
-132:    Route::get('/contents', ['as' => 'admin.contents', 'uses' => 'Admin\ContentController@getIndex']);
-133:    Route::get('/content/add', ['as' => 'admin.content.add', 'uses' => 'Admin\ContentController@getAddContent']);
-134:    Route::post('/content/add', ['as' => 'admin.content.store', 'uses' => 'Admin\ContentController@addContent']);
-135:    Route::get('/content/edit/{id}', ['as' => 'admin.content.edit', 'uses' => 'Admin\ContentController@getEditContent']);
-136:    Route::post('/content/edit/{id}', ['as' => 'admin.content.update', 'uses' => 'Admin\ContentController@editContent']);
-137:    Route::post('/content/delete', ['as' => 'admin.content.delete', 'uses' => 'Admin\ContentController@deleteContent']);
-138:    Route::post('/content/change-status', ['as' => 'admin.content.change.status', 'uses' => 'Admin\ContentController@changeStatus']);
-139:    Route::post('/content_document/delete', ['as' => 'admin.content.delete.document', 'uses' => 'Admin\ContentController@deleteContentDoc']);
-144:    Route::get('projects', ['as' => 'admin.projects', 'uses' => 'Admin\ProjectController@getIndex']);
-145:    Route::get('project/add', ['as' => 'admin.project.add', 'uses' => 'Admin\ProjectController@getAddProject']);
-146:    Route::post('project/add', ['as' => 'admin.project.store', 'uses' => 'Admin\ProjectController@addProject']);
-147:    Route::get('project/edit/{id}', ['as' => 'admin.project.edit', 'uses' => 'Admin\ProjectController@getEditProject']);
-148:    Route::post('project/edit/{id}', ['as' => 'admin.project.update', 'uses' => 'Admin\ProjectController@editProject']);
-149:    Route::post('project/delete', ['as' => 'admin.project.delete', 'uses' => 'Admin\ProjectController@deleteProject']);
-150:    Route::post('project/change-status', ['as' => 'admin.project.change.status', 'uses' => 'Admin\ProjectController@changeStatus']);
-154:    Route::get('dashboard', ['as' => 'project.admin.dashboard', 'uses' => 'Project\ProjectController@getIndex']);
-155:    Route::get('edit/{id}', ['as' => 'project.admin.edit', 'uses' => 'Project\ProjectController@getEditProject']);
-156:    Route::post('edit/{id}', ['as' => 'project.admin.update', 'uses' => 'Project\ProjectController@updateProject']);
-161:    Route::get('news',  array('as' => 'admin.news', 'uses' => 'Admin\NewsController@getIndex'));
-162:    Route::get('news/add',  array('as' => 'admin.news.add', 'uses' => 'Admin\NewsController@getAddNews'));
-163:    Route::post('news/add',  array('as' => 'admin.news.store', 'uses' => 'Admin\NewsController@addNews'));
-164:    Route::get('news/edit/{id}',  array('as' => 'admin.news.edit', 'uses' => 'Admin\NewsController@getEditNews'));
-165:    Route::post('news/edit/{id}',  array('as' => 'admin.news.update', 'uses' => 'Admin\NewsController@editNews'));
-166:    Route::post('news/delete', array('as' => 'admin.news.delete', 'uses' => 'Admin\NewsController@deleteNews'));
-167:    Route::post('news/change-status', array('as' => 'admin.news.change.status', 'uses' => 'Admin\NewsController@changeStatus'));
-172:    Route::get('notices',  array('as' => 'admin.notices', 'uses' => 'Admin\NoticeController@getIndex'));
-173:    Route::get('notice/add',  array('as' => 'admin.notice.add', 'uses' => 'Admin\NoticeController@getAddNotice'));
-174:    Route::post('notice/add',  array('as' => 'admin.notice.store', 'uses' => 'Admin\NoticeController@addNotice'));
-175:    Route::get('notice/edit/{id}',  array('as' => 'admin.notice.edit', 'uses' => 'Admin\NoticeController@getEditNotice'));
-176:    Route::post('notice/edit/{id}',  array('as' => 'admin.notice.update', 'uses' => 'Admin\NoticeController@editNotice'));
-177:    Route::post('notice/delete', array('as' => 'admin.notice.delete', 'uses' => 'Admin\NoticeController@deleteNotice'));
-178:    Route::post('notice/change-status', array('as' => 'admin.notice.change.status', 'uses' => 'Admin\NoticeController@changeStatus'));
-180:    Route::get('newsletters',  array('as' => 'admin.newsletters', 'uses' => 'Admin\NewsletterController@getNewsletterIndex'));
-181:    Route::get('newsletter/add',  array('as' => 'admin.newsletter.add', 'uses' => 'Admin\NewsletterController@getaddNewsletter'));
-182:    Route::post('newsletter/add',  array('as' => 'admin.newsletter.store', 'uses' => 'Admin\NewsletterController@addNewsletter'));
-183:    Route::get('newsletter/view/{id}',  array('as' => 'admin.newsletter.view', 'uses' => 'Admin\NewsletterController@getviewNewsletter'));
-188:    Route::get('guidelines',  array('as' => 'admin.guidelines', 'uses' => 'Admin\GuidelineController@getIndex'));
-189:    Route::get('guideline/add',  array('as' => 'admin.guideline.add', 'uses' => 'Admin\GuidelineController@getAddguideline'));
-190:    Route::post('guideline/add',  array('as' => 'admin.guideline.store', 'uses' => 'Admin\GuidelineController@addguideline'));
-191:    Route::get('guideline/edit/{id}',  array('as' => 'admin.guideline.edit', 'uses' => 'Admin\GuidelineController@getEditguideline'));
-192:    Route::post('guideline/edit/{id}',  array('as' => 'admin.guideline.update', 'uses' => 'Admin\GuidelineController@editguideline'));
-193:    Route::post('guideline/delete', array('as' => 'admin.guideline.delete', 'uses' => 'Admin\GuidelineController@deleteguideline'));
-194:    Route::post('guideline/change-status', array('as' => 'admin.guideline.change.status', 'uses' => 'Admin\GuidelineController@changeStatus'));
-196:    Route::get('newsletters',  array('as' => 'admin.newsletters', 'uses' => 'Admin\NewsletterController@getNewsletterIndex'));
-197:    Route::get('newsletter/add',  array('as' => 'admin.newsletter.add', 'uses' => 'Admin\NewsletterController@getaddNewsletter'));
-198:    Route::post('newsletter/add',  array('as' => 'admin.newsletter.store', 'uses' => 'Admin\NewsletterController@addNewsletter'));
-199:    Route::get('newsletter/view/{id}',  array('as' => 'admin.newsletter.view', 'uses' => 'Admin\NewsletterController@getviewNewsletter'));
-204:    Route::get('tenders',  array('as' => 'admin.tenders', 'uses' => 'Admin\TenderController@getIndex'));
-205:    Route::get('tender/add',  array('as' => 'admin.tender.add', 'uses' => 'Admin\TenderController@getAddTender'));
-206:    Route::post('tender/add',  array('as' => 'admin.tender.store', 'uses' => 'Admin\TenderController@addTender'));
-207:    Route::get('tender/edit/{id}',  array('as' => 'admin.tender.edit', 'uses' => 'Admin\TenderController@getEditTender'));
-208:    Route::post('tender/edit/{id}',  array('as' => 'admin.tender.store.post', 'uses' => 'Admin\TenderController@editTender'));
-209:    Route::post('tender/delete', array('as' => 'admin.tender.delete', 'uses' => 'Admin\TenderController@deleteTender'));
-210:    Route::post('tender/change-status', array('as' => 'admin.tender.change.status', 'uses' => 'Admin\TenderController@changeStatus'));
-215:    Route::get('presses',  array('as' => 'admin.presses', 'uses' => 'Admin\PressController@getIndex'));
-216:    Route::get('press/add',  array('as' => 'admin.press.add', 'uses' => 'Admin\PressController@getAddPress'));
-217:    Route::post('press/add',  array('as' => 'admin.press.store', 'uses' => 'Admin\PressController@addPress'));
-218:    Route::get('press/edit/{id}',  array('as' => 'admin.press.edit', 'uses' => 'Admin\PressController@getEditPress'));
-219:    Route::post('press/edit/{id}',  array('as' => 'admin.press.update', 'uses' => 'Admin\PressController@editPress'));
-220:    Route::post('press/delete', array('as' => 'admin.press.delete', 'uses' => 'Admin\PressController@deletePress'));
-221:    Route::post('press/change-status', array('as' => 'admin.press.change.status', 'uses' => 'Admin\PressController@changeStatus'));
-226:    Route::get('downloads',  array('as' => 'admin.downloads', 'uses' => 'Admin\DownloadController@getIndex'));
-227:    Route::get('download/add',  array('as' => 'admin.download.add', 'uses' => 'Admin\DownloadController@getAddDownload'));
-228:    Route::post('download/add',  array('as' => 'admin.download.store', 'uses' => 'Admin\DownloadController@addDownload'));
-229:    Route::get('download/edit/{id}',  array('as' => 'admin.download.edit', 'uses' => 'Admin\DownloadController@getEditDownload'));
-230:    Route::post('download/edit/{id}',  array('as' => 'admin.download.update', 'uses' => 'Admin\DownloadController@editDownload'));
-231:    Route::post('download/delete', array('as' => 'admin.download.delete', 'uses' => 'Admin\DownloadController@deleteDownload'));
-232:    Route::post('download/change-status', array('as' => 'admin.download.change.status', 'uses' => 'Admin\DownloadController@changeStatus'));
-238:    Route::get('vehicles',  array('as' => 'admin.vehicles', 'uses' => 'Admin\VehicleController@getIndex'));
-239:    Route::get('vehicle/add',  array('as' => 'admin.vehicle.add', 'uses' => 'Admin\VehicleController@getAddVehicle'));
-240:    Route::post('vehicle/add',  array('as' => 'admin.vehicle.store', 'uses' => 'Admin\VehicleController@addVehicle'));
-241:    Route::get('vehicle/edit/{id}',  array('as' => 'admin.vehicle.edit', 'uses' => 'Admin\VehicleController@getEditVehicle'));
-242:    Route::post('vehicle/edit/{id}',  array('as' => 'admin.vehicle.update', 'uses' => 'Admin\VehicleController@editVehicle'));
-243:    Route::post('vehicle/delete', array('as' => 'admin.vehicle.delete', 'uses' => 'Admin\VehicleController@deleteVehicle'));
-244:    Route::post('vehicle/change-status', array('as' => 'admin.vehicle.change.status', 'uses' => 'Admin\VehicleController@changeStatus'));
-249:    Route::get('categories',  array('as' => 'admin.categories', 'uses' => 'Admin\CategoryController@getIndex'));
-250:    Route::get('category/add',  array('as' => 'admin.category.add', 'uses' => 'Admin\CategoryController@getAddCategory'));
-251:    Route::post('category/add',  array('as' => 'admin.category.store', 'uses' => 'Admin\CategoryController@addCategory'));
-252:    Route::get('category/edit/{id}',  array('as' => 'admin.category.edit', 'uses' => 'Admin\CategoryController@getEditCategory'));
-253:    Route::post('category/edit/{id}',  array('as' => 'admin.category.update', 'uses' => 'Admin\CategoryController@editCategory'));
-254:    Route::post('category/delete', array('as' => 'admin.category.delete', 'uses' => 'Admin\CategoryController@deleteCategory'));
-255:    Route::post('category/change-status', array('as' => 'admin.category.change.status', 'uses' => 'Admin\CategoryController@changeStatus'));
-257:    Route::get('publications',  array('as' => 'admin.publications', 'uses' => 'Admin\PublicationController@getIndex'));
-258:    Route::get('publication/add',  array('as' => 'admin.publication.add', 'uses' => 'Admin\PublicationController@getAddPublication'));
-259:    Route::post('publication/add',  array('as' => 'admin.publication.store', 'uses' => 'Admin\PublicationController@addPublication'));
-260:    Route::get('publication/edit/{id}',  array('as' => 'admin.publication.edit', 'uses' => 'Admin\PublicationController@getEditPublication'));
-261:    Route::post('publication/edit/{id}',  array('as' => 'admin.publication.update', 'uses' => 'Admin\PublicationController@editPublication'));
-262:    Route::post('publication/delete', array('as' => 'admin.publication.delete', 'uses' => 'Admin\PublicationController@deletePublication'));
-263:    Route::post('publication/change-status', array('as' => 'admin.publication.change.status', 'uses' => 'Admin\PublicationController@changeStatus'));
-268:    Route::get('banners',  array('as' => 'admin.banners', 'uses' => 'Admin\BannerController@getIndex'));
-269:    Route::get('banner/add',  array('as' => 'admin.banner.add', 'uses' => 'Admin\BannerController@getAddBanner'));
-270:    Route::post('banner/add',  array('as' => 'admin.banner.store', 'uses' => 'Admin\BannerController@addBanner'));
-271:    Route::get('banner/edit/{url}',  array('as' => 'admin.banner.edit', 'uses' => 'Admin\BannerController@getEditBanner'));
-272:    Route::post('banner/edit/{url}',  array('as' => 'admin.banner.update', 'uses' => 'Admin\BannerController@editBanner'));
-273:    Route::post('banner/delete', array('as' => 'admin.banner.delete', 'uses' => 'Admin\BannerController@deleteBanner'));
-274:    Route::post('banner/change-status', array('as' => 'admin.banner.change.status', 'uses' => 'Admin\BannerController@changeStatus'));
-279:    Route::get('albums',  array('as' => 'admin.albums', 'uses' => 'Admin\AlbumController@getIndex'));
-280:    Route::get('album/add',  array('as' => 'admin.album.add', 'uses' => 'Admin\AlbumController@getAddAlbum'));
-281:    Route::post('album/add',  array('as' => 'admin.album.store', 'uses' => 'Admin\AlbumController@addAlbum'));
-282:    Route::get('album/edit/{id}',  array('as' => 'admin.album.edit', 'uses' => 'Admin\AlbumController@getEditAlbum'));
-283:    Route::post('album/edit/{id}',  array('as' => 'admin.album.update', 'uses' => 'Admin\AlbumController@editAlbum'));
-284:    Route::post('album/delete', array('as' => 'admin.album.delete', 'uses' => 'Admin\AlbumController@deleteAlbum'));
-285:    Route::post('album/change-status', array('as' => 'admin.album.change.status', 'uses' => 'Admin\AlbumController@changeStatus'));
-287:    Route::get('album/viewgallery/{id}', array('as' => 'admin.album.view.gallery', 'uses' => 'Admin\GalleryController@getIndex'));
-288:    Route::get('album/addgallery/{id}', array('as' => 'admin.album.add.gallery', 'uses' => 'Admin\GalleryController@getAddGallery'));
-289:    Route::post('album/addgallery/{id}', array('as' => 'admin.album.store.gallery', 'uses' => 'Admin\GalleryController@addGallery'));
-290:    Route::get('gallery/edit/{id}', array('as' => 'admin.gallery.edit', 'uses' => 'Admin\GalleryController@getEditGallery'));
-291:    Route::post('gallery/edit/{id}', array('as' => 'admin.gallery.update', 'uses' => 'Admin\GalleryController@editGallery'));
-292:    Route::post('gallery/change-status', array('as' => 'admin.gallery.change.status', 'uses' => 'Admin\GalleryController@changeStatus'));
-293:    Route::post('gallery/delete', array('as' => 'admin.gallery.delete', 'uses' => 'Admin\GalleryController@deleteGallery'));
-298:    Route::get('staffs',  array('as' => 'admin.staffs', 'uses' => 'Admin\StaffController@getIndex'));
-299:    Route::get('staff/add',  array('as' => 'admin.staff.add', 'uses' => 'Admin\StaffController@getAddStaff'));
-300:    Route::post('staff/add',  array('as' => 'admin.staff.store', 'uses' => 'Admin\StaffController@addStaff'));
-301:    Route::get('staff/sort_staffs',  array('as' => 'admin.staffs.sortorder', 'uses' => 'Admin\StaffController@getsortStaff'));
-302:    Route::post('staff/sort_staffs',  array('as' => 'admin.staffs.sortorder.update', 'uses' => 'Admin\StaffController@sortStaff'));
-303:    Route::get('staff/edit/{id}',  array('as' => 'admin.staff.edit', 'uses' => 'Admin\StaffController@getEditStaff'));
-304:    Route::post('staff/edit/{id}',  array('as' => 'admin.staff.update', 'uses' => 'Admin\StaffController@editStaff'));
-305:    Route::post('staff/delete', array('as' => 'admin.staff.delete', 'uses' => 'Admin\StaffController@deleteStaff'));
-306:    Route::post('staff/change-status', array('as' => 'admin.staff.change.status', 'uses' => 'Admin\StaffController@changeStatus'));
-308:    Route::get('email/request',  array('as' => 'admin.email.request', 'uses' => 'Admin\EmailRequestController@getEmailRequestForm'));
-309:    Route::post('email/request',  array('as' => 'admin.email.request.store', 'uses' => 'Admin\EmailRequestController@submitEmailRequestForm'));
-310:    Route::get('email/request/forms',  array('as' => 'admin.email.request.forms', 'uses' => 'Admin\EmailRequestController@emailRequestForms'));
-311:    Route::post('email/request/change-status',  array('as' => 'admin.email.request.change.status', 'uses' => 'Admin\EmailRequestController@changeStatus'));
-312:    Route::get('email/request/force/{id}', ['as' => 'admin.email.request.download', 'uses' => 'Admin\EmailRequestController@getForceDownload']);
-314:    Route::get('login-credentials',  array('as' => 'admin.login-credentials.request', 'uses' => 'Admin\LoginRequestController@getAll'));
-315:    Route::post('login-credentials/change-status',  array('as' => 'admin.login-credentials.request.change.status', 'uses' => 'Admin\LoginRequestController@changeStatus'));
-317:    Route::get('office_chiefs',  array('as' => 'admin.office_chiefs', 'uses' => 'Admin\OfficeChiefController@getIndex'));
-318:    Route::get('office_chiefs/add',  array('as' => 'admin.office_chiefs.add', 'uses' => 'Admin\OfficeChiefController@getAddStaff'));
-319:    Route::post('office_chiefs/add',  array('as' => 'admin.office_chiefs.store', 'uses' => 'Admin\OfficeChiefController@addStaff'));
-320:    Route::get('office_chiefs/sort_office_chiefs',  array('as' => 'admin.office_chiefs.sortorder', 'uses' => 'Admin\OfficeChiefController@getsortStaff'));
-321:    Route::post('office_chiefs/sort_office_chiefs',  array('as' => 'admin.office_chiefs.sortorder.update', 'uses' => 'Admin\OfficeChiefController@sortStaff'));
+doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && php8.5 artisan test tests/Feature/CircularAdminManagementTest.php
+
+   WARN  Your XML configuration validates against a deprecated schema. Migrate your XML configuration using "--migrate-configuration"!
+
+   FAIL  Tests\Feature\CircularAdminManagementTest
+  ✓ super admin can create circular admin for selected office                                                    0.28s
+  ✓ office admin can create account only for own office                                                          0.07s
+  ✓ office admin cannot submit another office id                                                                 0.08s
+  ✓ office admin cannot edit another offices account                                                             0.08s
+  ✓ office admin cannot change status of another offices account                                                 0.08s
+  ✓ super admin can edit and change account status                                                               0.08s
+  ⨯ office admin sees only circular admin accounts from own office                                               0.13s
+  ✓ circular admin cannot access circular admin account management                                               0.08s
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   FAILED  Tests\Feature\CircularAdminManagementTest > office admin sees only circular admin accounts from own offic…
+  Expected response status code [200] but received 500.
+Failed asserting that 500 is identical to 200.
+
+The following exception occurred during the last request:
+
+PDOException: SQLSTATE[HY000]: General error: 1 ambiguous column name: office_phone_number1 in /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:442
+Stack trace:
+#0 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php(442): PDO->prepare()
+#1 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php(853): Illuminate\Database\Connection->{closure:Illuminate\Database\Connection::select():433}()
+#2 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php(820): Illuminate\Database\Connection->runQueryCallback()
+#3 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php(433): Illuminate\Database\Connection->run()
+#4 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/DatabaseManager.php(502): Illuminate\Database\Connection->select()
+#5 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(364): Illuminate\Database\DatabaseManager->__call()
+#6 /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/app/Models/Office.php(49): Illuminate\Support\Facades\Facade::__callStatic()
+#7 /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/storage/framework/views/caa89a1e42068dda8446e4050b122538.php(6): App\Models\Office::getPublishedOfficesbyID()
+#8 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Filesystem/Filesystem.php(127): require('...')
+#9 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Filesystem/Filesystem.php(128): Illuminate\Filesystem\Filesystem::{closure:Illuminate\Filesystem\Filesystem::getRequire():124}()
+#10 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/Engines/PhpEngine.php(57): Illuminate\Filesystem\Filesystem->getRequire()
+#11 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/Engines/CompilerEngine.php(76): Illuminate\View\Engines\PhpEngine->evaluatePath()
+#12 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/View.php(208): Illuminate\View\Engines\CompilerEngine->get()
+#13 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/View.php(191): Illuminate\View\View->getContents()
+#14 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/View.php(160): Illuminate\View\View->renderContents()
+#15 /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/storage/framework/views/ce82169ae653cc47c01a7351d2b34c61.php(20): Illuminate\View\View->render()
+#16 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Filesystem/Filesystem.php(127): require('...')
+#17 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Filesystem/Filesystem.php(128): Illuminate\Filesystem\Filesystem::{closure:Illuminate\Filesystem\Filesystem::getRequire():124}()
+#18 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/Engines/PhpEngine.php(57): Illuminate\Filesystem\Filesystem->getRequire()
+#19 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/Engines/CompilerEngine.php(76): Illuminate\View\Engines\PhpEngine->evaluatePath()
+#20 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/View.php(208): Illuminate\View\Engines\CompilerEngine->get()
+#21 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/View.php(191): Illuminate\View\View->getContents()
+#22 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/View.php(160): Illuminate\View\View->renderContents()
+#23 /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/storage/framework/views/1aaec35d89e8fd97207e26443617e6e2.php(84): Illuminate\View\View->render()
+#24 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Filesystem/Filesystem.php(127): require('...')
+#25 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Filesystem/Filesystem.php(128): Illuminate\Filesystem\Filesystem::{closure:Illuminate\Filesystem\Filesystem::getRequire():124}()
+#26 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/Engines/PhpEngine.php(57): Illuminate\Filesystem\Filesystem->getRequire()
+#27 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/Engines/CompilerEngine.php(76): Illuminate\View\Engines\PhpEngine->evaluatePath()
+#28 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/View.php(208): Illuminate\View\Engines\CompilerEngine->get()
+#29 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/View.php(191): Illuminate\View\View->getContents()
+#30 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/View.php(160): Illuminate\View\View->renderContents()
+#31 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Http/Response.php(82): Illuminate\View\View->render()
+#32 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Http/Response.php(40): Illuminate\Http\Response->setContent()
+#33 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Routing/Router.php(954): Illuminate\Http\Response->__construct()
+#34 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Routing/Router.php(921): Illuminate\Routing\Router::toResponse()
+#35 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Routing/Router.php(834): Illuminate\Routing\Router->prepareResponse()
+#36 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(180): Illuminate\Routing\Router->{closure:Illuminate\Routing\Router::runRouteWithinStack():834}()
+#37 /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/app/Http/Middleware/RestrictAdminRoles.php(49): Illuminate\Pipeline\Pipeline->{closure:Illuminate\Pipeline\Pipeline::prepareDestination():178}()
+#38 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): App\Http\Middleware\RestrictAdminRoles->handle()
+#39 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Routing/Middleware/SubstituteBindings.php(52): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#40 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Routing\Middleware\SubstituteBindings->handle()
+#41 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Auth/Middleware/Authenticate.php(63): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#42 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Auth\Middleware\Authenticate->handle()
+#43 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestForgery.php(104): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#44 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\PreventRequestForgery->handle()
+#45 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/Middleware/ShareErrorsFromSession.php(48): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#46 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\View\Middleware\ShareErrorsFromSession->handle()
+#47 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(120): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#48 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(63): Illuminate\Session\Middleware\StartSession->handleStatefulRequest()
+#49 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Session\Middleware\StartSession->handle()
+#50 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Cookie/Middleware/AddQueuedCookiesToResponse.php(36): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#51 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse->handle()
+#52 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Cookie/Middleware/EncryptCookies.php(74): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#53 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Cookie\Middleware\EncryptCookies->handle()
+#54 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#55 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Routing/Router.php(834): Illuminate\Pipeline\Pipeline->then()
+#56 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Routing/Router.php(813): Illuminate\Routing\Router->runRouteWithinStack()
+#57 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Routing/Router.php(777): Illuminate\Routing\Router->runRoute()
+#58 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Routing/Router.php(766): Illuminate\Routing\Router->dispatchToRoute()
+#59 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(200): Illuminate\Routing\Router->dispatch()
+#60 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(180): Illuminate\Foundation\Http\Kernel->{closure:Illuminate\Foundation\Http\Kernel::dispatchToRouter():197}()
+#61 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(38): Illuminate\Pipeline\Pipeline->{closure:Illuminate\Pipeline\Pipeline::prepareDestination():178}()
+#62 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php(31): Illuminate\Foundation\Http\Middleware\TransformsRequest->handle()
+#63 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull->handle()
+#64 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(38): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#65 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php(51): Illuminate\Foundation\Http\Middleware\TransformsRequest->handle()
+#66 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\TrimStrings->handle()
+#67 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePostSize.php(27): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#68 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Http\Middleware\ValidatePostSize->handle()
+#69 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php(110): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#70 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance->handle()
+#71 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php(61): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#72 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Http\Middleware\HandleCors->handle()
+#73 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php(58): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#74 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Http\Middleware\TrustProxies->handle()
+#75 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#76 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(175): Illuminate\Pipeline\Pipeline->then()
+#77 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(144): Illuminate\Foundation\Http\Kernel->sendRequestThroughRouter()
+#78 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(638): Illuminate\Foundation\Http\Kernel->handle()
+#79 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(368): Illuminate\Foundation\Testing\TestCase->call()
+#80 /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/tests/Feature/CircularAdminManagementTest.php(247): Illuminate\Foundation\Testing\TestCase->get()
+#81 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestCase.php(1343): Tests\Feature\CircularAdminManagementTest->test_office_admin_sees_only_circular_admin_accounts_from_own_office()
+#82 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestCase.php(1380): PHPUnit\Framework\TestCase->invokeTestMethod()
+#83 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestCase.php(521): PHPUnit\Framework\TestCase->runTest()
+#84 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestRunner/TestRunner.php(98): PHPUnit\Framework\TestCase->runBare()
+#85 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestCase.php(361): PHPUnit\Framework\TestRunner->run()
+#86 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestSuite.php(379): PHPUnit\Framework\TestCase->run()
+#87 /home/doradmin/dor13-vendor/phpunit/phpunit/src/TextUI/TestRunner.php(64): PHPUnit\Framework\TestSuite->run()
+#88 /home/doradmin/dor13-vendor/phpunit/phpunit/src/TextUI/Application.php(228): PHPUnit\TextUI\TestRunner->run()
+#89 /home/doradmin/dor13-vendor/phpunit/phpunit/phpunit(104): PHPUnit\TextUI\Application->run()
+#90 {main}
+
+Next Illuminate\Database\QueryException: SQLSTATE[HY000]: General error: 1 ambiguous column name: office_phone_number1 (Connection: sqlite, Database: :memory:, SQL: Select office.id as id,office.is_active as is_active,office_email_address, office_name, office_address, office_phone_number1 from pndc_office as office join pndc_office_detail detail on office.id=detail.office_id where office.is_deleted='0' and office.is_active='1'  and detail.language_id=2 and office.id=10) in /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
+Stack trace:
+#0 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php(820): Illuminate\Database\Connection->runQueryCallback()
+#1 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php(433): Illuminate\Database\Connection->run()
+#2 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/DatabaseManager.php(502): Illuminate\Database\Connection->select()
+#3 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(364): Illuminate\Database\DatabaseManager->__call()
+#4 /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/app/Models/Office.php(49): Illuminate\Support\Facades\Facade::__callStatic()
+#5 /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/storage/framework/views/caa89a1e42068dda8446e4050b122538.php(6): App\Models\Office::getPublishedOfficesbyID()
+#6 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Filesystem/Filesystem.php(127): require('...')
+#7 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Filesystem/Filesystem.php(128): Illuminate\Filesystem\Filesystem::{closure:Illuminate\Filesystem\Filesystem::getRequire():124}()
+#8 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/Engines/PhpEngine.php(57): Illuminate\Filesystem\Filesystem->getRequire()
+#9 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/Engines/CompilerEngine.php(76): Illuminate\View\Engines\PhpEngine->evaluatePath()
+#10 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/View.php(208): Illuminate\View\Engines\CompilerEngine->get()
+#11 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/View.php(191): Illuminate\View\View->getContents()
+#12 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/View.php(160): Illuminate\View\View->renderContents()
+#13 /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/storage/framework/views/ce82169ae653cc47c01a7351d2b34c61.php(20): Illuminate\View\View->render()
+#14 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Filesystem/Filesystem.php(127): require('...')
+#15 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Filesystem/Filesystem.php(128): Illuminate\Filesystem\Filesystem::{closure:Illuminate\Filesystem\Filesystem::getRequire():124}()
+#16 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/Engines/PhpEngine.php(57): Illuminate\Filesystem\Filesystem->getRequire()
+#17 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/Engines/CompilerEngine.php(76): Illuminate\View\Engines\PhpEngine->evaluatePath()
+#18 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/View.php(208): Illuminate\View\Engines\CompilerEngine->get()
+#19 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/View.php(191): Illuminate\View\View->getContents()
+#20 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/View.php(160): Illuminate\View\View->renderContents()
+#21 /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/storage/framework/views/1aaec35d89e8fd97207e26443617e6e2.php(84): Illuminate\View\View->render()
+#22 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Filesystem/Filesystem.php(127): require('...')
+#23 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Filesystem/Filesystem.php(128): Illuminate\Filesystem\Filesystem::{closure:Illuminate\Filesystem\Filesystem::getRequire():124}()
+#24 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/Engines/PhpEngine.php(57): Illuminate\Filesystem\Filesystem->getRequire()
+#25 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/Engines/CompilerEngine.php(76): Illuminate\View\Engines\PhpEngine->evaluatePath()
+#26 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/View.php(208): Illuminate\View\Engines\CompilerEngine->get()
+#27 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/View.php(191): Illuminate\View\View->getContents()
+#28 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/View.php(160): Illuminate\View\View->renderContents()
+#29 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Http/Response.php(82): Illuminate\View\View->render()
+#30 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Http/Response.php(40): Illuminate\Http\Response->setContent()
+#31 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Routing/Router.php(954): Illuminate\Http\Response->__construct()
+#32 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Routing/Router.php(921): Illuminate\Routing\Router::toResponse()
+#33 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Routing/Router.php(834): Illuminate\Routing\Router->prepareResponse()
+#34 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(180): Illuminate\Routing\Router->{closure:Illuminate\Routing\Router::runRouteWithinStack():834}()
+#35 /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/app/Http/Middleware/RestrictAdminRoles.php(49): Illuminate\Pipeline\Pipeline->{closure:Illuminate\Pipeline\Pipeline::prepareDestination():178}()
+#36 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): App\Http\Middleware\RestrictAdminRoles->handle()
+#37 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Routing/Middleware/SubstituteBindings.php(52): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#38 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Routing\Middleware\SubstituteBindings->handle()
+#39 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Auth/Middleware/Authenticate.php(63): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#40 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Auth\Middleware\Authenticate->handle()
+#41 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestForgery.php(104): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#42 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\PreventRequestForgery->handle()
+#43 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/Middleware/ShareErrorsFromSession.php(48): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#44 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\View\Middleware\ShareErrorsFromSession->handle()
+#45 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(120): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#46 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(63): Illuminate\Session\Middleware\StartSession->handleStatefulRequest()
+#47 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Session\Middleware\StartSession->handle()
+#48 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Cookie/Middleware/AddQueuedCookiesToResponse.php(36): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#49 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse->handle()
+#50 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Cookie/Middleware/EncryptCookies.php(74): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#51 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Cookie\Middleware\EncryptCookies->handle()
+#52 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#53 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Routing/Router.php(834): Illuminate\Pipeline\Pipeline->then()
+#54 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Routing/Router.php(813): Illuminate\Routing\Router->runRouteWithinStack()
+#55 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Routing/Router.php(777): Illuminate\Routing\Router->runRoute()
+#56 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Routing/Router.php(766): Illuminate\Routing\Router->dispatchToRoute()
+#57 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(200): Illuminate\Routing\Router->dispatch()
+#58 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(180): Illuminate\Foundation\Http\Kernel->{closure:Illuminate\Foundation\Http\Kernel::dispatchToRouter():197}()
+#59 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(38): Illuminate\Pipeline\Pipeline->{closure:Illuminate\Pipeline\Pipeline::prepareDestination():178}()
+#60 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php(31): Illuminate\Foundation\Http\Middleware\TransformsRequest->handle()
+#61 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull->handle()
+#62 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(38): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#63 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php(51): Illuminate\Foundation\Http\Middleware\TransformsRequest->handle()
+#64 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\TrimStrings->handle()
+#65 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePostSize.php(27): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#66 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Http\Middleware\ValidatePostSize->handle()
+#67 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php(110): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#68 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance->handle()
+#69 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php(61): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#70 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Http\Middleware\HandleCors->handle()
+#71 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php(58): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#72 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Http\Middleware\TrustProxies->handle()
+#73 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#74 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(175): Illuminate\Pipeline\Pipeline->then()
+#75 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(144): Illuminate\Foundation\Http\Kernel->sendRequestThroughRouter()
+#76 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(638): Illuminate\Foundation\Http\Kernel->handle()
+#77 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(368): Illuminate\Foundation\Testing\TestCase->call()
+#78 /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/tests/Feature/CircularAdminManagementTest.php(247): Illuminate\Foundation\Testing\TestCase->get()
+#79 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestCase.php(1343): Tests\Feature\CircularAdminManagementTest->test_office_admin_sees_only_circular_admin_accounts_from_own_office()
+#80 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestCase.php(1380): PHPUnit\Framework\TestCase->invokeTestMethod()
+#81 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestCase.php(521): PHPUnit\Framework\TestCase->runTest()
+#82 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestRunner/TestRunner.php(98): PHPUnit\Framework\TestCase->runBare()
+#83 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestCase.php(361): PHPUnit\Framework\TestRunner->run()
+#84 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestSuite.php(379): PHPUnit\Framework\TestCase->run()
+#85 /home/doradmin/dor13-vendor/phpunit/phpunit/src/TextUI/TestRunner.php(64): PHPUnit\Framework\TestSuite->run()
+#86 /home/doradmin/dor13-vendor/phpunit/phpunit/src/TextUI/Application.php(228): PHPUnit\TextUI\TestRunner->run()
+#87 /home/doradmin/dor13-vendor/phpunit/phpunit/phpunit(104): PHPUnit\TextUI\Application->run()
+#88 {main}
+
+Next Illuminate\View\ViewException: SQLSTATE[HY000]: General error: 1 ambiguous column name: office_phone_number1 (Connection: sqlite, Database: :memory:, SQL: Select office.id as id,office.is_active as is_active,office_email_address, office_name, office_address, office_phone_number1 from pndc_office as office join pndc_office_detail detail on office.id=detail.office_id where office.is_deleted='0' and office.is_active='1'  and detail.language_id=2 and office.id=10) (View: /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/resources/views/layout/admin/header.blade.php) in /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
+Stack trace:
+#0 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/Engines/PhpEngine.php(59): Illuminate\View\Engines\CompilerEngine->handleViewException()
+#1 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/Engines/CompilerEngine.php(76): Illuminate\View\Engines\PhpEngine->evaluatePath()
+#2 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/View.php(208): Illuminate\View\Engines\CompilerEngine->get()
+#3 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/View.php(191): Illuminate\View\View->getContents()
+#4 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/View.php(160): Illuminate\View\View->renderContents()
+#5 /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/storage/framework/views/ce82169ae653cc47c01a7351d2b34c61.php(20): Illuminate\View\View->render()
+#6 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Filesystem/Filesystem.php(127): require('...')
+#7 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Filesystem/Filesystem.php(128): Illuminate\Filesystem\Filesystem::{closure:Illuminate\Filesystem\Filesystem::getRequire():124}()
+#8 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/Engines/PhpEngine.php(57): Illuminate\Filesystem\Filesystem->getRequire()
+#9 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/Engines/CompilerEngine.php(76): Illuminate\View\Engines\PhpEngine->evaluatePath()
+#10 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/View.php(208): Illuminate\View\Engines\CompilerEngine->get()
+#11 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/View.php(191): Illuminate\View\View->getContents()
+#12 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/View.php(160): Illuminate\View\View->renderContents()
+#13 /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/storage/framework/views/1aaec35d89e8fd97207e26443617e6e2.php(84): Illuminate\View\View->render()
+#14 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Filesystem/Filesystem.php(127): require('...')
+#15 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Filesystem/Filesystem.php(128): Illuminate\Filesystem\Filesystem::{closure:Illuminate\Filesystem\Filesystem::getRequire():124}()
+#16 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/Engines/PhpEngine.php(57): Illuminate\Filesystem\Filesystem->getRequire()
+#17 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/Engines/CompilerEngine.php(76): Illuminate\View\Engines\PhpEngine->evaluatePath()
+#18 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/View.php(208): Illuminate\View\Engines\CompilerEngine->get()
+#19 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/View.php(191): Illuminate\View\View->getContents()
+#20 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/View.php(160): Illuminate\View\View->renderContents()
+#21 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Http/Response.php(82): Illuminate\View\View->render()
+#22 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Http/Response.php(40): Illuminate\Http\Response->setContent()
+#23 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Routing/Router.php(954): Illuminate\Http\Response->__construct()
+#24 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Routing/Router.php(921): Illuminate\Routing\Router::toResponse()
+#25 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Routing/Router.php(834): Illuminate\Routing\Router->prepareResponse()
+#26 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(180): Illuminate\Routing\Router->{closure:Illuminate\Routing\Router::runRouteWithinStack():834}()
+#27 /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/app/Http/Middleware/RestrictAdminRoles.php(49): Illuminate\Pipeline\Pipeline->{closure:Illuminate\Pipeline\Pipeline::prepareDestination():178}()
+#28 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): App\Http\Middleware\RestrictAdminRoles->handle()
+#29 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Routing/Middleware/SubstituteBindings.php(52): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#30 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Routing\Middleware\SubstituteBindings->handle()
+#31 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Auth/Middleware/Authenticate.php(63): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#32 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Auth\Middleware\Authenticate->handle()
+#33 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestForgery.php(104): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#34 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\PreventRequestForgery->handle()
+#35 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/Middleware/ShareErrorsFromSession.php(48): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#36 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\View\Middleware\ShareErrorsFromSession->handle()
+#37 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(120): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#38 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(63): Illuminate\Session\Middleware\StartSession->handleStatefulRequest()
+#39 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Session\Middleware\StartSession->handle()
+#40 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Cookie/Middleware/AddQueuedCookiesToResponse.php(36): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#41 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse->handle()
+#42 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Cookie/Middleware/EncryptCookies.php(74): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#43 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Cookie\Middleware\EncryptCookies->handle()
+#44 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#45 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Routing/Router.php(834): Illuminate\Pipeline\Pipeline->then()
+#46 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Routing/Router.php(813): Illuminate\Routing\Router->runRouteWithinStack()
+#47 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Routing/Router.php(777): Illuminate\Routing\Router->runRoute()
+#48 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Routing/Router.php(766): Illuminate\Routing\Router->dispatchToRoute()
+#49 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(200): Illuminate\Routing\Router->dispatch()
+#50 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(180): Illuminate\Foundation\Http\Kernel->{closure:Illuminate\Foundation\Http\Kernel::dispatchToRouter():197}()
+#51 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(38): Illuminate\Pipeline\Pipeline->{closure:Illuminate\Pipeline\Pipeline::prepareDestination():178}()
+#52 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php(31): Illuminate\Foundation\Http\Middleware\TransformsRequest->handle()
+#53 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull->handle()
+#54 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(38): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#55 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php(51): Illuminate\Foundation\Http\Middleware\TransformsRequest->handle()
+#56 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\TrimStrings->handle()
+#57 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePostSize.php(27): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#58 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Http\Middleware\ValidatePostSize->handle()
+#59 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php(110): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#60 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance->handle()
+#61 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php(61): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#62 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Http\Middleware\HandleCors->handle()
+#63 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php(58): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#64 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Http\Middleware\TrustProxies->handle()
+#65 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#66 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(175): Illuminate\Pipeline\Pipeline->then()
+#67 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(144): Illuminate\Foundation\Http\Kernel->sendRequestThroughRouter()
+#68 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(638): Illuminate\Foundation\Http\Kernel->handle()
+#69 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(368): Illuminate\Foundation\Testing\TestCase->call()
+#70 /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/tests/Feature/CircularAdminManagementTest.php(247): Illuminate\Foundation\Testing\TestCase->get()
+#71 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestCase.php(1343): Tests\Feature\CircularAdminManagementTest->test_office_admin_sees_only_circular_admin_accounts_from_own_office()
+#72 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestCase.php(1380): PHPUnit\Framework\TestCase->invokeTestMethod()
+#73 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestCase.php(521): PHPUnit\Framework\TestCase->runTest()
+#74 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestRunner/TestRunner.php(98): PHPUnit\Framework\TestCase->runBare()
+#75 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestCase.php(361): PHPUnit\Framework\TestRunner->run()
+#76 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestSuite.php(379): PHPUnit\Framework\TestCase->run()
+#77 /home/doradmin/dor13-vendor/phpunit/phpunit/src/TextUI/TestRunner.php(64): PHPUnit\Framework\TestSuite->run()
+#78 /home/doradmin/dor13-vendor/phpunit/phpunit/src/TextUI/Application.php(228): PHPUnit\TextUI\TestRunner->run()
+#79 /home/doradmin/dor13-vendor/phpunit/phpunit/phpunit(104): PHPUnit\TextUI\Application->run()
+#80 {main}
+
+Next Illuminate\View\ViewException: SQLSTATE[HY000]: General error: 1 ambiguous column name: office_phone_number1 (Connection: sqlite, Database: :memory:, SQL: Select office.id as id,office.is_active as is_active,office_email_address, office_name, office_address, office_phone_number1 from pndc_office as office join pndc_office_detail detail on office.id=detail.office_id where office.is_deleted='0' and office.is_active='1'  and detail.language_id=2 and office.id=10) (View: /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/resources/views/layout/admin/header.blade.php) (View: /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/resources/views/layout/admin/header.blade.php) in /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
+Stack trace:
+#0 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/Engines/PhpEngine.php(59): Illuminate\View\Engines\CompilerEngine->handleViewException()
+#1 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/Engines/CompilerEngine.php(76): Illuminate\View\Engines\PhpEngine->evaluatePath()
+#2 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/View.php(208): Illuminate\View\Engines\CompilerEngine->get()
+#3 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/View.php(191): Illuminate\View\View->getContents()
+#4 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/View.php(160): Illuminate\View\View->renderContents()
+#5 /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/storage/framework/views/1aaec35d89e8fd97207e26443617e6e2.php(84): Illuminate\View\View->render()
+#6 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Filesystem/Filesystem.php(127): require('...')
+#7 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Filesystem/Filesystem.php(128): Illuminate\Filesystem\Filesystem::{closure:Illuminate\Filesystem\Filesystem::getRequire():124}()
+#8 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/Engines/PhpEngine.php(57): Illuminate\Filesystem\Filesystem->getRequire()
+#9 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/Engines/CompilerEngine.php(76): Illuminate\View\Engines\PhpEngine->evaluatePath()
+#10 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/View.php(208): Illuminate\View\Engines\CompilerEngine->get()
+#11 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/View.php(191): Illuminate\View\View->getContents()
+#12 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/View.php(160): Illuminate\View\View->renderContents()
+#13 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Http/Response.php(82): Illuminate\View\View->render()
+#14 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Http/Response.php(40): Illuminate\Http\Response->setContent()
+#15 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Routing/Router.php(954): Illuminate\Http\Response->__construct()
+#16 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Routing/Router.php(921): Illuminate\Routing\Router::toResponse()
+#17 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Routing/Router.php(834): Illuminate\Routing\Router->prepareResponse()
+#18 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(180): Illuminate\Routing\Router->{closure:Illuminate\Routing\Router::runRouteWithinStack():834}()
+#19 /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/app/Http/Middleware/RestrictAdminRoles.php(49): Illuminate\Pipeline\Pipeline->{closure:Illuminate\Pipeline\Pipeline::prepareDestination():178}()
+#20 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): App\Http\Middleware\RestrictAdminRoles->handle()
+#21 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Routing/Middleware/SubstituteBindings.php(52): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#22 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Routing\Middleware\SubstituteBindings->handle()
+#23 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Auth/Middleware/Authenticate.php(63): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#24 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Auth\Middleware\Authenticate->handle()
+#25 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestForgery.php(104): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#26 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\PreventRequestForgery->handle()
+#27 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/Middleware/ShareErrorsFromSession.php(48): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#28 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\View\Middleware\ShareErrorsFromSession->handle()
+#29 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(120): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#30 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(63): Illuminate\Session\Middleware\StartSession->handleStatefulRequest()
+#31 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Session\Middleware\StartSession->handle()
+#32 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Cookie/Middleware/AddQueuedCookiesToResponse.php(36): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#33 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse->handle()
+#34 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Cookie/Middleware/EncryptCookies.php(74): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#35 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Cookie\Middleware\EncryptCookies->handle()
+#36 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#37 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Routing/Router.php(834): Illuminate\Pipeline\Pipeline->then()
+#38 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Routing/Router.php(813): Illuminate\Routing\Router->runRouteWithinStack()
+#39 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Routing/Router.php(777): Illuminate\Routing\Router->runRoute()
+#40 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Routing/Router.php(766): Illuminate\Routing\Router->dispatchToRoute()
+#41 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(200): Illuminate\Routing\Router->dispatch()
+#42 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(180): Illuminate\Foundation\Http\Kernel->{closure:Illuminate\Foundation\Http\Kernel::dispatchToRouter():197}()
+#43 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(38): Illuminate\Pipeline\Pipeline->{closure:Illuminate\Pipeline\Pipeline::prepareDestination():178}()
+#44 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php(31): Illuminate\Foundation\Http\Middleware\TransformsRequest->handle()
+#45 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull->handle()
+#46 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(38): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#47 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php(51): Illuminate\Foundation\Http\Middleware\TransformsRequest->handle()
+#48 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\TrimStrings->handle()
+#49 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePostSize.php(27): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#50 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Http\Middleware\ValidatePostSize->handle()
+#51 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php(110): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#52 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance->handle()
+#53 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php(61): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#54 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Http\Middleware\HandleCors->handle()
+#55 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php(58): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#56 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Http\Middleware\TrustProxies->handle()
+#57 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#58 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(175): Illuminate\Pipeline\Pipeline->then()
+#59 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(144): Illuminate\Foundation\Http\Kernel->sendRequestThroughRouter()
+#60 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(638): Illuminate\Foundation\Http\Kernel->handle()
+#61 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(368): Illuminate\Foundation\Testing\TestCase->call()
+#62 /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/tests/Feature/CircularAdminManagementTest.php(247): Illuminate\Foundation\Testing\TestCase->get()
+#63 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestCase.php(1343): Tests\Feature\CircularAdminManagementTest->test_office_admin_sees_only_circular_admin_accounts_from_own_office()
+#64 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestCase.php(1380): PHPUnit\Framework\TestCase->invokeTestMethod()
+#65 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestCase.php(521): PHPUnit\Framework\TestCase->runTest()
+#66 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestRunner/TestRunner.php(98): PHPUnit\Framework\TestCase->runBare()
+#67 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestCase.php(361): PHPUnit\Framework\TestRunner->run()
+#68 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestSuite.php(379): PHPUnit\Framework\TestCase->run()
+#69 /home/doradmin/dor13-vendor/phpunit/phpunit/src/TextUI/TestRunner.php(64): PHPUnit\Framework\TestSuite->run()
+#70 /home/doradmin/dor13-vendor/phpunit/phpunit/src/TextUI/Application.php(228): PHPUnit\TextUI\TestRunner->run()
+#71 /home/doradmin/dor13-vendor/phpunit/phpunit/phpunit(104): PHPUnit\TextUI\Application->run()
+#72 {main}
+
+Next Illuminate\View\ViewException: SQLSTATE[HY000]: General error: 1 ambiguous column name: office_phone_number1 (Connection: sqlite, Database: :memory:, SQL: Select office.id as id,office.is_active as is_active,office_email_address, office_name, office_address, office_phone_number1 from pndc_office as office join pndc_office_detail detail on office.id=detail.office_id where office.is_deleted='0' and office.is_active='1'  and detail.language_id=2 and office.id=10) (View: /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/resources/views/layout/admin/header.blade.php) (View: /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/resources/views/layout/admin/header.blade.php) (View: /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/resources/views/layout/admin/header.blade.php) in /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
+Stack trace:
+#0 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/Engines/PhpEngine.php(59): Illuminate\View\Engines\CompilerEngine->handleViewException()
+#1 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/Engines/CompilerEngine.php(76): Illuminate\View\Engines\PhpEngine->evaluatePath()
+#2 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/View.php(208): Illuminate\View\Engines\CompilerEngine->get()
+#3 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/View.php(191): Illuminate\View\View->getContents()
+#4 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/View.php(160): Illuminate\View\View->renderContents()
+#5 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Http/Response.php(82): Illuminate\View\View->render()
+#6 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Http/Response.php(40): Illuminate\Http\Response->setContent()
+#7 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Routing/Router.php(954): Illuminate\Http\Response->__construct()
+#8 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Routing/Router.php(921): Illuminate\Routing\Router::toResponse()
+#9 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Routing/Router.php(834): Illuminate\Routing\Router->prepareResponse()
+#10 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(180): Illuminate\Routing\Router->{closure:Illuminate\Routing\Router::runRouteWithinStack():834}()
+#11 /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/app/Http/Middleware/RestrictAdminRoles.php(49): Illuminate\Pipeline\Pipeline->{closure:Illuminate\Pipeline\Pipeline::prepareDestination():178}()
+#12 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): App\Http\Middleware\RestrictAdminRoles->handle()
+#13 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Routing/Middleware/SubstituteBindings.php(52): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#14 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Routing\Middleware\SubstituteBindings->handle()
+#15 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Auth/Middleware/Authenticate.php(63): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#16 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Auth\Middleware\Authenticate->handle()
+#17 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestForgery.php(104): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#18 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\PreventRequestForgery->handle()
+#19 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/Middleware/ShareErrorsFromSession.php(48): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#20 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\View\Middleware\ShareErrorsFromSession->handle()
+#21 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(120): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#22 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(63): Illuminate\Session\Middleware\StartSession->handleStatefulRequest()
+#23 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Session\Middleware\StartSession->handle()
+#24 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Cookie/Middleware/AddQueuedCookiesToResponse.php(36): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#25 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse->handle()
+#26 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Cookie/Middleware/EncryptCookies.php(74): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#27 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Cookie\Middleware\EncryptCookies->handle()
+#28 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#29 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Routing/Router.php(834): Illuminate\Pipeline\Pipeline->then()
+#30 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Routing/Router.php(813): Illuminate\Routing\Router->runRouteWithinStack()
+#31 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Routing/Router.php(777): Illuminate\Routing\Router->runRoute()
+#32 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Routing/Router.php(766): Illuminate\Routing\Router->dispatchToRoute()
+#33 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(200): Illuminate\Routing\Router->dispatch()
+#34 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(180): Illuminate\Foundation\Http\Kernel->{closure:Illuminate\Foundation\Http\Kernel::dispatchToRouter():197}()
+#35 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(38): Illuminate\Pipeline\Pipeline->{closure:Illuminate\Pipeline\Pipeline::prepareDestination():178}()
+#36 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php(31): Illuminate\Foundation\Http\Middleware\TransformsRequest->handle()
+#37 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull->handle()
+#38 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(38): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#39 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php(51): Illuminate\Foundation\Http\Middleware\TransformsRequest->handle()
+#40 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\TrimStrings->handle()
+#41 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePostSize.php(27): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#42 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Http\Middleware\ValidatePostSize->handle()
+#43 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php(110): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#44 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance->handle()
+#45 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php(61): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#46 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Http\Middleware\HandleCors->handle()
+#47 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php(58): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#48 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Http\Middleware\TrustProxies->handle()
+#49 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#50 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(175): Illuminate\Pipeline\Pipeline->then()
+#51 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(144): Illuminate\Foundation\Http\Kernel->sendRequestThroughRouter()
+#52 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(638): Illuminate\Foundation\Http\Kernel->handle()
+#53 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(368): Illuminate\Foundation\Testing\TestCase->call()
+#54 /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/tests/Feature/CircularAdminManagementTest.php(247): Illuminate\Foundation\Testing\TestCase->get()
+#55 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestCase.php(1343): Tests\Feature\CircularAdminManagementTest->test_office_admin_sees_only_circular_admin_accounts_from_own_office()
+#56 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestCase.php(1380): PHPUnit\Framework\TestCase->invokeTestMethod()
+#57 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestCase.php(521): PHPUnit\Framework\TestCase->runTest()
+#58 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestRunner/TestRunner.php(98): PHPUnit\Framework\TestCase->runBare()
+#59 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestCase.php(361): PHPUnit\Framework\TestRunner->run()
+#60 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestSuite.php(379): PHPUnit\Framework\TestCase->run()
+#61 /home/doradmin/dor13-vendor/phpunit/phpunit/src/TextUI/TestRunner.php(64): PHPUnit\Framework\TestSuite->run()
+#62 /home/doradmin/dor13-vendor/phpunit/phpunit/src/TextUI/Application.php(228): PHPUnit\TextUI\TestRunner->run()
+#63 /home/doradmin/dor13-vendor/phpunit/phpunit/phpunit(104): PHPUnit\TextUI\Application->run()
+#64 {main}
+
+----------------------------------------------------------------------------------
+
+SQLSTATE[HY000]: General error: 1 ambiguous column name: office_phone_number1 (Connection: sqlite, Database: :memory:, SQL: Select office.id as id,office.is_active as is_active,office_email_address, office_name, office_address, office_phone_number1 from pndc_office as office join pndc_office_detail detail on office.id=detail.office_id where office.is_deleted='0' and office.is_active='1'  and detail.language_id=2 and office.id=10) (View: /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/resources/views/layout/admin/header.blade.php) (View: /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/resources/views/layout/admin/header.blade.php) (View: /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/resources/views/layout/admin/header.blade.php)
+
+  at tests/Feature/CircularAdminManagementTest.php:249
+    245▕
+    246▕         $response = $this->actingAs($admin)
+    247▕             ->get(route('admin.circular-admin.index'));
+    248▕
+  ➜ 249▕         $response->assertOk();
+    250▕         $response->assertSee($ownAccount->username);
+    251▕         $response->assertDontSee($otherAccount->username);
+    252▕     }
+    253▕
+
+
+  Tests:    1 failed, 7 passed (22 assertions)
+  Duration: 0.98s
+
 doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$
