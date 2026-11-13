@@ -1,1350 +1,1641 @@
-doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && printf '\n===== CONTENT ROUTES =====\n' && grep -n -E "notice|publication|download|guideline|law" routes/web.php | grep -E "Route::|name\(" && printf '\n===== NOTICE CONTROLLER =====\n' && grep -n -A75 -B8 -E 'function getActiveNotices|function getNoticeDetail|function getForce' app/Http/Controllers/NoticeController.php && printf '\n===== DOWNLOAD CONTROLLER =====\n' && grep -n -A65 -B8 -E 'function getActiveDownloads|function getDownloadDetail|function getForce' app/Http/Controllers/DownloadController.php && printf '\n===== PUBLICATION CONTROLLER =====\n' && grep -n -A85 -B8 -E 'function getActiveCategories|function getActivePublications|function getPublicationDetail' app/Http/Controllers/PublicationController.php && printf '\n===== GUIDELINE CONTROLLER =====\n' && grep -n -A65 -B8 -E 'function getActiveGuidelines|function getGuidelineDetail|function getForce' app/Http/Controllers/GuidelineController.php && printf '\n===== LAW CONTROLLER =====\n' && grep -n -A65 -B8 -E 'function getActiveLaws|function getLawDetail|function getForce' app/Http/Controllers/LawController.php
+doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && sed -n '1,260p' resources/views/home/admin/list.blade.php && sed -n '1,220p' resources/views/home/admin/add.blade.php && sed -n '1,160p' app/Models/Language.php && sed -n '1,145p' routes/web.php
+@extends('layout.admin.masters')
+@section('content')
+    @csrf
 
-===== CONTENT ROUTES =====
-180:    Route::get('notices',  array('as' => 'admin.notices', 'uses' => 'Admin\NoticeController@getIndex'));
-181:    Route::get('notice/add',  array('as' => 'admin.notice.add', 'uses' => 'Admin\NoticeController@getAddNotice'));
-182:    Route::post('notice/add',  array('as' => 'admin.notice.store', 'uses' => 'Admin\NoticeController@addNotice'));
-183:    Route::get('notice/edit/{id}',  array('as' => 'admin.notice.edit', 'uses' => 'Admin\NoticeController@getEditNotice'));
-184:    Route::post('notice/edit/{id}',  array('as' => 'admin.notice.update', 'uses' => 'Admin\NoticeController@editNotice'));
-185:    Route::post('notice/delete', array('as' => 'admin.notice.delete', 'uses' => 'Admin\NoticeController@deleteNotice'));
-186:    Route::post('notice/change-status', array('as' => 'admin.notice.change.status', 'uses' => 'Admin\NoticeController@changeStatus'));
-196:    Route::get('guidelines',  array('as' => 'admin.guidelines', 'uses' => 'Admin\GuidelineController@getIndex'));
-197:    Route::get('guideline/add',  array('as' => 'admin.guideline.add', 'uses' => 'Admin\GuidelineController@getAddguideline'));
-198:    Route::post('guideline/add',  array('as' => 'admin.guideline.store', 'uses' => 'Admin\GuidelineController@addguideline'));
-199:    Route::get('guideline/edit/{id}',  array('as' => 'admin.guideline.edit', 'uses' => 'Admin\GuidelineController@getEditguideline'));
-200:    Route::post('guideline/edit/{id}',  array('as' => 'admin.guideline.update', 'uses' => 'Admin\GuidelineController@editguideline'));
-201:    Route::post('guideline/delete', array('as' => 'admin.guideline.delete', 'uses' => 'Admin\GuidelineController@deleteguideline'));
-202:    Route::post('guideline/change-status', array('as' => 'admin.guideline.change.status', 'uses' => 'Admin\GuidelineController@changeStatus'));
-234:    Route::get('downloads',  array('as' => 'admin.downloads', 'uses' => 'Admin\DownloadController@getIndex'));
-235:    Route::get('download/add',  array('as' => 'admin.download.add', 'uses' => 'Admin\DownloadController@getAddDownload'));
-236:    Route::post('download/add',  array('as' => 'admin.download.store', 'uses' => 'Admin\DownloadController@addDownload'));
-237:    Route::get('download/edit/{id}',  array('as' => 'admin.download.edit', 'uses' => 'Admin\DownloadController@getEditDownload'));
-238:    Route::post('download/edit/{id}',  array('as' => 'admin.download.update', 'uses' => 'Admin\DownloadController@editDownload'));
-239:    Route::post('download/delete', array('as' => 'admin.download.delete', 'uses' => 'Admin\DownloadController@deleteDownload'));
-240:    Route::post('download/change-status', array('as' => 'admin.download.change.status', 'uses' => 'Admin\DownloadController@changeStatus'));
-265:    Route::get('publications',  array('as' => 'admin.publications', 'uses' => 'Admin\PublicationController@getIndex'));
-266:    Route::get('publication/add',  array('as' => 'admin.publication.add', 'uses' => 'Admin\PublicationController@getAddPublication'));
-267:    Route::post('publication/add',  array('as' => 'admin.publication.store', 'uses' => 'Admin\PublicationController@addPublication'));
-268:    Route::get('publication/edit/{id}',  array('as' => 'admin.publication.edit', 'uses' => 'Admin\PublicationController@getEditPublication'));
-269:    Route::post('publication/edit/{id}',  array('as' => 'admin.publication.update', 'uses' => 'Admin\PublicationController@editPublication'));
-270:    Route::post('publication/delete', array('as' => 'admin.publication.delete', 'uses' => 'Admin\PublicationController@deletePublication'));
-271:    Route::post('publication/change-status', array('as' => 'admin.publication.change.status', 'uses' => 'Admin\PublicationController@changeStatus'));
-320:    Route::get('email/request/force/{id}', ['as' => 'admin.email.request.download', 'uses' => 'Admin\EmailRequestController@getForceDownload']);
-338:    Route::get('laws',  array('as' => 'admin.laws', 'uses' => 'Admin\LawController@getIndex'));
-339:    Route::get('law/add',  array('as' => 'admin.law.add', 'uses' => 'Admin\LawController@getAddLaw'));
-340:    Route::post('law/add',  array('as' => 'admin.law.store', 'uses' => 'Admin\LawController@addLaw'));
-341:    Route::get('law/edit/{id}',  array('as' => 'admin.law.edit', 'uses' => 'Admin\LawController@getEditLaw'));
-342:    Route::post('law/edit/{id}',  array('as' => 'admin.law.update', 'uses' => 'Admin\LawController@editLaw'));
-343:    Route::post('law/delete', array('as' => 'admin.law.delete', 'uses' => 'Admin\LawController@deleteLaw'));
-344:    Route::post('law/change-status', array('as' => 'admin.law.change.status', 'uses' => 'Admin\LawController@changeStatus'));
-464:Route::get('{subdomain}/notices', 'NoticeController@getActiveNotices');
-465:Route::post('{subdomain}/notices', 'NoticeController@getActiveOfficeNotices');
-466:Route::get('{subdomain}/notice/{url}', ['as' => 'notice.detail.slug', 'uses' => 'NoticeController@getNoticeDetail']);
-467:// Route::get('{subdomain}/noticeid/{id}', 'NoticeController@getNoticeDetailById');
-468:Route::get('{subdomain}/notice/force/{url}', 'NoticeController@getForceDownload');
-473:Route::get('{subdomain}/guidelines', 'GuidelineController@getActiveGuidelines');
-474:Route::get('{subdomain}/guideline/{url}', 'GuidelineController@getGuidelineDetail')->name('guideline.detail.slug');
-475:Route::get('{subdomain}/guidelineid/{id}', 'GuidelineController@getGuidelineDetailById');
-476:Route::get('{subdomain}/guideline/force/{url}', 'GuidelineController@getForceDownload');
-485:Route::get('{subdomain}/publications', 'PublicationController@getActiveCategories');
-486:Route::get('{subdomain}/publication/{url}', 'PublicationController@getActivePublications');
-487:Route::get('{subdomain}/publication/{category_url}/{url}', 'PublicationController@getPublicationDetail');
-488:Route::get('{subdomain}/publication/{category_url}/force/{url}', 'PublicationController@getForceDownload');
-500:Route::get('{subdomain}/laws', 'LawController@getActiveLaws');
-501:Route::get('{subdomain}/law/{url}', 'LawController@getLawDetail');
-502:Route::get('{subdomain}/law/force/{url}', 'LawController@getForceDownload');
-513:Route::get('{subdomain}/downloads', 'DownloadController@getActiveDownloads');
-514:Route::get('{subdomain}/download/{url}', 'DownloadController@getDownloadDetail');
-515:Route::get('{subdomain}/download/force/{url}', 'DownloadController@getForceDownload');
+    <div id="ajax-notifier-background">
+        <img src="{{ asset('assets/admin/pre-loader/Rounded%20blocks.gif') }}" alt="Fancy pants">
+    </div>
 
-===== NOTICE CONTROLLER =====
-27-        $this->site_name = ConfigurationController::site_name();
-28-    }
-29-
-30-    /*
-31-     * get notice page according to office
-32-     * @param string $subdomain
-33-     * @return Illuminate\View\View
-34-     */
-35:    public function getActiveNotices($subdomain, Request $request)
-36-    {
-37-        // dd($subdomain);
-38-        $officeId    = Office::getIdfromSubdomain($subdomain);
-39-        $languageId = Language::getIdFromCode();
-40-        $sessionLangId = (Session::get('language_id')) ? Session::get('language_id') : $languageId;
-41-        // dd($sessionLangId);
-42-        Session::put('language_id', $sessionLangId);
-43-
-44-        if ($officeId > 0) {
-45-            $office_name = $request->get('office_name');
-46-            $from = $request->get('from');
-47-            $to = $request->get('to');
-48-            $notices    = Notice::getActiveNoticesWithoutOffices($officeId, $sessionLangId, $office_name, $from, $to);
-49-            // dd($notices);
-50-
-51-            $seoDetail    = Seo::getSeoDetailsByPageNameAndLanguage('notices', $sessionLangId);
-52-            return view(
-53-                'notice.notices',
-54-                array(
-55-                    'pageTitle' => $seoDetail->page_title,
-56-                    'metaDescription' => $seoDetail->meta_tags,
-57-                    'metaKeywords' => $seoDetail->meta_description,
-58-                    'abs_site_url' => $this->abs_site_url,
-59-                    'rel_site_url' => $this->rel_site_url,
-60-                    'site_name' => $this->site_name,
-61-                    'subdomain' => $subdomain,
-62-                    'notices' => $notices
-63-                )
-64-            );
-65-        } else {
-66-            $seoDetail    = Seo::getSeoDetailsByPageNameAndLanguage('error', $sessionLangId);
-67-            return view(
-68-                'home.404',
-69-                array(
-70-                    'pageTitle' => $seoDetail->page_title,
-71-                    'metaDescription' => $seoDetail->meta_tags,
-72-                    'metaKeywords' => $seoDetail->meta_description,
-73-                    'abs_site_url' => $this->abs_site_url,
-74-                    'rel_site_url' => $this->rel_site_url,
-75-                    'site_name' => $this->site_name,
-76-                    'subdomain' => $subdomain
-77-                )
-78-            );
-79-        }
-80-    }
-81-    /*
-82-     * get notice page according to office
-83-     * @param string $subdomain
-84-     * @return Illuminate\View\View
-85-     */
-86-    public function getActiveOfficeNotices($subdomain, Request $request)
-87-    {
-88-        // print_r($subdomain);exit;
-89-        $officeId    = Office::getIdfromSubdomain($subdomain);
-90-        $languageId = Language::getIdFromCode();
-91-        $sessionLangId = (Session::get('language_id')) ? Session::get('language_id') : $languageId;
-92-        Session::put('language_id', $sessionLangId);
-93-
-94-        try {
-95-            $office_name = $request->get('office_name');
+
+    <div id="main-content">
+
+        <div class="container-fluid">
+
+            <div class="row-fluid">
+                <div class="span12">
+
+
+
+
+                    <h3 class="page-title">
+                        Homes
+                        <small>Add, edit, delete homes and more</small>
+                    </h3>
+                    <ul class="breadcrumb">
+                        <li>
+                            <a href="home"><i class="icon-home"></i></a><span class="divider">&nbsp;</span>
+                        </li>
+                        <li>
+                            Home Management <span class="divider">&nbsp;</span>
+                        </li>
+
+
+
+                    </ul>
+                    @if ($addAccess)
+                        <!-- <a href="{{ $abs_site_url }}admin/home/add"><button class="btn  btn-primary pull-right"><i class="icon-plus"></i> Add Home Content</button></a> -->
+                    @endif
+                    @if (!isset($generalId))
+                        <a href="{{ $abs_site_url }}admin/home/addgeninfo"><button class="btn  btn-primary pull-right"><i
+                                    class="icon-plus"></i>Add General Info</button></a>
+                    @endif
+                    @if (!isset($spokeId))
+                        <a href="{{ $abs_site_url }}admin/home/addspoke"><button class="btn  btn-primary pull-right"><i
+                                    class="icon-plus"></i>Add Spoke Person</button></a>
+                    @endif
+                    @if (!isset($workingId))
+                        <a href="{{ $abs_site_url }}admin/home/addworkarea"><button class="btn  btn-primary pull-right"><i
+                                    class="icon-plus"></i>Add Working Area</button></a>
+                    @endif
+                    @if (!isset($aboutId))
+                        <a href="{{ $abs_site_url }}admin/home/addaboutus"><button class="btn  btn-primary pull-right"><i
+                                    class="icon-plus"></i>Add About Us</button></a>
+                    @endif
+
+                </div>
+            </div>
+
+
+            <div id="page">
+
+                <div class="row-fluid">
+                    <div class="span12 ">
+                        <!-- BEGIN widget widget-->
+                        <div class="widget">
+                            <div class="widget-title">
+                                <h4><i class="icon-reorder"></i>List of Homes</h4>
+
+                            </div>
+                            <div class="widget-body">
+                                <div id="msgdisp">
+                                    @include('layout.admin.alert')
+                                </div>
+                                <div class="scroller" data-height="200px">
+
+                                    <table class="table table-striped table-hover table-bordered" id="sample_editable_1">
+                                        <thead>
+                                            <tr>
+                                                <th>SN</th>
+                                                <th>Home Group</th>
+                                                <th>Home Heading</th>
+                                                <th>Updated On</th>
+                                                @if ($publishAccess)
+                                                <th>Publish</th>
+                                                @endif
+                                                @if ($editAccess)
+                                                    <th>Action</th>
+                                                @endif
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach ($homes as $index => $home)
+                                                <tr>
+                                                    <td>{{ $index + 1 }}</td>
+                                                    <td>{{$home->home_identity_name}}</td>
+                                                    <td>
+                                                        @foreach ($home->details as $detail)
+                                                            {{ $detail->home_heading }}
+                                                        @endforeach
+                                                    </td>
+                                                    <td>{{ date_format(date_create($home->updated_at), 'M d,Y') }}</td>
+                                                    @if ($publishAccess)
+                                                        <td>
+                                                            @if ($home->is_active == 1)
+                                                                <a href="javascript:void(0)" class="change-status"
+                                                                    id="{{ $home->id }}"><i
+                                                                        class="icon-check"></i></a>&nbsp;&nbsp;
+                                                            @else
+                                                                <a href="javascript:void(0)" class="change-status"
+                                                                    id="{{ $home->id }}"><i
+                                                                        class="icon-check-empty"></i></a>&nbsp;&nbsp;
+                                                            @endif
+                                                        </td>
+                                                    @endif
+                                                    @if ($deleteAccess || $editAccess)
+                                                        <td>
+                                                            @if ($editAccess)
+                                                                <a href="{{ route('admin.home.edit', $home->id) }}"><i
+                                                                        class="icon-pencil"></i> Edit</a>&nbsp;&nbsp;
+                                                            @endif
+                                                        </td>
+                                                    @endif
+                                                </tr>
+                                            @endforeach
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- END widget widget-->
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+@section('footer_js')
+    <script>
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('input[name="_token"]').val()
+            }
+        });
+        $('li').removeClass('active');
+        $('#content').addClass('active');
+        $('#homes').addClass('active');
+
+        $(document).on('click', '.change-status', function() {
+            $datatosend = "id=" + this.id;
+            $object = $(this);
+            $.ajax({
+                url: "{{ $abs_site_url }}admin/home/change-status",
+                type: "POST",
+                data: $datatosend,
+                beforeSend: function() {
+                    $('#ajax-notifier-background').css('display', 'block');
+                },
+                success: function(response) {
+                    $json = JSON.parse(response);
+                    type = $json.type;
+                    message = $json.message;
+                    if (type == "success") {
+                        $('#msgdisp').empty();
+                        $('#msgdisp').append(
+                            '<div class="alert alert-success"><button class="close" data-dismiss="alert">×</button><strong>Success! </strong>' +
+                            message + '</div>');
+                        $($object).empty();
+                        $($object).append($json.icon);
+                    }
+                },
+                complete: function() {
+                    $('#ajax-notifier-background').css('display', 'none');
+                },
+                error: function() {
+                    alert("Status couldnot be changed due to of unknown error. Please try again. ");
+                }
+            });
+        });
+
+
+        $(document).on('click', '.delete-home', function() {
+
+            $datatosend = "id=" + this.id;
+            $object = $(this);
+            var con = confirm("Are you sure you want to delete this record.");
+            if (con) {
+                $.ajax({
+                    url: "{{ $abs_site_url }}admin/home/delete",
+                    type: "POST",
+                    data: $datatosend,
+                    beforeSend: function() {
+                        $('#ajax-notifier-background').css('display', 'block');
+                    },
+                    success: function(response) {
+                        $json = JSON.parse(response);
+                        type = $json.type;
+                        message = $json.message;
+                        if (type == "success") {
+                            $('#msgdisp').empty();
+                            $('#msgdisp').append(
+                                '<div class="alert alert-success"><button class="close" data-dismiss="alert">×</button><strong>Success! </strong>' +
+                                message + '</div>');
+                            var oTable = $('#sample_editable_1').dataTable();
+                            var nRow = $($object).parents('tr')[0];
+                            oTable.fnDeleteRow(nRow);
+                        }
+                    },
+                    complete: function() {
+                        $('#ajax-notifier-background').css('display', 'none');
+                    },
+                    error: function() {
+                        alert(
+                            "This record couldnot be deleted due to of unknown error. Please try again. ");
+                    }
+                });
+            }
+
+        })
+    </script>
+@endsection
+@stop
+@extends('layout.admin.masters')
+@section('content')
+
+    <div id="ajax-notifier-background">
+        <img src="{{ asset('assets/admin/pre-loader/Rounded%20blocks.gif') }}" alt="Fancy pants">
+    </div>
+    <div id="main-content">
+        <div class="container-fluid">
+            <div class="row-fluid">
+                <div class="span12">
+                    <h3 class="page-title">
+                        Homes
+                        <small>Add home.</small>
+                    </h3>
+                    <ul class="breadcrumb">
+                        <li>
+                            <a href="{{ route('dashboard') }}"><i class="icon-home"></i></a><span
+                                class="divider">&nbsp;</span>
+                        </li>
+                        <li>
+                            <a href="{{ route('admin.homes') }}">Home Management</a> <span
+                                class="divider">&nbsp;</span>
+                        </li>
+                        <li>Add Home<span class="divider-last">&nbsp;</span></li>
+
+                    </ul>
+                </div>
+            </div>
+            <div id="page">
+                <!--<button class="btn btn-large btn-primary "><i class="icon-plus"></i> Create Applicants</button>-->
+
+                <div class="row-fluid">
+                    <div class="span12">
+
+                        <div class="widget">
+                            <div class="widget-title">
+                                <h4><i class="icon-reorder"></i>Add Home Form</h4>
+
+                            </div>
+                            <div class="widget-body form">
+                                <div id="msgdisp">
+                                    @include('layout.admin.alert')
+                                </div>
+
+                                <form action="{{ route('admin.home.store') }}" class="form-horizontal" name="addform"
+                                    id="addform" method="post" enctype="multipart/form-data">
+
+                                    @csrf
+                                    @foreach ($languages as $language)
+                                        <div class="control-group">
+                                            <label class="control-label">Home Heading ( {{ $language->language_name }} )
+                                                * </label>
+                                            <div class="controls">
+                                                <input type="text" name="home_heading_{{ $language->id }}"
+                                                    value="{{ old('home_heading_' . $language->id) }}" data-required="1"
+                                                    class="span8" />
+                                            </div>
+                                        </div>
+                                    @endforeach
+
+                                    <div class="control-group">
+                                        <label class="control-label">Home Url * </label>
+                                        <div class="controls">
+                                            <input type="text" readonly="readonly" name="home_url" data-required="1"
+                                                class="span8 " value="{{ isset($addurl) ? $addurl : '' }}" />
+                                            <p class="general-note"> Note: valid characters are alpha numeric, - (dash)
+                                                and _ (underscore)</p>
+                                        </div>
+                                    </div>
+
+
+
+                                    @foreach ($languages as $language)
+                                        <div class="control-group">
+                                            <label class="control-label">Home Description (
+                                                {{ $language->language_name }} ) * </label>
+                                            <div class="controls">
+                                                <textarea class="m-wrap span12 ckeditor" rows="20" cols="20"
+                                                    name="home_description_{{ $language->id }}">
+                    {{ old('home_description_' . $language->id) }}</textarea>
+                                            </div>
+                                        </div>
+                                    @endforeach
+
+                                    @foreach ($languages as $language)
+                                        <div class="control-group">
+                                            <label class="control-label">Page Title ( {{ $language->language_name }} )
+                                            </label>
+                                            <div class="controls">
+                                                <input type="text" name="home_page_title_{{ $language->id }}"
+                                                    id="home_page_title"
+                                                    value="{{ old('home_page_title_' . $language->id) }}"
+                                                    data-required="1" class="span8" />
+                                            </div>
+                                        </div>
+                                    @endforeach
+
+                                    <div class="control-group">
+                                        <label class="control-label">Meta Tags </label>
+                                        <div class="controls">
+                                            <textarea class="span8" name="home_meta_tags"
+                                                id="home_meta_tags">{{ old('home_meta_tags') }}</textarea>
+                                        </div>
+                                    </div>
+
+                                    <div class="control-group">
+                                        <label class="control-label">Meta Description </label>
+                                        <div class="controls">
+                                            <textarea class="span8" name="home_meta_description"
+                                                id="home_meta_description">{{ old('home_meta_description') }}</textarea>
+                                        </div>
+                                    </div>
+
+                                    <div class="control-group">
+                                        <label class="control-label">Attachment</label>
+                                        <div class="controls">
+                                            <div class="fileupload fileupload-new" data-provides="fileupload">
+                                                <div class="fileupload-new thumbnail">
+                                                    <img src="{{ $rel_site_url }}assets/admin/img/no-image.png" alt="" />
+                                                </div>
+                                                <div class="fileupload-preview fileupload-exists thumbnail"
+                                                    style="max-width: 200px; max-height: 150px; line-height: 20px;"></div>
+                                                <div>
+                                                    <span class="btn btn-file btn-primary"><span
+                                                            class="fileupload-new">Select image</span>
+                                                        <span class="fileupload-exists">Change</span>
+                                                        <input type="file" class="default" name="attachment"
+                                                            id="attchment" /></span>
+                                                    <a href="#" class="btn  btn-danger fileupload-exists"
+                                                        data-dismiss="fileupload">Remove</a>
+                                                    <label class="error" id="backgroundvalid"></label>
+                                                </div>
+                                            </div>
+
+
+                                        </div>
+                                    </div>
+
+                                    <div id="date-validation" style=" margin-left:0px;color:red;"></div>
+                                    <div class="form-actions">
+                                        <button type="submit" class="btn btn-primary"><i class="icon-ok-sign"></i>
+                                            Submit</button>
+                                        <a href="{{ route('admin.homes') }}"> <button type="button"
+                                                class="btn btn-danger "><i class="icon-remove-sign"></i> Cancel</button></a>
+                                    </div>
+                                </form>
+
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+
+@section('footer_js')
+    <script type="text/javascript">
+        $('li').removeClass('active');
+        $('#content').addClass('active');
+        $('#homes').addClass('active');
+        <?php foreach($languages as $language) { ?>
+        CKEDITOR.replace('home_description_<?php echo $language->id; ?>', {
+            filebrowserBrowseUrl: sitePath + 'assets/admin/ckfinder/ckfinder.html',
+            filebrowserImageBrowseUrl: sitePath + 'assets/admin/ckfinder/ckfinder.html?type=Images',
+            filebrowserFlashBrowseUrl: sitePath + 'assets/admin/ckfinder/ckfinder.html?type=Flash',
+            filebrowserUploadUrl: sitePath +
+                'assets/admin/ckfinder/core/connector/php/connector.php?command=QuickUpload&type=Files',
+            filebrowserImageUploadUrl: sitePath +
+                'assets/admin/ckfinder/core/connector/php/connector.php?command=QuickUpload&type=Images',
+            filebrowserFlashUploadUrl: sitePath +
+                'assets/admin/ckfinder/core/connector/php/connector.php?command=QuickUpload&type=Flash',
+            filebrowserWindowWidth: '1000',
+            filebrowserWindowHeight: '700'
+        });
+        <?php } ?>
+
+            /**
+             * Basic jQuery Validation Form Demo Code
+             * Copyright Sam Deering 2012
+             * Licence: http://www.jquery4u.com/license/
+             */
+
+            (function($, W, D) {
+                var JQUERY4U = {};
+
+                JQUERY4U.UTIL = {
+                    setupFormValidation: function() {
+                        //form validation rules
+                        $("#addform").validate({
+                            rules: {
+                                home_url: "required",
+                                <?php
+                                foreach ($languages as $language) {
+                                    echo 'home_heading_' . $language->id . ': "required",';
+                                    echo 'home_description_' . $language->id . ': "required",';
+                                    //echo 'primary_contact_'.$language->id.':"required",       ';
+                                }
+                                ?>
+                                attachment: {
+                                    extension: 'jpe?g|png'
+                                }
+                            },
+                            messages: {
+                                home_url: "Please enter url of the home/page.",
+                                <?php
+                                foreach ($languages as $language) {
+                                    echo 'home_heading_' . $language->id . ': "Please enter the home heading in ' . $language->language_name . '",';
+                                    echo 'home_description_' . $language->id . ': "Please enter the home description in ' . $language->language_name . '",';
+                                    //echo 'primary_contact_'.$language->id.':"Please enter the primary contact number in  '.$language->language_name.'",  ';
+                                }
+                                ?>
+
+                                attachment: {
+                                    extension: "Please select appropriate file. Only jpeg/jpg and png format are allowed."
+                                }
+
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Language extends Model
+{
+    protected $table = 'language';
+
+    /*
+        | get language name from code
+        | @param $name - string
+        | @return string
+        */
+    public static function getNameFromCode($code = 'ne')
+    {
+        return $result = Language::where('language_code', $code)
+            ->pluck('language_name');
+    }
+
+    /*
+        | get language id (or primary key) of default language
+        | @param $name - string
+        | @return int
+        */
+    public static function getIdFromCode($code = 'ne')
+    {
+        return $result = Language::where('language_code', $code)
+            ->pluck('id')->first();
+    }
+
+    /*
+        | get active languages
+        | @return array
+        */
+    public static function getActiveLanguages()
+    {
+        return $result = Language::where('is_active', '1')
+            ->where('is_deleted', '0')
+            ->get();
+    }
+}
+<?php
+
+use Illuminate\Support\Facades\Route;
+
+//admin-user
+Route::get('admin/login', array('as' => 'admin.login', 'uses' => 'Admin\LoginController@getLogin'));
+Route::post('admin/login', array('uses' => 'Admin\LoginController@postLogin'))->middleware('throttle:5,1');
+
+// Public email OTP password reset for Super Admin, Office Admin and Circular Admin
+Route::get('admin/forgot-password', array('as' => 'admin.password.request', 'uses' => 'Admin\PasswordResetOtpController@showForgotPassword'));
+Route::post('admin/forgot-password', array('as' => 'admin.password.email', 'uses' => 'Admin\PasswordResetOtpController@sendOtp'))->middleware('throttle:5,1');
+Route::get('admin/reset-password', array('as' => 'admin.password.reset', 'uses' => 'Admin\PasswordResetOtpController@showResetForm'));
+Route::post('admin/reset-password', array('as' => 'admin.password.verify', 'uses' => 'Admin\PasswordResetOtpController@resetPassword'))->middleware('throttle:10,1');
+
+Route::group(array('middleware' => ['auth', 'restrict.admin.roles'], 'prefix' => 'admin'), function () {
+
+    // Route::get('/logout', array('as' => 'admin.logout', 'uses' => 'Admin\LoginController@logoutUser'))
+    //     ->after('invalidate-browser-cache');
+
+    Route::get('/logout', array('as' => 'admin.logout', 'uses' => 'Admin\LoginController@logoutUser'));
+
+
+    Route::get('/home', array('as' => 'dashboard', 'uses' => 'Admin\LoginController@getHome'));
+    // Global website appearance settings (Super Admin only)
+    Route::get('website-theme', array(
+        'as' => 'admin.website-theme.index',
+        'uses' => 'Admin\WebsiteThemeSettingController@index'
+    ));
+    Route::post('website-theme', array(
+        'as' => 'admin.website-theme.update',
+        'uses' => 'Admin\WebsiteThemeSettingController@update'
+    ));
+    Route::post('website-theme/reset', array(
+        'as' => 'admin.website-theme.reset',
+        'uses' => 'Admin\WebsiteThemeSettingController@reset'
+    ));
+
+    // Government identity settings (Super Admin only)
+    Route::post('website-identity', array(
+        'as' => 'admin.website-identity.update',
+        'uses' => 'Admin\WebsiteIdentitySettingController@update'
+    ));
+
+    Route::get('/', array('uses' => 'Admin\LoginController@getHome'));
+
+    Route::get('users',  array('as' => 'admin.users', 'uses' => 'Admin\UserController@getIndex'));
+    Route::get('user/add',  array('as' => 'admin.users.add', 'uses' => 'Admin\UserController@getAddUser'));
+    Route::post('user/add',  array('as' => 'admin.users.store', 'uses' => 'Admin\UserController@addUser'));
+    Route::get('user/edit/{id}',  array('as' => 'admin.users.edit', 'uses' => 'Admin\UserController@getEditUser'));
+    Route::post('user/edit/{id}',  array('as' => 'admin.users.update', 'uses' => 'Admin\UserController@editUser'));
+    Route::post('user/delete', array('as' => 'admin.user.delete', 'uses' => 'Admin\UserController@deleteUser'));
+    Route::post('user/change-status', array('as' => 'admin.user.change.status', 'uses' => 'Admin\UserController@changeStatus'));
+
+    Route::get('own/change-password', array('as' => 'admin.change.password', 'uses' => 'Admin\UserController@getChangePassword'));
+    Route::post('own/change-password', array('as' => 'admin.change.password.post', 'uses' => 'Admin\UserController@changeOwnPassword'));
+    Route::get('user/change-password/{id}', array('as' => 'admin.user.change.password', 'as' => 'admin.users.change.password', 'uses' => 'Admin\UserController@getChangePasswordByAdmin'));
+    Route::post('user/change-password/{id}', array('as' => 'admin.user.change.password.update', 'uses' => 'Admin\UserController@changePassword'));
+
+    // Route::post('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
+    // Route::get('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
+
+    // Circular Admin account management
+    Route::get('circular-admins', ['as' => 'admin.circular-admin.index', 'uses' => 'Admin\\CircularAdminController@index']);
+    Route::get('circular-admins/create', ['as' => 'admin.circular-admin.create', 'uses' => 'Admin\\CircularAdminController@create']);
+    Route::post('circular-admins', ['as' => 'admin.circular-admin.store', 'uses' => 'Admin\\CircularAdminController@store']);
+    Route::get('circular-admins/{id}/edit', ['as' => 'admin.circular-admin.edit', 'uses' => 'Admin\\CircularAdminController@edit']);
+    Route::post('circular-admins/{id}', ['as' => 'admin.circular-admin.update', 'uses' => 'Admin\\CircularAdminController@update']);
+    Route::post('circular-admins/{id}/status', ['as' => 'admin.circular-admin.status', 'uses' => 'Admin\\CircularAdminController@toggleStatus']);
+
+    //==================== User types  routes===========================================
+
+    Route::get('usertypes', array('as' => 'admin.usertypes', 'uses' => 'Admin\UserTypeController@getIndex'));
+    Route::get('usertype/add',  array('as' => 'admin.usertype.add', 'uses' => 'Admin\UserTypeController@getAddUserType'));
+    Route::post('usertype/add',  array('as' => 'admin.usertype.store', 'uses' => 'Admin\UserTypeController@addUserType'));
+    Route::post('usertype/edit',  array('as' => 'admin.usertype.update', 'uses' => 'Admin\UserTypeController@editUserType'));
+    Route::post('usertype/change-status', array('as' => 'admin.usertype.change.status', 'uses' => 'Admin\UserTypeController@changeStatus'));
+    Route::post('usertype/delete', array('as' => 'admin.usertype.delete', 'uses' => 'Admin\UserTypeController@deleteUserType'));
+    Route::post('/usertype/get-info-dynamically', array('uses' => 'Admin\UserTypeController@getUserTypeDynamically'));
+
+    //==================== office routes        ===========================================
+
+    Route::get('offices',  array('as' => 'admin.offices', 'uses' => 'Admin\OfficeController@getIndex'));
+    Route::get('office/add',  array('as' => 'admin.office.add', 'uses' => 'Admin\OfficeController@getAddOffice'));
+    Route::post('office/add',  array('as' => 'admin.office.store', 'uses' => 'Admin\OfficeController@addOffice'));
+    Route::get('office/edit/{id}',  array('as' => 'admin.office.edit', 'uses' => 'Admin\OfficeController@getEditOffice'));
+    Route::post('office/edit/{id}',  array('as' => 'admin.office.update', 'uses' => 'Admin\OfficeController@editOffice'));
+    Route::post('office/delete', array('as' => 'admin.office.delete', 'uses' => 'Admin\OfficeController@deleteOffice'));
+    Route::post('office/change-status', array('as' => 'admin.office.change.status', 'uses' => 'Admin\OfficeController@changeStatus'));
+    Route::get('office/sort_offices',  array('as' => 'admin.office.sortorder', 'as' => 'office.sortorder', 'uses' => 'Admin\OfficeController@getSortOrder'));
+    Route::post('office/sort_offices',  array('as' => 'admin.office.sortorder.update', 'as' => 'office.sortorder.post', 'uses' => 'Admin\OfficeController@sortOrder'));
+
+    // Route::post('/office/get-info-dynamically',array('uses'=>'Admin\OfficeController@getOfficeDetails'));
+    // Route::get('/office/get-info-dynamically',array('uses'=>'Admin\OfficeController@getOfficeDetails'));
+
+    //==================== access control routes        ===========================================
+    Route::get('/access-control', array('as' => 'admin.access.control', 'uses' => 'Admin\AccessListController@getIndex'));
+    Route::get('/access-control/edit/{id?}', array('uses' => 'Admin\AccessListController@getEditAccessList'));
+    Route::get('/acess-control/change-access-status-dynamically', array('uses' => 'Admin\AccessListController@changeStatus'));
+    Route::post('/acess-control/change-access-status-dynamically', array('uses' => 'Admin\AccessListController@changeStatus'));
+
+    Route::get('/access-control-user', array('uses' => 'Admin\AccessListController@getIndexUser'));
+    Route::get('/access-control-user/edit/{id?}', array('uses' => 'Admin\AccessListController@getEditAccessListUser'));
+    Route::get('/acess-control-user/change-access-status-dynamically', array('uses' => 'Admin\AccessListController@changeStatusUser'));
+    Route::post('/acess-control-user/change-access-status-dynamically', array('uses' => 'Admin\AccessListController@changeStatusUser'));
+    //==================== modules routes       ===========================================
+    Route::post('/module/add', array('as' => 'admin.module.add', 'uses' => 'Admin\AccessListController@addModule'));
+});
+
+Route::group(array('middleware' => 'auth', 'prefix' => 'project'), function () {
+    Route::get('own/change-password', array('as' => 'project.admin.change.password', 'uses' => 'Admin\Project\UserController@changePassword'));
+    Route::post('own/change-password', array('as' => 'project.admin.update.password', 'uses' => 'Admin\Project\UserController@updatePassword'));
+});
+
+//admin - homes
+Route::group(array('middleware' => ['auth', 'restrict.admin.roles'], 'prefix' => 'admin'), function () {
+    Route::get('homes', ['as' => 'admin.homes', 'uses' => 'Admin\HomeController@getIndex']);
+    Route::get('home/add', ['as' => 'admin.home.add', 'uses' => 'Admin\HomeController@getAddHome']);
+    Route::post('home/add', ['as' => 'admin.home.store', 'uses' => 'Admin\HomeController@addHome']);
+    Route::get('home/edit/{id}', ['as' => 'admin.home.edit', 'uses' => 'Admin\HomeController@getEditHome']);
+    Route::post('home/edit/{id}', ['as' => 'admin.home.update', 'uses' => 'Admin\HomeController@editHome']);
+    // Route::post('home/delete', ['as'=>'admin.home.delete','uses'=>'Admin\HomeController@deleteHome']);
+    Route::post('home/change-status', ['as' => 'admin.home.change.status', 'uses' => 'Admin\HomeController@changeStatus']);
+
+    Route::get('home/addspoke', 'Admin\HomeController@getAddHomespoke');
+    Route::get('home/addworkarea', 'Admin\HomeController@getAddHomework');
+    Route::get('home/addgeninfo', 'Admin\HomeController@getAddHomegeneralinfo');
+    Route::get('home/addaboutus', 'Admin\HomeController@getAddHomeaboutus');
+
+    Route::get('news-ticker', 'Admin\HomeController@getNewsTicker');
+    Route::get('news-ticker/add', 'Admin\HomeController@getAddNewsTicker');
+    Route::get('news-ticker/edit/{id}', 'Admin\HomeController@getEditNewsTicker');
+    Route::post('news-ticker/add', 'Admin\HomeController@addNewsTicker');
+    Route::post('news-ticker/edit/{id}', 'Admin\HomeController@editNewsTicker');
+    Route::post('news-ticker/change', 'Admin\HomeController@changeNewsTickerStatus');
+    Route::post('news-ticker/delete', 'Admin\HomeController@deleteNewsTicker');
+});
+
+//admin - contents
+Route::group(array('middleware' => ['auth', 'restrict.admin.roles'], 'prefix' => 'admin'), function () {
+    Route::get('/contents', ['as' => 'admin.contents', 'uses' => 'Admin\ContentController@getIndex']);
+    Route::get('/content/add', ['as' => 'admin.content.add', 'uses' => 'Admin\ContentController@getAddContent']);
+    Route::post('/content/add', ['as' => 'admin.content.store', 'uses' => 'Admin\ContentController@addContent']);
+    Route::get('/content/edit/{id}', ['as' => 'admin.content.edit', 'uses' => 'Admin\ContentController@getEditContent']);
+    Route::post('/content/edit/{id}', ['as' => 'admin.content.update', 'uses' => 'Admin\ContentController@editContent']);
+    Route::post('/content/delete', ['as' => 'admin.content.delete', 'uses' => 'Admin\ContentController@deleteContent']);
+doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && grep -n -A180 -B15 'function getIndex\|function getAddHome\|function addHome\|function getEditHome\|function editHome\|function changeStatus' app/Http/Controllers/Admin/HomeController.php && grep -n -A45 -B8 'function getAccessViewByModuleAndUserMapId\|function getAccessAddByModuleAndUserMapId\|function getAccessUpdateByModuleAndUserMapId\|function getAccessPublishByModuleAndUserMapId\|function getAccessDeleteByModuleAndUserMapId' app/Models/UserAccessControlModel.php && grep -n -A45 -B8 'function getUserOffice\|user_type_id\|office_id' app/Models/User.php | head -180
+30-    public $rel_site_url;
+31-    public $site_name;
+32-
+33-    public function __construct()
+34-    {
+35-        $this->abs_site_url = ConfigurationController::abs_site_url();
+36-        $this->rel_site_url = ConfigurationController::rel_site_url();
+37-        $this->site_name    = ConfigurationController::site_name();
+38-    }
+39-
+40-    /*
+41-     * get home list page admin panel
+42-     * @param void
+43-     * @return Illuminate\View\View
+44-     */
+45:    public function getIndex()
+46-    {
+47-        $viewAccess = UserAccessControlModel::getAccessViewByModuleAndUserMapId(1, Auth::User()->id);
+48-        // dd($viewAccess);
+49-
+50-        if ($viewAccess) {
+51-            $officeId = Auth::user()->office_id;
+52-            $addAccess     = UserAccessControlModel::getAccessAddByModuleAndUserMapId(1, Auth::User()->id);
+53-
+54-            $editAccess    = UserAccessControlModel::getAccessUpdateByModuleAndUserMapId(1, Auth::User()->id);
+55-            $publishAccess = UserAccessControlModel::getAccessPublishByModuleAndUserMapId(1, Auth::User()->id);
+56-            $deleteAccess  = UserAccessControlModel::getAccessDeleteByModuleAndUserMapId(1, Auth::User()->id);
+57-            $spokeId       = Home::getHomePageAdmin('dor-spoke-person', $officeId);
+58-            $workingId     = Home::getHomePageAdmin('working-area', $officeId);
+59-            $generalId     = Home::getHomePageAdmin('general-info', $officeId);
+60-            $aboutId       = Home::getHomePageAdmin('about-us', $officeId);
+61-
+62-            // dd($editAccess);
+63-            // dd($officeId);
+64-            $t = Home::where('office_id', $officeId)->get();
+65-            // dd($t);
+66-
+67-            $homes    = Home::with(['details' => function ($query) {
+68-                $query->where('language_id', 2);
+69-            }])->where('office_id', $officeId)
+70-                ->where('is_deleted', '0')
+71-                ->orderBy('home_identity_name')
+72-                ->get();
+73-
+74-            // dd($homes);
+75-
+76-            return view('home.admin.list')
+77-                ->with('homes', $homes)
+78-                ->with('abs_site_url', $this->abs_site_url)
+79-                ->with('rel_site_url', $this->rel_site_url)
+80-                ->with('site_name', $this->site_name)
+81-                ->with('addAccess', $addAccess)
+82-                ->with('editAccess', $editAccess)
+83-                ->with('publishAccess', $publishAccess)
+84-                ->with('deleteAccess', $deleteAccess)
+85-                ->with('spokeId', $spokeId)
+86-                ->with('workingId', $workingId)
+87-                ->with('generalId', $generalId)
+88-                ->with('aboutId', $aboutId);
+89-        } else {
+90-            return view('error')
+91-                ->with('abs_site_url', $this->abs_site_url)
+92-                ->with('rel_site_url', $this->rel_site_url)
+93-                ->with('site_name', $this->site_name);
+94-        }
+95-    }
 96-
-97-            $from = $request->get('from');
-98-            $to = $request->get('to');
-99-            $office_id = Office::getofficeId($office_name);
-100-
-101-            $notices    = Notice::getActiveNoticesSearch($office_id, $sessionLangId, $from, $to);
-102-            $seoDetail    = Seo::getSeoDetailsByPageNameAndLanguage('notices', $sessionLangId);
-103-            return view(
-104-                'notice.notices',
-105-                array(
-106-                    'pageTitle' => $seoDetail->page_title,
-107-                    'metaDescription' => $seoDetail->meta_tags,
-108-                    'metaKeywords' => $seoDetail->meta_description,
-109-                    'abs_site_url' => $this->abs_site_url,
-110-                    'rel_site_url' => $this->rel_site_url,
---
-134-    }
-135-
-136-    /*
-137-    * get notice page according to office
-138-    * @param string $subdomain
-139-    * @param string $url
-140-    * @return Illuminate\View\View
-141-    */
-142:    public function getNoticeDetail($subdomain, $url)
-143-    {
-144-        $officeId    = Office::getIdfromSubdomain($subdomain);
-145-        // dd($officeId);
-146-        $languageId = Language::getIdFromCode();
-147-        $sessionLangId = (Session::get('language_id')) ? Session::get('language_id') : $languageId;
-148-        Session::put('language_id', $sessionLangId);
-149-
-150-        try {
-151-            $noticeData    = Notice::getNoticeDetail($officeId, $url, $sessionLangId);
-152-            // dd($noticeData);
-153-            if ($noticeData) {
-154-                return view(
-155-                    'notice.notice-detail',
-156-                    array(
-157-                        'pageTitle' => $noticeData->notice_page_title,
-158-                        'metaDescription' => $noticeData->notice_meta_tags,
-159-                        'metaKeywords' => $noticeData->notice_meta_description,
-160-                        'abs_site_url' => $this->abs_site_url,
-161-                        'rel_site_url' => $this->rel_site_url,
-162-                        'site_name' => $this->site_name,
-163-                        'subdomain' => $subdomain,
-164-                        'noticeData' => $noticeData
-165-                    )
-166-                );
-167-            } else {
-168-                $seoDetail    = Seo::getSeoDetailsByPageNameAndLanguage('error', $sessionLangId);
-169-                return view(
-170-                    'home.404',
-171-                    array(
-172-                        'pageTitle' => $seoDetail->page_title,
-173-                        'metaDescription' => $seoDetail->meta_tags,
-174-                        'metaKeywords' => $seoDetail->meta_description,
-175-                        'abs_site_url' => $this->abs_site_url,
-176-                        'rel_site_url' => $this->rel_site_url,
-177-                        'site_name' => $this->site_name,
-178-                        'subdomain' => $subdomain
-179-                    )
-180-                );
-181-            }
-182-        } catch (Throwable $e) {
-183-            dd($e->getMessage());
-184-            $seoDetail    = Seo::getSeoDetailsByPageNameAndLanguage('error', $sessionLangId);
-185-            return view(
-186-                'home.404',
-187-                array(
-188-                    'pageTitle' => $seoDetail->page_title,
-189-                    'metaDescription' => $seoDetail->meta_tags,
-190-                    'metaKeywords' => $seoDetail->meta_description,
-191-                    'abs_site_url' => $this->abs_site_url,
-192-                    'rel_site_url' => $this->rel_site_url,
-193-                    'site_name' => $this->site_name,
-194-                    'subdomain' => $subdomain
-195-                )
-196-            );
-197-        }
+97-    /*
+98-     * get home add page admin panel
+99-     * @param void
+100-     * @return Illuminate\View\View
+101-     */
+102:    public function getAddHome()
+103-    {
+104-        $addAccess = UserAccessControlModel::getAccessAddByModuleAndUserMapId(1, Auth::User()->id);
+105-        //var_dump( $addAccess);exit;
+106-        if ($addAccess) {
+107-            $languages = Language::getActiveLanguages();
+108-            return view('home.admin.add')
+109-                ->with('abs_site_url', $this->abs_site_url)
+110-                ->with('rel_site_url', $this->rel_site_url)
+111-                ->with('site_name', $this->site_name)
+112-                ->with('languages', $languages);
+113-        } else {
+114-            return view('error')
+115-                ->with('abs_site_url', $this->abs_site_url)
+116-                ->with('rel_site_url', $this->rel_site_url)
+117-                ->with('site_name', $this->site_name);
+118-        }
+119-    }
+120-
+121-    /*
+122-     * post home add page admin panel
+123-     * @param void
+124-     * @return Illuminate\View\View
+125-     */
+126:    public function addHome(Request $request)
+127-    {
+128-        // dd($request->all());
+129-        $languages = Language::getActiveLanguages();
+130-        Session::forget('class');
+131-        Session::forget('message');
+132-        Session::forget('attachment-error');
+133-        $officeId = Auth::user()->office_id;
+134-        // echo '<pre>';
+135-        // print_r($request->all()); exit;
+136-        try {
+137-            $rules = ['home_url' => 'required'];
+138-            foreach ($languages as $language) {
+139-                $rules['home_heading_' . $language->id]     = 'required';
+140-                $rules['home_description_' . $language->id] = 'required';
+141-            }
+142-
+143-            $validator = Validator::make($request->all(), $rules);
+144-            // dd($validator->fails());
+145-
+146-            if ($validator->fails()) {
+147-                // dd(0);
+148-                return Redirect::back()->withInput()->withErrors($validator);
+149-            } else {
+150-                $homeUrl = $request->get('home_url');
+151-                // print_r($homeUrl);exit;
+152-                $homeExist = Home::checkExist($homeUrl, $officeId);
+153-                // dd($homeExist);
+154-                if ($homeExist) {
+155-                    // dd(0);
+156-                    $message = 'Home with url <b>' . $homeUrl . '</b> is already exist';
+157-                    return Redirect::back()->withInput()
+158-                        ->with('type', 'error')
+159-                        ->with('message', $message);
+160-                } else {
+161-                    $imageFile        = $request->file('attachment');
+162-                    $destinationPath  = 'uploads/pages/';
+163-                    $rEFileTypes      = "/^\.(jpg|jpeg|gif|png){1}$/i";
+164-                    $maximum_filesize = 5 * 1024 * 1024;
+165-
+166-                    if ($imageFile) {
+167-                        $filename       = $imageFile->getClientOriginalName();
+168-                        $extension      = strrchr($filename, '.');
+169-                        $size           = $imageFile->getSize();
+170-                        $new_image_name = "pages" . "_" . time();
+171-
+172-                        if ($size <= $maximum_filesize && preg_match($rEFileTypes, $extension)) {
+173-                            $attachment = $imageFile->move($destinationPath, $new_image_name . $extension);
+174-                        } else if (preg_match($rEFileTypes, $extension) == false) {
+175-                            Session::flash('attachment-error', 'Warning : Invalid Image File!');
+176-                        } else if ($size > $maximum_filesize) {
+177-                            Session::flash('attachment-error', "  Warning : The attachment is not uploaded. It shouldn't be more than 1MB!");
+178-                        }
+179-                    }
+180-                    $logo = isset($attachment) ? $new_image_name . $extension : null;
+181-
+182-                    $objectHome                        = new Home();
+183-                    $objectHome->home_url              = $homeUrl;
+184-                    $objectHome->home_meta_tags        = $request->get('home_meta_tags');
+185-                    $objectHome->home_meta_description = $request->get('home_meta_description');
+186-                    $objectHome->is_active             = 1;
+187-                    if ($logo) {
+188-                        $objectHome->home_attachment = $logo;
+189-                    }
+190-                    $objectHome->created_by = Auth::user()->id;
+191-                    $objectHome->updated_by = Auth::user()->id;
+192-                    $objectHome->office_id  = $officeId;
+193-
+194-                    //todo: determine what should be default show_in value - sangam
+195-                    $objectHome->show_in = 1;
+196-
+197-                    $objectHome->save();
+198-
+199-                    // dd($objectHome->id);
+200-
+201-                    if ($objectHome->id) {
+202-                        // dd($languages);
+203-                        foreach ($languages as $language) {
+204-                            $insertArray[] = [
+205-                                'home_id'                => $objectHome->id,
+206-                                'language_id'            => $language->id,
+207-                                'home_heading'           => $request->get('home_heading_' . $language->id),
+208-                                'home_description'       => $request->get('home_description_' . $language->id),
+209-                                'home_page_title'        => $request->get('home_page_title_' . $language->id),
+210-                                'created_at'             => date("Y-m-d H:i:s"),
+211-                                'updated_at'             => date("Y-m-d H:i:s"),
+212-                            ];
+213-                        }
+214-                        DB::table('home_detail')->insert($insertArray);
+215-
+216-                        return Redirect::route('admin.homes')
+217-                            ->with('type', 'success')
+218-                            ->with('message', 'Home content with heading "' . $request->get('home_heading_' . $language->id) . '" is added successfully.');
+219-                    }
+220-                }
+221-            }
+222-        } catch (Throwable $e) {
+223-            dd($e->getMessage());
+224-            Session::flash('class', 'alert alert-error');
+225-            Session::flash('message', 'Server Error!');
+226-            return view('home.admin.add')
+227-                ->with('abs_site_url', $this->abs_site_url)
+228-                ->with('rel_site_url', $this->rel_site_url)
+229-                ->with('site_name', $this->site_name)
+230-                ->with('languages', $languages);
+231-        }
+232-    } /*
+233-     * get home add page admin panel
+234-     * @param void
+235-     * @return Illuminate\View\View
+236-     */
+237:    public function getAddHomespoke()
+238-    {
+239-        $addAccess = UserAccessControlModel::getAccessAddByModuleAndUserMapId(1, Auth::User()->id);
+240-        if ($addAccess) {
+241-            $languages = Language::getActiveLanguages();
+242-            return view('home.admin.add')
+243-                ->with('abs_site_url', $this->abs_site_url)
+244-                ->with('rel_site_url', $this->rel_site_url)
+245-                ->with('site_name', $this->site_name)
+246-                ->with('addurl', 'dor-spoke-person')
+247-                ->with('languages', $languages);
+248-        } else {
+249-            return view('error')
+250-                ->with('abs_site_url', $this->abs_site_url)
+251-                ->with('rel_site_url', $this->rel_site_url)
+252-                ->with('site_name', $this->site_name);
+253-        }
+254-    }
+255-
+256-    /*
+257-     * get home add page admin panel
+258-     * @param void
+259-     * @return Illuminate\View\View
+260-     */
+261:    public function getAddHomework()
+262-    {
+263-        $addAccess = UserAccessControlModel::getAccessAddByModuleAndUserMapId(1, Auth::User()->id);
+264-        if ($addAccess) {
+265-            $languages = Language::getActiveLanguages();
+266-            return view('home.admin.add')
+267-                ->with('abs_site_url', $this->abs_site_url)
+268-                ->with('rel_site_url', $this->rel_site_url)
+269-                ->with('site_name', $this->site_name)
+270-                ->with('addurl', 'working-area')
+271-                ->with('languages', $languages);
+272-        } else {
+273-            return view('error')
+274-                ->with('abs_site_url', $this->abs_site_url)
+275-                ->with('rel_site_url', $this->rel_site_url)
+276-                ->with('site_name', $this->site_name);
+277-        }
+278-    }
+279-
+280-    /*
+281-     * get home add page admin panel
+282-     * @param void
+283-     * @return Illuminate\View\View
+284-     */
+285:    public function getAddHomegeneralinfo()
+286-    {
+287-        $addAccess = UserAccessControlModel::getAccessAddByModuleAndUserMapId(1, Auth::User()->id);
+288-        if ($addAccess) {
+289-            $languages = Language::getActiveLanguages();
+290-            return view('home.admin.add')
+291-                ->with('abs_site_url', $this->abs_site_url)
+292-                ->with('rel_site_url', $this->rel_site_url)
+293-                ->with('site_name', $this->site_name)
+294-                ->with('addurl', 'general-info')
+295-                ->with('languages', $languages);
+296-        } else {
+297-            return view('error')
+298-                ->with('abs_site_url', $this->abs_site_url)
+299-                ->with('rel_site_url', $this->rel_site_url)
+300-                ->with('site_name', $this->site_name);
+301-        }
+302-    }
+303-
+304-    /*
+305-     * get home add page admin panel
+306-     * @param void
+307-     * @return Illuminate\View\View
+308-     */
+309:    public function getAddHomeaboutus()
+310-    {
+311-        $addAccess = UserAccessControlModel::getAccessAddByModuleAndUserMapId(1, Auth::User()->id);
+312-        if ($addAccess) {
+313-            $languages = Language::getActiveLanguages();
+314-            return view('home.admin.add')
+315-                ->with('abs_site_url', $this->abs_site_url)
+316-                ->with('rel_site_url', $this->rel_site_url)
+317-                ->with('site_name', $this->site_name)
+318-                ->with('addurl', 'about-us')
+319-                ->with('languages', $languages);
+320-        } else {
+321-            return view('error')
+322-                ->with('abs_site_url', $this->abs_site_url)
+323-                ->with('rel_site_url', $this->rel_site_url)
+324-                ->with('site_name', $this->site_name);
+325-        }
+326-    }
+327-
+328-    /**
+329-     * get home edit page admin panel
+330-     * @param int $id
+331-     * @return Illuminate\View\View
+332-     */
+333:    public function getEditHome($id)
+334-    {
+335-        // dd($id);
+336-        try {
+337-            $officeId   = Auth::user()->office_id;
+338-            $addAccess  = UserAccessControlModel::getAccessAddByModuleAndUserMapId(1, Auth::User()->id);
+339-            $editAccess = UserAccessControlModel::getAccessUpdateByModuleAndUserMapId(1, Auth::User()->id);
+340-            $objectHome = Home::find($id);
+341-            //echo Configuration::get_last_query(); exit();
+342-
+343-            if ($objectHome && $editAccess) {
+344-                if ($objectHome->office_id == $officeId) {
+345-                    $languages = Language::getActiveLanguages();
+346-                    $homes     = Home::getHomeDetailsWithLanguages($id);
+347-                    return view('home.admin.edit')
+348-                        ->with('homes', $homes)
+349-                        ->with('abs_site_url', $this->abs_site_url)
+350-                        ->with('rel_site_url', $this->rel_site_url)
+351-                        ->with('site_name', $this->site_name)
+352-                        ->with('languages', $languages)
+353-                        ->with('addAccess', $addAccess)
+354-                        ->with('the_home', $objectHome);
+355-                } else {
+356-                    return view('error')
+357-                        ->with('abs_site_url', $this->abs_site_url)
+358-                        ->with('rel_site_url', $this->rel_site_url)
+359-                        ->with('site_name', $this->site_name);
+360-                }
+361-            } else {
+362-                return view('error')
+363-                    ->with('abs_site_url', $this->abs_site_url)
+364-                    ->with('rel_site_url', $this->rel_site_url)
+365-                    ->with('site_name', $this->site_name);
+366-            }
+367-        } catch (Throwable $e) {
+368-            return view('Redirectror')
+369-                ->with('abs_site_url', $this->abs_site_url)
+370-                ->with('rel_site_url', $this->rel_site_url)
+371-                ->with('site_name', $this->site_name);
+372-        }
+373-    }
+374-
+375-    /**
+376-     * post home edit page admin panel
+377-     * @param void
+378-     * @return Illuminate\View\View
+379-     */
+380:    public function editHome(Request $request)
+381-    {
+382-        // dd($request->all());
+383-        $homeId = $request->get('id');
+384-        Session::forget('class');
+385-        Session::forget('message');
+386-        Session::forget('attachment-error');
+387-        $languages = Language::getActiveLanguages();
+388-        // dd($languages);
+389-        $homes     = Home::getHomeDetailsWithLanguages($homeId);
+390-        $officeId  = Auth::user()->office_id;
+391-        $addAccess = UserAccessControlModel::getAccessAddByModuleAndUserMapId(1, Auth::User()->id);
+392-
+393-        try {
+394-            $rules = [];
+395-            foreach ($languages as $language) {
+396-                $rules['home_heading_' . $language->id]     = 'required';
+397-                $rules['home_description_' . $language->id] = 'required';
+398-            }
+399-            $validator = Validator::make($request->all(), $rules);
+400-
+401-            if ($validator->fails()) {
+402-                return Redirect::back()->withInput()->withErrors($validator);
+403-            } else {
+404-                $homeUrl   = trim(preg_replace('/[^A-Za-z0-9\-]/', '-', strtolower(trim($request->get('home_url')))), '-');
+405-                $homeExist = Home::checkExist($homeUrl, $officeId);
+406-                // dd($homeId);
+407-
+408-                if ($homeExist && $homeExist != $homeId) {
+409-                    $message = 'Home with url <b>' . $homeUrl . '</b> is already exist';
+410-                    return Redirect::back()->withInput()
+411-                        ->with('type', 'error')
+412-                        ->with('message', $message);
+413-                } else {
+414-                    $imageFile        = $request->file('attachment');
+415-                    $destinationPath  = 'uploads/pages/';
+416-                    $rEFileTypes      = "/^\.(jpg|jpeg|gif|png){1}$/i";
+417-                    $maximum_filesize = 5 * 1024 * 1024;
+418-
+419-                    if ($imageFile) {
+420-                        $filename       = $imageFile->getClientOriginalName();
+421-                        $extension      = strrchr($filename, '.');
+422-                        $size           = $imageFile->getSize();
+423-                        $new_image_name = "pages" . "_" . time();
+424-
+425-                        if ($size <= $maximum_filesize && preg_match($rEFileTypes, $extension)) {
+426-                            $attachment = $imageFile->move($destinationPath, $new_image_name . $extension);
+427-                        } else if (preg_match($rEFileTypes, $extension) == false) {
+428-                            Session::flash('attachment-error', 'Warning : Invalid Image File!');
+429-                        } else if ($size > $maximum_filesize) {
+430-                            Session::flash('attachment-error', "  Warning : The attachment is not uploaded. It shouldn't be more than 1MB!");
+431-                        }
+432-                    } else {
+433-                        $attachment_deleted = $request->get('attachment_deleted');
+434-                    }
+435-
+436-                    $logo = isset($attachment) ? $new_image_name . $extension : null;
+437-
+438-                    $objectHome                        = Home::find($homeId);
+439-                    //                    $objectHome->show_in               = $request->get('show_in');
+440-                    $objectHome->home_meta_tags        = $request->get('home_meta_tags');
+441-                    $objectHome->home_meta_description = $request->get('home_meta_description');
+442-                    $objectHome->is_active             = 1;
+443-
+444-                    // dd($request->all());
+445-
+446-                    $objectHome->data_1 = trim($request->get('data_1'));
+447-                    $objectHome->data_2 = trim($request->get('data_2'));
+448-                    $objectHome->data_3 = trim($request->get('data_3'));
+449-                    $objectHome->data_4 = trim($request->get('data_4'));
+450-                    $objectHome->data_5 = trim($request->get('data_5_txt'));
+451-                    $objectHome->data_6 = trim($request->get('data_6_txt'));
+452-                    $objectHome->data_7 = trim($request->get('data_7'));
+453-
+454-                    if ($logo) {
+455-                        $objectHome->home_attachment = $logo;
+456-                    } else if (isset($attachment_deleted) && $attachment_deleted == '1') {
+457-                        $objectHome->home_attachment = null;
+458-                    }
+459-
+460-                    $objectHome->updated_by = Auth::user()->id;
+461-                    $objectHome->save();
+462-
+463-                    $language_id = '';
+464-                    // dd($objectHome->id);
+465-                    if ($objectHome->id) {
+466-                        // dd($languages);
+467-                        $insertArray = array();
+468-                        foreach ($languages as $language) {
+469-                            $detailId         = $request->get('detail_id_' . $language->id);
+470-                            $objectHomeDetail = Homedetail::find($detailId);
+471-                            // dd(count($objectHomeDetail));
+472-                            if ($objectHomeDetail) {
+473-                                $objectHomeDetail->home_heading           = trim($request->get('home_heading_' . $language->id));
+474-                                $objectHomeDetail->home_description       = trim($request->get('home_description_' . $language->id));
+475-                                $objectHomeDetail->home_page_title        = trim($request->get('home_page_title_' . $language->id));
+476-
+477-
+478-                                $objectHomeDetail->save();
+479-                                continue;
+480-                            } else {
+481-                                $insertArray[] = [
+482-                                    'home_id'                => $objectHome->id,
+483-                                    'language_id'            => $language->id,
+484-                                    'home_heading'           => trim($request->get('home_heading_' . $language->id)),
+485-                                    'home_description'       => trim($request->get('home_description_' . $language->id)),
+486-                                    'home_page_title'        => trim($request->get('home_page_title_' . $language->id)),
+487-                                    'created_at'             => date("Y-m-d H:i:s"),
+488-                                    'updated_at'             => date("Y-m-d H:i:s"),
+489-                                ];
+490-                            }
+491-                        }
+492-                        if (count($insertArray) > 0) {
+493-                            DB::table('home_detail')->insert($insertArray);
+494-                        }
+495-                    }
+496-                    // return Redirect::route('admin.homes')
+497-                    //     ->with('type', 'success')
+498-                    //     ->with('message', 'Home content with heading "' . $request->get('home_heading_' . $language->id) . '" is updated successfully.');
+499-
+500-                    return Redirect::route('admin.homes')
+501-                        ->with('type', 'success')
+502-                        ->with('message', 'Home content updated successfully.');
+503-                }
+504-            }
+505-        } catch (Throwable $e) {
+506-            dd($e->getMessage());
+507-            return Redirect::back()->withInput()
+508-                ->with('type', 'error')
+509-                ->with('message', 'Content is not updated.');
+510-        }
+511-    }
+512-
+513-    /*
+514-     * home delete action admin panel
+515-     * @return JSON
+516-     */
+517-    public function deleteHome(Request $request)
+518-    {
+519-        $homeId                 = $request->get('id');
+520-        $objectHome             = Home::find($homeId);
+521-        $objectHome->is_active  = '0';
+522-        $objectHome->is_deleted = '1';
+523-        $objectHome->save();
+524-
+525-        if ($objectHome->id) {
+526-            $data['type']    = "success";
+527-            $data['message'] = "Home deleted Successfully.";
+528-            exit(json_encode($data));
+529-        } else {
+530-            $array['type']    = "error";
+531-            $array['message'] = "Server Error.";
+532-            exit(json_encode($array));
+533-        }
+534-    }
+535-
+536-    /*
+537-     * home staus change action admin panel
+538-     * @return JSON
+539-     */
+540:    public function changeStatus(Request $request)
+541-    {
+542-        $homeId     = $request->get('id');
+543-        $objectHome = Home::find($homeId);
+544-        if ($objectHome->is_active == '0') {
+545-            $objectHome->is_active = '1';
+546-            $objectHome->save();
+547-            $feedback['type']    = 'success';
+548-            $feedback['message'] = 'The home has been activated successfully';
+549-            $feedback['icon']    = '<i class="icon-check"></i>';
+550-        } else {
+551-            $objectHome->is_active = '0';
+552-            $objectHome->save();
+553-            $feedback['type']    = 'success';
+554-            $feedback['message'] = 'The home has been deactivated successfully';
+555-            $feedback['icon']    = '<i class="icon-check-empty"></i>';
+556-        }
+557-        exit(json_encode($feedback));
+558-    }
+559-
+560-    //new ticker code  starts here
+561-
+562-
+563-    public function getAddNewsTicker()
+564-    {
+565-        $addAccess = UserAccessControlModel::getAccessAddByModuleAndUserMapId(31, Auth::User()->id);
+566-        // var_dump($addAccess);exit;
+567-        if ($addAccess) {
+568-            $languages = Language::getActiveLanguages();
+569-
+570-            return view('home.admin.add_ticker')
+571-                ->with('abs_site_url', $this->abs_site_url)
+572-                ->with('rel_site_url', $this->rel_site_url)
+573-                ->with('site_name', $this->site_name)
+574-                ->with('languages', $languages);
+575-        } else {
+576-            return view('error')
+577-                ->with('abs_site_url', $this->abs_site_url)
+578-                ->with('rel_site_url', $this->rel_site_url)
+579-                ->with('site_name', $this->site_name);
+580-        }
+581-    }
+582-
+583-    public function getNewsTicker()
+584-    {
+585-        /*$newss = Ticker::with(['details' => function($query) {
+586-                $query->where('language_id', 2);
+587-            }])
+588-                ->where('office_id', '4')
+589-                ->where('is_delete', 0)
+590-                ->orderBy('created_at', 'desc')
+591-                ->get();
+592-                            var_dump( $newss);exit;*/
+593-
+594-        //var_dump(Ticker::getHomePageBannersTest(4,1));exit;
+595-
+596-        $authUser = Auth::user();
+597-        $viewAccess = UserAccessControlModel::getAccessViewByModuleAndUserMapId(31, $authUser->id);
+598-
+599-
+600-        if ($viewAccess) {
+601-            $newss = Home::getAllTicker();
+602-            /* $newss = Ticker::with(['details' => function($query) {
+603-                $query->where('language_id', 2);
+604-            }])
+605-                ->where('office_id', $authUser->office_id)
+606-                ->where('is_deleted', 0)
+607-                ->orderBy('created_at', 'desc')
+608-                ->get();
+609-                            var_dump( $newss);exit;*/
+610-
+611-            $addAccess     = UserAccessControlModel::getAccessAddByModuleAndUserMapId(31, $authUser->id);
+612-            $editAccess    = UserAccessControlModel::getAccessUpdateByModuleAndUserMapId(31, $authUser->id);
+613-            $publishAccess = UserAccessControlModel::getAccessPublishByModuleAndUserMapId(31, $authUser->id);
+614-            $deleteAccess  = UserAccessControlModel::getAccessDeleteByModuleAndUserMapId(31, $authUser->id);
+615-
+616-            return view('home.admin.ticker_list')
+617-                ->with('newss', $newss)
+618-                ->with('abs_site_url', $this->abs_site_url)
+619-                ->with('rel_site_url', $this->rel_site_url)
+620-                ->with('site_name', $this->site_name)
+621-                ->with('addAccess', $addAccess)
+622-                ->with('editAccess', $editAccess)
+623-                ->with('publishAccess', $publishAccess)
+624-                ->with('deleteAccess', $deleteAccess);
+625-        } else {
+626-            return view('error')
+627-                ->with('abs_site_url', $this->abs_site_url)
+628-                ->with('rel_site_url', $this->rel_site_url)
+629-                ->with('site_name', $this->site_name);
+630-        }
+631-    }
+632-
+633-    public function getEditNewsTicker($id)
+634-    {
+635-        try {
+636-            // dd(Auth::User()->user_type_id);
+637-            $officeId   = Auth::user()->office_id;
+638-            $addAccess  = UserAccessControlModel::getAccessAddByModuleAndUserMapId(31, Auth::User()->id);
+639-            $editAccess = UserAccessControlModel::getAccessUpdateByModuleAndUserMapId(31, Auth::User()->id);
+640-            $objectHome = Home::findTickerById($id);
+641-
+642-            // dd($objectHome);
+643-
+644-            if ($objectHome && $editAccess) {
+645-                // dd($objectHome[0]->office_id);
+646-                if ($objectHome[0]->office_id == $officeId) {
+647-                    $languages = Language::getActiveLanguages();
+648-                    $homes     = Home::getTickerDetailsWithLanguages($id);
+649-                    //var_dump($homes);exit;
+650-                    return view('home.admin.ticker_edit')
+651-                        ->with('newss', $homes)
+652-                        ->with('newsData', $objectHome[0])
+653-                        ->with('abs_site_url', $this->abs_site_url)
+654-                        ->with('rel_site_url', $this->rel_site_url)
+655-                        ->with('site_name', $this->site_name)
+656-                        ->with('languages', $languages)
+657-                        ->with('addAccess', $addAccess);
+658-                } else {
+659-                    // dd(0);
+660-                    return view('error')
+661-                        ->with('abs_site_url', $this->abs_site_url)
+662-                        ->with('rel_site_url', $this->rel_site_url)
+663-                        ->with('site_name', $this->site_name);
+664-                }
+665-            } else {
+666-                return view('error')
+667-                    ->with('abs_site_url', $this->abs_site_url)
+668-                    ->with('rel_site_url', $this->rel_site_url)
+669-                    ->with('site_name', $this->site_name);
+670-            }
+671-        } catch (Throwable $e) {
+672-            var_dump($e);
+673-            exit;
+674-            return view('error')
+675-                ->with('abs_site_url', $this->abs_site_url)
+676-                ->with('rel_site_url', $this->rel_site_url)
+677-                ->with('site_name', $this->site_name);
+678-        }
+679-    }
+680-    public function editNewsTicker($id, Request $request)
+681-    {
+682-
+683-        Session::forget('class');
+684-        Session::forget('message');
+685-        Session::forget('attachment-error');
+686-        $languages = Language::getActiveLanguages();
+687-        // $newss     = Home::getTickerDetailsWithLanguages($id);
+688-        // $officeId  = Auth::user()->office_id;
+689-        // $addAccess = UserAccessControlModel::getAccessAddByModuleAndUserMapId(31, Auth::User()->id);
+690-        // $newsData  = Home::findTickerById($id);
+691-
+692-        try {
+693-
+694-            foreach ($languages as $language) {
+695-                $rules['ticker_heading_' . $language->id]     = 'required';
+696-                $rules['ticker_description_' . $language->id] = 'required';
+697-            }
+698-            $validator = Validator::make($request->all(), $rules);
+699-
+700-            if ($validator->fails()) {
+701-                return Redirect::back()->withInput()->withErrors($validator);
+702-            } else {
+703-
+704-                $objectNews                        = Ticker::find($id);
+705-                $objectNews->is_active             = $request->get('is_active');
+706-
+707-                $objectNews->updated_by = Auth::user()->id;
+708-                $objectNews->save();
+709-
+710-                // dd($objectNews);
+711-
+712-                if ($objectNews->id) {
+713-                    $insertArray = array();
+714-                    foreach ($languages as $language) {
+715-                        $detailId = $request->get('detail_id_' . $language->id);
+716-                        $objectNewsDetail = Tickerdetail::find($detailId);
+717-                        if ($objectNewsDetail) {
+718-                            $objectNewsDetail->ticker_title           = trim($request->get('ticker_heading_' . $language->id));
+719-                            $objectNewsDetail->ticker_des      = trim($request->get('ticker_description_' . $language->id));
+720-                            $objectNewsDetail->updated_at        = date("Y-m-d H:i:s");
+123-    } */
+124-
+125-    /*
+126-    * check whether view access exist or not
+127-    * @param int $moduleId
+128-    * @param int $usermapid
+129-    * @return int
+130-    */
+131:    public static function getAccessViewByModuleAndUserMapId($moduleId, $usermapid)
+132-    {
+133-        $result = DB::table('user_access_list')
+134-            ->where('access_view', '1')
+135-            ->where('module_id', $moduleId)
+136-            ->where('user_map_id', $usermapid)
+137-            ->pluck('module_id')->first();
+138-
+139-        if (!$result) {
+140-            $usertype    = Auth::User()->user_type_id;
+141-            $result = DB::table('group_access_list')
+142-                ->where('access_view', '1')
+143-                ->where('module_id', $moduleId)
+144-                ->where('user_type_id', $usertype)
+145-                ->pluck('module_id')->first();
+146-        }
+147-
+148-        return $result;
+149-    }
+150-
+151-    /*
+152-    * check whether add access exist or not
+153-    * @param int $moduleId
+154-    * @param int $usermapid
+155-    * @return int
+156-    */
+157:    public static function getAccessAddByModuleAndUserMapId($moduleId, $usermapid)
+158-    {
+159-        $result = DB::table('user_access_list')
+160-            ->where('access_add', '1')
+161-            ->where('module_id', $moduleId)
+162-            ->where('user_map_id', $usermapid)
+163-            ->pluck('module_id')->first();
+164-        if (!$result) {
+165-            $usertype    = Auth::User()->user_type_id;
+166-            $result = DB::table('group_access_list')
+167-                ->where('access_add', '1')
+168-                ->where('module_id', $moduleId)
+169-                ->where('user_type_id', $usertype)
+170-                ->pluck('module_id')->first();
+171-        }
+172-        // dd($result);
+173-        return $result;
+174-    }
+175-
+176-    /*
+177-    * check whether publish access exist or not
+178-    * @param int $moduleId
+179-    * @param int $usermapid
+180-    * @return int
+181-    */
+182:    public static function getAccessPublishByModuleAndUserMapId($moduleId, $usermapid)
+183-    {
+184-        $result = DB::table('user_access_list')
+185-            ->where('access_publish', '1')
+186-            ->where('module_id', $moduleId)
+187-            ->where('user_map_id', $usermapid)
+188-            ->pluck('module_id')->first();
+189-        if (!$result) {
+190-            $usertype    = Auth::User()->user_type_id;
+191-            $result = DB::table('group_access_list')
+192-                ->where('access_publish', '1')
+193-                ->where('module_id', $moduleId)
+194-                ->where('user_type_id', $usertype)
+195-                ->pluck('module_id')->first();
+196-        }
+197-        return $result;
 198-    }
 199-
 200-    /*
-201-    * get notice page according to office
-202-    * @param string $subdomain
-203-    * @param string $url
-204-    * @return Illuminate\View\View
+201-    * check whether update access exist or not
+202-    * @param int $moduleId
+203-    * @param int $usermapid
+204-    * @return int
 205-    */
-206:    public function getNoticeDetailById($subdomain, $id)
+206:    public static function getAccessUpdateByModuleAndUserMapId($moduleId, $usermapid)
 207-    {
-208-        $officeId    = Office::getIdfromSubdomain($subdomain);
-209-        $languageId = Language::getIdFromCode();
-210-        $sessionLangId = (Session::get('language_id')) ? Session::get('language_id') : $languageId;
-211-        Session::put('language_id', $sessionLangId);
-212-
-213-        try {
-214-            $noticeData    = Notice::getNoticeDetailById($officeId, $id, $sessionLangId);
-215-            //echo Configuration::get_last_query(); die();
-216-
-217-            if ($noticeData) {
-218-                return view(
-219-                    'notice.notice-detail',
-220-                    array(
-221-                        'pageTitle' => $noticeData->notice_page_title,
-222-                        'metaDescription' => $noticeData->notice_meta_tags,
-223-                        'metaKeywords' => $noticeData->notice_meta_description,
-224-                        'abs_site_url' => $this->abs_site_url,
-225-                        'rel_site_url' => $this->rel_site_url,
-226-                        'site_name' => $this->site_name,
-227-                        'subdomain' => $subdomain,
-228-                        'noticeData' => $noticeData
-229-                    )
-230-                );
-231-            } else {
-232-                $seoDetail    = Seo::getSeoDetailsByPageNameAndLanguage('error', $sessionLangId);
-233-                return view(
-234-                    'home.404',
-235-                    array(
-236-                        'pageTitle' => $seoDetail->page_title,
-237-                        'metaDescription' => $seoDetail->meta_tags,
-238-                        'metaKeywords' => $seoDetail->meta_description,
-239-                        'abs_site_url' => $this->abs_site_url,
-240-                        'rel_site_url' => $this->rel_site_url,
-241-                        'site_name' => $this->site_name,
-242-                        'subdomain' => $subdomain
-243-                    )
-244-                );
-245-            }
-246-        } catch (Throwable $e) {
-247-            $seoDetail    = Seo::getSeoDetailsByPageNameAndLanguage('error', $sessionLangId);
-248-            return view(
-249-                'home.404',
-250-                array(
-251-                    'pageTitle' => $seoDetail->page_title,
-252-                    'metaDescription' => $seoDetail->meta_tags,
-253-                    'metaKeywords' => $seoDetail->meta_description,
-254-                    'abs_site_url' => $this->abs_site_url,
-255-                    'rel_site_url' => $this->rel_site_url,
-256-                    'site_name' => $this->site_name,
-257-                    'subdomain' => $subdomain
-258-                )
-259-            );
-260-        }
-261-    }
-262-
-263-    /*
-264-    * force download notice attachment
-265-    * @param string $subdomain
-266-    * @param string $url
-267-    * @return Illuminate\View\View
-268-    */
-269:    public function getForceDownload($subdomain, $url)
-270-    {
-271-        $officeId    = Office::getIdfromSubdomain($subdomain);
-272-        $languageId = Language::getIdFromCode();
-273-
-274-        $sessionLangId = (Session::get('language_id')) ? Session::get('language_id') : $languageId;
-275-        Session::put('language_id', $sessionLangId);
-276-
-277-        try {
-278-            $noticeData    = Notice::getNoticeDetail($officeId, $url, $sessionLangId);
-279-            if (
-280-                $noticeData &&
-281-                !empty($noticeData->notice_attachment) &&
-282-                basename($noticeData->notice_attachment) === $noticeData->notice_attachment &&
-283-                is_file(public_path() . '/uploads/notice/' . $noticeData->notice_attachment) &&
-284-                is_readable(public_path() . '/uploads/notice/' . $noticeData->notice_attachment)
-285-            ) {
-286-                $file = public_path() . '/uploads/notice/' . $noticeData->notice_attachment;
-287-                $ext = pathinfo($file, PATHINFO_EXTENSION);
-288-
-289-                $fileName = $noticeData->notice_heading . '.' . $ext;
-290-                $fileName = str_replace("/", '-', $fileName);
-291-                //echo $file;exit;
-292-                DB::table('notice')
-293-                    ->where('id', $noticeData->id)
-294-                    ->increment('download_count', 1);
-295-
-296-                $headers = array(
-297-                    'Content-Type: application/' . $ext,
-298-                );
-299-                $response = Response::download($file, $fileName);
-300-                if (ob_get_level() > 0) {
-301-                    ob_end_clean();
-302-                }
-303-                return  $response;
-304-            } else {
-305-                $seoDetail    = Seo::getSeoDetailsByPageNameAndLanguage('error', $sessionLangId);
-306-                return view(
-307-                    'home.404',
-308-                    array(
-309-                        'pageTitle' => $seoDetail->page_title,
-310-                        'metaDescription' => $seoDetail->meta_tags,
-311-                        'metaKeywords' => $seoDetail->meta_description,
-312-                        'abs_site_url' => $this->abs_site_url,
-313-                        'rel_site_url' => $this->rel_site_url,
-314-                        'site_name' => $this->site_name,
-315-                        'subdomain' => $subdomain
-316-                    )
-317-                );
-318-            }
-319-        } catch (Throwable $e) {
-320-            $seoDetail    = Seo::getSeoDetailsByPageNameAndLanguage('error', $sessionLangId);
-321-            return view(
-322-                'home.404',
-323-                array(
-324-                    'pageTitle' => $seoDetail->page_title,
-325-                    'metaDescription' => $seoDetail->meta_tags,
-326-                    'metaKeywords' => $seoDetail->meta_description,
-327-                    'abs_site_url' => $this->abs_site_url,
-328-                    'rel_site_url' => $this->rel_site_url,
-329-                    'site_name' => $this->site_name,
-330-                    'subdomain' => $subdomain
-331-                )
-332-            );
-333-        }
-334-    }
-335-    /*
-336-    * force download notice attachment
-337-    * @param string $subdomain
-338-    * @param string $url
-339-    * @return Illuminate\View\View
-340-    */
-341-    public function getOfficesSearch(Request $request)
-342-    {
-343-        $Officearray =  array();
-344-        $term =  $request->get('term');
-
-===== DOWNLOAD CONTROLLER =====
-26-             $this->site_name = ConfigurationController::site_name();
-27-     }
-28-
-29-     /*
-30-     * get download page according to office
-31-     * @param string $subdomain
-32-     * @return Illuminate\View\View
-33-     */
-34:     public function getActiveDownloads($subdomain)
-35-     {
-36-             $officeId       = Office::getIdfromSubdomain($subdomain);
-37-             $languageId = Language::getIdFromCode();
-38-             $sessionLangId = (Session::get('language_id')) ? Session::get('language_id') : $languageId;
-39-             Session::put('language_id', $sessionLangId);
-40-
-41-             if($officeId > 0){
-42-                     $downloads      = Download::getActiveDownloads($officeId, $sessionLangId);
-43-                     $seoDetail      = Seo::getSeoDetailsByPageNameAndLanguage('downloads', $sessionLangId);
-44-                     return view('download.downloads',
-45-                                             array(
-46-                                                     'pageTitle' => $seoDetail->page_title,
-47-                                                     'metaDescription' => $seoDetail->meta_tags,
-48-                                                     'metaKeywords' => $seoDetail->meta_description,
-49-                                                     'abs_site_url' => $this->abs_site_url,
-50-                                                     'rel_site_url' => $this->rel_site_url,
-51-                                                     'site_name' => $this->site_name,
-52-                                                     'subdomain' => $subdomain,
-53-                                                     'downloads' => $downloads
-54-                                             )
-55-                                     );
-56-
-57-             } else {
-58-                     $seoDetail      = Seo::getSeoDetailsByPageNameAndLanguage('error', $sessionLangId);
-59-                     return view('home.404',
-60-                                             array(
-61-                                                     'pageTitle' => $seoDetail->page_title,
-62-                                                     'metaDescription' => $seoDetail->meta_tags,
-63-                                                     'metaKeywords' => $seoDetail->meta_description,
-64-                                                     'abs_site_url' => $this->abs_site_url,
-65-                                                     'rel_site_url' => $this->rel_site_url,
-66-                                                     'site_name' => $this->site_name,
-67-                                                     'subdomain' => $subdomain
-68-                                             )
-69-                                     );
-70-             }
-71-     }
-72-
-73-     /*
-74-     * get download page according to office
-75-     * @param string $subdomain
-76-     * @param string $url
-77-     * @return Illuminate\View\View
-78-     */
-79:     public function getDownloadDetail($subdomain, $url)
-80-     {
-81-             $officeId       = Office::getIdfromSubdomain($subdomain);
-82-             $languageId = Language::getIdFromCode();
-83-             $sessionLangId = (Session::get('language_id')) ? Session::get('language_id') : $languageId;
-84-             Session::put('language_id', $sessionLangId);
-85-             try{
-86-                     $downloadData   = Download::getDownloadDetail($url, $sessionLangId);
-87-                     //echo Configuration::get_last_query(); die();
-88-
-89-                     if($downloadData && $officeId > 0) {
-90-                             return view('download.download-detail',
-91-                                                     array(
-92-                                                             'pageTitle' => $downloadData->download_page_title,
-93-                                                             'metaDescription' => $downloadData->download_meta_tags,
-94-                                                             'metaKeywords' => $downloadData->download_meta_description,
-95-                                                             'abs_site_url' => $this->abs_site_url,
-96-                                                             'rel_site_url' => $this->rel_site_url,
-97-                                                             'site_name' => $this->site_name,
-98-                                                             'subdomain' => $subdomain,
-99-                                                             'downloadData' => $downloadData
-100-                                                    )
-101-                            );
-102-                    } else {
-103-                            $seoDetail      = Seo::getSeoDetailsByPageNameAndLanguage('error', $sessionLangId);
-104-                            return view('home.404',
-105-                                            array(
-106-                                                    'pageTitle' => $seoDetail->page_title,
-107-                                                    'metaDescription' => $seoDetail->meta_tags,
-108-                                                    'metaKeywords' => $seoDetail->meta_description,
-109-                                                    'abs_site_url' => $this->abs_site_url,
-110-                                                    'rel_site_url' => $this->rel_site_url,
-111-                                                    'site_name' => $this->site_name,
-112-                                                    'subdomain' => $subdomain
-113-                                            )
-114-                                    );
-115-                    }
-116-            } catch (Throwable $e) {
-117-                    $seoDetail      = Seo::getSeoDetailsByPageNameAndLanguage('error', $sessionLangId);
-118-                    return view('home.404',
-119-                                            array(
-120-                                                    'pageTitle' => $seoDetail->page_title,
-121-                                                    'metaDescription' => $seoDetail->meta_tags,
-122-                                                    'metaKeywords' => $seoDetail->meta_description,
-123-                                                    'abs_site_url' => $this->abs_site_url,
-124-                                                    'rel_site_url' => $this->rel_site_url,
-125-                                                    'site_name' => $this->site_name,
-126-                                                    'subdomain' => $subdomain
-127-                                            )
-128-                                    );
-129-            }
-130-    }
-131-
-132-    /*
-133-    * get download page according to office
-134-    * @param string $subdomain
-135-    * @param string $url
-136-    * @return Illuminate\View\View
-137-    */
-138:    public function getDownloadDetailById($subdomain, $id)
-139-    {
-140-            $officeId       = Office::getIdfromSubdomain($subdomain);
-141-            $languageId = Language::getIdFromCode();
-142-            $sessionLangId = (Session::get('language_id')) ? Session::get('language_id') : $languageId;
-143-            Session::put('language_id', $sessionLangId);
-144-
-145-            try{
-146-                    $downloadData   = Download::getDownloadDetailById($officeId, $id, $sessionLangId);
-147-
-148-                    if($downloadData && $officeId >0) {
-149-                            return view('download::download-detail',
-150-                                                    array(
-151-                                                            'pageTitle' => $downloadData->download_page_title,
-152-                                                            'metaDescription' => $downloadData->download_meta_tags,
-153-                                                            'metaKeywords' => $downloadData->download_meta_description,
-154-                                                            'abs_site_url' => $this->abs_site_url,
-155-                                                            'rel_site_url' => $this->rel_site_url,
-156-                                                            'site_name' => $this->site_name,
-157-                                                            'subdomain' => $subdomain,
-158-                                                            'downloadData' => $downloadData
-159-                                                    )
-160-                            );
-161-                    } else {
-162-                            $seoDetail      = Seo::getSeoDetailsByPageNameAndLanguage('error', $sessionLangId);
-163-                            return view('home::404',
-164-                                            array(
-165-                                                    'pageTitle' => $seoDetail->page_title,
-166-                                                    'metaDescription' => $seoDetail->meta_tags,
-167-                                                    'metaKeywords' => $seoDetail->meta_description,
-168-                                                    'abs_site_url' => $this->abs_site_url,
-169-                                                    'rel_site_url' => $this->rel_site_url,
-170-                                                    'site_name' => $this->site_name,
-171-                                                    'subdomain' => $subdomain
-172-                                            )
-173-                                    );
-174-                    }
-175-            } catch (Throwable $e) {
-176-                    $seoDetail      = Seo::getSeoDetailsByPageNameAndLanguage('error', $sessionLangId);
-177-                    return view('home::404',
-178-                                            array(
-179-                                                    'pageTitle' => $seoDetail->page_title,
-180-                                                    'metaDescription' => $seoDetail->meta_tags,
-181-                                                    'metaKeywords' => $seoDetail->meta_description,
-182-                                                    'abs_site_url' => $this->abs_site_url,
-183-                                                    'rel_site_url' => $this->rel_site_url,
-184-                                                    'site_name' => $this->site_name,
-185-                                                    'subdomain' => $subdomain
-186-                                            )
-187-                                    );
-188-            }
-189-    }
-190-
-191:    public function getForceDownload($subdomain, $url){
-192-            $officeId       = Office::getIdfromSubdomain($subdomain);
-193-            $languageId = Language::getIdFromCode();
-194-            $sessionLangId = (Session::get('language_id')) ? Session::get('language_id') : $languageId;
-195-            Session::put('language_id', $sessionLangId);
-196-
-197-            try{
-198-                    $downloadData   = Download::getDownloadDetail($url, $sessionLangId);
-199-                    //echo Configuration::get_last_query(); die();
-200-
-201-                    if (
-202-                            $downloadData &&
-203-                            $officeId > 0 &&
-204-                            !empty($downloadData->download_attachment) &&
-205-                            basename($downloadData->download_attachment) === $downloadData->download_attachment &&
-206-                            is_file(public_path() . '/uploads/download/' . $downloadData->download_attachment) &&
-207-                            is_readable(public_path() . '/uploads/download/' . $downloadData->download_attachment)
-208-                        ) {
-209-                            $file     = public_path().'/uploads/download/'.$downloadData->download_attachment;
-210-                            $ext      = pathinfo($file, PATHINFO_EXTENSION);
-211-                            $fileName = $downloadData->download_heading.'.'.$ext;
-212-                            DB::table('download')
-213-                                    ->where('id', $downloadData->id)
-214-                                    ->increment('download_count', 1);
+208-
+209-        $result = DB::table('user_access_list')
+210-            ->where('access_update', '1')
+211-            ->where('module_id', $moduleId)
+212-            ->where('user_map_id', $usermapid)
+213-            ->pluck('module_id')->first();
+214-
 215-
-216-                            $headers = array(
-217-                        'Content-Type: application/'.$ext,
-218-                    );
-219-                            $response = Response::download($file, $fileName);
-220-                            if (ob_get_level() > 0) {
-221-                    ob_end_clean();
-222-                }
-223-                            return  $response;
-224-            } else {
-225-                            $seoDetail = Seo::getSeoDetailsByPageNameAndLanguage('error', $sessionLangId);
-226-                            return view('home.404',
-227-                                            array(
-228-                                                    'pageTitle' => $seoDetail->page_title,
-229-                                                    'metaDescription' => $seoDetail->meta_tags,
-230-                                                    'metaKeywords' => $seoDetail->meta_description,
-231-                                                    'abs_site_url' => $this->abs_site_url,
-232-                                                    'rel_site_url' => $this->rel_site_url,
-233-                                                    'site_name' => $this->site_name,
-234-                                                    'subdomain' => $subdomain
-235-                                            )
-236-                                    );
-237-                    }
-238-            } catch (Throwable $e) {
-239-                    $seoDetail      = Seo::getSeoDetailsByPageNameAndLanguage('error', $sessionLangId);
-240-                    return view('home.404',
-241-                                            array(
-242-                                                    'pageTitle' => $seoDetail->page_title,
-243-                                                    'metaDescription' => $seoDetail->meta_tags,
-244-                                                    'metaKeywords' => $seoDetail->meta_description,
-245-                                                    'abs_site_url' => $this->abs_site_url,
-246-                                                    'rel_site_url' => $this->rel_site_url,
-247-                                                    'site_name' => $this->site_name,
-248-                                                    'subdomain' => $subdomain
-249-                                            )
-250-                                    );
-251-            }
-252-    }
-253-}
-
-===== PUBLICATION CONTROLLER =====
-28-        $this->site_name = ConfigurationController::site_name();
-29-    }
-30-
-31-    /*
-32-     * get category list page according to office
-33-     * @param string $subdomain
-34-     * @return Illuminate\View\View
-35-     */
-36:    public function getActiveCategories($subdomain)
-37-    {
-38-        $officeId    = Office::getIdfromSubdomain($subdomain);
-39-        $languageId = Language::getIdFromCode();
-40-        $sessionLangId = (Session::get('language_id')) ? Session::get('language_id') : $languageId;
-41-        Session::put('language_id', $sessionLangId);
-42-
-43-        if ($officeId > 0) {
-44-            $categories    = Category::getActiveCategories($officeId, $sessionLangId);
-45-            if (!$categories || count($categories) == 0) {
-46-                //fetch from main home page office with id 4
-47-                $categories    = Category::getActiveCategories(4, $sessionLangId);
-48-            }
+216-        if (!$result) {
+217-            $usertype    = Auth::User()->user_type_id;
+218-            $result = DB::table('group_access_list')
+219-                ->where('access_update', '1')
+220-                ->where('module_id', $moduleId)
+221-                ->where('user_type_id', $usertype)
+222-                ->pluck('module_id')->first();
+223-        }
+224-        return $result;
+225-    }
+226-
+227-    /*
+228-    * check whether delete access exist or not
+229-    * @param int $moduleId
+230-    * @param int $usermapid
+231-    * @return int
+232-    */
+233:    public static function getAccessDeleteByModuleAndUserMapId($moduleId, $usermapid)
+234-    {
+235-        $result = DB::table('user_access_list')
+236-            ->where('access_delete', '1')
+237-            ->where('module_id', $moduleId)
+238-            ->where('user_map_id', $usermapid)
+239-            ->pluck('module_id')->first();
+240-
+241-        if (!$result) {
+242-            $usertype    = Auth::User()->user_type_id;
+243-            $result = DB::table('group_access_list')
+244-                ->where('access_delete', '1')
+245-                ->where('module_id', $moduleId)
+246-                ->where('user_type_id', $usertype)
+247-                ->pluck('module_id')->first();
+248-        }
+249-        return $result;
+250-    }
+251-
+252-    /*
+253-    * check whether download access exist or not
+254-    * @param int $moduleId
+255-    * @param int $usermapid
+256-    * @return int
+257-    */
+258-    public static function getAccessDownloadByModuleAndUserMapId($moduleId, $usermapid)
+259-    {
+260-        $result = DB::table('user_access_list')
+261-            ->where('access_download', '1')
+262-            ->where('module_id', $moduleId)
+263-            ->where('user_map_id', $usermapid)
+264-            ->pluck('module_id')->first();
+265-
+266-        if (!$result) {
+267-            $usertype    = Auth::User()->user_type_id;
+268-            $result = DB::table('group_access_list')
+269-                ->where('access_download', '1')
+270-                ->where('module_id', $moduleId)
+271-                ->where('user_type_id', $usertype)
+272-                ->pluck('module_id')->first();
+273-        }
+274-
+275-        return $result;
+276-    }
+277-}
+8-use Illuminate\Notifications\Notifiable;
+9-use Illuminate\Support\Facades\DB;
+10-use Laravel\Sanctum\HasApiTokens;
+11-
+12-class User extends Authenticatable
+13-{
+14-    use HasApiTokens, HasFactory, Notifiable;
+15-
+16:    protected $fillable = array('user_full_name', 'user_attachment', 'user_permanent_address', 'is_active', 'is_deleted', 'created_by', 'updated_by', 'user_temporary_address', 'user_mobile_number', 'user_contact_number', 'date_of_birth', 'user_gender', 'office_id', 'user_designation', 'user_status', 'user_office_join_date', 'user_office_leave_date', 'user_email_address');
+17-
+18-    protected $table = 'users';
+19-
+20-    protected $dates = ['deleted_at'];
+21-
+22-    public function office()
+23-    {
+24-        return $this->belongsTo(Office::class);
+25-    }
+26-
+27-    public function project()
+28-    {
+29-        return $this->belongsTo(Project::class);
+30-    }
+31-
+32-    public function usertype()
+33-    {
+34:        return $this->belongsTo(UserTypeModel::class, 'user_type_id');
+35-    }
+36-
+37-    /*
+38-     * get office id of user from user id
+39-     * @param int $userId
+40-     * @return int
+41-     */
+42-    public static function getOfficeId($userId)
+43-    {
+44-        return User::where('is_deleted', '0')
+45-            ->where('id', $userId)
+46:            ->pluck('office_id')
+47-            ->first();
+48-    }
 49-
-50-            $seoDetail    = Seo::getSeoDetailsByPageNameAndLanguage('publications', $sessionLangId);
-51-
-52-            return view(
-53-                'publication.categories',
-54-                array(
-55-                    'pageTitle' => $seoDetail->page_title,
-56-                    'metaDescription' => $seoDetail->meta_tags,
-57-                    'metaKeywords' => $seoDetail->meta_description,
-58-                    'abs_site_url' => $this->abs_site_url,
-59-                    'rel_site_url' => $this->rel_site_url,
-60-                    'site_name' => $this->site_name,
-61-                    'subdomain' => $subdomain,
-62-                    'categories' => $categories
-63-                )
-64-            );
-65-        } else {
-66-            $seoDetail    = Seo::getSeoDetailsByPageNameAndLanguage('error', $sessionLangId);
-67-            return view(
-68-                'home.404',
-69-                array(
-70-                    'pageTitle' => $seoDetail->page_title,
-71-                    'metaDescription' => $seoDetail->meta_tags,
-72-                    'metaKeywords' => $seoDetail->meta_description,
-73-                    'abs_site_url' => $this->abs_site_url,
-74-                    'rel_site_url' => $this->rel_site_url,
-75-                    'site_name' => $this->site_name,
-76-                    'subdomain' => $subdomain
-77-                )
-78-            );
-79-        }
-80-    }
-81-
-82-    /*
-83-     * get publication page according to office
-84-     * @param string $subdomain
-85-     * @return Illuminate\View\View
-86-     */
-87:    public function getActivePublications($subdomain, $url)
-88-    {
-89-        // dd($url);
-90-        $officeId    = Office::getIdfromSubdomain($subdomain);
-91-        $languageId = Language::getIdFromCode();
-92-        $sessionLangId = (Session::get('language_id')) ? Session::get('language_id') : $languageId;
-93-        Session::put('language_id', $sessionLangId);
-94-        $categoryId        = Category::getIdfromUrl($officeId, $url);
-95-        // dd($categoryId);
-96-        if (!$categoryId) {
-97-            $officeId = 4;
-98-            $categoryId        = Category::getIdfromUrl(4, $url);
-99-        }
-100-
-101-        // dd($categoryId);
-102-        // dd($officeId);
-103-
-104-        if ($officeId > 0 && $categoryId > 0) {
-105-            $publications    = Publication::getActivePublications($officeId, $sessionLangId, $categoryId);
-106-            // dd($publications);
-107-            //echo Helper::get_last_query(); die();
-108-            $publicationCategory = Category::getCategoryName($officeId, $sessionLangId, $url);
-109-
-110-            $seoDetail    = Seo::getSeoDetailsByPageNameAndLanguage('publications', $sessionLangId);
-111-            return view(
-112-                'publication.publications',
-113-                array(
-114-                    'pageTitle' => $seoDetail->page_title,
-115-                    'metaDescription' => $seoDetail->meta_tags,
-116-                    'metaKeywords' => $seoDetail->meta_description,
-117-                    'abs_site_url' => $this->abs_site_url,
-118-                    'rel_site_url' => $this->rel_site_url,
-119-                    'site_name' => $this->site_name,
-120-                    'subdomain' => $subdomain,
-121-                    'publications' => $publications,
-122-                    'publicationCategory' => $publicationCategory,
-123-                    'category_url' => $url
-124-                )
-125-            );
-126-        } else {
-127-            $seoDetail    = Seo::getSeoDetailsByPageNameAndLanguage('error', $sessionLangId);
-128-            return view(
-129-                'home.404',
-130-                array(
-131-                    'pageTitle' => $seoDetail->page_title,
-132-                    'metaDescription' => $seoDetail->meta_tags,
-133-                    'metaKeywords' => $seoDetail->meta_description,
-134-                    'abs_site_url' => $this->abs_site_url,
-135-                    'rel_site_url' => $this->rel_site_url,
-136-                    'site_name' => $this->site_name,
-137-                    'subdomain' => $subdomain
-138-                )
-139-            );
-140-        }
-141-    }
-142-    /*
-143-    * get publication page according to office
-144-    * @param string $subdomain
-145-    * @param string $url
-146-    * @return Illuminate\View\View
-147-    */
-148:    public function getPublicationDetail($subdomain, $categoryUrl, $url)
-149-    {
-150-        $officeId    = Office::getIdfromSubdomain($subdomain);
-151-        $languageId = Language::getIdFromCode();
-152-        $sessionLangId = (Session::get('language_id')) ? Session::get('language_id') : $languageId;
-153-        Session::put('language_id', $sessionLangId);
-154-
-155-        try {
-156-            $publicationData    = Publication::getPublicationDetail($officeId, $url, $sessionLangId);
-157-            if (!$publicationData) {
-158-                $officeId = 4;
-159-                $publicationData    = Publication::getPublicationDetail($officeId, $url, $sessionLangId);
-160-            }
-161-            $publicationCategory = Category::getCategoryName($officeId, $sessionLangId, $categoryUrl);
-162-            //$publicationCategoryUrl = Category::getCategoryName($officeId, $sessionLangId, $categoryUrl);
-163-            //echo Helper::get_last_query(); die();
-164-
-165-            if ($publicationData) {
-166-                return view(
-167-                    'publication.publication-detail',
-168-                    array(
-169-                        'pageTitle' => $publicationData->publication_page_title,
-170-                        'metaDescription' => $publicationData->publication_meta_tags,
-171-                        'metaKeywords' => $publicationData->publication_meta_description,
-172-                        'abs_site_url' => $this->abs_site_url,
-173-                        'rel_site_url' => $this->rel_site_url,
-174-                        'site_name' => $this->site_name,
-175-                        'subdomain' => $subdomain,
-176-                        'categoryUrl' => $categoryUrl,
-177-                        'publicationData' => $publicationData,
-178-                        'publicationCategory' => $publicationCategory
-179-                    )
-180-                );
-181-            } else {
-182-                $seoDetail    = Seo::getSeoDetailsByPageNameAndLanguage('error', $sessionLangId);
-183-                return view(
-184-                    'home.404',
-185-                    array(
-186-                        'pageTitle' => $seoDetail->page_title,
-187-                        'metaDescription' => $seoDetail->meta_tags,
-188-                        'metaKeywords' => $seoDetail->meta_description,
-189-                        'abs_site_url' => $this->abs_site_url,
-190-                        'rel_site_url' => $this->rel_site_url,
-191-                        'site_name' => $this->site_name,
-192-                        'subdomain' => $subdomain
-193-                    )
-194-                );
-195-            }
-196-        } catch (Throwable $e) {
-197-            $seoDetail    = Seo::getSeoDetailsByPageNameAndLanguage('error', $sessionLangId);
-198-            return view(
-199-                'home.404',
-200-                array(
-201-                    'pageTitle' => $seoDetail->page_title,
-202-                    'metaDescription' => $seoDetail->meta_tags,
-203-                    'metaKeywords' => $seoDetail->meta_description,
-204-                    'abs_site_url' => $this->abs_site_url,
-205-                    'rel_site_url' => $this->rel_site_url,
-206-                    'site_name' => $this->site_name,
-207-                    'subdomain' => $subdomain
-208-                )
-209-            );
-210-        }
-211-    }
-212-
-213-    /*
-214-    * get publication page according to office
-215-    * @param string $subdomain
-216-    * @param string $url
-217-    * @return Illuminate\View\View
-218-    */
-219:    public function getPublicationDetailById($subdomain, $id)
-220-    {
-221-        $officeId    = Office::getIdfromSubdomain($subdomain);
-222-        $languageId = Language::getIdFromCode();
-223-        $sessionLangId = (Session::get('language_id')) ? Session::get('language_id') : $languageId;
-224-        Session::put('language_id', $sessionLangId);
-225-
-226-        try {
-227-            $publicationData    = Publication::getPublicationDetailById($officeId, $id, $sessionLangId);
-228-            if (!$publicationData) {
-229-                $officeId = 4;
-230-                $publicationData    = Publication::getPublicationDetail($officeId, $url, $sessionLangId);
-231-            }
-232-
-233-            if ($publicationData) {
-234-                return view(
-235-                    'publication.publication-detail',
-236-                    array(
-237-                        'pageTitle' => $publicationData->publication_page_title,
-238-                        'metaDescription' => $publicationData->publication_meta_tags,
-239-                        'metaKeywords' => $publicationData->publication_meta_description,
-240-                        'abs_site_url' => $this->abs_site_url,
-241-                        'rel_site_url' => $this->rel_site_url,
-242-                        'site_name' => $this->site_name,
-243-                        'subdomain' => $subdomain,
-244-                        'publicationData' => $publicationData
-245-                    )
-246-                );
-247-            } else {
-248-                $seoDetail    = Seo::getSeoDetailsByPageNameAndLanguage('error', $sessionLangId);
-249-                return view(
-250-                    'home.404',
-251-                    array(
-252-                        'pageTitle' => $seoDetail->page_title,
-253-                        'metaDescription' => $seoDetail->meta_tags,
-254-                        'metaKeywords' => $seoDetail->meta_description,
-255-                        'abs_site_url' => $this->abs_site_url,
-256-                        'rel_site_url' => $this->rel_site_url,
-257-                        'site_name' => $this->site_name,
-258-                        'subdomain' => $subdomain
-259-                    )
-260-                );
-261-            }
-262-        } catch (Throwable $e) {
-263-            $seoDetail    = Seo::getSeoDetailsByPageNameAndLanguage('error', $sessionLangId);
-264-            return view(
-265-                'home.404',
-266-                array(
-267-                    'pageTitle' => $seoDetail->page_title,
-268-                    'metaDescription' => $seoDetail->meta_tags,
-269-                    'metaKeywords' => $seoDetail->meta_description,
-270-                    'abs_site_url' => $this->abs_site_url,
-271-                    'rel_site_url' => $this->rel_site_url,
-272-                    'site_name' => $this->site_name,
-273-                    'subdomain' => $subdomain
-274-                )
-275-            );
-276-        }
-277-    }
-278-
-279-    /*
-280-    * force download notice attachment
-281-    * @param string $subdomain
-282-    * @param string $url
-283-    * @return Illuminate\View\View
-284-    */
-285-    public function getForceDownload($subdomain, $categoryUrl, $url)
-286-    {
-287-        // dd(public_path());
-288-        // dd($subdomain);
-289-        $officeId    = Office::getIdfromSubdomain($subdomain);
-290-        $languageId = Language::getIdFromCode();
-291-        $sessionLangId = (Session::get('language_id')) ? Session::get('language_id') : $languageId;
-292-        Session::put('language_id', $sessionLangId);
-293-
-294-        try {
-295-            $publicationData    = Publication::getPublicationDetail($officeId, $url, $sessionLangId);
-296-            if (!$publicationData) {
-297-                $officeId = 4;
-298-                $publicationData    = Publication::getPublicationDetail($officeId, $url, $sessionLangId);
-299-            }
-300-
-301-            if (
-302-                $publicationData &&
-303-                !empty($publicationData->publication_attachment) &&
-304-                basename($publicationData->publication_attachment) === $publicationData->publication_attachment &&
-
-===== GUIDELINE CONTROLLER =====
-28-        $this->site_name = ConfigurationController::site_name();
-29-    }
-30-
-31-    /*
-32-     * get guidelines page according to office
-33-     * @param string $subdomain
-34-     * @return Illuminate\View\View
-35-     */
-36:    public function getActiveGuidelines($subdomain)
-37-    {
-38-        $officeId    = Office::getIdfromSubdomain($subdomain);
-39-        $languageId = Language::getIdFromCode();
-40-        $sessionLangId = (Session::get('language_id')) ? Session::get('language_id') : $languageId;
-41-        Session::put('language_id', $sessionLangId);
-42-
-43-        if ($officeId > 0) {
-44-            $guidelines    = Guideline::getActiveGuidelines($sessionLangId);
-45-
-46-            $seoDetail    = Seo::getSeoDetailsByPageNameAndLanguage('guidelines', $sessionLangId);
-47-            return view(
-48-                'guideline.guidelines',
-49-                array(
-50-                    'pageTitle' => $seoDetail->page_title,
-51-                    'metaDescription' => $seoDetail->meta_tags,
-52-                    'metaKeywords' => $seoDetail->meta_description,
-53-                    'abs_site_url' => $this->abs_site_url,
-54-                    'rel_site_url' => $this->rel_site_url,
-55-                    'site_name' => $this->site_name,
-56-                    'subdomain' => $subdomain,
-57-                    'guidelines' => $guidelines
-58-                )
-59-            );
-60-        } else {
-61-            $seoDetail    = Seo::getSeoDetailsByPageNameAndLanguage('error', $sessionLangId);
-62-            return view(
-63-                'home.404',
-64-                array(
-65-                    'pageTitle' => $seoDetail->page_title,
-66-                    'metaDescription' => $seoDetail->meta_tags,
-67-                    'metaKeywords' => $seoDetail->meta_description,
-68-                    'abs_site_url' => $this->abs_site_url,
-69-                    'rel_site_url' => $this->rel_site_url,
-70-                    'site_name' => $this->site_name,
-71-                    'subdomain' => $subdomain
-72-                )
-73-            );
-74-        }
-75-    }
-76-
-77-    /*
-78-     * get guideline page according to office
-79-     * @param string $subdomain
-80-     * @param string $url
-81-     * @return Illuminate\View\View
-82-     */
-83:    public function getGuidelineDetail($subdomain, $url)
-84-    {
-85-        $officeId    = Office::getIdfromSubdomain($subdomain);
-86-        // dd($officeId);
-87-        $languageId = Language::getIdFromCode();
-88-        $sessionLangId = (Session::get('language_id')) ? Session::get('language_id') : $languageId;
-89-        Session::put('language_id', $sessionLangId);
-90-
-91-        try {
-92-            $theData    = Guideline::getGuidelineDetail($url, $sessionLangId);
-93-            // dd($theData);
-94-            if ($theData) {
-95-                return view(
-96-                    'guideline.guideline-detail',
-97-                    array(
-98-                        'pageTitle' => $theData->guideline_page_title,
-99-                        'metaDescription' => $theData->guideline_meta_tags,
-100-                        'metaKeywords' => $theData->guideline_meta_description,
-101-                        'abs_site_url' => $this->abs_site_url,
-102-                        'rel_site_url' => $this->rel_site_url,
-103-                        'site_name' => $this->site_name,
-104-                        'subdomain' => $subdomain,
-105-                        'guidelineData' => $theData
-106-                    )
-107-                );
-108-            } else {
-109-                $seoDetail    = Seo::getSeoDetailsByPageNameAndLanguage('error', $sessionLangId);
-110-                return view(
-111-                    'home.404',
-112-                    array(
-113-                        'pageTitle' => $seoDetail->page_title,
-114-                        'metaDescription' => $seoDetail->meta_tags,
-115-                        'metaKeywords' => $seoDetail->meta_description,
-116-                        'abs_site_url' => $this->abs_site_url,
-117-                        'rel_site_url' => $this->rel_site_url,
-118-                        'site_name' => $this->site_name,
-119-                        'subdomain' => $subdomain
-120-                    )
-121-                );
-122-            }
-123-        } catch (Throwable $e) {
-124-            // dd($e->getMessage());
-125-            $seoDetail    = Seo::getSeoDetailsByPageNameAndLanguage('error', $sessionLangId);
-126-            return view(
-127-                'home.404',
-128-                array(
-129-                    'pageTitle' => $seoDetail->page_title,
-130-                    'metaDescription' => $seoDetail->meta_tags,
-131-                    'metaKeywords' => $seoDetail->meta_description,
-132-                    'abs_site_url' => $this->abs_site_url,
-133-                    'rel_site_url' => $this->rel_site_url,
-134-                    'site_name' => $this->site_name,
-135-                    'subdomain' => $subdomain
-136-                )
-137-            );
-138-        }
-139-    }
-140-
-141-    /*
-142-    * get guideline page according to office
-143-    * @param string $subdomain
-144-    * @param string $url
-145-    * @return Illuminate\View\View
-146-    */
-147:    public function getGuidelineDetailById($subdomain, $id)
-148-    {
-149-        $officeId    = Office::getIdfromSubdomain($subdomain);
-150-        $languageId = Language::getIdFromCode();
-151-        $sessionLangId = (Session::get('language_id')) ? Session::get('language_id') : $languageId;
-152-        Session::put('language_id', $sessionLangId);
-153-
-154-        try {
-155-            $theData    = Guideline::getNoticeDetailById($id, $sessionLangId);
-156-
-157-            if ($theData) {
-158-                return view(
-159-                    'notice.notice-detail',
-160-                    array(
-161-                        'pageTitle' => $theData->guideline_page_title,
-162-                        'metaDescription' => $theData->guideline_meta_tags,
-163-                        'metaKeywords' => $theData->guideline_meta_description,
-164-                        'abs_site_url' => $this->abs_site_url,
-165-                        'rel_site_url' => $this->rel_site_url,
-166-                        'site_name' => $this->site_name,
-167-                        'subdomain' => $subdomain,
-168-                        'guidelineData' => $theData
-169-                    )
-170-                );
-171-            } else {
-172-                $seoDetail    = Seo::getSeoDetailsByPageNameAndLanguage('error', $sessionLangId);
-173-                return view(
-174-                    'home.404',
-175-                    array(
-176-                        'pageTitle' => $seoDetail->page_title,
-177-                        'metaDescription' => $seoDetail->meta_tags,
-178-                        'metaKeywords' => $seoDetail->meta_description,
-179-                        'abs_site_url' => $this->abs_site_url,
-180-                        'rel_site_url' => $this->rel_site_url,
-181-                        'site_name' => $this->site_name,
-182-                        'subdomain' => $subdomain
-183-                    )
-184-                );
-185-            }
-186-        } catch (Throwable $e) {
-187-            $seoDetail    = Seo::getSeoDetailsByPageNameAndLanguage('error', $sessionLangId);
-188-            return view(
-189-                'home.404',
-190-                array(
-191-                    'pageTitle' => $seoDetail->page_title,
-192-                    'metaDescription' => $seoDetail->meta_tags,
-193-                    'metaKeywords' => $seoDetail->meta_description,
-194-                    'abs_site_url' => $this->abs_site_url,
-195-                    'rel_site_url' => $this->rel_site_url,
-196-                    'site_name' => $this->site_name,
-197-                    'subdomain' => $subdomain
-198-                )
-199-            );
-200-        }
-201-    }
-202-
-203-    /*
-204-    * force download guideline attachment
-205-    * @param string $subdomain
-206-    * @param string $url
-207-    * @return Illuminate\View\View
-208-    */
-209:    public function getForceDownload($subdomain, $url)
-210-    {
-211-        $officeId    = Office::getIdfromSubdomain($subdomain);
-212-        $languageId = Language::getIdFromCode();
-213-
-214-        $sessionLangId = (Session::get('language_id')) ? Session::get('language_id') : $languageId;
-215-        Session::put('language_id', $sessionLangId);
-216-
-217-        try {
-218-            $theData    = Guideline::getGuidelineDetail($url, $sessionLangId);
-219-            // dd($theData);
-220-            if (
-221-                $theData &&
-222-                !empty($theData->guideline_attachment) &&
-223-                basename($theData->guideline_attachment) === $theData->guideline_attachment &&
-224-                is_file(public_path() . '/uploads/guideline/' . $theData->guideline_attachment) &&
-225-                is_readable(public_path() . '/uploads/guideline/' . $theData->guideline_attachment)
-226-            ) {
-227-                $file = public_path() . '/uploads/guideline/' . $theData->guideline_attachment;
-228-                $ext = pathinfo($file, PATHINFO_EXTENSION);
-229-
-230-                $fileName = $theData->guideline_heading . '.' . $ext;
-231-                $fileName = str_replace("/", '-', $fileName);
-232-                //echo $file;exit;
-233-                DB::table('guidelines')
-234-                    ->where('id', $theData->id)
-235-                    ->increment('download_count', 1);
-236-
-237-                $headers = array(
-238-                    'Content-Type: application/' . $ext,
-239-                );
-240-                $response = Response::download($file, $fileName);
-241-                if (ob_get_level() > 0) {
-242-                    ob_end_clean();
-243-                }
-244-                return  $response;
-245-            } else {
-246-                $seoDetail    = Seo::getSeoDetailsByPageNameAndLanguage('error', $sessionLangId);
-247-                return view(
-248-                    'home.404',
-249-                    array(
-250-                        'pageTitle' => $seoDetail->page_title,
-251-                        'metaDescription' => $seoDetail->meta_tags,
-252-                        'metaKeywords' => $seoDetail->meta_description,
-253-                        'abs_site_url' => $this->abs_site_url,
-254-                        'rel_site_url' => $this->rel_site_url,
-255-                        'site_name' => $this->site_name,
-256-                        'subdomain' => $subdomain
-257-                    )
-258-                );
-259-            }
-260-        } catch (Throwable $e) {
-261-            report($e);
-262-            $seoDetail    = Seo::getSeoDetailsByPageNameAndLanguage('error', $sessionLangId);
-263-            return view(
-264-                'home.404',
-265-                array(
-266-                    'pageTitle' => $seoDetail->page_title,
-267-                    'metaDescription' => $seoDetail->meta_tags,
-268-                    'metaKeywords' => $seoDetail->meta_description,
-269-                    'abs_site_url' => $this->abs_site_url,
-270-                    'rel_site_url' => $this->rel_site_url,
-271-                    'site_name' => $this->site_name,
-272-                    'subdomain' => $subdomain
-273-                )
-274-            );
-
-===== LAW CONTROLLER =====
-26-             $this->site_name = ConfigurationController::site_name();
-27-     }
-28-
-29-     /*
-30-     * get law page according to office
-31-     * @param string $subdomain
-32-     * @return Illuminate\View\View
-33-     */
-34:     public function getActiveLaws($subdomain)
-35-     {
-36-             $officeId       = Office::getIdfromSubdomain($subdomain);
-37-             $languageId = Language::getIdFromCode();
-38-             $sessionLangId = (Session::get('language_id')) ? Session::get('language_id') : $languageId;
-39-             Session::put('language_id', $sessionLangId);
-40-
-41-             if($officeId > 0){
-42-                     $laws   = Law::getActiveLaws($sessionLangId);
-43-                     $seoDetail      = Seo::getSeoDetailsByPageNameAndLanguage('laws', $sessionLangId);
-44-                     return view('laws.laws',
-45-                                             array(
-46-                                                     'pageTitle' => $seoDetail->page_title,
-47-                                                     'metaDescription' => $seoDetail->meta_tags,
-48-                                                     'metaKeywords' => $seoDetail->meta_description,
-49-                                                     'abs_site_url' => $this->abs_site_url,
-50-                                                     'rel_site_url' => $this->rel_site_url,
-51-                                                     'site_name' => $this->site_name,
-52-                                                     'subdomain' => $subdomain,
-53-                                                     'laws' => $laws
-54-                                             )
-55-                                     );
-56-             } else {
-57-                     $seoDetail      = Seo::getSeoDetailsByPageNameAndLanguage('error', $sessionLangId);
-58-                     return view('home.404',
-59-                                             array(
-60-                                                     'pageTitle' => $seoDetail->page_title,
-61-                                                     'metaDescription' => $seoDetail->meta_tags,
-62-                                                     'metaKeywords' => $seoDetail->meta_description,
-63-                                                     'abs_site_url' => $this->abs_site_url,
-64-                                                     'rel_site_url' => $this->rel_site_url,
-65-                                                     'site_name' => $this->site_name,
-66-                                                     'subdomain' => $subdomain
-67-                                             )
-68-                                     );
-69-     }
-70-
-71-     }
-72-
-73-     /*
-74-     * get law page according to office
-75-     * @param string $subdomain
-76-     * @param string $url
-77-     * @return Illuminate\View\View
-78-     */
-79:     public function getLawDetail($subdomain, $url)
-80-     {
-81-             $officeId       = Office::getIdfromSubdomain($subdomain);
-82-             $languageId = Language::getIdFromCode();
-83-             $sessionLangId = (Session::get('language_id')) ? Session::get('language_id') : $languageId;
-84-             Session::put('language_id', $sessionLangId);
+50-    public static function getUndeletedUsers()
+51-    {
+52-        $languageId = Language::getIdFromCode('en');
+53:        $query = "Select user.id as  id,user.office_id, (select user_full_name  from pndc_user_details where user_id=user.id and language_id=" . $languageId . " ) as user_full_name,user_name,user.is_active as  is_active , user_type_name, user_email_address from pndc_users user left join pndc_user_map usermp on user.id=usermp.user_id left join pndc_usertype type on type.id=usermp.user_type_id   where user.is_deleted='0'";
+54-        return DB::select($query);
+55-    }
+56-    /*get undeleted users acccording to office id*/
+57:    public static function getUndeletedUsersByoffice($office_id)
+58-    {
+59-        $languageId = Language::getIdFromCode('en');
+60:        $query = "Select user.id as  id,user.office_id,user.user_attachment, (select user_full_name  from pndc_user_details where user_id=user.id and language_id=" . $languageId . " ) as user_full_name,user_name,user.is_active as  is_active , user_type_name, user_email_address from pndc_users user left join pndc_user_map usermp on user.id=usermp.user_id left join pndc_usertype type on type.id=usermp.user_type_id   where user.is_deleted='0' and user.office_id=$office_id order by 'order_position'";
+61-        return DB::select($query);
+62-    }
+63-
+64-    public static function getUserDetailsByIdForUpdate($id)
+65-    {
+66-        $query = "Select lang.language_code, lang.language_name ,
+67-                                     (select user_full_name         from pndc_user_details where user_id=$id and language_id=lang.id) as user_full_name,
+68-                                     (select user_permanent_address from pndc_user_details where user_id=$id and language_id=lang.id) as user_permanent_address,
+69-                                     (select user_temporary_address from pndc_user_details where user_id=$id and language_id=lang.id) as user_temporary_address,
+70-                                     (select user_mobile_number     from pndc_user_details where user_id=$id and language_id=lang.id) as user_mobile_number,
+71-                                     (select user_contact_number    from pndc_user_details where user_id=$id and language_id=lang.id) as user_contact_number,
+72-                                     (select user_designation       from pndc_user_details where user_id=$id and language_id=lang.id) as user_designation,
+73-                                     (select user_label       from pndc_user_details where user_id=$id and language_id=lang.id) as user_label,
+74-                                     (select user_service       from pndc_user_details where user_id=$id and language_id=lang.id) as user_service,
+75-                                     (select user_group       from pndc_user_details where user_id=$id and language_id=lang.id) as user_group,
+76-                                     (select user_subgroup       from pndc_user_details where user_id=$id and language_id=lang.id) as user_subgroup,
+77-                                     (select user_remark       from pndc_user_details where user_id=$id and language_id=lang.id) as user_remark,
+78-                                     (select user_staff_id          from pndc_user_details where user_id=$id and language_id=lang.id) as user_staff_id,
+79-                                     (select user_office_join_date  from pndc_user_details where user_id=$id and language_id=lang.id) as user_office_join_date,
+80-                                     (select user_office_leave_date from pndc_user_details where user_id=$id and language_id=lang.id) as user_office_leave_date,
+81-                                     (select id from pndc_user_details where user_id=$id and language_id=lang.id) as detail_id
+82-
+83-
+84-                                     from pndc_language lang where is_deleted='0' and is_active='1'";
 85-
-86-             try{
-87-                     $lawData        = Law::getLawDetail($url, $sessionLangId);
-88-                     //echo Configuration::get_last_query(); die();
-89-
-90-                     if($lawData && $officeId > 0) {
-91-                             return view('laws.law-detail',
-92-                                                     array(
-93-                                                             'pageTitle' => $lawData->law_page_title,
-94-                                                             'metaDescription' => $lawData->law_meta_tags,
-95-                                                             'metaKeywords' => $lawData->law_meta_description,
-96-                                                             'abs_site_url' => $this->abs_site_url,
-97-                                                             'rel_site_url' => $this->rel_site_url,
-98-                                                             'site_name' => $this->site_name,
-99-                                                             'subdomain' => $subdomain,
-100-                                                            'lawData' => $lawData
-101-                                                    )
-102-                            );
-103-                    } else {
-104-                            $seoDetail      = Seo::getSeoDetailsByPageNameAndLanguage('error', $sessionLangId);
-105-                            return view('home.404',
-106-                                            array(
-107-                                                    'pageTitle' => $seoDetail->page_title,
-108-                                                    'metaDescription' => $seoDetail->meta_tags,
-109-                                                    'metaKeywords' => $seoDetail->meta_description,
-110-                                                    'abs_site_url' => $this->abs_site_url,
-111-                                                    'rel_site_url' => $this->rel_site_url,
-112-                                                    'site_name' => $this->site_name,
-113-                                                    'subdomain' => $subdomain
-114-                                            )
-115-                                    );
-116-                    }
-117-            } catch (Throwable $e) {
-118-                    $seoDetail      = Seo::getSeoDetailsByPageNameAndLanguage('error', $sessionLangId);
-119-                    return view('home.404',
-120-                                            array(
-121-                                                    'pageTitle' => $seoDetail->page_title,
-122-                                                    'metaDescription' => $seoDetail->meta_tags,
-123-                                                    'metaKeywords' => $seoDetail->meta_description,
-124-                                                    'abs_site_url' => $this->abs_site_url,
-125-                                                    'rel_site_url' => $this->rel_site_url,
-126-                                                    'site_name' => $this->site_name,
-127-                                                    'subdomain' => $subdomain
-128-                                            )
-129-                                    );
-130-            }
-131-    }
-132-
-133-    /*
-134-    * get law page according to office
-135-    * @param string $subdomain
-136-    * @param string $url
-137-    * @return Illuminate\View\View
-138-    */
-139:    public function getLawDetailById($subdomain, $id)
-140-    {
-141-            $officeId       = Office::getIdfromSubdomain($subdomain);
-142-            $languageId = Language::getIdFromCode();
-143-            $sessionLangId = (Session::get('language_id')) ? Session::get('language_id') : $languageId;
-144-            Session::put('language_id', $sessionLangId);
-145-
-146-            try{
-147-                    $lawData        = Law::getLawDetailById($officeId, $id, $sessionLangId);
-148-                    //echo Configuration::get_last_query(); die();
-149-
-150-                    if($lawData && $officeId > 0) {
-151-                            return view('laws.law-detail',
-152-                                                    array(
-153-                                                            'pageTitle' => $lawData->law_page_title,
-154-                                                            'metaDescription' => $lawData->law_meta_tags,
-155-                                                            'metaKeywords' => $lawData->law_meta_description,
-156-                                                            'abs_site_url' => $this->abs_site_url,
-157-                                                            'rel_site_url' => $this->rel_site_url,
-158-                                                            'site_name' => $this->site_name,
-159-                                                            'subdomain' => $subdomain,
-160-                                                            'lawData' => $lawData
-161-                                                    )
-162-                            );
-163-                    } else {
-164-                            $seoDetail      = Seo::getSeoDetailsByPageNameAndLanguage('error', $sessionLangId);
-165-                            return view('home.404',
-166-                                            array(
-167-                                                    'pageTitle' => $seoDetail->page_title,
-168-                                                    'metaDescription' => $seoDetail->meta_tags,
-169-                                                    'metaKeywords' => $seoDetail->meta_description,
-170-                                                    'abs_site_url' => $this->abs_site_url,
-171-                                                    'rel_site_url' => $this->rel_site_url,
-172-                                                    'site_name' => $this->site_name,
-173-                                                    'subdomain' => $subdomain
-174-                                            )
-175-                                    );
-176-                    }
-177-            } catch (Throwable $e) {
-178-                    $seoDetail      = Seo::getSeoDetailsByPageNameAndLanguage('error', $sessionLangId);
-179-                    return view('home.404',
-180-                                            array(
-181-                                                    'pageTitle' => $seoDetail->page_title,
-182-                                                    'metaDescription' => $seoDetail->meta_tags,
-183-                                                    'metaKeywords' => $seoDetail->meta_description,
-184-                                                    'abs_site_url' => $this->abs_site_url,
-185-                                                    'rel_site_url' => $this->rel_site_url,
-186-                                                    'site_name' => $this->site_name,
-187-                                                    'subdomain' => $subdomain
-188-                                            )
-189-                                    );
-190-            }
-191-    }
-192-
-193:    public function getForceDownload($subdomain, $url){
-194-            $officeId       = Office::getIdfromSubdomain($subdomain);
-195-            $languageId = Language::getIdFromCode();
-196-            $sessionLangId = (Session::get('language_id')) ? Session::get('language_id') : $languageId;
-197-            Session::put('language_id', $sessionLangId);
-198-
-199-            try{
-200-                    $lawData        = Law::getLawDetail($url, $sessionLangId);
-201-                    //echo Configuration::get_last_query(); die();
-202-
-203-
-204-                    if (
-205-                        $lawData &&
-206-                        $officeId > 0 &&
-207-                        !empty($lawData->law_attachment) &&
-208-                        basename($lawData->law_attachment) === $lawData->law_attachment &&
-209-                        is_file(public_path() . '/uploads/law/' . $lawData->law_attachment) &&
-210-                        is_readable(public_path() . '/uploads/law/' . $lawData->law_attachment)
-211-                    ) {
-212-                            $file = public_path() . '/uploads/law/'.$lawData->law_attachment;
-213-                            $ext = pathinfo($file, PATHINFO_EXTENSION);
-214-                            $fileName = $lawData->law_heading .'.'. $ext;
-215-
-216-                            DB::table('laws')
-217-                                    ->where('id', $lawData->id)
-218-                                    ->increment('download_count', 1);
-219-
-220-                            $headers = array(
-221-                        'Content-Type: application/'.$ext,
-222-                    );
-223-                            $response = Response::download($file, $fileName);
-224-                            if (ob_get_level() > 0) {
-225-                    ob_end_clean();
-226-                }
-227-                            return  $response;
-228-
-229-                    } else {
-230-                            $seoDetail      = Seo::getSeoDetailsByPageNameAndLanguage('error', $sessionLangId);
-231-                            return view('home.404',
-232-                                            array(
-233-                                                    'pageTitle' => $seoDetail->page_title,
-234-                                                    'metaDescription' => $seoDetail->meta_tags,
-235-                                                    'metaKeywords' => $seoDetail->meta_description,
-236-                                                    'abs_site_url' => $this->abs_site_url,
-237-                                                    'rel_site_url' => $this->rel_site_url,
-238-                                                    'site_name' => $this->site_name,
-239-                                                    'subdomain' => $subdomain
-240-                                            )
-241-                                    );
-242-                    }
-243-            } catch (Throwable $e) {
-244-            report($e);
-245-                    $seoDetail      = Seo::getSeoDetailsByPageNameAndLanguage('error', $sessionLangId);
-246-                            return view('home.404',
-247-                                            array(
-248-                                                    'pageTitle' => $seoDetail->page_title,
-249-                                                    'metaDescription' => $seoDetail->meta_tags,
-250-                                                    'metaKeywords' => $seoDetail->meta_description,
-251-                                                    'abs_site_url' => $this->abs_site_url,
-252-                                                    'rel_site_url' => $this->rel_site_url,
-253-                                                    'site_name' => $this->site_name,
-254-                                                    'subdomain' => $subdomain
-255-                                            )
-256-                                    );
-257-            }
-258-    }
+86-        return DB::select($query);
+87-    }
+88-
+89-    /*------------------------------------------------------*/
+90-
+91-    /**
+92-     * get all active staffs
+93-     * @param int $officeId
+94-     * @param int $langId
+95-     * @return object
+96-     */
+97-    public static function getActiveStaffs($officeId, $langId)
+98-    {
+99-        return User::join('user_details', 'users.id', '=', 'user_details.user_id')
+100-            ->select(
+101-                'users.id',
+102-                'order_position',
+103-                'user_attachment',
+104-                'users.user_email_address',
+105-                'user_details.user_contact_number',
+--
+107-                'user_details.user_designation',
+108-                'user_details.user_label',
+109-                'user_details.user_service',
+110-                'user_details.user_group',
+111-                'user_details.user_subgroup',
+112-                'user_details.user_staff_id',
+113-                'user_details.user_remark'
+114-            )
+115:            ->where('users.office_id', $officeId)
+116-            ->where('user_details.language_id', $langId)
+117-            ->where('users.is_active', '1')
+118-            ->where('users.is_deleted', '0')
+119-            ->orderby('order_position')
+120-            ->get();
+121-    }
+122-
+123-    /**
+124-     * get user detail
+125-     * @param int $officeId
+126-     * @param int $userId
+127-     * @param int $langId
+128-     * @return object
+129-     */
+130-    public static function getUserDetail($officeId, $userId, $langId)
+131-    {
+132-        $result = User::join('user_details', 'users.id', '=', 'user_details.user_id')
+133-            ->select(
+134-                'users.id',
+135:                'users.office_id',
+136-                'users.user_email_address',
+137-                'users.user_attachment',
+138-                'user_details.user_full_name',
+139-                'user_details.user_designation',
+140-                'user_details.user_contact_number'
+141-            )
+142:            ->where('users.office_id', $officeId)
+143-            ->where('users.id', $userId)
+144-            ->where('user_details.language_id', $langId)
+145-            ->where('users.is_active', '1')
+146-            ->where('users.is_deleted', '0')
+147-            ->first();
+148-        return $result;
+149-    }
+150-
+151-    public static function getUndeletedSortUsers($officeId)
+152-    {
+153-        $languageId = Language::getIdFromCode('en');
+154-        $query = "Select user.id as  id, (select user_full_name
+155-                            from pndc_user_details
+156-                            where user_id=user.id and
+157-                            language_id=" . $languageId . " ) as user_full_name,
+158-                            user_name, user.is_active as  is_active,
+159-                            user_attachment, order_position
+160-                            from pndc_users user left join pndc_user_map usermp
+161-                            on user.id=usermp.user_id left join
+162:                            pndc_usertype type on type.id=usermp.user_type_id
+163:                            where user.is_deleted='0' and user.office_id = '$officeId'
+164-                            order by order_position";
+165-        return DB::select($query);
+166-    }
+167-}
 doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$
