@@ -1,16 +1,56 @@
-doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && php8.5 artisan test tests/Feature/CircularAdminManagementTest.php
+doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ php8.5 artisan test
 
    WARN  Your XML configuration validates against a deprecated schema. Migrate your XML configuration using "--migrate-configuration"!
 
+   PASS  Tests\Unit\CircularAdminControllerAuthorizationTest
+  ✓ super admin can manage circular admin accounts                                                               0.24s
+  ✓ office admin with assigned office can manage accounts                                                        0.06s
+  ✓ office admin without assigned office is blocked                                                              0.06s
+  ✓ circular admin is blocked from account management                                                            0.05s
+
+   PASS  Tests\Unit\ExampleTest
+  ✓ example
+
+   PASS  Tests\Unit\RestrictAdminRolesTest
+  ✓ office admin can access circular admin management                                                            0.10s
+  ✓ circular admin cannot access account management                                                              0.05s
+  ✓ circular admin can view circulars                                                                            0.05s
+  ✓ office admin cannot access generic user management                                                           0.05s
+  ✓ office admin can access office profile                                                                       0.05s
+  ✓ super admin retains existing route access                                                                    0.05s
+
    FAIL  Tests\Feature\CircularAdminManagementTest
-  ✓ super admin can create circular admin for selected office                                                    0.28s
-  ✓ office admin can create account only for own office                                                          0.07s
-  ✓ office admin cannot submit another office id                                                                 0.08s
+  ✓ super admin can create circular admin for selected office                                                    0.25s
+  ✓ office admin can create account only for own office                                                          0.06s
+  ✓ office admin cannot submit another office id                                                                 0.09s
   ✓ office admin cannot edit another offices account                                                             0.08s
-  ✓ office admin cannot change status of another offices account                                                 0.08s
-  ✓ super admin can edit and change account status                                                               0.08s
-  ⨯ office admin sees only circular admin accounts from own office                                               0.13s
-  ✓ circular admin cannot access circular admin account management                                               0.08s
+  ✓ office admin cannot change status of another offices account                                                 0.07s
+  ✓ super admin can edit and change account status                                                               0.09s
+  ⨯ office admin sees only circular admin accounts from own office                                               0.15s
+  ✓ circular admin cannot access circular admin account management                                               0.07s
+
+   PASS  Tests\Feature\ExampleTest
+  ✓ root redirects to admin home                                                                                 0.14s
+
+   PASS  Tests\Feature\OfficeProfileEmailSyncTest
+  ✓ primary email is synchronized to office admin login                                                          0.09s
+  ✓ alternative email is used when primary email is blank                                                        0.06s
+  ✓ existing login email is preserved when both profile emails are blank                                         0.06s
+  ✓ duplicate active account email rejects and rolls back profile update                                         0.06s
+  ✓ only authenticated office admin account is synchronized                                                      0.06s
+
+   PASS  Tests\Feature\PasswordResetOtpTest
+  ✓ super admin office admin and circular admin can request otp                                                  0.14s
+  ✓ test mode without valid recipient blocks otp delivery                                                        0.06s
+  ✓ test mode sends otp only to configured test recipient                                                        0.06s
+  ✓ failed email delivery preserves previous otp                                                                 0.06s
+  ✓ successful resend invalidates previous otp                                                                   0.07s
+  ✓ inactive and deleted accounts cannot request otp                                                             0.06s
+  ✓ email lookup is case insensitive                                                                             0.07s
+  ✓ project admin cannot request otp                                                                             0.06s
+  ✓ valid otp resets password and invalidates otp                                                                0.06s
+  ✓ expired otp cannot reset password                                                                            0.07s
+  ✓ five invalid attempts lock the otp                                                                           0.06s
   ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
    FAILED  Tests\Feature\CircularAdminManagementTest > office admin sees only circular admin accounts from own offic…
   Expected response status code [200] but received 500.
@@ -18,7 +58,7 @@ Failed asserting that 500 is identical to 200.
 
 The following exception occurred during the last request:
 
-PDOException: SQLSTATE[HY000]: General error: 1 ambiguous column name: office_phone_number1 in /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:442
+PDOException: SQLSTATE[HY000]: General error: 1 no such column: office_alternative_email in /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:442
 Stack trace:
 #0 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php(442): PDO->prepare()
 #1 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php(853): Illuminate\Database\Connection->{closure:Illuminate\Database\Connection::select():433}()
@@ -100,19 +140,21 @@ Stack trace:
 #77 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(144): Illuminate\Foundation\Http\Kernel->sendRequestThroughRouter()
 #78 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(638): Illuminate\Foundation\Http\Kernel->handle()
 #79 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(368): Illuminate\Foundation\Testing\TestCase->call()
-#80 /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/tests/Feature/CircularAdminManagementTest.php(247): Illuminate\Foundation\Testing\TestCase->get()
+#80 /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/tests/Feature/CircularAdminManagementTest.php(246): Illuminate\Foundation\Testing\TestCase->get()
 #81 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestCase.php(1343): Tests\Feature\CircularAdminManagementTest->test_office_admin_sees_only_circular_admin_accounts_from_own_office()
 #82 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestCase.php(1380): PHPUnit\Framework\TestCase->invokeTestMethod()
 #83 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestCase.php(521): PHPUnit\Framework\TestCase->runTest()
 #84 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestRunner/TestRunner.php(98): PHPUnit\Framework\TestCase->runBare()
 #85 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestCase.php(361): PHPUnit\Framework\TestRunner->run()
 #86 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestSuite.php(379): PHPUnit\Framework\TestCase->run()
-#87 /home/doradmin/dor13-vendor/phpunit/phpunit/src/TextUI/TestRunner.php(64): PHPUnit\Framework\TestSuite->run()
-#88 /home/doradmin/dor13-vendor/phpunit/phpunit/src/TextUI/Application.php(228): PHPUnit\TextUI\TestRunner->run()
-#89 /home/doradmin/dor13-vendor/phpunit/phpunit/phpunit(104): PHPUnit\TextUI\Application->run()
-#90 {main}
+#87 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestSuite.php(379): PHPUnit\Framework\TestSuite->run()
+#88 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestSuite.php(379): PHPUnit\Framework\TestSuite->run()
+#89 /home/doradmin/dor13-vendor/phpunit/phpunit/src/TextUI/TestRunner.php(64): PHPUnit\Framework\TestSuite->run()
+#90 /home/doradmin/dor13-vendor/phpunit/phpunit/src/TextUI/Application.php(228): PHPUnit\TextUI\TestRunner->run()
+#91 /home/doradmin/dor13-vendor/phpunit/phpunit/phpunit(104): PHPUnit\TextUI\Application->run()
+#92 {main}
 
-Next Illuminate\Database\QueryException: SQLSTATE[HY000]: General error: 1 ambiguous column name: office_phone_number1 (Connection: sqlite, Database: :memory:, SQL: Select office.id as id,office.is_active as is_active,office_email_address, office_name, office_address, office_phone_number1 from pndc_office as office join pndc_office_detail detail on office.id=detail.office_id where office.is_deleted='0' and office.is_active='1'  and detail.language_id=2 and office.id=10) in /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
+Next Illuminate\Database\QueryException: SQLSTATE[HY000]: General error: 1 no such column: office_alternative_email (Connection: sqlite, Database: :memory:, SQL: Select office.id as id,office.is_active as is_active,office_email_address, office_alternative_email, office_name, office_address, office_phone_number1 from pndc_office as office join pndc_office_detail detail on office.id=detail.office_id where office.is_deleted='0' and office.is_active='1'  and detail.language_id=2 and office.id=10) in /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
 Stack trace:
 #0 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php(820): Illuminate\Database\Connection->runQueryCallback()
 #1 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php(433): Illuminate\Database\Connection->run()
@@ -192,19 +234,21 @@ Stack trace:
 #75 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(144): Illuminate\Foundation\Http\Kernel->sendRequestThroughRouter()
 #76 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(638): Illuminate\Foundation\Http\Kernel->handle()
 #77 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(368): Illuminate\Foundation\Testing\TestCase->call()
-#78 /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/tests/Feature/CircularAdminManagementTest.php(247): Illuminate\Foundation\Testing\TestCase->get()
+#78 /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/tests/Feature/CircularAdminManagementTest.php(246): Illuminate\Foundation\Testing\TestCase->get()
 #79 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestCase.php(1343): Tests\Feature\CircularAdminManagementTest->test_office_admin_sees_only_circular_admin_accounts_from_own_office()
 #80 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestCase.php(1380): PHPUnit\Framework\TestCase->invokeTestMethod()
 #81 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestCase.php(521): PHPUnit\Framework\TestCase->runTest()
 #82 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestRunner/TestRunner.php(98): PHPUnit\Framework\TestCase->runBare()
 #83 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestCase.php(361): PHPUnit\Framework\TestRunner->run()
 #84 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestSuite.php(379): PHPUnit\Framework\TestCase->run()
-#85 /home/doradmin/dor13-vendor/phpunit/phpunit/src/TextUI/TestRunner.php(64): PHPUnit\Framework\TestSuite->run()
-#86 /home/doradmin/dor13-vendor/phpunit/phpunit/src/TextUI/Application.php(228): PHPUnit\TextUI\TestRunner->run()
-#87 /home/doradmin/dor13-vendor/phpunit/phpunit/phpunit(104): PHPUnit\TextUI\Application->run()
-#88 {main}
+#85 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestSuite.php(379): PHPUnit\Framework\TestSuite->run()
+#86 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestSuite.php(379): PHPUnit\Framework\TestSuite->run()
+#87 /home/doradmin/dor13-vendor/phpunit/phpunit/src/TextUI/TestRunner.php(64): PHPUnit\Framework\TestSuite->run()
+#88 /home/doradmin/dor13-vendor/phpunit/phpunit/src/TextUI/Application.php(228): PHPUnit\TextUI\TestRunner->run()
+#89 /home/doradmin/dor13-vendor/phpunit/phpunit/phpunit(104): PHPUnit\TextUI\Application->run()
+#90 {main}
 
-Next Illuminate\View\ViewException: SQLSTATE[HY000]: General error: 1 ambiguous column name: office_phone_number1 (Connection: sqlite, Database: :memory:, SQL: Select office.id as id,office.is_active as is_active,office_email_address, office_name, office_address, office_phone_number1 from pndc_office as office join pndc_office_detail detail on office.id=detail.office_id where office.is_deleted='0' and office.is_active='1'  and detail.language_id=2 and office.id=10) (View: /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/resources/views/layout/admin/header.blade.php) in /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
+Next Illuminate\View\ViewException: SQLSTATE[HY000]: General error: 1 no such column: office_alternative_email (Connection: sqlite, Database: :memory:, SQL: Select office.id as id,office.is_active as is_active,office_email_address, office_alternative_email, office_name, office_address, office_phone_number1 from pndc_office as office join pndc_office_detail detail on office.id=detail.office_id where office.is_deleted='0' and office.is_active='1'  and detail.language_id=2 and office.id=10) (View: /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/resources/views/layout/admin/header.blade.php) in /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
 Stack trace:
 #0 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/Engines/PhpEngine.php(59): Illuminate\View\Engines\CompilerEngine->handleViewException()
 #1 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/Engines/CompilerEngine.php(76): Illuminate\View\Engines\PhpEngine->evaluatePath()
@@ -276,19 +320,21 @@ Stack trace:
 #67 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(144): Illuminate\Foundation\Http\Kernel->sendRequestThroughRouter()
 #68 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(638): Illuminate\Foundation\Http\Kernel->handle()
 #69 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(368): Illuminate\Foundation\Testing\TestCase->call()
-#70 /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/tests/Feature/CircularAdminManagementTest.php(247): Illuminate\Foundation\Testing\TestCase->get()
+#70 /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/tests/Feature/CircularAdminManagementTest.php(246): Illuminate\Foundation\Testing\TestCase->get()
 #71 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestCase.php(1343): Tests\Feature\CircularAdminManagementTest->test_office_admin_sees_only_circular_admin_accounts_from_own_office()
 #72 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestCase.php(1380): PHPUnit\Framework\TestCase->invokeTestMethod()
 #73 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestCase.php(521): PHPUnit\Framework\TestCase->runTest()
 #74 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestRunner/TestRunner.php(98): PHPUnit\Framework\TestCase->runBare()
 #75 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestCase.php(361): PHPUnit\Framework\TestRunner->run()
 #76 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestSuite.php(379): PHPUnit\Framework\TestCase->run()
-#77 /home/doradmin/dor13-vendor/phpunit/phpunit/src/TextUI/TestRunner.php(64): PHPUnit\Framework\TestSuite->run()
-#78 /home/doradmin/dor13-vendor/phpunit/phpunit/src/TextUI/Application.php(228): PHPUnit\TextUI\TestRunner->run()
-#79 /home/doradmin/dor13-vendor/phpunit/phpunit/phpunit(104): PHPUnit\TextUI\Application->run()
-#80 {main}
+#77 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestSuite.php(379): PHPUnit\Framework\TestSuite->run()
+#78 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestSuite.php(379): PHPUnit\Framework\TestSuite->run()
+#79 /home/doradmin/dor13-vendor/phpunit/phpunit/src/TextUI/TestRunner.php(64): PHPUnit\Framework\TestSuite->run()
+#80 /home/doradmin/dor13-vendor/phpunit/phpunit/src/TextUI/Application.php(228): PHPUnit\TextUI\TestRunner->run()
+#81 /home/doradmin/dor13-vendor/phpunit/phpunit/phpunit(104): PHPUnit\TextUI\Application->run()
+#82 {main}
 
-Next Illuminate\View\ViewException: SQLSTATE[HY000]: General error: 1 ambiguous column name: office_phone_number1 (Connection: sqlite, Database: :memory:, SQL: Select office.id as id,office.is_active as is_active,office_email_address, office_name, office_address, office_phone_number1 from pndc_office as office join pndc_office_detail detail on office.id=detail.office_id where office.is_deleted='0' and office.is_active='1'  and detail.language_id=2 and office.id=10) (View: /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/resources/views/layout/admin/header.blade.php) (View: /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/resources/views/layout/admin/header.blade.php) in /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
+Next Illuminate\View\ViewException: SQLSTATE[HY000]: General error: 1 no such column: office_alternative_email (Connection: sqlite, Database: :memory:, SQL: Select office.id as id,office.is_active as is_active,office_email_address, office_alternative_email, office_name, office_address, office_phone_number1 from pndc_office as office join pndc_office_detail detail on office.id=detail.office_id where office.is_deleted='0' and office.is_active='1'  and detail.language_id=2 and office.id=10) (View: /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/resources/views/layout/admin/header.blade.php) (View: /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/resources/views/layout/admin/header.blade.php) in /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
 Stack trace:
 #0 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/Engines/PhpEngine.php(59): Illuminate\View\Engines\CompilerEngine->handleViewException()
 #1 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/Engines/CompilerEngine.php(76): Illuminate\View\Engines\PhpEngine->evaluatePath()
@@ -352,19 +398,21 @@ Stack trace:
 #59 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(144): Illuminate\Foundation\Http\Kernel->sendRequestThroughRouter()
 #60 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(638): Illuminate\Foundation\Http\Kernel->handle()
 #61 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(368): Illuminate\Foundation\Testing\TestCase->call()
-#62 /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/tests/Feature/CircularAdminManagementTest.php(247): Illuminate\Foundation\Testing\TestCase->get()
+#62 /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/tests/Feature/CircularAdminManagementTest.php(246): Illuminate\Foundation\Testing\TestCase->get()
 #63 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestCase.php(1343): Tests\Feature\CircularAdminManagementTest->test_office_admin_sees_only_circular_admin_accounts_from_own_office()
 #64 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestCase.php(1380): PHPUnit\Framework\TestCase->invokeTestMethod()
 #65 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestCase.php(521): PHPUnit\Framework\TestCase->runTest()
 #66 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestRunner/TestRunner.php(98): PHPUnit\Framework\TestCase->runBare()
 #67 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestCase.php(361): PHPUnit\Framework\TestRunner->run()
 #68 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestSuite.php(379): PHPUnit\Framework\TestCase->run()
-#69 /home/doradmin/dor13-vendor/phpunit/phpunit/src/TextUI/TestRunner.php(64): PHPUnit\Framework\TestSuite->run()
-#70 /home/doradmin/dor13-vendor/phpunit/phpunit/src/TextUI/Application.php(228): PHPUnit\TextUI\TestRunner->run()
-#71 /home/doradmin/dor13-vendor/phpunit/phpunit/phpunit(104): PHPUnit\TextUI\Application->run()
-#72 {main}
+#69 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestSuite.php(379): PHPUnit\Framework\TestSuite->run()
+#70 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestSuite.php(379): PHPUnit\Framework\TestSuite->run()
+#71 /home/doradmin/dor13-vendor/phpunit/phpunit/src/TextUI/TestRunner.php(64): PHPUnit\Framework\TestSuite->run()
+#72 /home/doradmin/dor13-vendor/phpunit/phpunit/src/TextUI/Application.php(228): PHPUnit\TextUI\TestRunner->run()
+#73 /home/doradmin/dor13-vendor/phpunit/phpunit/phpunit(104): PHPUnit\TextUI\Application->run()
+#74 {main}
 
-Next Illuminate\View\ViewException: SQLSTATE[HY000]: General error: 1 ambiguous column name: office_phone_number1 (Connection: sqlite, Database: :memory:, SQL: Select office.id as id,office.is_active as is_active,office_email_address, office_name, office_address, office_phone_number1 from pndc_office as office join pndc_office_detail detail on office.id=detail.office_id where office.is_deleted='0' and office.is_active='1'  and detail.language_id=2 and office.id=10) (View: /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/resources/views/layout/admin/header.blade.php) (View: /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/resources/views/layout/admin/header.blade.php) (View: /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/resources/views/layout/admin/header.blade.php) in /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
+Next Illuminate\View\ViewException: SQLSTATE[HY000]: General error: 1 no such column: office_alternative_email (Connection: sqlite, Database: :memory:, SQL: Select office.id as id,office.is_active as is_active,office_email_address, office_alternative_email, office_name, office_address, office_phone_number1 from pndc_office as office join pndc_office_detail detail on office.id=detail.office_id where office.is_deleted='0' and office.is_active='1'  and detail.language_id=2 and office.id=10) (View: /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/resources/views/layout/admin/header.blade.php) (View: /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/resources/views/layout/admin/header.blade.php) (View: /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/resources/views/layout/admin/header.blade.php) in /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
 Stack trace:
 #0 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/Engines/PhpEngine.php(59): Illuminate\View\Engines\CompilerEngine->handleViewException()
 #1 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/View/Engines/CompilerEngine.php(76): Illuminate\View\Engines\PhpEngine->evaluatePath()
@@ -420,35 +468,35 @@ Stack trace:
 #51 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(144): Illuminate\Foundation\Http\Kernel->sendRequestThroughRouter()
 #52 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(638): Illuminate\Foundation\Http\Kernel->handle()
 #53 /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(368): Illuminate\Foundation\Testing\TestCase->call()
-#54 /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/tests/Feature/CircularAdminManagementTest.php(247): Illuminate\Foundation\Testing\TestCase->get()
+#54 /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/tests/Feature/CircularAdminManagementTest.php(246): Illuminate\Foundation\Testing\TestCase->get()
 #55 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestCase.php(1343): Tests\Feature\CircularAdminManagementTest->test_office_admin_sees_only_circular_admin_accounts_from_own_office()
 #56 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestCase.php(1380): PHPUnit\Framework\TestCase->invokeTestMethod()
 #57 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestCase.php(521): PHPUnit\Framework\TestCase->runTest()
 #58 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestRunner/TestRunner.php(98): PHPUnit\Framework\TestCase->runBare()
 #59 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestCase.php(361): PHPUnit\Framework\TestRunner->run()
 #60 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestSuite.php(379): PHPUnit\Framework\TestCase->run()
-#61 /home/doradmin/dor13-vendor/phpunit/phpunit/src/TextUI/TestRunner.php(64): PHPUnit\Framework\TestSuite->run()
-#62 /home/doradmin/dor13-vendor/phpunit/phpunit/src/TextUI/Application.php(228): PHPUnit\TextUI\TestRunner->run()
-#63 /home/doradmin/dor13-vendor/phpunit/phpunit/phpunit(104): PHPUnit\TextUI\Application->run()
-#64 {main}
+#61 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestSuite.php(379): PHPUnit\Framework\TestSuite->run()
+#62 /home/doradmin/dor13-vendor/phpunit/phpunit/src/Framework/TestSuite.php(379): PHPUnit\Framework\TestSuite->run()
+#63 /home/doradmin/dor13-vendor/phpunit/phpunit/src/TextUI/TestRunner.php(64): PHPUnit\Framework\TestSuite->run()
+#64 /home/doradmin/dor13-vendor/phpunit/phpunit/src/TextUI/Application.php(228): PHPUnit\TextUI\TestRunner->run()
+#65 /home/doradmin/dor13-vendor/phpunit/phpunit/phpunit(104): PHPUnit\TextUI\Application->run()
+#66 {main}
 
 ----------------------------------------------------------------------------------
 
-SQLSTATE[HY000]: General error: 1 ambiguous column name: office_phone_number1 (Connection: sqlite, Database: :memory:, SQL: Select office.id as id,office.is_active as is_active,office_email_address, office_name, office_address, office_phone_number1 from pndc_office as office join pndc_office_detail detail on office.id=detail.office_id where office.is_deleted='0' and office.is_active='1'  and detail.language_id=2 and office.id=10) (View: /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/resources/views/layout/admin/header.blade.php) (View: /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/resources/views/layout/admin/header.blade.php) (View: /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/resources/views/layout/admin/header.blade.php)
+SQLSTATE[HY000]: General error: 1 no such column: office_alternative_email (Connection: sqlite, Database: :memory:, SQL: Select office.id as id,office.is_active as is_active,office_email_address, office_alternative_email, office_name, office_address, office_phone_number1 from pndc_office as office join pndc_office_detail detail on office.id=detail.office_id where office.is_deleted='0' and office.is_active='1'  and detail.language_id=2 and office.id=10) (View: /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/resources/views/layout/admin/header.blade.php) (View: /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/resources/views/layout/admin/header.blade.php) (View: /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/resources/views/layout/admin/header.blade.php)
 
-  at tests/Feature/CircularAdminManagementTest.php:249
-    245▕
-    246▕         $response = $this->actingAs($admin)
-    247▕             ->get(route('admin.circular-admin.index'));
-    248▕
-  ➜ 249▕         $response->assertOk();
-    250▕         $response->assertSee($ownAccount->username);
-    251▕         $response->assertDontSee($otherAccount->username);
-    252▕     }
-    253▕
+  at tests/Feature/CircularAdminManagementTest.php:248
+    244▕
+    245▕         $response = $this->actingAs($admin)
+    246▕             ->get(route('admin.circular-admin.index'));
+    247▕
+  ➜ 248▕         $response->assertOk();
+    249▕         $response->assertSee($ownAccount->username);
+    250▕         $response->assertDontSee($otherAccount->username);
+    251▕     }
+    252▕
 
 
-  Tests:    1 failed, 7 passed (22 assertions)
-  Duration: 0.98s
-
-doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$
+  Tests:    1 failed, 35 passed (147 assertions)
+  Duration: 3.25s
