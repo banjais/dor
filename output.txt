@@ -1,23 +1,43 @@
 doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade
 
 /usr/bin/php8.5 artisan tinker --execute='
-$candidateIds = DB::table("home as h")
-    ->join("home_detail as x", "x.home_id", "=", "h.id")
+$slugs = [
+    "dor-spoke-person",
+    "general-info",
+    "information-officer",
+    "grievance-hearing-officer",
+    "additional-officer"
+];
+
+$terms = [
+    "%आयोजना%",
+    "%योजना प्रमुख%",
+    "%सम्पर्क अधिकारी%",
+    "%सूचना अधिकारी%",
+    "%सुचना अधिकारी%",
+    "%Information Officer%",
+    "%Contact Officer%",
+    "%Project Chief%",
+    "%Spokes Person%"
+];
+
+$ids = DB::table("home as h")
+    ->join("home_detail as d", "d.home_id", "=", "h.id")
     ->where("h.is_deleted", "0")
     ->where("h.office_id", "!=", 4)
-    ->whereIn("h.home_url", ["dor-spoke-person", "general-info"])
-    ->where(function ($q) {
-        $q->where("x.home_heading", "like", "%सूचना अधिकारी%")
-          ->orWhere("x.home_heading", "like", "%सुचना अधिकारी%")
-          ->orWhere("x.home_heading", "like", "%Information Officer%")
-          ->orWhere("x.home_heading", "like", "%Intormation Officer%");
+    ->whereIn("h.home_url", $slugs)
+    ->where(function ($q) use ($terms) {
+        foreach ($terms as $term) {
+            $q->orWhere("d.home_heading", "LIKE", $term)
+              ->orWhere("d.home_description", "LIKE", $term);
+        }
     })
     ->distinct()
     ->pluck("h.id");
 
 $rows = DB::table("home as h")
     ->join("home_detail as d", "d.home_id", "=", "h.id")
-    ->whereIn("h.id", $candidateIds)
+    ->whereIn("h.id", $ids)
     ->select(
         "h.id",
         "h.office_id",
@@ -32,2591 +52,489 @@ $rows = DB::table("home as h")
     ->orderBy("d.language_id")
     ->get();
 
+$lines = [];
+
 foreach ($rows as $r) {
-    $description = preg_replace("/\\s+/", " ", strip_tags($r->home_description ?? ""));
-    dump([
-        "page_id" => $r->id,
-        "office_id" => $r->office_id,
-        "url" => $r->home_url,
-        "language" => $r->language_id == 1 ? "Nepali" : "English",
-        "heading" => $r->home_heading,
-        "officer_name" => $r->officer_name,
-        "description_start" => mb_substr($description, 0, 180)
-    ]);
-}
-'
-array:7 [
-  "page_id" => 372
-  "office_id" => 65
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "&nbsp; ई. .. 98..."
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 372
-  "office_id" => 65
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "&nbsp; Er. ... 98..."
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 333
-  "office_id" => 70
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => " ई. .. 98.. fhsmo7@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 333
-  "office_id" => 70
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => " Er. .. 98.. fhsmo7@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 360
-  "office_id" => 71
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. ... 98.. Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 360
-  "office_id" => 71
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. ... 98.. Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 326
-  "office_id" => 72
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "सूर्य बहादुर खड्का सूचना अधिकारी (ना.सु.) ९८५८३२०४१२ &nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 326
-  "office_id" => 72
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "&nbsp; &nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 321
-  "office_id" => 73
-  "url" => "dor-spoke-person"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "राम दत्त पन्त&nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 321
-  "office_id" => 73
-  "url" => "dor-spoke-person"
-  "language" => "English"
-  "heading" => "Spokes Person"
-  "officer_name" => null
-  "description_start" => "Ram Dutta Panta"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 210
-  "office_id" => 74
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "इ. आशिष देव ९८५२६८५०९० &nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 210
-  "office_id" => 74
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Aashish Deu 9852685090 &nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 338
-  "office_id" => 75
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "इ. विपिन ढुङ्गाना फोन नं. : ९८५२६२६१४६ ईमेल : drodamak@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 338
-  "office_id" => 75
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Beepin Dhungana Phone No. : 9852626146 Email :&nbsp;drodamak@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 214
-  "office_id" => 76
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "&nbsp; ई. श्री प्रभात किरण राई 9852081002 prabhatkiran071@gmail.com, sadakdivisionbrt@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 214
-  "office_id" => 76
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "&nbsp; Er. Prabhat Kiran Rai 9852081002 prabhatkiran071@gmail.com, sadakdivisionbrt@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 206
-  "office_id" => 77
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. रमेश कुमार गोइत 9852067152 dro.dhkt@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 206
-  "office_id" => 77
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Ramesh Kumar Goit 9852067152 dro.dhkt@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 222
-  "office_id" => 78
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई.&nbsp;शिव नारायण प्रसाद साह 9852861130 drolahan@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 222
-  "office_id" => 78
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Shiva Narayan Prasa Sah 9852861130 drolahan@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 221
-  "office_id" => 79
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. गौतम कुमार देव 9852027755 subgautam@yahoo.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 221
-  "office_id" => 79
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er Gautam Kumar Dev 9852027755 subgautam@yahoo.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 226
-  "office_id" => 80
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. अजय कुमार साह 9854029891 rdjanakpur@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 226
-  "office_id" => 80
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Ajay Kumar Sah 9854029891 rdjanakpur@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 230
-  "office_id" => 81
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => " ई. संजय कुमार यादव 9855041664 &nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 230
-  "office_id" => 81
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => " Er. Sanjay Kumar Yadav 9855041664 &nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 368
-  "office_id" => 82
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. लाेमस उपाध्याय 9855075311 ulomas.rdhtd@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 368
-  "office_id" => 82
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Lomas Upadhyaya 9855075311 ulomas.rdhtd@gmail.com &nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 342
-  "office_id" => 83
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. कृष्ण प्रसाद आचार्य सम्पर्क नं. ९८५५०९२२१८ rdbharatpur7@gmail.com krishna70940@gmail.com &nbsp; &nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 342
-  "office_id" => 83
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Krishna Prasasd Acharya Contact No. 9855092218 rdbharatpur7@gmail.com krishna70940@gmail.com &nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 234
-  "office_id" => 84
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => " ई. अर्जुन नेपाली&nbsp; 9856031818 charikotdro1@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 234
-  "office_id" => 84
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => " ई. .. 98.. drocharikot@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 239
-  "office_id" => 85
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. सुदर्शन उप्रेती 9851312481 &nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 239
-  "office_id" => 85
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Sudarshan Uprety 9851312481 &nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 242
-  "office_id" => 86
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "इ. रामचन्द्र फुयाल 9851166829 info.rdktm@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 242
-  "office_id" => 86
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Ram Chandra Phuyal 9851166829 info.rdktm@gmail.com &nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 249
-  "office_id" => 87
-  "url" => "dor-spoke-person"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "आउदै छ&nbsp; .... "
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 249
-  "office_id" => 87
-  "url" => "dor-spoke-person"
-  "language" => "English"
-  "heading" => "Spoke Person"
-  "officer_name" => null
-  "description_start" => "Comimg Soon ... "
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 202
-  "office_id" => 88
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. मधु कुमार बस्&zwj;नेत Phone: 01-5421278 Mobile: 9766387787 498madhubasnetdor@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 202
-  "office_id" => 88
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Madhu Kumar Basnet Phone: 01-5421278 Mobile: 9766387787 498madhubasnetdor@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 294
-  "office_id" => 89
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी/ गुनासो सुन्\u{200D}ने अधिकारी"
-  "officer_name" => null
-  "description_start" => "इन्जिनियर श्री दिपक याकामी ९८५१११७९१० rd_bhaktapur@dor.gov.np droadbhaktapur@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 294
-  "office_id" => 89
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "General Information"
-  "officer_name" => null
-  "description_start" => " Engineer Mr. Dipak Yakami 9851117910 droadbhaktapur@gmail.com rd_bhaktapur@dor.gov.np"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 184
-  "office_id" => 90
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "&nbsp; ई. सुदिप कार्की&nbsp; 9851256743"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 184
-  "office_id" => 90
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "&nbsp; Er. Sudip Karki ९८५१२५६७४३"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 343
-  "office_id" => 91
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. राजेन्द्र कार्की ९८५६०६७१२० damaulidivision@gmail.com&nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 343
-  "office_id" => 91
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Rajendra Karki 9856067120 damaulidivision@gmail.com&nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 347
-  "office_id" => 92
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई&zwj;. ध्रुब पोख्रेल&nbsp; 9856080028 rd.pokhara1@gmail.com&nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 347
-  "office_id" => 92
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Dhurba Pokhrel 9856080028 dropokhara@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 246
-  "office_id" => 93
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => " ई. विष्णु प्रसाद लामिछाने&nbsp; 9857620952 drobaglung@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 246
-  "office_id" => 93
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => " Er. Bishnu Prasad Lamichhane 9857620952 drobaglung@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 190
-  "office_id" => 94
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "&nbsp; इ. श्री महेश्वर लम्साल ०७५-५२०९२१ ९८५७०७७९२१ dropalpa@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 190
-  "office_id" => 94
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "&nbsp; Er. Maheshwor Lamsal 075-520921 9857077921 dropalpa@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 351
-  "office_id" => 95
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी / गुनासो सुन्ने अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. श्री प्रज्ञा शर्मा 9857072146"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 351
-  "office_id" => 95
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer / Grievance Officer"
-  "officer_name" => null
-  "description_start" => "Er. Pragya Sharma 9857072146"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 258
-  "office_id" => 97
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. विकेश लाखे 9857868009 drofficepyuthan@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 258
-  "office_id" => 97
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Bikesh Lakhe&nbsp; &nbsp; &nbsp;Engineer 9857868009 drofficepyuthan@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 282
-  "office_id" => 98
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "इ.अशोक चौधरी 9857860482"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 282
-  "office_id" => 98
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Ashok Chaudhary 9857860482 &nbsp; &nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 262
-  "office_id" => 99
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई.&nbsp; राम सागर हरिजन ९८५८०६०६२९ dronepalgunj@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 262
-  "office_id" => 99
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Ram Sagar Harijan 9858060629 dronepalgunj@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 266
-  "office_id" => 100
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => ".... ई. रुपेश के.सी. Email: rupeshkathayat.123@gmail.com ९८४४४७४७९७ &nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 266
-  "office_id" => 100
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => ".... Er. Rupesh K.C. Email: rupeshkathayat.123@gmail.com 9844474797 Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 355
-  "office_id" => 101
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "इ.प्रदिप नारायण चौधरी ९८५८३९१००१ sadakjumla@gmail.com &nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 355
-  "office_id" => 101
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "&nbsp; sadakjumla@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 278
-  "office_id" => 102
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "&nbsp; 9858051081"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 278
-  "office_id" => 102
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "&nbsp; 9858051081"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 274
-  "office_id" => 103
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "&nbsp; ई. हरिस प्रसाद जोशी&nbsp; 9858783021 dromnr3@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 274
-  "office_id" => 103
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "&nbsp; Er. Harish Prashad Joshi Mobile: 9858783021&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbs"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 197
-  "office_id" => 104
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "उदयराम कठायत&nbsp; ईन्जिनियर/सूचना अधिकारी 9858480151 drodoti2016@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 197
-  "office_id" => 104
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "उदयराम कठायत&nbsp; ईन्जिनियर/सूचना अधिकारी 9858480151 drodoti2016@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 270
-  "office_id" => 105
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "&nbsp; ई. सुभाष साह ९८५८०६८७९८ बोलपत्र सम्बन्धी जानकारिको लागि: ई. मोहन विक्रम भुजेल ९८४४५१८७८१ &nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 270
-  "office_id" => 105
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "&nbsp; Er. Subhash Sah 9858068798 बोलपत्र सम्बन्धी जानकारिको लागि: ई. मोहन विक्रम भुजेल ९८४४५१८७८१"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 208
-  "office_id" => 106
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "इ. कपिल प्रसाद पन्त&nbsp; &nbsp; &nbsp; &nbsp; ९८५८७८५४२३ &nbsp; &nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 208
-  "office_id" => 106
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Kapil Prasad Pant &nbsp; &nbsp; &nbsp; &nbsp;9858785423 &nbsp; &nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 115
-  "office_id" => 113
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. प्रेम कुमार झा 9842035358... Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 115
-  "office_id" => 113
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Prem Kumar Jha 9842035358 Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 286
-  "office_id" => 114
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "मे.ई. बरुण कुमार साह 9855014665 Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 286
-  "office_id" => 114
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er.&nbsp; Barun Kumar Sah 9855014665 Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 379
-  "office_id" => 115
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. प्रदिप कुमार श्रेष्ठ 9814422240 hedktm39@gmail.com Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 379
-  "office_id" => 115
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Pradeep Kumar Shrestha 9814422240 Follow Us &nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 290
-  "office_id" => 116
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "रामकृष्ण श्रेष्ठ (मेकानिकल ईन्जिनियर) सम्पर्क नं. ९७६८००४१३४ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ०६१-४५२५३९ ई-मेलः hedpokhara@gmail.com &nbsp; &nbsp; &nbsp; &nb"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 290
-  "office_id" => 116
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Ramkrishna Shrestha ( Mechanical Engineer) Contact No.: 9768004134 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;061-452539 E-mail address: hed"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 298
-  "office_id" => 117
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "&nbsp; Er. Nabin Ghimire 9857081329"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 298
-  "office_id" => 117
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "&nbsp; Er. Nabin Ghimire 9857081329"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 383
-  "office_id" => 118
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. ओम बहादुर थापा 9858035013 Follow Us &nbsp; &nbsp; Follow us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 383
-  "office_id" => 118
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Om Bahadur Thapa 9858035013 Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 387
-  "office_id" => 119
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "&nbsp; Laxman S. Ayer 091-590501"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 387
-  "office_id" => 119
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "&nbsp; Laxman S. Ayer 091-590501"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 391
-  "office_id" => 120
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "दिपेश विश्वकर्मा 9805364317 yantrikphidim@gmail.com Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 391
-  "office_id" => 120
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Dipesh Bishwokarma 9805364317 Other Email:&nbsp;yantrikphidim@gmail.com Follow Us &nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 394
-  "office_id" => 121
-  "url" => "dor-spoke-person"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "श्री टंक नाथ दुलाल&nbsp; सम्पर्क नं: ९८५२८३१२०"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 394
-  "office_id" => 121
-  "url" => "dor-spoke-person"
-  "language" => "English"
-  "heading" => "Spokes Person"
-  "officer_name" => null
-  "description_start" => "Mr. Tankanath Dulal Contact no: 985283120"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 301
-  "office_id" => 122
-  "url" => "dor-spoke-person"
-  "language" => "Nepali"
-  "heading" => "कार्यालय प्रमुख तथा सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "मे.ई. गाेविन्द साह 9852828185"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 301
-  "office_id" => 122
-  "url" => "dor-spoke-person"
-  "language" => "English"
-  "heading" => "Office Head and Information Officer"
-  "officer_name" => null
-  "description_start" => "Me.Er. Govinda Sah 9852828185"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 398
-  "office_id" => 123
-  "url" => "dor-spoke-person"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "श्री पाण्डव मरबैता यदाव मोबाइल नं: ९८१५८७७७७२ "
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 398
-  "office_id" => 123
-  "url" => "dor-spoke-person"
-  "language" => "English"
-  "heading" => "Spokes Person"
-  "officer_name" => null
-  "description_start" => "Mr. Pandab Marwaita yadav Mobile no: 9815877772 "
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 402
-  "office_id" => 124
-  "url" => "dor-spoke-person"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "comming soon "
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 402
-  "office_id" => 124
-  "url" => "dor-spoke-person"
-  "language" => "English"
-  "heading" => "Spokes Person"
-  "officer_name" => null
-  "description_start" => "comming soon "
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 310
-  "office_id" => 125
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "सि.मे. प्रमोद कुमार यादव 9840182024"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 310
-  "office_id" => 125
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "SR.Mech. Pramod Kumar Yadav 9840182024 &nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 314
-  "office_id" => 126
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सुचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "रामहरी देवकाेटा ९८५८०६५१४५"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 314
-  "office_id" => 126
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information officer"
-  "officer_name" => null
-  "description_start" => "Ramhari Devkota 9858065145"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 363
-  "office_id" => 127
-  "url" => "dor-spoke-person"
-  "language" => "Nepali"
-  "heading" => "कार्यालय प्रमुख तथा सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "मे.ई. रामानन्द चाैधरी 9857835290 Other Email:&nbsp;modang050@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 363
-  "office_id" => 127
-  "url" => "dor-spoke-person"
-  "language" => "English"
-  "heading" => "Office Head and Information Officer"
-  "officer_name" => null
-  "description_start" => "Me.Er. Ramananda Chaudhary 9857835290 Other Email:&nbsp;modang050@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 305
-  "office_id" => 128
-  "url" => "dor-spoke-person"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "श्री बाबुराम खरेल&nbsp; सम्पर्क नं: ९८४१५०३९४३ ईमेल: Kharel607@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 305
-  "office_id" => 128
-  "url" => "dor-spoke-person"
-  "language" => "English"
-  "heading" => "Spokes person"
-  "officer_name" => null
-  "description_start" => "Mr. Baburam Kharel Contact no: 9841503943 E-mail: Kharel607@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 410
-  "office_id" => 129
-  "url" => "dor-spoke-person"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "श्री प्रशान्त न्यौपाने (मेकानिकल इन्जिनियर) Contact: ९८५१४२८३३० इमेल: prashantneupane70@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 410
-  "office_id" => 129
-  "url" => "dor-spoke-person"
-  "language" => "English"
-  "heading" => "Intormation Officer"
-  "officer_name" => null
-  "description_start" => "Mr. Prashant Neupane (Mechanical Engineer) Contact: 9851428330 Email : prashantneupane70@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 359
-  "office_id" => 131
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "इ. सतिश कुमार साह ९८५२८७७७७१"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 359
-  "office_id" => 131
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Satish Kumar Sah 9852877771"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 416
-  "office_id" => 134
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "&nbsp; सि.डि.ई. विनोद भट्टराई&nbsp; 9851115517 Current Projects"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 416
-  "office_id" => 134
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "&nbsp; Er. Binod Bhattarai 9851115517 Current Projects"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 420
-  "office_id" => 136
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी / उप आयाेजना निर्देशक"
-  "officer_name" => null
-  "description_start" => "सि.डि.ई.&nbsp; &nbsp; ९८५१३५००५४ info.pdadb@gmail.com &nbsp; गुनासाे पाेर्टल"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 420
-  "office_id" => 136
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer / Deputy Project Director"
-  "officer_name" => null
-  "description_start" => "SDE.&nbsp; 9851350054 info.pdadb@gmail.com Grievance Portal"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 431
-  "office_id" => 137
-  "url" => "dor-spoke-person"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "comming soon "
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 431
-  "office_id" => 137
-  "url" => "dor-spoke-person"
-  "language" => "English"
-  "heading" => "Spokes Person"
-  "officer_name" => null
-  "description_start" => "comming soon "
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 424
-  "office_id" => 138
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. सचिन श्रेष्ठ 9851352038 thaibiansachinem@gmail.com Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 424
-  "office_id" => 138
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Sachin Shrestha Follow Us &nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 428
-  "office_id" => 139
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "सि.डि.ई.&nbsp; श्री बिष्णु बाबु पाण्डे 9851126493"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 428
-  "office_id" => 139
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "SDE&nbsp; Bishnu Babu pandey 9851126493 phphulaki@gmail.com &nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 436
-  "office_id" => 140
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. दिनेश रैखोला 985-2082327 Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 436
-  "office_id" => 140
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Dinesh Raikhola 985-2082327 Follow Us &nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 440
-  "office_id" => 142
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. सचेन्द्र मिश्र 9855092276 Project Details"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 440
-  "office_id" => 142
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Sachendra Mishra 9855092276 Project Details &nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1369
-  "office_id" => 144
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई.&nbsp; कृष्ण प्रसाद पाण्डे 9858055204 Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1369
-  "office_id" => 144
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Krishna Prasad Pandey 9858055204 Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 476
-  "office_id" => 147
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "सि.डि.इ. अमिन्द्र खड्का 9851400421 QRDC Documents"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 476
-  "office_id" => 147
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "SDE. Amindra Khadka 9851400421 QRDC Documents"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1562
-  "office_id" => 151
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई.&nbsp;&nbsp;शिवराम प्रसाद देव&nbsp; 9852630514 Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1562
-  "office_id" => 151
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Shivaram Prasad Dev 9852630514 Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1213
-  "office_id" => 152
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "&nbsp;ई. राम विहारी चौधरी 9768553527 Project Detail"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1213
-  "office_id" => 152
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "&nbsp; Er. Ram Bihari Chaudhary 9768553527 Project Detail &nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1618
-  "office_id" => 154
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई.&nbsp; दुर्गा मण्डल ९८५२०८८५७३ Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1618
-  "office_id" => 154
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Durga Mandal 9852088573 Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 472
-  "office_id" => 161
-  "url" => "dor-spoke-person"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. सागर कार्की क्षेत्री मो.नं.: ९८५७०२४६९९ इमेल: ssdrp.dor@gmail.com "
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 472
-  "office_id" => 161
-  "url" => "dor-spoke-person"
-  "language" => "English"
-  "heading" => "Spokes Person"
-  "officer_name" => null
-  "description_start" => "Er. Sagar Karki Chhetri Ph.No. 9857024699 Email. ssdrp.dor@gmail.com "
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1185
-  "office_id" => 164
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. शारद कुमार पाण्डे 9851410128 Current Projects"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1185
-  "office_id" => 164
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Engineer Saarad Kumar Pandey 9851410128 Current Projects"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 450
-  "office_id" => 165
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "इ. &nbsp;क्षितिज पोख्रेल 01-5268174"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 450
-  "office_id" => 165
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Kshitij Pokhrel 01-5268174"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 453
-  "office_id" => 173
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. सुभाष कुमार दत्त ९८५२६३०८८१ mbhpo.damak@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 453
-  "office_id" => 173
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Nodal Officer"
-  "officer_name" => null
-  "description_start" => "Er. Subash Kumar Dutta 9852630881 mbhpo.damak@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 456
-  "office_id" => 174
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. नविन खराल 9858029611 "
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 456
-  "office_id" => 174
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Nabin Khanal 9858029611"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 460
-  "office_id" => 175
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. भरत श्रेष्ठ 9851341553 mpbharatshrestha082@gmail.com Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 460
-  "office_id" => 175
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Bharat Shrestha 9851341553 mpbharatshrestha082@gmail.com Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1364
-  "office_id" => 176
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई.&nbsp; श्याम कुमार चौधरी 9855038809"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1364
-  "office_id" => 176
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Shyam Kumar Chaudhary 9855038809 &nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1542
-  "office_id" => 177
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई.&nbsp; अनन्त बराल ९८५६०३७५६१/ ९८५६०७०६३७ &nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1542
-  "office_id" => 177
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Anant Baral 9856037561/ 9856070637 &nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1437
-  "office_id" => 178
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. नितिश झा 9843064583"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1437
-  "office_id" => 178
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Nitish Jha 9843064583"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1566
-  "office_id" => 179
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "&nbsp; ई. गोविन्द श्रेष्ठ 9856040035 Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1566
-  "office_id" => 179
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "&nbsp; Er.&nbsp; Govinda Shrestha 9856040035 Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1342
-  "office_id" => 181
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. दिपक देवकोटा 9858484026 deepakdevkota041@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1342
-  "office_id" => 181
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Deepak Devkota 9858484026 deepakdevkota041@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1552
-  "office_id" => 182
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "&nbsp; इ.&nbsp; प्रभात तिवारी +९७७-९८५७०-७४७९५ tspgulmi1@gmail.com mbhpotamghas@dor.gov.np"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1552
-  "office_id" => 182
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "&nbsp; Er. Prabhat Tiwari 9857074795 tspgulmi1@gmail.com mbhpotamghas@dor.gov.np &nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1192
-  "office_id" => 183
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. प्रतीक प्रधान&nbsp; 9857053157"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1192
-  "office_id" => 183
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Prateek Pradhan 9857053157"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1257
-  "office_id" => 185
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. रवि शाह ९८६०६२१७६५"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1257
-  "office_id" => 185
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Ravi Shah 9860621765 &nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1261
-  "office_id" => 187
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई.&nbsp;&nbsp;.... 98.... Project Details"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1261
-  "office_id" => 187
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. ... 98.... Project Details"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 468
-  "office_id" => 192
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 468
-  "office_id" => 192
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1181
-  "office_id" => 193
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => " ई. श्री&nbsp; जगदिश चाैधरी 9843040629 Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1181
-  "office_id" => 193
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => " Er. Jagdish Chaudhary 9843040629 Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1333
-  "office_id" => 194
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. शिव खनाल 9855027820 e-mail: sk.triveni338@gmail.com Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1333
-  "office_id" => 194
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Shiva Khanal 9855027820 Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1265
-  "office_id" => 195
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "गुनासो सुन्\u{200D}ने अधिकारी/सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "इ. सुमन गोले ९८५२८३९४९२ &nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1265
-  "office_id" => 195
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Grievance Hearing Officer/ Information Officer"
-  "officer_name" => null
-  "description_start" => " &nbsp; &nbsp; Project Details"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1287
-  "office_id" => 196
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. अमरेन्द्र कुमार यादव ९८५११०१७०१ gtmsrrp.dor@dor.gov.np For more information Visit our Website"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1287
-  "office_id" => 196
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er.Amrendra Kumar Yadav 9851101701 gtmsrrp.dor@dor.gov.np For more information Visit our Website"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1634
-  "office_id" => 197
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई.&nbsp; केशवदत्त&nbsp; मिश्र 9858485167 mishrakeshab2856@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1634
-  "office_id" => 197
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Keshab Datt Mishra 9858485167 mishrakeshab2856@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1195
-  "office_id" => 205
-  "url" => "dor-spoke-person"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "मे&zwj;.ई.&nbsp;&nbsp; सम्पर्क :&nbsp;&nbsp; ईमेल :&nbsp; &nbsp;mo_jumla@dor.gov.np"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1195
-  "office_id" => 205
-  "url" => "dor-spoke-person"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Me. Er.&nbsp;&nbsp; Contact:&nbsp;&nbsp; Email:&nbsp; mo_jumla@dor.gov.np"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1199
-  "office_id" => 206
-  "url" => "dor-spoke-person"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "मे&zwj;.ई.&nbsp; विजय कुमार शाह सम्पर्क :&nbsp;&nbsp; ईमेल :&nbsp; &nbsp;mo_mulkot@dor.gov.np"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1199
-  "office_id" => 206
-  "url" => "dor-spoke-person"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Me. Er.&nbsp; Bijay Kumar Shah Contact:&nbsp;&nbsp; Email:&nbsp; mo_mulkot@dor.gov.np"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1452
-  "office_id" => 222
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => " ई. निरञ्जन थापा 9841147650 dharanchatarawest@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1452
-  "office_id" => 222
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => " Er. Niranjan Thapa 9841147650 dharanchatarawest@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1448
-  "office_id" => 226
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "सलिना दाहाल 9868180395"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1448
-  "office_id" => 226
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Salina Dahal 9868180395"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1350
-  "office_id" => 227
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "&nbsp; &nbsp; &nbsp; &nbsp; ई. अन्जु परियार&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; सि.डि.ई. मोवाइल नं. ९८५१४०१२४४ E-mail: sddsbrp@gmail.com Project Details"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1350
-  "office_id" => 227
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "&nbsp; &nbsp; Er. Anju Pariyar &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; S.D.E. Contact No.9851401244 E-mail: sddsbrp@gmail.com &nbsp; Project Details"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1271
-  "office_id" => 229
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ईन्जिनियर बिरेन्द्र प्रसाद महतो&nbsp; सम्पर्क नम्बर - ९८५२८४५४३६&nbsp; इमेल ः&nbsp; &nbsp;birendramahato2030@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1271
-  "office_id" => 229
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Engineer Birendra Prasad Mahato contact no-&nbsp; 9852845436"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1283
-  "office_id" => 231
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. पंकज सिह धामी&nbsp;&nbsp; 9843914874 pdhami797@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1283
-  "office_id" => 231
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Pankaj Singh Dhami&nbsp;&nbsp; 9843914874 pdhami797@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1293
-  "office_id" => 232
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. आशिक रिजाल 9856043489"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1293
-  "office_id" => 232
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Ashik Rijal 9856043489"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1307
-  "office_id" => 233
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई.&nbsp;पंकज सिंह धामी&nbsp; 9843914874 Facebook pdhami797@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1307
-  "office_id" => 233
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Pankaj Singh Dhami&nbsp; 9843914874 Facebook pdhami797@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1317
-  "office_id" => 235
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. राजिव मानन्धर +९७७-९८५१४००३७० (nnmmroadproject@gmail.com) &nbsp; "
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1317
-  "office_id" => 235
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Rajiv Manandhar +977-9851400370 (nnmmroadproject@gmail.com) &nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1323
-  "office_id" => 237
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => " ई.&nbsp; .... 98... Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1323
-  "office_id" => 237
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => " Er. .... 98... Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1329
-  "office_id" => 238
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई.&nbsp; राम टहल यादव 9854088131 Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1329
-  "office_id" => 238
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. ... 98... Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1375
-  "office_id" => 242
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "इ.&nbsp; गणेश बहादुर बुढा ९८५८४८६८५९ Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1375
-  "office_id" => 242
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Ganesh Bahadur Budha 9858486859 Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1381
-  "office_id" => 243
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई.रंजित कुमार राय 9854029832"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1381
-  "office_id" => 243
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Ranjit Kumar Ray 9854029832"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1409
-  "office_id" => 247
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सुचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "सि&zwj;नियर मेकानिक्स शितल कुमार चाैधरी 9761739122 momulkot@gmail.Com Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1409
-  "office_id" => 247
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "General Information"
-  "officer_name" => null
-  "description_start" => "सि&zwj; मे श्री शितल कुमार चाैधरी ९७६१७३९१२२ momulkot@gmail.com Follow Us &nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1415
-  "office_id" => 248
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "सि.मे. दिल बहादुर रावल&nbsp; ९८४८३६३५८६"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1415
-  "office_id" => 248
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "S.M. Dil Bahadur Rawal 9848363586"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1421
-  "office_id" => 249
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. मन्जिला श्रेष्ठ 9841451128 Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1421
-  "office_id" => 249
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Manjila Shrestha 9841451128 Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1427
-  "office_id" => 250
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ईन्जिनियर प्रतिभा शर्मा ९८६९८६७३९८ prtva21@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1427
-  "office_id" => 250
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Prativa Shrama 9869867398 prtva21@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1433
-  "office_id" => 251
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "इ. यादव सुवेदी 9855075311 &nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1433
-  "office_id" => 251
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Engineer&nbsp; 9855075311"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1458
-  "office_id" => 252
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => " सूचना अधिकारी&nbsp; (सडक डिभिजन, हेटौंडा) https://dor.gov.np/hetauda Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1458
-  "office_id" => 252
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Contact Information Officer Of Road Division, Hetauda Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1470
-  "office_id" => 254
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "उप आयोजना निर्देशक : संजय पन्थी&nbsp; सम्पर्क न. : 9851455330/9851153605 Project Updates"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1470
-  "office_id" => 254
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Deputy Project Director: Sanjaya Panthi Contact No: 9851153605 Project Updates"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1476
-  "office_id" => 255
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई.&nbsp;&nbsp;... 98..."
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1476
-  "office_id" => 255
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. ... 98..."
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1482
-  "office_id" => 256
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "सब इन्जिनियर सागर शर्मा संम्पर्क नं. 9854055260"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1482
-  "office_id" => 256
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Sub Engineer Contact Number 9854055260"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1488
-  "office_id" => 257
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => " ई. सुनीत के.सी. ९८५१०१५८६६ &nbsp; &nbsp; &nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1488
-  "office_id" => 257
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => " Er. Sunit KC 9851015866"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1500
-  "office_id" => 259
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => " ई. ..... 98..."
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1500
-  "office_id" => 259
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => " Er. ..... 98..."
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1506
-  "office_id" => 260
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "&nbsp; &nbsp; &nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1506
-  "office_id" => 260
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "&nbsp; &nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1512
-  "office_id" => 261
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => " ई. गाैरव धामी 9858485961"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1512
-  "office_id" => 261
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => " Er. Gaurav Dhami 9858485961"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1518
-  "office_id" => 262
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. उपेन्द्र दास 9852087415"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1518
-  "office_id" => 262
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Upendra Das&nbsp; 9852087415"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1524
-  "office_id" => 263
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "इ.&nbsp; विकाश खनाल ९८५७०८२३४० Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1524
-  "office_id" => 263
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Bikash Khanal 9857082340 Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1530
-  "office_id" => 264
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "&nbsp; ई. रणधीर कुमार सिंह 9862407089 Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1530
-  "office_id" => 264
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "&nbsp; Er. Randhir Kumar singh 9862407089 Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1536
-  "office_id" => 265
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => " ई.&nbsp; अनुपम कुमार ९८५२८७०१७१ Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1536
-  "office_id" => 265
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => " Er. Anupam Kumar 9852870171 Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1548
-  "office_id" => 267
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. बिष्णु प्रसाद पाण्डे&nbsp; सम्पर्क नं. : ९८४९० ३६९०४&nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1548
-  "office_id" => 267
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Bishnu Prasad Pande 9849036904"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1558
-  "office_id" => 268
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. लोमश उपाध्याय सूचना अधिकारी ९८४१४८१६६५"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1558
-  "office_id" => 268
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Lomas Upadhyaya Information Officer 9841481665"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1572
-  "office_id" => 269
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "&nbsp; ई. उज्ज्वल शर्मा ९८५७६५६७०७ Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1572
-  "office_id" => 269
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "&nbsp; Er.Ujjwal Sharma 9857656707 Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1578
-  "office_id" => 270
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. अनुप साउदेन 9852075788/9843718112 Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1578
-  "office_id" => 270
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Anup Sauden 9852075788/9843718112 Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1584
-  "office_id" => 271
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => " ई.&nbsp; बसन्त कुमार गाँई 9852660879 Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1584
-  "office_id" => 271
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => " Er. Basanta Kumar Gain 9852660879 Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1590
-  "office_id" => 272
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. नरेश जिरेल 9860834676 njirel56@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1590
-  "office_id" => 272
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Naresh Jirel 9860834676 njirel56@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1596
-  "office_id" => 273
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. बाबुसाहेब कुमार बैठा ९८६४२७७२३३ Follow Us &nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1596
-  "office_id" => 273
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. BabuSaheb Kumar Baitha 9857632520 Follow Us &nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1602
-  "office_id" => 274
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "इ.&nbsp; बिरेन्द्र प्रकाश तेली&nbsp; 9857065552 Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1602
-  "office_id" => 274
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Birendra Prakash Teli 9857065552 Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1608
-  "office_id" => 275
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. गिरीश नन्दन प्रसाद पोरस 9858065716 Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1608
-  "office_id" => 275
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Girish Nandan Prasad Poras 9858065716 Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1614
-  "office_id" => 276
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. ओम प्रकाश कोहार 9858322727 koharomprakash9@gmail.com Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1614
-  "office_id" => 276
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Om Prakash Kohar 9858322727 koharomprakash9@gmail.com Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1623
-  "office_id" => 277
-  "url" => "dor-spoke-person"
-  "language" => "Nepali"
-  "heading" => "आयोजना प्रमुख / सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "सि.डि.ई.&nbsp;संजिव कुमार गुप्ता 9863674147"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1623
-  "office_id" => 277
-  "url" => "dor-spoke-person"
-  "language" => "English"
-  "heading" => "Project Chief / Information Officer"
-  "officer_name" => null
-  "description_start" => "SDE Sanjib Kumar Gupta 9863674147"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1630
-  "office_id" => 278
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "इन्जिनियर अशोक पौडेल ९७६५३९६६३७"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1630
-  "office_id" => 278
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Engineer Ashok Paudel 9765396637"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1640
-  "office_id" => 279
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई .&nbsp; भुवनेश्&zwj;वर प्रसाद यादव ९८५७८७७०२१"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1640
-  "office_id" => 279
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Bhuwaneshwar Prasad Yadav 9857877021"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1646
-  "office_id" => 280
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई.&nbsp;परीक्षा पौडेल 9857089468 Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1646
-  "office_id" => 280
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "ई.&nbsp;परीक्षा पौडेल 9857089468 Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1652
-  "office_id" => 281
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. उपेन्द्र महरान 9762415689 Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1652
-  "office_id" => 281
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Upendra Maharan 9762415689 Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1658
-  "office_id" => 282
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => " ई.&nbsp; .... 98....... Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1658
-  "office_id" => 282
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => " Er. .... 98....... Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1664
-  "office_id" => 283
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => " ई. नबिन बिस्ट&nbsp; ९८५६००५१४०&nbsp; Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1664
-  "office_id" => 283
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => " Er. Nabin Bista 9856005140 Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1669
-  "office_id" => 284
-  "url" => "dor-spoke-person"
-  "language" => "Nepali"
-  "heading" => "आयोजना प्रमुख तथा सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "This project is under the supervision of Road Division, Kathmandu."
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1669
-  "office_id" => 284
-  "url" => "dor-spoke-person"
-  "language" => "English"
-  "heading" => "Project Chief and Information Officer"
-  "officer_name" => null
-  "description_start" => "This project is under the supervision of Road Division, Kathmandu."
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1678
-  "office_id" => 286
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. ,,,, 98...."
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1678
-  "office_id" => 286
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. ... 98...."
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1694
-  "office_id" => 288
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. सविता ज्ञवाली 9748798111 Email: siddababatunnel79@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1694
-  "office_id" => 288
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Sabita Gyawali 9748798111 Email: siddababatunnel79@gmail.com"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1700
-  "office_id" => 289
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "ई. चित्ररंजनकुमार रान मोबाइल न ९८६०६९९७०१&nbsp; &nbsp; &nbsp; &nbsp;गुनासो पेश गर्नको लागि &#39;पुरा पढ्नुहोस्&#39; बटन थिचेर&nbsp; क्यु आर कोड स्क्यान गर्नुहोस l &nbsp; अथवा&nbsp;"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1700
-  "office_id" => 289
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Chitranjan Kumar Ran Mobile No 9860699701&nbsp; &nbsp; &nbsp; For Lodging Grievances, click &#39;Read More&#39; Button and then scan the QR code&nbsp; OR copy paste on your bro"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1706
-  "office_id" => 290
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. पल्लब श्रेष्ठ 9813793624"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1706
-  "office_id" => 290
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er.&nbsp; Pallab Shrestha 9813793624"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1712
-  "office_id" => 291
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई.&nbsp; टोपेन्द्र खड्का 9858037504 Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1712
-  "office_id" => 291
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Topendra Khadka 9858037504 Follow Us"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1733
-  "office_id" => 295
-  "url" => "general-info"
-  "language" => "Nepali"
-  "heading" => "सूचना अधिकारी"
-  "officer_name" => null
-  "description_start" => "ई. रंजित साह ९८५५०७३५६९"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-array:7 [
-  "page_id" => 1733
-  "office_id" => 295
-  "url" => "general-info"
-  "language" => "English"
-  "heading" => "Information Officer"
-  "officer_name" => null
-  "description_start" => "Er. Ranjit Sah 9855073569"
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:7
-doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$
+    $description = html_entity_decode(
+        strip_tags((string) $r->home_description),
+        ENT_QUOTES | ENT_HTML5,
+        "UTF-8"
+cat /tmp/contact-officer-review.txtofficer-review.txt", 400));
+array:4 [
+  "candidate_pages" => 236
+  "language_rows" => 472
+  "review_file" => "/tmp/contact-officer-review.txt"
+  "database_changed" => false
+] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:16
+ID=372 | Office=65 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. .. 98...
+ID=372 | Office=65 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. ... 98...
+ID=333 | Office=70 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. .. 98.. fhsmo7@gmail.com
+ID=333 | Office=70 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. .. 98.. fhsmo7@gmail.com
+ID=360 | Office=71 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. ... 98.. Follow Us
+ID=360 | Office=71 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. ... 98.. Follow Us
+ID=326 | Office=72 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=सूर्य बहादुर खड्का सूचना अधिकारी (ना.सु.) ९८५८३२०४१२
+ID=326 | Office=72 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=
+ID=321 | Office=73 | URL=dor-spoke-person | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=राम दत्त पन्त
+ID=321 | Office=73 | URL=dor-spoke-person | Lang=2 | Heading=Spokes Person | OfficerName= | Description=Ram Dutta Panta
+ID=210 | Office=74 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=इ. आशिष देव ९८५२६८५०९०
+ID=210 | Office=74 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Aashish Deu 9852685090
+ID=338 | Office=75 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=इ. विपिन ढुङ्गाना फोन नं. : ९८५२६२६१४६ ईमेल : drodamak@gmail.com
+ID=338 | Office=75 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Beepin Dhungana Phone No. : 9852626146 Email : drodamak@gmail.com
+ID=214 | Office=76 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. श्री प्रभात किरण राई 9852081002 prabhatkiran071@gmail.com, sadakdivisionbrt@gmail.com
+ID=214 | Office=76 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Prabhat Kiran Rai 9852081002 prabhatkiran071@gmail.com, sadakdivisionbrt@gmail.com
+ID=206 | Office=77 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. रमेश कुमार गोइत 9852067152 dro.dhkt@gmail.com
+ID=206 | Office=77 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Ramesh Kumar Goit 9852067152 dro.dhkt@gmail.com
+ID=222 | Office=78 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. शिव नारायण प्रसाद साह 9852861130 drolahan@gmail.com
+ID=222 | Office=78 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Shiva Narayan Prasa Sah 9852861130 drolahan@gmail.com
+ID=221 | Office=79 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. गौतम कुमार देव 9852027755 subgautam@yahoo.com
+ID=221 | Office=79 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er Gautam Kumar Dev 9852027755 subgautam@yahoo.com
+ID=226 | Office=80 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. अजय कुमार साह 9854029891 rdjanakpur@gmail.com
+ID=226 | Office=80 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Ajay Kumar Sah 9854029891 rdjanakpur@gmail.com
+ID=230 | Office=81 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. संजय कुमार यादव 9855041664
+ID=230 | Office=81 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Sanjay Kumar Yadav 9855041664
+ID=368 | Office=82 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. लाेमस उपाध्याय 9855075311 ulomas.rdhtd@gmail.com
+ID=368 | Office=82 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Lomas Upadhyaya 9855075311 ulomas.rdhtd@gmail.com
+ID=342 | Office=83 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. कृष्ण प्रसाद आचार्य सम्पर्क नं. ९८५५०९२२१८ rdbharatpur7@gmail.com krishna70940@gmail.com
+ID=342 | Office=83 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Krishna Prasasd Acharya Contact No. 9855092218 rdbharatpur7@gmail.com krishna70940@gmail.com
+ID=234 | Office=84 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. अर्जुन नेपाली 9856031818 charikotdro1@gmail.com
+ID=234 | Office=84 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=ई. .. 98.. drocharikot@gmail.com
+ID=239 | Office=85 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. सुदर्शन उप्रेती 9851312481
+ID=239 | Office=85 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Sudarshan Uprety 9851312481
+ID=242 | Office=86 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=इ. रामचन्द्र फुयाल 9851166829 info.rdktm@gmail.com
+ID=242 | Office=86 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Ram Chandra Phuyal 9851166829 info.rdktm@gmail.com
+ID=249 | Office=87 | URL=dor-spoke-person | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=आउदै छ ....
+ID=249 | Office=87 | URL=dor-spoke-person | Lang=2 | Heading=Spoke Person | OfficerName= | Description=Comimg Soon ...
+ID=202 | Office=88 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. मधु कुमार बस्‍नेत Phone: 01-5421278 Mobile: 9766387787 498madhubasnetdor@gmail.com
+ID=202 | Office=88 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Madhu Kumar Basnet Phone: 01-5421278 Mobile: 9766387787 498madhubasnetdor@gmail.com
+ID=294 | Office=89 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी/ गुनासो सुन्‍ने अधिकारी | OfficerName= | Description=इन्जिनियर श्री दिपक याकामी ९८५१११७९१० rd_bhaktapur@dor.gov.np droadbhaktapur@gmail.com
+ID=294 | Office=89 | URL=general-info | Lang=2 | Heading=General Information | OfficerName= | Description=Engineer Mr. Dipak Yakami 9851117910 droadbhaktapur@gmail.com rd_bhaktapur@dor.gov.np
+ID=184 | Office=90 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. सुदिप कार्की 9851256743
+ID=184 | Office=90 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Sudip Karki ९८५१२५६७४३
+ID=343 | Office=91 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. राजेन्द्र कार्की ९८५६०६७१२० damaulidivision@gmail.com
+ID=343 | Office=91 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Rajendra Karki 9856067120 damaulidivision@gmail.com
+ID=347 | Office=92 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई‍. ध्रुब पोख्रेल 9856080028 rd.pokhara1@gmail.com
+ID=347 | Office=92 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Dhurba Pokhrel 9856080028 dropokhara@gmail.com
+ID=246 | Office=93 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. विष्णु प्रसाद लामिछाने 9857620952 drobaglung@gmail.com
+ID=246 | Office=93 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Bishnu Prasad Lamichhane 9857620952 drobaglung@gmail.com
+ID=190 | Office=94 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=इ. श्री महेश्वर लम्साल ०७५-५२०९२१ ९८५७०७७९२१ dropalpa@gmail.com
+ID=190 | Office=94 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Maheshwor Lamsal 075-520921 9857077921 dropalpa@gmail.com
+ID=351 | Office=95 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी / गुनासो सुन्ने अधिकारी | OfficerName= | Description=ई. श्री प्रज्ञा शर्मा 9857072146
+ID=351 | Office=95 | URL=general-info | Lang=2 | Heading=Information Officer / Grievance Officer | OfficerName= | Description=Er. Pragya Sharma 9857072146
+ID=258 | Office=97 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. विकेश लाखे 9857868009 drofficepyuthan@gmail.com
+ID=258 | Office=97 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Bikesh Lakhe Engineer 9857868009 drofficepyuthan@gmail.com
+ID=282 | Office=98 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=इ.अशोक चौधरी 9857860482
+ID=282 | Office=98 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Ashok Chaudhary 9857860482
+ID=262 | Office=99 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. राम सागर हरिजन ९८५८०६०६२९ dronepalgunj@gmail.com
+ID=262 | Office=99 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Ram Sagar Harijan 9858060629 dronepalgunj@gmail.com
+ID=266 | Office=100 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=.... ई. रुपेश के.सी. Email: rupeshkathayat.123@gmail.com ९८४४४७४७९७
+ID=266 | Office=100 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=.... Er. Rupesh K.C. Email: rupeshkathayat.123@gmail.com 9844474797 Follow Us
+ID=355 | Office=101 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=इ.प्रदिप नारायण चौधरी ९८५८३९१००१ sadakjumla@gmail.com
+ID=355 | Office=101 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=sadakjumla@gmail.com
+ID=278 | Office=102 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=9858051081
+ID=278 | Office=102 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=9858051081
+ID=274 | Office=103 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. हरिस प्रसाद जोशी 9858783021 dromnr3@gmail.com
+ID=274 | Office=103 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Harish Prashad Joshi Mobile: 9858783021 Email: dromnr3@gmail.com
+ID=197 | Office=104 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=उदयराम कठायत ईन्जिनियर/सूचना अधिकारी 9858480151 drodoti2016@gmail.com
+ID=197 | Office=104 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=उदयराम कठायत ईन्जिनियर/सूचना अधिकारी 9858480151 drodoti2016@gmail.com
+ID=270 | Office=105 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. सुभाष साह ९८५८०६८७९८ बोलपत्र सम्बन्धी जानकारिको लागि: ई. मोहन विक्रम भुजेल ९८४४५१८७८१
+ID=270 | Office=105 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Subhash Sah 9858068798 बोलपत्र सम्बन्धी जानकारिको लागि: ई. मोहन विक्रम भुजेल ९८४४५१८७८१
+ID=208 | Office=106 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=इ. कपिल प्रसाद पन्त ९८५८७८५४२३
+ID=208 | Office=106 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Kapil Prasad Pant 9858785423
+ID=115 | Office=113 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. प्रेम कुमार झा 9842035358... Follow Us
+ID=115 | Office=113 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Prem Kumar Jha 9842035358 Follow Us
+ID=286 | Office=114 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=मे.ई. बरुण कुमार साह 9855014665 Follow Us
+ID=286 | Office=114 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Barun Kumar Sah 9855014665 Follow Us
+ID=379 | Office=115 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. प्रदिप कुमार श्रेष्ठ 9814422240 hedktm39@gmail.com Follow Us
+ID=379 | Office=115 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Pradeep Kumar Shrestha 9814422240 Follow Us
+ID=290 | Office=116 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=रामकृष्ण श्रेष्ठ (मेकानिकल ईन्जिनियर) सम्पर्क नं. ९७६८००४१३४ ०६१-४५२५३९ ई-मेलः hedpokhara@gmail.com hed_pokhara@dor.gov.np Follow Us फेसबुक पेजः हेभी ईक्विपमेन्ट डिभिजन पोखरा ।
+ID=290 | Office=116 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Ramkrishna Shrestha ( Mechanical Engineer) Contact No.: 9768004134 061-452539 E-mail address: hedpokhara@gmail.com hed_pokhara@dor.gov.np Follow Us Facebook page: Heavy Equipment Division, Pokhara
+ID=298 | Office=117 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=Er. Nabin Ghimire 9857081329
+ID=298 | Office=117 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Nabin Ghimire 9857081329
+ID=383 | Office=118 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. ओम बहादुर थापा 9858035013 Follow Us Follow us
+ID=383 | Office=118 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Om Bahadur Thapa 9858035013 Follow Us
+ID=387 | Office=119 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=Laxman S. Ayer 091-590501
+ID=387 | Office=119 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Laxman S. Ayer 091-590501
+ID=391 | Office=120 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=दिपेश विश्वकर्मा 9805364317 yantrikphidim@gmail.com Follow Us
+ID=391 | Office=120 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Dipesh Bishwokarma 9805364317 Other Email: yantrikphidim@gmail.com Follow Us
+ID=394 | Office=121 | URL=dor-spoke-person | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=श्री टंक नाथ दुलाल सम्पर्क नं: ९८५२८३१२०
+ID=394 | Office=121 | URL=dor-spoke-person | Lang=2 | Heading=Spokes Person | OfficerName= | Description=Mr. Tankanath Dulal Contact no: 985283120
+ID=301 | Office=122 | URL=dor-spoke-person | Lang=1 | Heading=कार्यालय प्रमुख तथा सूचना अधिकारी | OfficerName= | Description=मे.ई. गाेविन्द साह 9852828185
+ID=301 | Office=122 | URL=dor-spoke-person | Lang=2 | Heading=Office Head and Information Officer | OfficerName= | Description=Me.Er. Govinda Sah 9852828185
+ID=398 | Office=123 | URL=dor-spoke-person | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=श्री पाण्डव मरबैता यदाव मोबाइल नं: ९८१५८७७७७२
+ID=398 | Office=123 | URL=dor-spoke-person | Lang=2 | Heading=Spokes Person | OfficerName= | Description=Mr. Pandab Marwaita yadav Mobile no: 9815877772
+ID=402 | Office=124 | URL=dor-spoke-person | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=comming soon
+ID=402 | Office=124 | URL=dor-spoke-person | Lang=2 | Heading=Spokes Person | OfficerName= | Description=comming soon
+ID=310 | Office=125 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=सि.मे. प्रमोद कुमार यादव 9840182024
+ID=310 | Office=125 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=SR.Mech. Pramod Kumar Yadav 9840182024
+ID=314 | Office=126 | URL=general-info | Lang=1 | Heading=सुचना अधिकारी | OfficerName= | Description=रामहरी देवकाेटा ९८५८०६५१४५
+ID=314 | Office=126 | URL=general-info | Lang=2 | Heading=Information officer | OfficerName= | Description=Ramhari Devkota 9858065145
+ID=363 | Office=127 | URL=dor-spoke-person | Lang=1 | Heading=कार्यालय प्रमुख तथा सूचना अधिकारी | OfficerName= | Description=मे.ई. रामानन्द चाैधरी 9857835290 Other Email: modang050@gmail.com
+ID=363 | Office=127 | URL=dor-spoke-person | Lang=2 | Heading=Office Head and Information Officer | OfficerName= | Description=Me.Er. Ramananda Chaudhary 9857835290 Other Email: modang050@gmail.com
+ID=305 | Office=128 | URL=dor-spoke-person | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=श्री बाबुराम खरेल सम्पर्क नं: ९८४१५०३९४३ ईमेल: Kharel607@gmail.com
+ID=305 | Office=128 | URL=dor-spoke-person | Lang=2 | Heading=Spokes person | OfficerName= | Description=Mr. Baburam Kharel Contact no: 9841503943 E-mail: Kharel607@gmail.com
+ID=410 | Office=129 | URL=dor-spoke-person | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=श्री प्रशान्त न्यौपाने (मेकानिकल इन्जिनियर) Contact: ९८५१४२८३३० इमेल: prashantneupane70@gmail.com
+ID=410 | Office=129 | URL=dor-spoke-person | Lang=2 | Heading=Intormation Officer | OfficerName= | Description=Mr. Prashant Neupane (Mechanical Engineer) Contact: 9851428330 Email : prashantneupane70@gmail.com
+ID=359 | Office=131 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=इ. सतिश कुमार साह ९८५२८७७७७१
+ID=359 | Office=131 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Satish Kumar Sah 9852877771
+ID=415 | Office=134 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना निर्देशक | OfficerName= | Description=सु.ई. धर्मेन्द्र कुमार झा 9851114919 Follow Us
+ID=415 | Office=134 | URL=dor-spoke-person | Lang=2 | Heading=Project Director | OfficerName= | Description=नेपाल सरकार भौतिक पूर्वाधार विकास मन्त्रालय सडक विभाग उत्तर दक्षिण/व्यापारिक मार्ग विस्तार आयोजना निर्देशनालय काठमाडौँ राष्ट्रिय गौरवका आयोजना सम्बन्धी विवरण २०८३ असार आयोजनाको संक्षिप्त विवरण रणनीतिक, व्यापारिक, ऐतिहासिक, र सामरिक महत्त्व भएका उत्तर-दक्षिण सडक संजालबाट दुई छिमेकी चीन र भारतसँग व्यापार सम्बन्ध मजबुत गर्ने लक्ष्यअनुरूप नेपाल सरकारले प्रमुख आठवटा सडक संजाल निर्माण गर्ने लक्ष्य राखेक
+ID=416 | Office=134 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=सि.डि.ई. विनोद भट्टराई 9851115517 Current Projects
+ID=416 | Office=134 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Binod Bhattarai 9851115517 Current Projects
+ID=419 | Office=136 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना निर्देशक | OfficerName= | Description=सु.ई. चुडाराज ढकाल ९८५१४४०४२२ Follow Us
+ID=419 | Office=136 | URL=dor-spoke-person | Lang=2 | Heading=Project Director | OfficerName= | Description=S.Er. Chuda Raj Dhakal 9851440422 Follow Us
+ID=420 | Office=136 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी / उप आयाेजना निर्देशक | OfficerName= | Description=सि.डि.ई. ९८५१३५००५४ info.pdadb@gmail.com गुनासाे पाेर्टल
+ID=420 | Office=136 | URL=general-info | Lang=2 | Heading=Information Officer / Deputy Project Director | OfficerName= | Description=SDE. 9851350054 info.pdadb@gmail.com Grievance Portal
+ID=431 | Office=137 | URL=dor-spoke-person | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=comming soon
+ID=431 | Office=137 | URL=dor-spoke-person | Lang=2 | Heading=Spokes Person | OfficerName= | Description=comming soon
+ID=423 | Office=138 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना निर्देशक | OfficerName= | Description=सु.ई. बुद्धरत्न तुलाधर 9851139726 midhillhighway1@gmail.com
+ID=423 | Office=138 | URL=dor-spoke-person | Lang=2 | Heading=Project Director | OfficerName= | Description=Buddha Ratna Tuladhar Superintending Engineer
+ID=424 | Office=138 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. सचिन श्रेष्ठ 9851352038 thaibiansachinem@gmail.com Follow Us
+ID=424 | Office=138 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Sachin Shrestha Follow Us
+ID=427 | Office=139 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना निर्देशक | OfficerName= | Description=ई. कुबेर नेपाली 9851441866 Follow Us
+ID=427 | Office=139 | URL=dor-spoke-person | Lang=2 | Heading=Project Director | OfficerName= | Description=Er. Kuber Nepali 9851441866 Follow Us
+ID=428 | Office=139 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=सि.डि.ई. श्री बिष्णु बाबु पाण्डे 9851126493
+ID=428 | Office=139 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=SDE Bishnu Babu pandey 9851126493 phphulaki@gmail.com
+ID=435 | Office=140 | URL=dor-spoke-person | Lang=1 | Heading=योजना प्रमुख | OfficerName= | Description=सि.डी.ई. इश्वर कार्की 9854045175
+ID=435 | Office=140 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=SDE Ishwor Karki 9854045175
+ID=436 | Office=140 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. दिनेश रैखोला 985-2082327 Follow Us
+ID=436 | Office=140 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Dinesh Raikhola 985-2082327 Follow Us
+ID=439 | Office=142 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=सि.डि.ई सजना अधिकारी 9855082832 Follow Us
+ID=439 | Office=142 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=S.D.E. Sajana Adhikari 9855082832 Follow Us
+ID=440 | Office=142 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. सचेन्द्र मिश्र 9855092276 Project Details
+ID=440 | Office=142 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Sachendra Mishra 9855092276 Project Details
+ID=443 | Office=144 | URL=dor-spoke-person | Lang=1 | Heading=याेजना प्रमुख | OfficerName= | Description=सि.डि.ई. सुमन याेगेश 9858045504 Follow Us
+ID=443 | Office=144 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=SDE Suman Yogesh 9858045504 Follow Us
+ID=1369 | Office=144 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. कृष्ण प्रसाद पाण्डे 9858055204 Follow Us
+ID=1369 | Office=144 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Krishna Prasad Pandey 9858055204 Follow Us
+ID=1443 | Office=145 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=सि.डि.ई. सबिना रानाभाट 9851343756
+ID=1443 | Office=145 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=SDE Sabina Ranabhat 9851343756
+ID=1444 | Office=145 | URL=general-info | Lang=1 | Heading=सामान्य जानकारी | OfficerName= | Description=साविकको आयोजनाको नाम: पुल योजना, पश्चिम क्षेत्र सेक्टर नं. ३, नेपालगञ्ज
+ID=1444 | Office=145 | URL=general-info | Lang=2 | Heading=General Information | OfficerName= | Description=Previous Name of the Project: Bridge Project, Western Region Sector No. 3, Nepalgunj
+ID=476 | Office=147 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=सि.डि.इ. अमिन्द्र खड्का 9851400421 QRDC Documents
+ID=476 | Office=147 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=SDE. Amindra Khadka 9851400421 QRDC Documents
+ID=1562 | Office=151 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. शिवराम प्रसाद देव 9852630514 Follow Us
+ID=1562 | Office=151 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Shivaram Prasad Dev 9852630514 Follow Us
+ID=1212 | Office=152 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=डि.ई. आशिका पोखरेल 9851332301 Follow Us
+ID=1212 | Office=152 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=DE Aashika Pokhrel 9851332301 Follow Us
+ID=1213 | Office=152 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. राम विहारी चौधरी 9768553527 Project Detail
+ID=1213 | Office=152 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Ram Bihari Chaudhary 9768553527 Project Detail
+ID=1617 | Office=154 | URL=dor-spoke-person | Lang=1 | Heading=योजना प्रमुख | OfficerName= | Description=सि.डि.ई. नारायण प्रसाद निहुरे ९८५२०३८७२१
+ID=1617 | Office=154 | URL=dor-spoke-person | Lang=2 | Heading=Project Manager | OfficerName= | Description=SDE Narayan Prasad Nihure 9852038721
+ID=1618 | Office=154 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. दुर्गा मण्डल ९८५२०८८५७३ Follow Us
+ID=1618 | Office=154 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Durga Mandal 9852088573 Follow Us
+ID=472 | Office=161 | URL=dor-spoke-person | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. सागर कार्की क्षेत्री मो.नं.: ९८५७०२४६९९ इमेल: ssdrp.dor@gmail.com
+ID=472 | Office=161 | URL=dor-spoke-person | Lang=2 | Heading=Spokes Person | OfficerName= | Description=Er. Sagar Karki Chhetri Ph.No. 9857024699 Email. ssdrp.dor@gmail.com
+ID=1185 | Office=164 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. शारद कुमार पाण्डे 9851410128 Current Projects
+ID=1185 | Office=164 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Engineer Saarad Kumar Pandey 9851410128 Current Projects
+ID=450 | Office=165 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=इ. क्षितिज पोख्रेल 01-5268174
+ID=450 | Office=165 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Kshitij Pokhrel 01-5268174
+ID=1186 | Office=165 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना निर्देशक | OfficerName= | Description=इ. दिप बाराही 01-5268174 +977 9851418785 Follow Us
+ID=1186 | Office=165 | URL=dor-spoke-person | Lang=2 | Heading=Project Director | OfficerName= | Description=Er. Dip Barahi 01-5268174 +977 9851418785 Follow Us
+ID=1300 | Office=167 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=सडक डिभिजन, बुटवल
+ID=1300 | Office=167 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=Road Division, Butwal
+ID=1296 | Office=169 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=Road Division, Kathmandu
+ID=1296 | Office=169 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=Road Division, Kathmandu
+ID=1209 | Office=170 | URL=general-info | Lang=1 | Heading=चालु आयोजनाहरु | OfficerName= | Description=Running Projects
+ID=1209 | Office=170 | URL=general-info | Lang=2 | Heading=Running Projects | OfficerName= | Description=Running Projects
+ID=451 | Office=173 | URL=dor-spoke-person | Lang=1 | Heading=योजना प्रमुख | OfficerName= | Description=सि.डि.ई. कर्ण सिंह खत्री ९८५२६३०८८० Follow Us
+ID=451 | Office=173 | URL=dor-spoke-person | Lang=2 | Heading=Project Manager | OfficerName= | Description=SDE Karna Singh Khatri 9852630880 Follow Us
+ID=453 | Office=173 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. सुभाष कुमार दत्त ९८५२६३०८८१ mbhpo.damak@gmail.com
+ID=453 | Office=173 | URL=general-info | Lang=2 | Heading=Nodal Officer | OfficerName= | Description=Er. Subash Kumar Dutta 9852630881 mbhpo.damak@gmail.com
+ID=455 | Office=174 | URL=dor-spoke-person | Lang=1 | Heading=याेजना प्रमुख | OfficerName= | Description=ई. निरञ्जन थापा योजना प्रमुख 9858029111 Follow Us
+ID=455 | Office=174 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=Er. Niranjan Thapa Project Chief 9858029111 Follow Us
+ID=456 | Office=174 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. नविन खराल 9858029611
+ID=456 | Office=174 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Nabin Khanal 9858029611
+ID=460 | Office=175 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. भरत श्रेष्ठ 9851341553 mpbharatshrestha082@gmail.com Follow Us
+ID=460 | Office=175 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Bharat Shrestha 9851341553 mpbharatshrestha082@gmail.com Follow Us
+ID=1363 | Office=176 | URL=dor-spoke-person | Lang=1 | Heading=याेजना प्रमुख | OfficerName= | Description=सि.डि.ई. अरुण कुमार लाल कर्ण 9855038807 Follow Us
+ID=1363 | Office=176 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=SDE Arun kumar Lal Karn 9855038807 Follow Us
+ID=1364 | Office=176 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. श्याम कुमार चौधरी 9855038809
+ID=1364 | Office=176 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Shyam Kumar Chaudhary 9855038809
+ID=1541 | Office=177 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=सि.डि.ई. कृष्ण बहादुर कुँवर ९८५१२२०२१५/ ९८५६०७०६३६
+ID=1541 | Office=177 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=SDE Krishna Bahadur Kunwar 9851220215/ 9856070636
+ID=1542 | Office=177 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. अनन्त बराल ९८५६०३७५६१/ ९८५६०७०६३७
+ID=1542 | Office=177 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Anant Baral 9856037561/ 9856070637
+ID=1436 | Office=178 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=सि.डि.ई. रत्न लक्ष्मी बज्राचार्य 9849064262
+ID=1436 | Office=178 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=SDE Ratna Laxmi Bajracharya 9849064262
+ID=1437 | Office=178 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. नितिश झा 9843064583
+ID=1437 | Office=178 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Nitish Jha 9843064583
+ID=1566 | Office=179 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. गोविन्द श्रेष्ठ 9856040035 Follow Us
+ID=1566 | Office=179 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Govinda Shrestha 9856040035 Follow Us
+ID=463 | Office=181 | URL=dor-spoke-person | Lang=1 | Heading=योजना प्रमुख | OfficerName= | Description=ई. शशांक मिश्र ९८५८४८२०५५ ०९१-५९१९२०
+ID=463 | Office=181 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=SDE Shashank Mishra 9858482055
+ID=1342 | Office=181 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. दिपक देवकोटा 9858484026 deepakdevkota041@gmail.com
+ID=1342 | Office=181 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Deepak Devkota 9858484026 deepakdevkota041@gmail.com
+ID=1552 | Office=182 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=इ. प्रभात तिवारी +९७७-९८५७०-७४७९५ tspgulmi1@gmail.com mbhpotamghas@dor.gov.np
+ID=1552 | Office=182 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Prabhat Tiwari 9857074795 tspgulmi1@gmail.com mbhpotamghas@dor.gov.np
+ID=464 | Office=183 | URL=dor-spoke-person | Lang=1 | Heading=याेजना प्रमुख | OfficerName= | Description=सि.डि.ई. होम बहादुर ए.सी. 9857052157 Follow Us
+ID=464 | Office=183 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=SDE Hom Bahadur A.C. 9857052157 Follow Us
+ID=1192 | Office=183 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. प्रतीक प्रधान 9857053157
+ID=1192 | Office=183 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Prateek Pradhan 9857053157
+ID=1256 | Office=185 | URL=dor-spoke-person | Lang=1 | Heading=योजना प्रमुख | OfficerName= | Description=सि.डि.ई. राजेश कुमार यादव ९८६७१४५१६१ Follow Us
+ID=1256 | Office=185 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=SDE Rajesh Kumar Yadav 9867145161 Follow Us
+ID=1257 | Office=185 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. रवि शाह ९८६०६२१७६५
+ID=1257 | Office=185 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Ravi Shah 9860621765
+ID=1260 | Office=187 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=सि.डि.ई. ... .... Follow Us
+ID=1260 | Office=187 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=SDE ... .... Follow Us
+ID=1261 | Office=187 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. .... 98.... Project Details
+ID=1261 | Office=187 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. ... 98.... Project Details
+ID=1238 | Office=188 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=सि.डि.ई. अमिन्द्र खड्का 9849632701 Follow Us
+ID=1238 | Office=188 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=SDE Amindra Khadka 9849632701 Follow Us
+ID=474 | Office=189 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना निर्देशक | OfficerName= | Description=ई. सम्पर्क : इमेल : phpdhangadhi@dor.gov.np
+ID=474 | Office=189 | URL=dor-spoke-person | Lang=2 | Heading=Project Director | OfficerName= | Description=Er. Contact: Email : phpdhangadhi@dor.gov.np
+ID=1439 | Office=190 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=सि.डि.ई. कृष्णराज अधिकारी ९८५१२३६२११
+ID=1439 | Office=190 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=SDE Krishna Raj Adhikari 9851236211
+ID=1440 | Office=190 | URL=general-info | Lang=1 | Heading=सामान्य जानकारी | OfficerName= | Description=साविकको आयोजनाको नाम: पुल योजना, पश्चिम क्षेत्र सेक्टर नं. ४, पाल्पा हाल आयोजनाको नाम: पुल सेक्टर पोखरा ।
+ID=1440 | Office=190 | URL=general-info | Lang=2 | Heading=General Information | OfficerName= | Description=Previous Name of the Project: Bridge Project, Western Region Sector No. 4, Palpa
+ID=467 | Office=192 | URL=dor-spoke-person | Lang=1 | Heading=याेजना प्रमुख | OfficerName= | Description=यस याेजना कार्यालयले गर्दै आएको कामकाज हाल गाईघाट दिक्तेल सडक योजना कार्यालय, गाईघाटले गर्दै आएको छ । Go to : गाईघाट दिक्तेल सडक योजना कार्यालय, गाईघाट
+ID=467 | Office=192 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=All the tasks of this project have been transferred to the Gaighat-Diktel Road Project, Gaighat, Udayapur. Go to : Gaighat Diktel Road Project Office, Gaighat
+ID=468 | Office=192 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=Follow Us
+ID=468 | Office=192 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Follow Us
+ID=1181 | Office=193 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. श्री जगदिश चाैधरी 9843040629 Follow Us
+ID=1181 | Office=193 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Jagdish Chaudhary 9843040629 Follow Us
+ID=1332 | Office=194 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=सि.डि.ई. ईश्वर बहादुर रिजाल फोन नं ९८५५०३३२७६ e-mail: nbsyeast@gmail.com
+ID=1332 | Office=194 | URL=dor-spoke-person | Lang=2 | Heading=Project Manager | OfficerName= | Description=SDE Ishwor Bahadur Rijal Ph. No. 9855033276
+ID=1333 | Office=194 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. शिव खनाल 9855027820 e-mail: sk.triveni338@gmail.com Follow Us
+ID=1333 | Office=194 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Shiva Khanal 9855027820 Follow Us
+ID=1264 | Office=195 | URL=dor-spoke-person | Lang=1 | Heading=योजना प्रमुख | OfficerName= | Description=इ. विवेक पाण्डे ९८५२८३२४९२
+ID=1264 | Office=195 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=9852832492 Follow Us
+ID=1265 | Office=195 | URL=general-info | Lang=1 | Heading=गुनासो सुन्‍ने अधिकारी/सूचना अधिकारी | OfficerName= | Description=इ. सुमन गोले ९८५२८३९४९२
+ID=1265 | Office=195 | URL=general-info | Lang=2 | Heading=Grievance Hearing Officer/ Information Officer | OfficerName= | Description=Project Details
+ID=1286 | Office=196 | URL=dor-spoke-person | Lang=1 | Heading=योजना प्रमुख | OfficerName= | Description=कृष्ण राज ओझा ०१० -५६१८९१
+ID=1286 | Office=196 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=Krishna raj Ojha 010-561891
+ID=1287 | Office=196 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. अमरेन्द्र कुमार यादव ९८५११०१७०१ gtmsrrp.dor@dor.gov.np For more information Visit our Website
+ID=1287 | Office=196 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er.Amrendra Kumar Yadav 9851101701 gtmsrrp.dor@dor.gov.np For more information Visit our Website
+ID=1633 | Office=197 | URL=dor-spoke-person | Lang=1 | Heading=योजना प्रमुख | OfficerName= | Description=ई. राम कुमार देव 9858486890 ramkumardeo2@gmail.com
+ID=1633 | Office=197 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=Ram Kumar Deo 9858486890 ramkumardeo2@gmail.com
+ID=1634 | Office=197 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. केशवदत्त मिश्र 9858485167 mishrakeshab2856@gmail.com
+ID=1634 | Office=197 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Keshab Datt Mishra 9858485167 mishrakeshab2856@gmail.com
+ID=1195 | Office=205 | URL=dor-spoke-person | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=मे‍.ई. सम्पर्क : ईमेल : mo_jumla@dor.gov.np
+ID=1195 | Office=205 | URL=dor-spoke-person | Lang=2 | Heading=Information Officer | OfficerName= | Description=Me. Er. Contact: Email: mo_jumla@dor.gov.np
+ID=1199 | Office=206 | URL=dor-spoke-person | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=मे‍.ई. विजय कुमार शाह सम्पर्क : ईमेल : mo_mulkot@dor.gov.np
+ID=1199 | Office=206 | URL=dor-spoke-person | Lang=2 | Heading=Information Officer | OfficerName= | Description=Me. Er. Bijay Kumar Shah Contact: Email: mo_mulkot@dor.gov.np
+ID=1203 | Office=209 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=DDG, DCID dorfcb@dor.gov.np
+ID=1203 | Office=209 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=DDG, DCID dorfcb@dor.gov.np
+ID=1216 | Office=210 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=S. Er. Naresh Man Shakya 9841428386
+ID=1216 | Office=210 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=S. Er. Naresh Man Shakya 9841428386
+ID=1222 | Office=211 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=Er. Ram Tahal Yadav 9851101861
+ID=1222 | Office=211 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=Er. Ram Tahal Yadav 9851101861
+ID=1230 | Office=213 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=Er. Gautam Kumar Shrestha 9845086009
+ID=1230 | Office=213 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=Er. Gautam Kumar Shrestha 9845086009
+ID=1226 | Office=214 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=Er. Krishna Raj Panta 9851229838
+ID=1226 | Office=214 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=Er. Krishna Raj Panta 9851229838
+ID=1234 | Office=215 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=Er. Bidur Pokharel 9851160690
+ID=1234 | Office=215 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=Er. Bidur Pokharel 9851160690
+ID=1244 | Office=216 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=Er. Nati Babu Khadka 9851159310
+ID=1244 | Office=216 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=Er. Nati Babu Khadka 9851159310
+ID=1248 | Office=217 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=Er. Arjun Kumar Bam 9851249375
+ID=1248 | Office=217 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=Er. Arjun Kumar Bam 9851249375
+ID=1252 | Office=218 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=Er. Ujjwal Shrestha 9847851494
+ID=1252 | Office=218 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=Er. Ujjwal Shrestha 9847851494
+ID=1367 | Office=219 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=ई. विजय कुमार थापा 9851055020
+ID=1367 | Office=219 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=Er. Bijay Kumar Thapa 9851055020
+ID=1355 | Office=220 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=ई. कृष्ण कुमार महतो 9841799870
+ID=1355 | Office=220 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=Er. Krishna Kumar Mahato 9841799870
+ID=1452 | Office=222 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. निरञ्जन थापा 9841147650 dharanchatarawest@gmail.com
+ID=1452 | Office=222 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Niranjan Thapa 9841147650 dharanchatarawest@gmail.com
+ID=1390 | Office=224 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=Under Bridge Branch
+ID=1390 | Office=224 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=Under Bridge Branch
+ID=1447 | Office=226 | URL=dor-spoke-person | Lang=1 | Heading=नि.योजना प्रमुख | OfficerName= | Description=ई. देबेन्द्र भट्टराई 9858036220
+ID=1447 | Office=226 | URL=dor-spoke-person | Lang=2 | Heading=Acting Project Chief | OfficerName= | Description=Er. Devendra Bhattarai 9858036220
+ID=1448 | Office=226 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=सलिना दाहाल 9868180395
+ID=1448 | Office=226 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Salina Dahal 9868180395
+ID=1349 | Office=227 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=सु.ई. विजय कुमार महतो मोवाइल नं. 9851363746 फोन नं. 015925218 Follow Us
+ID=1349 | Office=227 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=Follow Us
+ID=1350 | Office=227 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. अन्जु परियार सि.डि.ई. मोवाइल नं. ९८५१४०१२४४ E-mail: sddsbrp@gmail.com Project Details
+ID=1350 | Office=227 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Anju Pariyar S.D.E. Contact No.9851401244 E-mail: sddsbrp@gmail.com Project Details
+ID=1270 | Office=229 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=सि.डि.ई. विवेक पाण्डे mkgrp@dor.gov.np mkgroadproject@gmail.com सम्पर्क न‌‌म्बर- ९८५२६३६२८४ / ९८४१४२७२८०
+ID=1270 | Office=229 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=SDE Bibek pandey mkgrp@dor.gov.np mkgroadproject@gmail.co contact no. 9852636284 / 9841427280
+ID=1271 | Office=229 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ईन्जिनियर बिरेन्द्र प्रसाद महतो सम्पर्क नम्बर - ९८५२८४५४३६ इमेल ः birendramahato2030@gmail.com
+ID=1271 | Office=229 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Engineer Birendra Prasad Mahato contact no- 9852845436
+ID=1276 | Office=230 | URL=dor-spoke-person | Lang=1 | Heading=योजना प्रमुख | OfficerName= | Description=सि.डि.ई. श्री पुजन गिरी सम्पर्क नं. ९८५८४८६८९०
+ID=1276 | Office=230 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=SDE, Mr. Pujan Giri 9858486890
+ID=1282 | Office=231 | URL=dor-spoke-person | Lang=1 | Heading=योजना प्रमुख | OfficerName= | Description=ई तुलाराम शर्मा 9841494171 sarmatularam@gmail.com
+ID=1282 | Office=231 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=ई तुलाराम शर्मा 9841494171 sarmatularam@gmail.com
+ID=1283 | Office=231 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. पंकज सिह धामी 9843914874 pdhami797@gmail.com
+ID=1283 | Office=231 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Pankaj Singh Dhami 9843914874 pdhami797@gmail.com
+ID=1292 | Office=232 | URL=dor-spoke-person | Lang=1 | Heading=योजना प्रमुख | OfficerName= | Description=सि.डि.ई. विनोद पुन 9856043488
+ID=1292 | Office=232 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=SDE Binod Pun 9856043488
+ID=1293 | Office=232 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. आशिक रिजाल 9856043489
+ID=1293 | Office=232 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Ashik Rijal 9856043489
+ID=1306 | Office=233 | URL=dor-spoke-person | Lang=1 | Heading=योजना प्रमुख | OfficerName= | Description=सि.डि.ई. तुलाराम शर्मा 9841494171 Facebook sarmatularam@gmail.com
+ID=1306 | Office=233 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=SDE Tularam Sharma 9841494171 sarmatularam@gmail.com
+ID=1307 | Office=233 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. पंकज सिंह धामी 9843914874 Facebook pdhami797@gmail.com
+ID=1307 | Office=233 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Pankaj Singh Dhami 9843914874 Facebook pdhami797@gmail.com
+ID=1337 | Office=234 | URL=general-info | Lang=1 | Heading=चालु आयोजनाहरु | OfficerName= | Description=Running Projects
+ID=1337 | Office=234 | URL=general-info | Lang=2 | Heading=Running Projects | OfficerName= | Description=Running Projects
+ID=1316 | Office=235 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=सि.डि.ई. केशव प्रसाद ओझा
+ID=1316 | Office=235 | URL=dor-spoke-person | Lang=2 | Heading=Project In-charge | OfficerName= | Description=SDE Keshab Prasad Ojha
+ID=1317 | Office=235 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. राजिव मानन्धर +९७७-९८५१४००३७० (nnmmroadproject@gmail.com)
+ID=1317 | Office=235 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Rajiv Manandhar +977-9851400370 (nnmmroadproject@gmail.com)
+ID=1322 | Office=237 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=सि.डि.ई. अमित कुमार श्रेष्ठ 9841426383
+ID=1322 | Office=237 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=SDE Amit Kumar Shrestha 9841426383
+ID=1323 | Office=237 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. .... 98... Follow Us
+ID=1323 | Office=237 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. .... 98... Follow Us
+ID=1328 | Office=238 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=सि.डि.ई. राजेश कुमार दास 9854055004
+ID=1328 | Office=238 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=SDE Chhabi Lal Paudel 9851141181
+ID=1329 | Office=238 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. राम टहल यादव 9854088131 Follow Us
+ID=1329 | Office=238 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. ... 98... Follow Us
+ID=1374 | Office=242 | URL=dor-spoke-person | Lang=1 | Heading=याेजना प्रमुख | OfficerName= | Description=सि.डि.इ. मुकुन्द प्रसाद लामिछाने ९८५८४२२१६६ Follow Us
+ID=1374 | Office=242 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=SDE Mukunda Prasad Lamichhane 9858422166 Follow Us
+ID=1375 | Office=242 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=इ. गणेश बहादुर बुढा ९८५८४८६८५९ Follow Us
+ID=1375 | Office=242 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Ganesh Bahadur Budha 9858486859 Follow Us
+ID=1380 | Office=243 | URL=dor-spoke-person | Lang=1 | Heading=याेजना प्रमुख | OfficerName= | Description=सि.डि.ई. कृष्ण कुमार महतो 9854021115 Follow Us
+ID=1380 | Office=243 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=SDE, Krishna Kumar Mahato 9854021115 Follow Us
+ID=1381 | Office=243 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई.रंजित कुमार राय 9854029832
+ID=1381 | Office=243 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Ranjit Kumar Ray 9854029832
+ID=1396 | Office=245 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=ई. आशिष थापा मगर (योजना प्रमुख) 9852067767
+ID=1396 | Office=245 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=Er. Aashish Thapa Magar ( Project Chief) 9852067767
+ID=1409 | Office=247 | URL=general-info | Lang=1 | Heading=सुचना अधिकारी | OfficerName= | Description=सि‍नियर मेकानिक्स शितल कुमार चाैधरी 9761739122 momulkot@gmail.Com Follow Us
+ID=1409 | Office=247 | URL=general-info | Lang=2 | Heading=General Information | OfficerName= | Description=सि‍ मे श्री शितल कुमार चाैधरी ९७६१७३९१२२ momulkot@gmail.com Follow Us
+ID=1415 | Office=248 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=सि.मे. दिल बहादुर रावल ९८४८३६३५८६
+ID=1415 | Office=248 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=S.M. Dil Bahadur Rawal 9848363586
+ID=1421 | Office=249 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. मन्जिला श्रेष्ठ 9841451128 Follow Us
+ID=1421 | Office=249 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Manjila Shrestha 9841451128 Follow Us
+ID=1427 | Office=250 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ईन्जिनियर प्रतिभा शर्मा ९८६९८६७३९८ prtva21@gmail.com
+ID=1427 | Office=250 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Prativa Shrama 9869867398 prtva21@gmail.com
+ID=1433 | Office=251 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=इ. यादव सुवेदी 9855075311
+ID=1433 | Office=251 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Engineer 9855075311
+ID=1458 | Office=252 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=सूचना अधिकारी (सडक डिभिजन, हेटौंडा) https://dor.gov.np/hetauda Follow Us
+ID=1458 | Office=252 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Contact Information Officer Of Road Division, Hetauda Follow Us
+ID=1463 | Office=253 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=उपमहानिर्देशक विकास सहायता कार्यान्वयन महाशाखा
+ID=1463 | Office=253 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=Deputy Director General Development Cooperation and Implementation Division
+ID=1469 | Office=254 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=आयोजना निर्देशक : ई. सौजन्य नेपाल Follow Us
+ID=1469 | Office=254 | URL=dor-spoke-person | Lang=2 | Heading=Project Director | OfficerName= | Description=Project Director: Er Saujanya Nepal Follow Us
+ID=1470 | Office=254 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=उप आयोजना निर्देशक : संजय पन्थी सम्पर्क न. : 9851455330/9851153605 Project Updates
+ID=1470 | Office=254 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Deputy Project Director: Sanjaya Panthi Contact No: 9851153605 Project Updates
+ID=1475 | Office=255 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=सि.डि.ई. ... .... Follow Us
+ID=1475 | Office=255 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=SDE .... ... Follow Us
+ID=1476 | Office=255 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. ... 98...
+ID=1476 | Office=255 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. ... 98...
+ID=1481 | Office=256 | URL=dor-spoke-person | Lang=1 | Heading=योजना प्रमुख | OfficerName= | Description=सि.डि.ई. शम्भु प्रसाद आचार्य योजना प्रमुख सम्पर्क नं. ९८४१०३२७५० Follow Us
+ID=1481 | Office=256 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=CDE Sambhu Prasad Acharya Project Chief 9841032750 Follow Us
+ID=1482 | Office=256 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=सब इन्जिनियर सागर शर्मा संम्पर्क नं. 9854055260
+ID=1482 | Office=256 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Sub Engineer Contact Number 9854055260
+ID=1487 | Office=257 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=सि.डि.ई. मेघराज मरासिनी ९८५७०२९२४० Follow Us
+ID=1487 | Office=257 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=SDE. Meg Raj Marasini 9857029240 Follow Us
+ID=1488 | Office=257 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. सुनीत के.सी. ९८५१०१५८६६
+ID=1488 | Office=257 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Sunit KC 9851015866
+ID=1493 | Office=258 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=सि.डि.ई. आशुतोष कर्ण 9852860129 Follow Us
+ID=1493 | Office=258 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=SDE Aashutosh Karna 9852860129 Follow Us
+ID=1499 | Office=259 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=सि.डि.ई. नातिबाबु खड्का 9851159310 Follow Us
+ID=1499 | Office=259 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=SDE Nati Babu Khadka 9851159310 Follow Us
+ID=1500 | Office=259 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. ..... 98...
+ID=1500 | Office=259 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. ..... 98...
+ID=1505 | Office=260 | URL=dor-spoke-person | Lang=1 | Heading=योजना प्रमुख | OfficerName= | Description=सि.डि.ई. विवस वावु सदादेव 9857847109
+ID=1505 | Office=260 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=SDE Biwas Babu Sadadev 9857847109
+ID=1506 | Office=260 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=
+ID=1506 | Office=260 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=
+ID=1511 | Office=261 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=सि.डि.ई. उज्वल श्रेष्ठ 9858422311 Follow Us
+ID=1511 | Office=261 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=SDE Ujjwal Shrestha 9858422311 Follow Us
+ID=1512 | Office=261 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. गाैरव धामी 9858485961
+ID=1512 | Office=261 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Gaurav Dhami 9858485961
+ID=1517 | Office=262 | URL=dor-spoke-person | Lang=1 | Heading=याेजना प्रमुख | OfficerName= | Description=सि.डि.ई. युवराज पोखरेल 9852087414 Follow Us
+ID=1517 | Office=262 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=SDE Yubaraj Pokharel 9852087414 Follow Us
+ID=1518 | Office=262 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. उपेन्द्र दास 9852087415
+ID=1518 | Office=262 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Upendra Das 9852087415
+ID=1523 | Office=263 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=सि.डि.ई. पशुपति ज्ञवाली ९८५७०१७५१८
+ID=1523 | Office=263 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=SDE Pashupati Gyawali 9857017518
+ID=1524 | Office=263 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=इ. विकाश खनाल ९८५७०८२३४० Follow Us
+ID=1524 | Office=263 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Bikash Khanal 9857082340 Follow Us
+ID=1529 | Office=264 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=सि.डि.ई. निरज शाक्य 9852870183
+ID=1529 | Office=264 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=SDE Niraj Shakya 9852870183
+ID=1530 | Office=264 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. रणधीर कुमार सिंह 9862407089 Follow Us
+ID=1530 | Office=264 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Randhir Kumar singh 9862407089 Follow Us
+ID=1535 | Office=265 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=सि.डि.ई. उज्ज्वल श्रेष्ठ ९८५२८७०१७०
+ID=1535 | Office=265 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=SDE Ujjwal Shrestha 9852870170
+ID=1536 | Office=265 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. अनुपम कुमार ९८५२८७०१७१ Follow Us
+ID=1536 | Office=265 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Anupam Kumar 9852870171 Follow Us
+ID=1547 | Office=267 | URL=dor-spoke-person | Lang=1 | Heading=योजना प्रमुख | OfficerName= | Description=प्रकाश चन्द्र भण्डारी
+ID=1547 | Office=267 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=Prakash Chandari Bhandari
+ID=1548 | Office=267 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. बिष्णु प्रसाद पाण्डे सम्पर्क नं. : ९८४९० ३६९०४
+ID=1548 | Office=267 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Bishnu Prasad Pande 9849036904
+ID=1557 | Office=268 | URL=dor-spoke-person | Lang=1 | Heading=योजना प्रमुख | OfficerName= | Description=योजना प्रमुखः ई. शंकर पौडेल मोबाइल नंः ९८५६०३०७४२, ९८५८०५७३११
+ID=1557 | Office=268 | URL=dor-spoke-person | Lang=2 | Heading=Chief Project | OfficerName= | Description=Chief Project: Er. Shankar Paudel Mobile No: 9856030742, 9858057311
+ID=1558 | Office=268 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. लोमश उपाध्याय सूचना अधिकारी ९८४१४८१६६५
+ID=1558 | Office=268 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Lomas Upadhyaya Information Officer 9841481665
+ID=1572 | Office=269 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. उज्ज्वल शर्मा ९८५७६५६७०७ Follow Us
+ID=1572 | Office=269 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er.Ujjwal Sharma 9857656707 Follow Us
+ID=1577 | Office=270 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=सि.डि.ई. मनिष मान शाक्य, PhD 9852067630
+ID=1577 | Office=270 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=SDE Manish Man Shakya, PhD 9852067630
+ID=1578 | Office=270 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. अनुप साउदेन 9852075788/9843718112 Follow Us
+ID=1578 | Office=270 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Anup Sauden 9852075788/9843718112 Follow Us
+ID=1583 | Office=271 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=सिंह बहादुर बिष्ट 9849676165 9852660880
+ID=1583 | Office=271 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=SDE. Singha Bahadur Bista 9849676165 9852660880
+ID=1584 | Office=271 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. बसन्त कुमार गाँई 9852660879 Follow Us
+ID=1584 | Office=271 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Basanta Kumar Gain 9852660879 Follow Us
+ID=1589 | Office=272 | URL=dor-spoke-person | Lang=1 | Heading=योजना प्रमूख | OfficerName= | Description=सि.डि.ई. राम बहादुर गुरुङ 9851189859 rbgurung1970@gmail.com
+ID=1589 | Office=272 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=SDE. Ram Bahadur Gurung 9851189859 rbgurung1970@gmail.com
+ID=1590 | Office=272 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. नरेश जिरेल 9860834676 njirel56@gmail.com
+ID=1590 | Office=272 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Naresh Jirel 9860834676 njirel56@gmail.com
+ID=1595 | Office=273 | URL=dor-spoke-person | Lang=1 | Heading=योजना प्रमुख | OfficerName= | Description=सि.डि.ई. तेजस्वी शर्मा ९८५१२००७६३
+ID=1595 | Office=273 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=S.D.E. Tejaswi Sharma 9851200763
+ID=1596 | Office=273 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. बाबुसाहेब कुमार बैठा ९८६४२७७२३३ Follow Us
+ID=1596 | Office=273 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. BabuSaheb Kumar Baitha 9857632520 Follow Us
+ID=1601 | Office=274 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=सि.डि.इ. शिव लाल दाहाल 9857068365
+ID=1601 | Office=274 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=CDE Shiva Lal Dahal 9857068365
+ID=1602 | Office=274 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=इ. बिरेन्द्र प्रकाश तेली 9857065552 Follow Us
+ID=1602 | Office=274 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Birendra Prakash Teli 9857065552 Follow Us
+ID=1607 | Office=275 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=नरेश प्रसाद केशरी सि.डि.ई. 9858065715 9851070750
+ID=1607 | Office=275 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=Naresh Prasad Keshari SDE 9858065715 9851070750
+ID=1608 | Office=275 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. गिरीश नन्दन प्रसाद पोरस 9858065716 Follow Us
+ID=1608 | Office=275 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Girish Nandan Prasad Poras 9858065716 Follow Us
+ID=1613 | Office=276 | URL=dor-spoke-person | Lang=1 | Heading=निमित्त याेजना प्रमुख | OfficerName= | Description=ई. बेल बहादुर नेपाली निमित्त आयोजना प्रमुख 9858322699
+ID=1613 | Office=276 | URL=dor-spoke-person | Lang=2 | Heading=Project Manager | OfficerName= | Description=Er. Bel Bahadur Nepali Acting Project Chief 9858322699
+ID=1614 | Office=276 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. ओम प्रकाश कोहार 9858322727 koharomprakash9@gmail.com Follow Us
+ID=1614 | Office=276 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Om Prakash Kohar 9858322727 koharomprakash9@gmail.com Follow Us
+ID=1623 | Office=277 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख / सूचना अधिकारी | OfficerName= | Description=सि.डि.ई. संजिव कुमार गुप्ता 9863674147
+ID=1623 | Office=277 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief / Information Officer | OfficerName= | Description=SDE Sanjib Kumar Gupta 9863674147
+ID=1629 | Office=278 | URL=dor-spoke-person | Lang=1 | Heading=योजना प्रमुख | OfficerName= | Description=सि.डि.ई. कुशलता न्यौपाने ९८५७०७४७९० Follow Us
+ID=1629 | Office=278 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=SDE Kushalta Nyoupane 9857074790 Follow Us
+ID=1630 | Office=278 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=इन्जिनियर अशोक पौडेल ९७६५३९६६३७
+ID=1630 | Office=278 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Engineer Ashok Paudel 9765396637
+ID=1639 | Office=279 | URL=dor-spoke-person | Lang=1 | Heading=योजना प्रमुख | OfficerName= | Description=माधब प्रसाद अधिकारी 9857824102
+ID=1639 | Office=279 | URL=dor-spoke-person | Lang=2 | Heading=Project Manager | OfficerName= | Description=Madhav Prasad Adhikari 9857824102
+ID=1640 | Office=279 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई . भुवनेश्‍वर प्रसाद यादव ९८५७८७७०२१
+ID=1640 | Office=279 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Bhuwaneshwar Prasad Yadav 9857877021
+ID=1645 | Office=280 | URL=dor-spoke-person | Lang=1 | Heading=योजना प्रमुख | OfficerName= | Description=सि.डि.ई. गागल बहादुर भण्डारी 9857066460
+ID=1645 | Office=280 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=SDE Gagal Bahadur Bhandari 9857066460
+ID=1646 | Office=280 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. परीक्षा पौडेल 9857089468 Follow Us
+ID=1646 | Office=280 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=ई. परीक्षा पौडेल 9857089468 Follow Us
+ID=1651 | Office=281 | URL=dor-spoke-person | Lang=1 | Heading=योजना प्रमुख | OfficerName= | Description=सि.डि.ई. मेघराज मरासिनी 9765023963
+ID=1651 | Office=281 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=SDE Megh Raj Marasini 9765023963
+ID=1652 | Office=281 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. उपेन्द्र महरान 9762415689 Follow Us
+ID=1652 | Office=281 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Upendra Maharan 9762415689 Follow Us
+ID=1657 | Office=282 | URL=dor-spoke-person | Lang=1 | Heading=नि योजना प्रमुख | OfficerName= | Description=इ श्रवण कुमार महतारा ९८५८३६६६०१
+ID=1657 | Office=282 | URL=dor-spoke-person | Lang=2 | Heading=Act. Project Chief | OfficerName= | Description=Er. Shrawan Kumar Mahatara 9858366601
+ID=1658 | Office=282 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. .... 98....... Follow Us
+ID=1658 | Office=282 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. .... 98....... Follow Us
+ID=1663 | Office=283 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=सि.डि.ई. सतिस सुबेदी योजना प्रमुख ९८५६००५१५०
+ID=1663 | Office=283 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=SDE Satish Subedi Project Chief 9856005150
+ID=1664 | Office=283 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. नबिन बिस्ट ९८५६००५१४० Follow Us
+ID=1664 | Office=283 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Nabin Bista 9856005140 Follow Us
+ID=1669 | Office=284 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख तथा सूचना अधिकारी | OfficerName= | Description=This project is under the supervision of Road Division, Kathmandu.
+ID=1669 | Office=284 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief and Information Officer | OfficerName= | Description=This project is under the supervision of Road Division, Kathmandu.
+ID=1677 | Office=286 | URL=dor-spoke-person | Lang=1 | Heading=याेजना प्रमुख | OfficerName= | Description=सि.डि.ई. श्याम कुमार यादव 9851123348
+ID=1677 | Office=286 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=SDE Shyam Kumar Yadav 9851123348
+ID=1678 | Office=286 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. ,,,, 98....
+ID=1678 | Office=286 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. ... 98....
+ID=1687 | Office=287 | URL=dor-spoke-person | Lang=1 | Heading=याेजना प्रमुख (निमित्त) | OfficerName= | Description=ई. विरेन्द्र बहादुर चन्द 98511-33247
+ID=1687 | Office=287 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief (Acting) | OfficerName= | Description=Er. Birendra Bahadur Chand 98511-33247
+ID=1694 | Office=288 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. सविता ज्ञवाली 9748798111 Email: siddababatunnel79@gmail.com
+ID=1694 | Office=288 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Sabita Gyawali 9748798111 Email: siddababatunnel79@gmail.com
+ID=1700 | Office=289 | URL=general-info | Lang=1 | Heading=Information Officer | OfficerName= | Description=ई. चित्ररंजनकुमार रान मोबाइल न ९८६०६९९७०१ गुनासो पेश गर्नको लागि 'पुरा पढ्नुहोस्' बटन थिचेर क्यु आर कोड स्क्यान गर्नुहोस l अथवा ब्राउजरमा कपी पेष्ट गर्नुहोस https://docs.google.com/forms/d/1uheOTg1QTyP4jvWnEzBBp4_VNaDH0v3nLsW23qJZPao/edit
+ID=1700 | Office=289 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Chitranjan Kumar Ran Mobile No 9860699701 For Lodging Grievances, click 'Read More' Button and then scan the QR code OR copy paste on your browser https://docs.google.com/forms/d/1uheOTg1QTyP4jvWnEzBBp4_VNaDH0v3nLsW23qJZPao/edit
+ID=1705 | Office=290 | URL=dor-spoke-person | Lang=1 | Heading=याेजना प्रमुख | OfficerName= | Description=सि.डि.ई. जगत प्रजापती 9857686829
+ID=1705 | Office=290 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=SDE Jagat Prajapati 9857686829
+ID=1706 | Office=290 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. पल्लब श्रेष्ठ 9813793624
+ID=1706 | Office=290 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Pallab Shrestha 9813793624
+ID=1711 | Office=291 | URL=dor-spoke-person | Lang=1 | Heading=याेजना प्रमुख | OfficerName= | Description=सि.डि.ई. लिला बहादुर भण्डारी 9858045504
+ID=1711 | Office=291 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=SDE Lila Bahadur Bhandari 9858045504
+ID=1712 | Office=291 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. टोपेन्द्र खड्का 9858037504 Follow Us
+ID=1712 | Office=291 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Topendra Khadka 9858037504 Follow Us
+ID=1724 | Office=293 | URL=dor-spoke-person | Lang=1 | Heading=याेजना प्रमुख | OfficerName= | Description=सि.डि.ई. बिवसबाबु सदादेव 9852087414
+ID=1724 | Office=293 | URL=dor-spoke-person | Lang=2 | Heading=Project Chief | OfficerName= | Description=SDE Bibas Babu Sadadev 9852087414
+ID=1732 | Office=295 | URL=dor-spoke-person | Lang=1 | Heading=आयोजना प्रमुख | OfficerName= | Description=डा. छबिलाल पाैडेल 9851141181
+ID=1732 | Office=295 | URL=dor-spoke-person | Lang=2 | Heading=Project Manager | OfficerName= | Description=Dr. Chhabi Lal Paudel 9851141181
+ID=1733 | Office=295 | URL=general-info | Lang=1 | Heading=सूचना अधिकारी | OfficerName= | Description=ई. रंजित साह ९८५५०७३५६९
+ID=1733 | Office=295 | URL=general-info | Lang=2 | Heading=Information Officer | OfficerName= | Description=Er. Ranjit Sah 9855073569doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$
