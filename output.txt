@@ -1,407 +1,1127 @@
 doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade
 
-echo "===== ROUND PHOTO CSS ====="
-grep -Rni -A 18 -B 5 'rounded-fig-wrap' \
-public/assets resources/views --include='*.css' --include='*.blade.php' \
-2>/dev/null | head -180
+{
+echo "===== PHOTO STUDIO CONTROLS ====="
+sed -n '1,220p' resources/views/admin/photo_studio/controls.blade.php
 
 echo
-echo "===== PHOTO STUDIO INCLUDE AND SCRIPT ====="
-grep -Rni -A 8 -B 8 'photo_studio.controls\|photo-studio.js' \
-resources/views --include='*.blade.php' 2>/dev/null | head -140
+echo "===== PHOTO STUDIO JS ====="
+sed -n '1,280p' public/assets/admin/js/photo-studio.js
 
 echo
-echo "===== HOME OFFICER FORM PHOTO STUDIO ====="
-grep -n -A 18 -B 18 'photo_studio.controls' \
-resources/views/home/admin/add.blade.php \
-resources/views/home/admin/edit.blade.php
-===== ROUND PHOTO CSS =====
-public/assets/css_2021/responsive.css-55-     }
-public/assets/css_2021/responsive.css-56-     .nav-item.dropdown:last-child .has-sub .dropdown-menu {
-public/assets/css_2021/responsive.css-57-         left: auto;
-public/assets/css_2021/responsive.css-58-         right: 100%;
-public/assets/css_2021/responsive.css-59-     }
-public/assets/css_2021/responsive.css:60:     .rounded-fig-wrap {
-public/assets/css_2021/responsive.css-61-        width: 95px;
-public/assets/css_2021/responsive.css-62-        height: 95px;
-public/assets/css_2021/responsive.css-63-     }
-public/assets/css_2021/responsive.css-64-     .media-block {
-public/assets/css_2021/responsive.css-65-         min-height: 96px;
-public/assets/css_2021/responsive.css-66-         padding-left: 155px;
-public/assets/css_2021/responsive.css-67-         padding-top: 15px;
-public/assets/css_2021/responsive.css-68-     }
-public/assets/css_2021/responsive.css-69-     /* Keep the homepage officers panel compact on mobile. */
-public/assets/css_2021/responsive.css:70:     .home-officers-panel .rounded-fig-wrap {
-public/assets/css_2021/responsive.css-71-         width: 54px;
-public/assets/css_2021/responsive.css-72-         height: 54px;
-public/assets/css_2021/responsive.css-73-     }
-public/assets/css_2021/responsive.css-74-     .home-officers-panel .media-block {
-public/assets/css_2021/responsive.css-75-         min-height: 0;
-public/assets/css_2021/responsive.css-76-         padding: 0 0 0 67px;
-public/assets/css_2021/responsive.css-77-     }
-public/assets/css_2021/responsive.css-78-     .maps iframe {
-public/assets/css_2021/responsive.css-79-         height: 536px !important;
-public/assets/css_2021/responsive.css-80-     }
-public/assets/css_2021/responsive.css-81-     .fig-wrap {
-public/assets/css_2021/responsive.css-82-         height: 200px;
-public/assets/css_2021/responsive.css-83-     }
-public/assets/css_2021/responsive.css-84-     .slider-fig {
-public/assets/css_2021/responsive.css-85-         height: 358px;
-public/assets/css_2021/responsive.css-86-     }
-public/assets/css_2021/responsive.css-87-     .back-btn{
-public/assets/css_2021/responsive.css-88-         margin: 0;
---
-public/assets/css_2021/style.css-479-    padding-left: 96px;
-public/assets/css_2021/style.css-480-    margin: 10px 0 0;
-public/assets/css_2021/style.css-481-    padding-top: 0px;
-public/assets/css_2021/style.css-482-}
-public/assets/css_2021/style.css-483-
-public/assets/css_2021/style.css:484:.rounded-fig-wrap {
-public/assets/css_2021/style.css-485-    width: 70px;
-public/assets/css_2021/style.css-486-    height: 70px;
-public/assets/css_2021/style.css-487-    border: #fff 4px solid;
-public/assets/css_2021/style.css-488-    overflow: hidden;
-public/assets/css_2021/style.css-489-    position: absolute;
-public/assets/css_2021/style.css-490-    top: 0;
-public/assets/css_2021/style.css-491-    left: 15px;
-public/assets/css_2021/style.css-492-    box-shadow: 0 0px 4px rgba(0, 0, 0, 0.2);
-public/assets/css_2021/style.css-493-    -webkit-box-shadow: 0 0px 4px rgba(0, 0, 0, 0.2);
-public/assets/css_2021/style.css-494-    -moz-box-shadow: 0 0px 4px rgba(0, 0, 0, 0.2);
-public/assets/css_2021/style.css-495-    border-radius: 50%;
-public/assets/css_2021/style.css-496-    -webkit-border-radius: 50%;
-public/assets/css_2021/style.css-497-    -moz-border-radius: 50%;
-public/assets/css_2021/style.css-498-    -ms-border-radius: 50%;
-public/assets/css_2021/style.css-499-    -o-border-radius: 50%;
-public/assets/css_2021/style.css-500-}
-public/assets/css_2021/style.css-501-
-public/assets/css_2021/style.css:502:.rounded-fig-wrap img {
-public/assets/css_2021/style.css-503-    border-radius: 50%;
-public/assets/css_2021/style.css-504-    -webkit-border-radius: 50%;
-public/assets/css_2021/style.css-505-    -moz-border-radius: 50%;
-public/assets/css_2021/style.css-506-    -ms-border-radius: 50%;
-public/assets/css_2021/style.css-507-    -o-border-radius: 50%;
-public/assets/css_2021/style.css-508-}
-public/assets/css_2021/style.css-509-
-public/assets/css_2021/style.css-510-.media-desc h5 {
-public/assets/css_2021/style.css-511-    color: #0099DA;
-public/assets/css_2021/style.css-512-    font-size: 14px;
-public/assets/css_2021/style.css-513-    font-weight: 600;
-public/assets/css_2021/style.css-514-    margin: 0 0;
-public/assets/css_2021/style.css-515-    line-height: 24px;
-public/assets/css_2021/style.css-516-}
-public/assets/css_2021/style.css-517-
-public/assets/css_2021/style.css-518-.media-desc p {
-public/assets/css_2021/style.css-519-    margin: 0;
-public/assets/css_2021/style.css-520-    line-height: 16px;
---
-public/assets/css_2021/style.css-1638-
-public/assets/css_2021/style.css-1639-.home-officers-panel .media-block:last-child {
-public/assets/css_2021/style.css-1640-    margin-bottom: 0;
-public/assets/css_2021/style.css-1641-}
-public/assets/css_2021/style.css-1642-
-public/assets/css_2021/style.css:1643:.home-officers-panel .rounded-fig-wrap {
-public/assets/css_2021/style.css-1644-    width: 54px;
-public/assets/css_2021/style.css-1645-    height: 54px;
-public/assets/css_2021/style.css-1646-    left: 0;
-public/assets/css_2021/style.css-1647-    top: 50%;
-public/assets/css_2021/style.css-1648-    transform: translateY(-50%);
-public/assets/css_2021/style.css-1649-    border: 2px solid #e5f1f8;
-public/assets/css_2021/style.css-1650-    box-shadow: none;
-public/assets/css_2021/style.css-1651-}
-public/assets/css_2021/style.css-1652-
-public/assets/css_2021/style.css:1653:.home-officers-panel .rounded-fig-wrap img {
-public/assets/css_2021/style.css-1654-    display: block;
-public/assets/css_2021/style.css-1655-    width: 100%;
-public/assets/css_2021/style.css-1656-    height: 100%;
-public/assets/css_2021/style.css-1657-    object-fit: cover;
-public/assets/css_2021/style.css-1658-}
-public/assets/css_2021/style.css-1659-
-public/assets/css_2021/style.css-1660-.home-officers-panel .media-desc h5 {
-public/assets/css_2021/style.css-1661-    color: #155783;
-public/assets/css_2021/style.css-1662-    font-size: 13px;
-public/assets/css_2021/style.css-1663-    line-height: 18px;
-public/assets/css_2021/style.css-1664-    margin: 0 0 2px;
-public/assets/css_2021/style.css-1665-}
-public/assets/css_2021/style.css-1666-
-public/assets/css_2021/style.css-1667-.home-officers-panel .media-desc p {
-public/assets/css_2021/style.css-1668-    color: #526575;
-public/assets/css_2021/style.css-1669-    font-size: 10px;
-public/assets/css_2021/style.css-1670-    line-height: 14px;
-public/assets/css_2021/style.css-1671-    overflow-wrap: anywhere;
---
-public/assets/css_2021/website-theme.css-1766-
-public/assets/css_2021/website-theme.css-1767-.other-office-officers-frame .media-block:last-child {
-public/assets/css_2021/website-theme.css-1768-    border-bottom: 0;
-public/assets/css_2021/website-theme.css-1769-}
-public/assets/css_2021/website-theme.css-1770-
-public/assets/css_2021/website-theme.css:1771:.other-office-officers-frame .rounded-fig-wrap {
-public/assets/css_2021/website-theme.css-1772-    width: 49px;
-public/assets/css_2021/website-theme.css-1773-    height: 49px;
-public/assets/css_2021/website-theme.css-1774-    left: 0;
-public/assets/css_2021/website-theme.css-1775-    top: 50%;
-public/assets/css_2021/website-theme.css-1776-    transform: translateY(-50%);
-public/assets/css_2021/website-theme.css-1777-    border: 2px solid #e5eef5;
-public/assets/css_2021/website-theme.css-1778-    border-radius: 50%;
-public/assets/css_2021/website-theme.css-1779-}
-public/assets/css_2021/website-theme.css-1780-
-public/assets/css_2021/website-theme.css:1781:.other-office-officers-frame .rounded-fig-wrap img {
-public/assets/css_2021/website-theme.css-1782-    width: 100%;
-public/assets/css_2021/website-theme.css-1783-    height: 100%;
-public/assets/css_2021/website-theme.css-1784-    display: block;
-public/assets/css_2021/website-theme.css-1785-    object-fit: cover;
-public/assets/css_2021/website-theme.css-1786-}
-public/assets/css_2021/website-theme.css-1787-
-public/assets/css_2021/website-theme.css-1788-.other-office-officers-frame .media-desc {
-public/assets/css_2021/website-theme.css-1789-    width: 100%;
-public/assets/css_2021/website-theme.css-1790-    min-width: 0;
-public/assets/css_2021/website-theme.css-1791-    position: static;
-public/assets/css_2021/website-theme.css-1792-}
-public/assets/css_2021/website-theme.css-1793-
-public/assets/css_2021/website-theme.css-1794-.other-office-officers-frame .media-desc h5 {
-public/assets/css_2021/website-theme.css-1795-    color: #155783;
-public/assets/css_2021/website-theme.css-1796-    font-size: 13px;
-public/assets/css_2021/website-theme.css-1797-    line-height: 17px;
-public/assets/css_2021/website-theme.css-1798-    margin: 0 0 2px;
-public/assets/css_2021/website-theme.css-1799-}
---
-public/assets/css_2021/website-theme.css-1904-    box-sizing: border-box;
-public/assets/css_2021/website-theme.css-1905-    padding-top: 6px;
-public/assets/css_2021/website-theme.css-1906-    padding-bottom: 6px;
-public/assets/css_2021/website-theme.css-1907-}
-public/assets/css_2021/website-theme.css-1908-
-public/assets/css_2021/website-theme.css:1909:.other-office-officers-frame .rounded-fig-wrap {
-public/assets/css_2021/website-theme.css-1910-    display: block;
-public/assets/css_2021/website-theme.css-1911-    overflow: hidden;
-public/assets/css_2021/website-theme.css-1912-    background: #f0f4f7;
-public/assets/css_2021/website-theme.css-1913-}
-public/assets/css_2021/website-theme.css-1914-
-public/assets/css_2021/website-theme.css:1915:.other-office-officers-frame .rounded-fig-wrap a {
-public/assets/css_2021/website-theme.css-1916-    display: flex;
-public/assets/css_2021/website-theme.css-1917-    width: 100%;
-public/assets/css_2021/website-theme.css-1918-    height: 100%;
-public/assets/css_2021/website-theme.css-1919-    align-items: center;
-public/assets/css_2021/website-theme.css-1920-    justify-content: center;
-public/assets/css_2021/website-theme.css-1921-}
-public/assets/css_2021/website-theme.css-1922-
-public/assets/css_2021/website-theme.css-1923-.other-office-officers-frame .other-officer-no-photo {
-public/assets/css_2021/website-theme.css-1924-    display: flex;
-public/assets/css_2021/website-theme.css-1925-    width: 100%;
-public/assets/css_2021/website-theme.css-1926-    height: 100%;
-public/assets/css_2021/website-theme.css-1927-    align-items: center;
-public/assets/css_2021/website-theme.css-1928-    justify-content: center;
-public/assets/css_2021/website-theme.css-1929-    color: #8a9baa;
-public/assets/css_2021/website-theme.css-1930-    font-size: 21px;
-public/assets/css_2021/website-theme.css-1931-}
-public/assets/css_2021/website-theme.css-1932-
-public/assets/css_2021/website-theme.css-1933-.other-office-officers-frame .media-desc {
---
-resources/views/home/contact_officers.blade.php-12-                        ];
+echo "===== CONTROLLER ====="
+sed -n '1,260p' app/Http/Controllers/Admin/PhotoStudioController.php
 
-===== PHOTO STUDIO INCLUDE AND SCRIPT =====
-resources/views/home/admin/add.blade.php-127-                                        <label class="control-label">Meta Description </label>
-resources/views/home/admin/add.blade.php-128-                                        <div class="controls">
-resources/views/home/admin/add.blade.php-129-                                            <textarea class="span8" name="home_meta_description"
-resources/views/home/admin/add.blade.php-130-                                                id="home_meta_description">{{ old('home_meta_description') }}</textarea>
-resources/views/home/admin/add.blade.php-131-                                        </div>
-resources/views/home/admin/add.blade.php-132-                                    </div>
-resources/views/home/admin/add.blade.php-133-
-resources/views/home/admin/add.blade.php-134-                                    @if(isset($addurl) && in_array($addurl, ['message-from-director-general', 'dor-spoke-person', 'general-info', 'information-officer', 'grievance-hearing-officer', 'additional-officer'], true))
-resources/views/home/admin/add.blade.php:135:    @include('admin.photo_studio.controls', ['photoStudioType' => 'home_officer'])
-resources/views/home/admin/add.blade.php-136-@else
-resources/views/home/admin/add.blade.php-137-<div class="control-group">
-resources/views/home/admin/add.blade.php-138-                                        <label class="control-label">Attachment</label>
-resources/views/home/admin/add.blade.php-139-                                        <div class="controls">
-resources/views/home/admin/add.blade.php-140-                                            <div class="fileupload fileupload-new" data-provides="fileupload">
-resources/views/home/admin/add.blade.php-141-                                                <div class="fileupload-new thumbnail">
-resources/views/home/admin/add.blade.php-142-                                                    <img src="{{ $rel_site_url }}assets/admin/img/no-image.png" alt="" />
-resources/views/home/admin/add.blade.php-143-                                                </div>
---
-resources/views/home/admin/add.blade.php-179-
-resources/views/home/admin/add.blade.php-180-        </div>
-resources/views/home/admin/add.blade.php-181-
-resources/views/home/admin/add.blade.php-182-    </div>
-resources/views/home/admin/add.blade.php-183-
-resources/views/home/admin/add.blade.php-184-
-resources/views/home/admin/add.blade.php-185-@section('footer_js')
-resources/views/home/admin/add.blade.php-186-@if(isset($addurl) && in_array($addurl, ['message-from-director-general', 'dor-spoke-person', 'general-info', 'information-officer', 'grievance-hearing-officer', 'additional-officer'], true))
-resources/views/home/admin/add.blade.php:187:    <script src="{{ asset('assets/admin/js/photo-studio.js') }}?v={{ filemtime(public_path('assets/admin/js/photo-studio.js')) }}"></script>
-resources/views/home/admin/add.blade.php-188-@endif
-resources/views/home/admin/add.blade.php-189-
-resources/views/home/admin/add.blade.php-190-    <script type="text/javascript">
-resources/views/home/admin/add.blade.php-191-        $('li').removeClass('active');
-resources/views/home/admin/add.blade.php-192-        $('#content').addClass('active');
-resources/views/home/admin/add.blade.php-193-        $('#homes').addClass('active');
-resources/views/home/admin/add.blade.php-194-        <?php foreach($languages as $language) { ?>
-resources/views/home/admin/add.blade.php-195-        CKEDITOR.replace('home_description_<?php echo $language->id; ?>', {
---
-resources/views/home/admin/edit.blade.php-131-                                           <div class="control-group">
-resources/views/home/admin/edit.blade.php-132-                           <label class="control-label">Meta Description </label>
-resources/views/home/admin/edit.blade.php-133-                                  <div class="controls">
-resources/views/home/admin/edit.blade.php-134-                                <textarea class="span8" name="home_meta_description" id="home_meta_description">{{ $home->home_meta_description }}</textarea>
-resources/views/home/admin/edit.blade.php-135-                            </div>
-resources/views/home/admin/edit.blade.php-136-                        </div>
-resources/views/home/admin/edit.blade.php-137-
-resources/views/home/admin/edit.blade.php-138-                           @if(in_array($the_home->home_url, ['message-from-director-general', 'dor-spoke-person', 'general-info', 'information-officer', 'grievance-hearing-officer', 'additional-officer'], true))
-resources/views/home/admin/edit.blade.php:139:    @include('admin.photo_studio.controls', ['photoStudioType' => 'home_officer'])
-resources/views/home/admin/edit.blade.php-140-@else
-resources/views/home/admin/edit.blade.php-141-<div class="control-group">
-resources/views/home/admin/edit.blade.php-142-                                    <label class="control-label">Attachment</label>
-resources/views/home/admin/edit.blade.php-143-                                    <div class="controls">
-resources/views/home/admin/edit.blade.php-144-                                        <div class="fileupload fileupload-new" data-provides="fileupload">
-resources/views/home/admin/edit.blade.php-145-                                            <div class="fileupload-new thumbnail">
-resources/views/home/admin/edit.blade.php-146-                                                       @include('helpers.attachment', ['src'=>$home->home_attachment,'folder'=>'pages'])
-resources/views/home/admin/edit.blade.php-147-                                            </div>
---
-resources/views/home/admin/edit.blade.php-175-               </div>
-resources/views/home/admin/edit.blade.php-176-            </div>
-resources/views/home/admin/edit.blade.php-177-              </div>
-resources/views/home/admin/edit.blade.php-178-                  </div>
-resources/views/home/admin/edit.blade.php-179-          </div>
-resources/views/home/admin/edit.blade.php-180-
-resources/views/home/admin/edit.blade.php-181-@section('footer_js')
-resources/views/home/admin/edit.blade.php-182-@if(in_array($the_home->home_url, ['message-from-director-general', 'dor-spoke-person', 'general-info', 'information-officer', 'grievance-hearing-officer', 'additional-officer'], true))
-resources/views/home/admin/edit.blade.php:183:    <script src="{{ asset('assets/admin/js/photo-studio.js') }}?v={{ filemtime(public_path('assets/admin/js/photo-studio.js')) }}"></script>
-resources/views/home/admin/edit.blade.php-184-@endif
-resources/views/home/admin/edit.blade.php-185-
-resources/views/home/admin/edit.blade.php-186-
-resources/views/home/admin/edit.blade.php-187-<script type="text/javascript">
-resources/views/home/admin/edit.blade.php-188-  $('li').removeClass('active');
-resources/views/home/admin/edit.blade.php-189-  $('#content').addClass('active');
-resources/views/home/admin/edit.blade.php-190-  $('#homes').addClass('active');
-resources/views/home/admin/edit.blade.php-191-<?php foreach($languages as $language) { ?>
---
-resources/views/office_chief/admin/addstaff.blade.php-127-                                </label>
-resources/views/office_chief/admin/addstaff.blade.php-128-                                <div class="controls">
-resources/views/office_chief/admin/addstaff.blade.php-129-                                    <input type="text" name="date_bs" class="span8" tabindex="-1" placeholder="e.g.
-resources/views/office_chief/admin/addstaff.blade.php-130-                                    2018 - 2026"/>
-resources/views/office_chief/admin/addstaff.blade.php-131-                                </div>
-resources/views/office_chief/admin/addstaff.blade.php-132-                            </div>
-resources/views/office_chief/admin/addstaff.blade.php-133-
-resources/views/office_chief/admin/addstaff.blade.php-134-                            <div class="control-group">
-resources/views/office_chief/admin/addstaff.blade.php:135:                                @include('admin.photo_studio.controls', ['photoStudioType' => 'office_chief'])
-resources/views/office_chief/admin/addstaff.blade.php-136-                            </div>
-resources/views/office_chief/admin/addstaff.blade.php-137-
-resources/views/office_chief/admin/addstaff.blade.php-138-                            <div class="control-group">
-resources/views/office_chief/admin/addstaff.blade.php-139-                                <label class="control-label">
-resources/views/office_chief/admin/addstaff.blade.php-140-                                    Status
-resources/views/office_chief/admin/addstaff.blade.php-141-                                </label>
-resources/views/office_chief/admin/addstaff.blade.php-142-                                <div class="controls">
-resources/views/office_chief/admin/addstaff.blade.php-143-                                    <select name="is_active" data-placeholder="Select the status" class="chosen-with-diselect span8" tabindex="-1" id="status">
---
-resources/views/office_chief/admin/addstaff.blade.php-228-  $(D).ready(function($) {
-resources/views/office_chief/admin/addstaff.blade.php-229-    JQUERY4U.UTIL.setupFormValidation();
-resources/views/office_chief/admin/addstaff.blade.php-230-  });
-resources/views/office_chief/admin/addstaff.blade.php-231-})(jQuery, window, document);
-resources/views/office_chief/admin/addstaff.blade.php-232-</script>
-resources/views/office_chief/admin/addstaff.blade.php-233-@stop
-resources/views/office_chief/admin/addstaff.blade.php-234-
-resources/views/office_chief/admin/addstaff.blade.php-235-@section('footer_js')
-resources/views/office_chief/admin/addstaff.blade.php:236:<script src="{{ asset('assets/admin/js/photo-studio.js') }}?v={{ filemtime(public_path('assets/admin/js/photo-studio.js')) }}"></script>
-resources/views/office_chief/admin/addstaff.blade.php-237-@stop
---
-resources/views/staff/staffs/addstaff.blade.php-271-                                    Office Join Date
-resources/views/staff/staffs/addstaff.blade.php-272-                                </label>
-resources/views/staff/staffs/addstaff.blade.php-273-                                <div class="controls">
-resources/views/staff/staffs/addstaff.blade.php-274-                                    <input type="text" name="office_join_date" id="join_date" data-required="1" class="span8 date-picker" />
-resources/views/staff/staffs/addstaff.blade.php-275-                                </div>
-resources/views/staff/staffs/addstaff.blade.php-276-                            </div>
-resources/views/staff/staffs/addstaff.blade.php-277-
-resources/views/staff/staffs/addstaff.blade.php-278-                            <div class="control-group">
-resources/views/staff/staffs/addstaff.blade.php:279:                                @include('admin.photo_studio.controls', ['photoStudioType' => 'staff'])
-resources/views/staff/staffs/addstaff.blade.php-280-                            </div>
-resources/views/staff/staffs/addstaff.blade.php-281-
-resources/views/staff/staffs/addstaff.blade.php-282-                            <div class="control-group">
-resources/views/staff/staffs/addstaff.blade.php-283-                                <label class="control-label">
-resources/views/staff/staffs/addstaff.blade.php-284-                                    Status
-resources/views/staff/staffs/addstaff.blade.php-285-                                </label>
-resources/views/staff/staffs/addstaff.blade.php-286-                                <div class="controls">
-resources/views/staff/staffs/addstaff.blade.php-287-                                    <select name="is_active" data-placeholder="Select the status" class="chosen-with-diselect span8" tabindex="-1" id="status">
---
-resources/views/staff/staffs/addstaff.blade.php-369-    JQUERY4U.UTIL.setupFormValidation();
-resources/views/staff/staffs/addstaff.blade.php-370-  });
-resources/views/staff/staffs/addstaff.blade.php-371-})(jQuery, window, document);
-resources/views/staff/staffs/addstaff.blade.php-372-</script>
-resources/views/staff/staffs/addstaff.blade.php-373-
-resources/views/staff/staffs/addstaff.blade.php-374-@stop
-resources/views/staff/staffs/addstaff.blade.php-375-
-resources/views/staff/staffs/addstaff.blade.php-376-@section('footer_js')
-resources/views/staff/staffs/addstaff.blade.php:377:<script src="{{ asset('assets/admin/js/photo-studio.js') }}?v={{ filemtime(public_path('assets/admin/js/photo-studio.js')) }}"></script>
-resources/views/staff/staffs/addstaff.blade.php-378-@stop
+echo
+echo "===== SERVICE ====="
+sed -n '1,300p' app/Services/PhotoStudio/PhotoStudioService.php
 
-===== HOME OFFICER FORM PHOTO STUDIO =====
-resources/views/home/admin/add.blade.php-117-
-resources/views/home/admin/add.blade.php-118-                                    <div class="control-group">
-resources/views/home/admin/add.blade.php-119-                                        <label class="control-label">Meta Tags </label>
-resources/views/home/admin/add.blade.php-120-                                        <div class="controls">
-resources/views/home/admin/add.blade.php-121-                                            <textarea class="span8" name="home_meta_tags"
-resources/views/home/admin/add.blade.php-122-                                                id="home_meta_tags">{{ old('home_meta_tags') }}</textarea>
-resources/views/home/admin/add.blade.php-123-                                        </div>
-resources/views/home/admin/add.blade.php-124-                                    </div>
-resources/views/home/admin/add.blade.php-125-
-resources/views/home/admin/add.blade.php-126-                                    <div class="control-group">
-resources/views/home/admin/add.blade.php-127-                                        <label class="control-label">Meta Description </label>
-resources/views/home/admin/add.blade.php-128-                                        <div class="controls">
-resources/views/home/admin/add.blade.php-129-                                            <textarea class="span8" name="home_meta_description"
-resources/views/home/admin/add.blade.php-130-                                                id="home_meta_description">{{ old('home_meta_description') }}</textarea>
-resources/views/home/admin/add.blade.php-131-                                        </div>
-resources/views/home/admin/add.blade.php-132-                                    </div>
-resources/views/home/admin/add.blade.php-133-
-resources/views/home/admin/add.blade.php-134-                                    @if(isset($addurl) && in_array($addurl, ['message-from-director-general', 'dor-spoke-person', 'general-info', 'information-officer', 'grievance-hearing-officer', 'additional-officer'], true))
-resources/views/home/admin/add.blade.php:135:    @include('admin.photo_studio.controls', ['photoStudioType' => 'home_officer'])
-resources/views/home/admin/add.blade.php-136-@else
-resources/views/home/admin/add.blade.php-137-<div class="control-group">
-resources/views/home/admin/add.blade.php-138-                                        <label class="control-label">Attachment</label>
-resources/views/home/admin/add.blade.php-139-                                        <div class="controls">
-resources/views/home/admin/add.blade.php-140-                                            <div class="fileupload fileupload-new" data-provides="fileupload">
-resources/views/home/admin/add.blade.php-141-                                                <div class="fileupload-new thumbnail">
-resources/views/home/admin/add.blade.php-142-                                                    <img src="{{ $rel_site_url }}assets/admin/img/no-image.png" alt="" />
-resources/views/home/admin/add.blade.php-143-                                                </div>
-resources/views/home/admin/add.blade.php-144-                                                <div class="fileupload-preview fileupload-exists thumbnail"
-resources/views/home/admin/add.blade.php-145-                                                    style="max-width: 200px; max-height: 150px; line-height: 20px;"></div>
-resources/views/home/admin/add.blade.php-146-                                                <div>
-resources/views/home/admin/add.blade.php-147-                                                    <span class="btn btn-file btn-primary"><span
-resources/views/home/admin/add.blade.php-148-                                                            class="fileupload-new">Select image</span>
-resources/views/home/admin/add.blade.php-149-                                                        <span class="fileupload-exists">Change</span>
-resources/views/home/admin/add.blade.php-150-                                                        <input type="file" class="default" name="attachment"
-resources/views/home/admin/add.blade.php-151-                                                            id="attchment" /></span>
-resources/views/home/admin/add.blade.php-152-                                                    <a href="#" class="btn  btn-danger fileupload-exists"
-resources/views/home/admin/add.blade.php-153-                                                        data-dismiss="fileupload">Remove</a>
---
-resources/views/home/admin/edit.blade.php-121-                           </div>
-resources/views/home/admin/edit.blade.php-122-                                          @endforeach
-resources/views/home/admin/edit.blade.php-123-
-resources/views/home/admin/edit.blade.php-124-                                          <div class="control-group">
-resources/views/home/admin/edit.blade.php-125-                           <label class="control-label">Meta Tags </label>
-resources/views/home/admin/edit.blade.php-126-                                  <div class="controls">
-resources/views/home/admin/edit.blade.php-127-                                <textarea class="span8" name="home_meta_tags" >{{ $home->home_meta_tags }}</textarea>
-resources/views/home/admin/edit.blade.php-128-                             </div>
-resources/views/home/admin/edit.blade.php-129-                           </div>
-resources/views/home/admin/edit.blade.php-130-
-resources/views/home/admin/edit.blade.php-131-                                           <div class="control-group">
-resources/views/home/admin/edit.blade.php-132-                           <label class="control-label">Meta Description </label>
-resources/views/home/admin/edit.blade.php-133-                                  <div class="controls">
-resources/views/home/admin/edit.blade.php-134-                                <textarea class="span8" name="home_meta_description" id="home_meta_description">{{ $home->home_meta_description }}</textarea>
-resources/views/home/admin/edit.blade.php-135-                            </div>
-resources/views/home/admin/edit.blade.php-136-                        </div>
-resources/views/home/admin/edit.blade.php-137-
-resources/views/home/admin/edit.blade.php-138-                           @if(in_array($the_home->home_url, ['message-from-director-general', 'dor-spoke-person', 'general-info', 'information-officer', 'grievance-hearing-officer', 'additional-officer'], true))
-resources/views/home/admin/edit.blade.php:139:    @include('admin.photo_studio.controls', ['photoStudioType' => 'home_officer'])
-resources/views/home/admin/edit.blade.php-140-@else
-resources/views/home/admin/edit.blade.php-141-<div class="control-group">
-resources/views/home/admin/edit.blade.php-142-                                    <label class="control-label">Attachment</label>
-resources/views/home/admin/edit.blade.php-143-                                    <div class="controls">
-resources/views/home/admin/edit.blade.php-144-                                        <div class="fileupload fileupload-new" data-provides="fileupload">
-resources/views/home/admin/edit.blade.php-145-                                            <div class="fileupload-new thumbnail">
-resources/views/home/admin/edit.blade.php-146-                                                       @include('helpers.attachment', ['src'=>$home->home_attachment,'folder'=>'pages'])
-resources/views/home/admin/edit.blade.php-147-                                            </div>
-resources/views/home/admin/edit.blade.php-148-                                            <div class="fileupload-preview fileupload-exists thumbnail" style="max-width: 200px; max-height: 150px; line-height: 20px;"></div>
-resources/views/home/admin/edit.blade.php-149-                                            <div>
-resources/views/home/admin/edit.blade.php-150-                                       <span class="btn btn-file btn-primary"><span class="fileupload-new">Select image</span>
-resources/views/home/admin/edit.blade.php-151-                                       <span class="fileupload-exists">Change</span>
-resources/views/home/admin/edit.blade.php-152-                                       <input type="file" class="default" name="attachment" id="attchment" /></span>
-resources/views/home/admin/edit.blade.php-153-                                                <a href="#" class="btn  btn-danger fileupload-exists" data-dismiss="fileupload">Remove</a>
-resources/views/home/admin/edit.blade.php-154-                                                <label class="error" id="backgroundvalid"></label>
-resources/views/home/admin/edit.blade.php-155-                                            </div>
-resources/views/home/admin/edit.blade.php-156-                                        </div>
-resources/views/home/admin/edit.blade.php-157-                                    </div>
+echo
+echo "===== PYTHON PROCESSOR ====="
+sed -n '1,360p' app/Services/PhotoStudio/process_photo.py
+} > /tmp/dor-photo-studio-current.txt
+
+cat /tmp/dor-photo-studio-current.txt
+===== PHOTO STUDIO CONTROLS =====
+<div
+    id="photo-studio"
+    class="control-group"
+    data-type="{{ $photoStudioType }}"
+    data-preview-url="{{ route('admin.photo-studio.create', ['type' => $photoStudioType]) }}"
+    data-reject-url="{{ route('admin.photo-studio.reject', ['type' => $photoStudioType]) }}"
+    style="margin:20px 0;padding:15px;border:1px solid #d8dee8;border-radius:6px;background:#fafafa;"
+>
+    <label class="control-label">AI Photo Studio</label>
+
+    <div class="controls">
+        <input type="hidden" name="photo_studio_token" id="photo-studio-token" value="">
+
+        <p style="margin-bottom:12px;color:#555;">
+            Upload a JPEG/PNG photo or take a photo using your camera.
+            Maximum size: 1 MB.
+        </p>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+            <label for="photo-studio-file" class="btn btn-primary" style="cursor:pointer;">
+                <i class="icon-upload"></i> Upload Photo
+            </label>
+
+            <input
+                type="file"
+                id="photo-studio-file"
+                accept="image/jpeg,image/png"
+                style="position:absolute;left:-9999px;width:1px;height:1px;"
+            >
+
+            <button type="button" id="photo-studio-camera" class="btn btn-info">
+                <i class="icon-camera"></i> Take Photo
+            </button>
+        </div>
+
+        <div id="photo-studio-camera-panel" hidden style="margin:12px 0;">
+            <video
+                id="photo-studio-video"
+                autoplay
+                playsinline
+                muted
+                style="display:block;width:100%;max-width:420px;background:#222;border-radius:5px;"
+            ></video>
+
+            <div style="margin-top:8px;">
+                <button type="button" id="photo-studio-capture" class="btn btn-primary">
+                    Take Photo
+                </button>
+                <button type="button" id="photo-studio-camera-close" class="btn btn-default">
+                    Close Camera
+                </button>
+            </div>
+        </div>
+
+        <div id="photo-studio-preview-panel" hidden style="margin-top:15px;">
+            <p><strong>AI Processed Preview</strong></p>
+
+            <img
+                id="photo-studio-preview"
+                alt="AI processed photo preview"
+                style="display:block;width:100%;max-width:400px;height:auto;background:#fafafa;border:1px solid #ddd;border-radius:4px;"
+            >
+
+            <p style="margin-top:8px;color:#555;">
+                Background: #FAFAFA · Output: 800 × 800
+            </p>
+
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button type="button" id="photo-studio-accept" class="btn btn-success">
+                    <i class="icon-ok"></i> Accept Photo
+                </button>
+
+                <button type="button" id="photo-studio-reject" class="btn btn-danger">
+                    <i class="icon-remove"></i> Reject / Change
+                </button>
+            </div>
+        </div>
+
+        <p
+            id="photo-studio-status"
+            role="status"
+            aria-live="polite"
+            style="margin-top:10px;color:#555;"
+        >
+            No photo processed yet.
+        </p>
+
+        <p style="font-size:12px;color:#777;margin-top:8px;">
+            The original photo is kept privately during processing.
+            Only an accepted preview is used when this form is submitted.
+        </p>
+    </div>
+</div>
+
+===== PHOTO STUDIO JS =====
+(function () {
+    'use strict';
+
+    function initialisePhotoStudio() {
+        var studio = document.getElementById('photo-studio');
+        if (!studio) return;
+
+        var form = studio.closest('form');
+        if (!form) return;
+
+        var type = studio.dataset.type;
+        var previewUrl = studio.dataset.previewUrl;
+        var rejectUrl = studio.dataset.rejectUrl;
+
+        var fileInput = document.getElementById('photo-studio-file');
+        var tokenInput = document.getElementById('photo-studio-token');
+        var status = document.getElementById('photo-studio-status');
+
+        var cameraButton = document.getElementById('photo-studio-camera');
+        var cameraPanel = document.getElementById('photo-studio-camera-panel');
+        var video = document.getElementById('photo-studio-video');
+        var captureButton = document.getElementById('photo-studio-capture');
+        var closeCameraButton = document.getElementById('photo-studio-camera-close');
+
+        var previewPanel = document.getElementById('photo-studio-preview-panel');
+        var previewImage = document.getElementById('photo-studio-preview');
+        var acceptButton = document.getElementById('photo-studio-accept');
+        var rejectButton = document.getElementById('photo-studio-reject');
+
+        var pendingToken = '';
+        var cameraStream = null;
+        var processing = false;
+
+        function setStatus(message, isError) {
+            status.textContent = message;
+            status.style.color = isError ? '#a12622' : '#555';
+        }
+
+        function stopCamera() {
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(function (track) {
+                    track.stop();
+                });
+                cameraStream = null;
+            }
+
+            video.srcObject = null;
+            cameraPanel.hidden = true;
+        }
+
+        function csrfToken() {
+            var field = form.querySelector('input[name="_token"]');
+            return field ? field.value : '';
+        }
+
+        async function postForm(url, data) {
+            var response = await fetch(url, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken(),
+                    'Accept': 'application/json'
+                },
+                body: data
+            });
+
+            var result;
+
+            try {
+                result = await response.json();
+            } catch (error) {
+                throw new Error('The server returned an unexpected response.');
+            }
+
+            if (!response.ok || result.status !== 'success') {
+                throw new Error(result.message || 'The request could not be completed.');
+            }
+
+            return result;
+        }
+
+        function updatePreviewActions() {
+            acceptButton.disabled = processing || !pendingToken;
+            rejectButton.disabled = processing || !(pendingToken || tokenInput.value);
+        }
+
+        function clearVisiblePreview() {
+            previewPanel.hidden = true;
+            previewImage.removeAttribute('src');
+            acceptButton.textContent = 'Accept Photo';
+            updatePreviewActions();
+        }
+
+        updatePreviewActions();
+
+        async function processPhoto(file) {
+            if (!file) return;
+
+            if (!['image/jpeg', 'image/png'].includes(file.type)) {
+                setStatus('Please select a JPEG or PNG image.', true);
+                fileInput.value = '';
+                return;
+            }
+
+            if (file.size > 1024 * 1024) {
+                setStatus('Photo must not exceed 1 MB.', true);
+                fileInput.value = '';
+                return;
+            }
+
+            if (processing) return;
+
+            stopCamera();
+
+            // Keep the last accepted/pending preview until a replacement
+            // has been processed successfully on the server.
+            processing = true;
+            updatePreviewActions();
+            fileInput.disabled = true;
+            cameraButton.disabled = true;
+            setStatus('Processing photo. Please wait...', false);
+
+            try {
+                var data = new FormData();
+                data.append('attachment', file, file.name || 'camera-photo.jpg');
+
+                var result = await postForm(previewUrl, data);
+
+                tokenInput.value = '';
+                pendingToken = result.token;
+                acceptButton.disabled = false;
+                acceptButton.textContent = 'Accept Photo';
+                previewImage.src = result.preview_url + '?v=' + Date.now();
+                previewPanel.hidden = false;
+                updatePreviewActions();
+
+                setStatus(
+                    'AI processing completed. Please review the preview and Accept or Reject it.',
+                    false
+                );
+            } catch (error) {
+                setStatus(error.message, true);
+            } finally {
+                processing = false;
+                updatePreviewActions();
+                fileInput.disabled = false;
+                cameraButton.disabled = false;
+
+                // The raw original must not be submitted with the Admin form.
+                fileInput.value = '';
+            }
+        }
+
+        fileInput.addEventListener('change', function () {
+            if (fileInput.files && fileInput.files.length) {
+                processPhoto(fileInput.files[0]);
+            }
+        });
+
+        cameraButton.addEventListener('click', async function () {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                setStatus(
+                    'Camera is unavailable in this browser or page connection. Please use Upload Photo.',
+                    true
+                );
+                return;
+            }
+
+            try {
+                cameraStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'user' },
+                    audio: false
+                });
+
+                video.srcObject = cameraStream;
+                cameraPanel.hidden = false;
+                await video.play();
+                setStatus('Camera is ready. Take your photo when ready.', false);
+            } catch (error) {
+                stopCamera();
+                setStatus(
+                    'Camera permission was denied or the camera is unavailable. You can still Upload Photo.',
+                    true
+                );
+            }
+        });
+
+        closeCameraButton.addEventListener('click', stopCamera);
+
+        captureButton.addEventListener('click', function () {
+            if (!video.videoWidth || !video.videoHeight) {
+                setStatus('Camera is not ready yet. Please wait.', true);
+                return;
+            }
+
+            var canvas = document.createElement('canvas');
+            var scale = Math.min(1, 2000 / Math.max(video.videoWidth, video.videoHeight));
+
+            canvas.width = Math.round(video.videoWidth * scale);
+            canvas.height = Math.round(video.videoHeight * scale);
+
+            var context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            function makeBlob(quality) {
+                canvas.toBlob(function (blob) {
+                    if (!blob) {
+                        setStatus('Could not capture the camera photo. Please try again.', true);
+                        return;
+                    }
+
+                    if (blob.size > 1024 * 1024 && quality > 0.45) {
+                        makeBlob(quality - 0.12);
+                        return;
+                    }
+
+                    if (blob.size > 1024 * 1024) {
+                        setStatus('Captured photo exceeds 1 MB. Please try again.', true);
+                        return;
+                    }
+
+                    var cameraFile = new File(
+                        [blob],
+                        'camera-photo.jpg',
+                        { type: 'image/jpeg' }
+                    );
+
+                    stopCamera();
+                    processPhoto(cameraFile);
+                }, 'image/jpeg', quality);
+            }
+
+            makeBlob(0.88);
+        });
+
+        acceptButton.addEventListener('click', function () {
+            if (!pendingToken || processing) return;
+
+            tokenInput.value = pendingToken;
+            pendingToken = '';
+            acceptButton.textContent = 'Photo Accepted';
+            updatePreviewActions();
+            setStatus('Photo accepted. Review it below, then submit the form to save it.', false);
+        });
+
+        rejectButton.addEventListener('click', async function () {
+            if (processing) return;
+
+            var token = pendingToken || tokenInput.value;
+
+            if (!token) {
+                tokenInput.value = '';
+                pendingToken = '';
+                clearVisiblePreview();
+                setStatus('Photo selection cleared. You may upload or take another photo.', false);
+                return;
+            }
+
+            processing = true;
+            updatePreviewActions();
+            setStatus('Rejecting preview...', false);
+
+            try {
+                var data = new FormData();
+                data.append('token', token);
+
+                await postForm(rejectUrl, data);
+
+                tokenInput.value = '';
+                pendingToken = '';
+                clearVisiblePreview();
+                setStatus('Preview rejected. You may upload or take another photo.', false);
+            } catch (error) {
+                setStatus(error.message, true);
+            } finally {
+                processing = false;
+                updatePreviewActions();
+            }
+        });
+
+
+===== CONTROLLER =====
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\UserAccessControlModel;
+use App\Services\PhotoStudio\PhotoStudioService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Validator;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\UploadedFile;
+use Throwable;
+
+class PhotoStudioController extends Controller
+{
+    private const MODULE_ID = 29;
+    private const SESSION_PREFIX = 'photo_studio.pending.';
+    private const PREVIEW_LIFETIME = 1800;
+
+    private function allowedTypes(): array
+    {
+        return ['staff', 'office_chief', 'home_officer'];
+    }
+
+    private function authorizePhotoStudio(string $type)
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            abort(401);
+        }
+
+        if (!UserAccessControlModel::getAccessAddByModuleAndUserMapId(
+            ($type === 'home_officer' ? 1 : self::MODULE_ID),
+            $user->id
+        )) {
+            abort(403, 'You do not have permission to use Photo Studio.');
+        }
+
+        return $user;
+    }
+
+    private function sessionKey(string $type): string
+    {
+        abort_unless(in_array($type, $this->allowedTypes(), true), 404);
+
+        return self::SESSION_PREFIX . $type;
+    }
+
+    private function pendingPreview(string $type): ?array
+    {
+        $pending = Session::get($this->sessionKey($type));
+
+        if (!is_array($pending)) {
+            return null;
+        }
+
+        $user = Auth::user();
+
+        if (
+            !$user ||
+            !isset($pending['token'], $pending['user_id'], $pending['created_at']) ||
+            !is_string($pending['token']) ||
+            !preg_match('/^[a-f0-9]{48}$/', $pending['token']) ||
+            (int) $pending['user_id'] !== (int) $user->id ||
+            !is_numeric($pending['created_at']) ||
+            (time() - (int) $pending['created_at']) > self::PREVIEW_LIFETIME ||
+            (int) $pending['created_at'] > time()
+        ) {
+            return null;
+        }
+
+        return $pending;
+    }
+
+    /**
+     * Generate a private AI preview for Staff or Office Chief.
+     */
+    public function createPreview(Request $request, string $type, PhotoStudioService $studio)
+    {
+        $user = $this->authorizePhotoStudio($type);
+        $this->sessionKey($type);
+
+        $validator = Validator::make($request->all(), [
+            'attachment' => 'required|file|mimes:jpg,jpeg,png|max:1024',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $validator->errors()->first('attachment'),
+            ], 422);
+        }
+
+        $oldPending = $this->pendingPreview($type);
+        $newToken = null;
+
+        try {
+            $newToken = $studio->createPreview(
+                $request->file('attachment')
+            );
+
+            $studio->getPreviewPath($newToken);
+
+            Session::put($this->sessionKey($type), [
+                'token' => $newToken,
+                'user_id' => (int) $user->id,
+                'created_at' => time(),
+            ]);
+
+            if ($oldPending && $oldPending['token'] !== $newToken) {
+                $studio->delete($oldPending['token']);
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'token' => $newToken,
+                'preview_url' => route('admin.photo-studio.preview', [
+                    'type' => $type,
+                    'token' => $newToken,
+                ]),
+                'expires_in' => self::PREVIEW_LIFETIME,
+            ]);
+        } catch (Throwable $exception) {
+            if ($newToken) {
+                $studio->delete($newToken);
+            }
+
+            report($exception);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Photo processing failed. Please try another photo.',
+            ], 422);
+        }
+    }
+
+    /**
+     * Display a preview only to the Admin session that created it.
+     */
+    public function showPreview(
+        string $type,
+        string $token,
+        PhotoStudioService $studio
+    ): BinaryFileResponse {
+        $this->authorizePhotoStudio($type);
+        $this->sessionKey($type);
+
+        $pending = $this->pendingPreview($type);
+
+        abort_unless(
+            $pending && hash_equals($pending['token'], $token),
+            404
+        );
+
+        try {
+            $path = $studio->getPreviewPath($token);
+        } catch (Throwable $exception) {
+            abort(404);
+        }
+
+        return response()->file($path, [
+            'Content-Type' => 'image/jpeg',
+            'Cache-Control' => 'private, no-store, no-cache, must-revalidate, max-age=0',
+            'Pragma' => 'no-cache',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
+    }
+
+    /**
+     * Reject and remove a pending private preview.
+     */
+    public function rejectPreview(
+        Request $request,
+        string $type,
+        PhotoStudioService $studio
+    ): Response {
+        $this->authorizePhotoStudio($type);
+        $key = $this->sessionKey($type);
+
+        $validator = Validator::make($request->all(), [
+            'token' => 'required|string|regex:/^[a-f0-9]{48}$/',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Invalid preview reference.',
+            ], 422);
+        }
+
+        $pending = $this->pendingPreview($type);
+        $token = (string) $request->input('token');
+
+        abort_unless(
+            $pending && hash_equals($pending['token'], $token),
+            404
+        );
+
+        $studio->delete($token);
+        Session::forget($key);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Photo preview rejected.',
+        ]);
+    }
+}
+
+===== SERVICE =====
+<?php
+
+namespace App\Services\PhotoStudio;
+
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Session;
+use RuntimeException;
+use Symfony\Component\Process\Process;
+
+class PhotoStudioService
+{
+    private string $workspace;
+    private string $python;
+    private string $processor;
+
+    public function __construct()
+    {
+        $this->workspace = rtrim(sys_get_temp_dir(), '/')
+            . '/dor-photo-studio';
+
+        $this->python = (string) config('photo-studio.python');
+
+        if ($this->python === '' || !is_executable($this->python)) {
+            throw new RuntimeException('Photo Studio Python executable is not configured or executable.');
+        }
+        $this->processor = base_path(
+            'app/Services/PhotoStudio/process_photo.py'
+        );
+
+        if (!is_dir($this->workspace)) {
+            if (!mkdir($this->workspace, 0700, true) && !is_dir($this->workspace)) {
+                throw new RuntimeException('Private AI workspace could not be created.');
+            }
+        }
+
+        chmod($this->workspace, 0700);
+    }
+
+    /**
+     * Save an uploaded original privately and generate its AI preview.
+     * The original upload is never modified.
+     */
+    public function createPreview(UploadedFile $upload): string
+    {
+        if (!$upload->isValid()) {
+            throw new RuntimeException('The uploaded photo is invalid.');
+        }
+
+        if ($upload->getSize() > 1024 * 1024) {
+            throw new RuntimeException('Photo size must not exceed 1 MB.');
+        }
+
+        $mime = (new \finfo(FILEINFO_MIME_TYPE))
+            ->file($upload->getRealPath());
+
+        $extension = match ($mime) {
+            'image/jpeg' => 'jpg',
+            'image/png' => 'png',
+            default => throw new RuntimeException('Only JPEG and PNG photos are supported.'),
+        };
+
+        $imageInfo = getimagesize($upload->getRealPath());
+
+        if (
+            !$imageInfo ||
+            $imageInfo[0] < 100 ||
+            $imageInfo[1] < 100 ||
+            ($imageInfo[0] * $imageInfo[1]) > 25000000
+        ) {
+            throw new RuntimeException('Photo dimensions are invalid or too large.');
+        }
+
+        $id = bin2hex(random_bytes(24));
+        $directory = $this->workspace . '/' . $id;
+
+        if (!mkdir($directory, 0700)) {
+            throw new RuntimeException('Private photo workspace could not be created.');
+        }
+
+        chmod($directory, 0700);
+
+        $originalPath = $directory . '/original.' . $extension;
+        $previewPath = $directory . '/preview.jpg';
+
+        try {
+            if (!copy($upload->getRealPath(), $originalPath)) {
+                throw new RuntimeException('Original photo could not be stored privately.');
+            }
+
+            chmod($originalPath, 0600);
+
+            $process = new Process([
+                $this->python,
+                $this->processor,
+                '--input',
+                $originalPath,
+                '--output',
+                $previewPath,
+            ]);
+
+            $process->setTimeout(180);
+            $process->run();
+
+            if (!$process->isSuccessful() || !is_file($previewPath)) {
+                throw new RuntimeException('AI photo processing failed. Please try again.');
+            }
+
+            chmod($previewPath, 0600);
+
+            return $id;
+        } catch (\Throwable $exception) {
+            $this->delete($id);
+            throw $exception;
+        }
+    }
+
+    /**
+     * Return a private preview path after validating its token.
+     */
+    public function getPreviewPath(string $id): string
+    {
+        $directory = $this->getDirectory($id);
+        $path = $directory . '/preview.jpg';
+
+        if (!is_file($path)) {
+            throw new RuntimeException('AI preview is no longer available.');
+        }
+
+        return $path;
+    }
+
+    /**
+     * Return the preserved original upload path.
+     */
+    public function getOriginalPath(string $id): string
+    {
+        $directory = $this->getDirectory($id);
+
+        foreach (['jpg', 'png'] as $extension) {
+            $path = $directory . '/original.' . $extension;
+
+            if (is_file($path)) {
+                return $path;
+            }
+        }
+
+        throw new RuntimeException('Original photo is no longer available.');
+    }
+
+    /**
+     * Remove one private preview workspace.
+     */
+    /**
+     * Return an accepted AI preview as a temporary uploaded file.
+     * The preview must belong to the current Admin session and user.
+     */
+    public function getAcceptedUpload(
+        string $type,
+        string $token,
+        int $userId
+    ): UploadedFile {
+        $this->assertPendingPreview($type, $token, $userId);
+
+        $path = $this->getPreviewPath($token);
+
+        return new UploadedFile(
+            $path,
+            'photo-studio-preview.jpg',
+            'image/jpeg',
+            UPLOAD_ERR_OK,
+            true
+        );
+    }
+
+    /**
+     * Delete the private original and preview after successful database save.
+     */
+    public function completeAcceptedPreview(
+        string $type,
+        string $token,
+        int $userId
+    ): void {
+        $this->assertPendingPreview($type, $token, $userId);
+
+        $this->delete($token);
+        Session::forget('photo_studio.pending.' . $type);
+    }
+
+    private function assertPendingPreview(
+        string $type,
+        string $token,
+        int $userId
+    ): void {
+        if (!in_array($type, ['staff', 'office_chief', 'home_officer'], true)) {
+            throw new RuntimeException('Invalid Photo Studio type.');
+        }
+
+        if (!preg_match('/^[a-f0-9]{48}$/', $token)) {
+            throw new RuntimeException('Invalid photo preview reference.');
+        }
+
+        $pending = Session::get('photo_studio.pending.' . $type);
+
+        if (
+            !is_array($pending) ||
+            !isset($pending['token'], $pending['user_id'], $pending['created_at']) ||
+            !is_string($pending['token']) ||
+            !hash_equals($pending['token'], $token) ||
+            (int) $pending['user_id'] !== $userId ||
+            !is_numeric($pending['created_at']) ||
+            (time() - (int) $pending['created_at']) > 1800 ||
+            (int) $pending['created_at'] > time()
+        ) {
+            throw new RuntimeException('Photo preview is expired or does not belong to this Admin session.');
+        }
+    }
+    public function delete(string $id): void
+    {
+        if (!preg_match('/^[a-f0-9]{48}$/', $id)) {
+            return;
+        }
+
+        $directory = $this->workspace . '/' . $id;
+
+        if (!is_dir($directory)) {
+            return;
+        }
+
+        foreach (glob($directory . '/*') ?: [] as $file) {
+            if (is_file($file)) {
+                @unlink($file);
+            }
+        }
+
+        @rmdir($directory);
+    }
+
+    private function getDirectory(string $id): string
+    {
+        if (!preg_match('/^[a-f0-9]{48}$/', $id)) {
+            throw new RuntimeException('Invalid photo preview reference.');
+        }
+
+        return $this->workspace . '/' . $id;
+    }
+}
+
+===== PYTHON PROCESSOR =====
+#!/usr/bin/env python3
+
+import argparse
+import json
+import math
+import os
+import sys
+from io import BytesIO
+from pathlib import Path
+
+import cv2
+import numpy as np
+from PIL import Image, ImageOps
+from rembg import new_session, remove
+
+
+FACE_MODEL = Path.home() / ".u2net" / "face_detection_yunet_2026may.onnx"
+MAX_SIDE = 2200
+
+
+def straighten(image):
+    """Use face eye landmarks for gentle, non-cropping rotation."""
+    if not FACE_MODEL.is_file():
+        return image, 0.0, False
+
+    try:
+        h, w = image.shape[:2]
+        detector = cv2.FaceDetectorYN.create(
+            str(FACE_MODEL), "", (w, h),
+            0.6, 0.3, 5000
+        )
+        detector.setInputSize((w, h))
+        _, faces = detector.detect(image)
+
+        if faces is None or len(faces) == 0:
+            return image, 0.0, False
+
+        # Use the largest detected face.
+        face = max(faces, key=lambda f: float(f[2] * f[3]))
+
+        # YuNet eye landmarks: indices 4-7.
+        eye1 = (float(face[4]), float(face[5]))
+        eye2 = (float(face[6]), float(face[7]))
+
+        if abs(eye2[0] - eye1[0]) < 1:
+            return image, 0.0, True
+
+        left, right = sorted((eye1, eye2), key=lambda p: p[0])
+        angle = math.degrees(math.atan2(
+            right[1] - left[1],
+            right[0] - left[0]
+        ))
+
+        if not (1.5 <= abs(angle) <= 12):
+            return image, 0.0, True
+
+        # Rotate the complete image on an expanded canvas.
+        center = (w / 2, h / 2)
+        matrix = cv2.getRotationMatrix2D(center, angle, 1.0)
+
+        cos_a = abs(matrix[0, 0])
+        sin_a = abs(matrix[0, 1])
+        new_w = int(h * sin_a + w * cos_a)
+        new_h = int(h * cos_a + w * sin_a)
+
+        matrix[0, 2] += new_w / 2 - center[0]
+        matrix[1, 2] += new_h / 2 - center[1]
+
+        rotated = cv2.warpAffine(
+            image, matrix, (new_w, new_h),
+            flags=cv2.INTER_CUBIC,
+            borderMode=cv2.BORDER_REFLECT
+        )
+        return rotated, round(angle, 2), True
+
+    except Exception:
+        # Face detection must never prevent photo processing.
+        return image, 0.0, False
+
+
+def enhance(image):
+    """Conservative photographic enhancement."""
+    # Reduce noise gently.
+    denoised = cv2.fastNlMeansDenoisingColored(
+        image, None, 3, 3, 7, 21
+    )
+
+    # Improve local contrast without aggressive colour changes.
+    lab = cv2.cvtColor(denoised, cv2.COLOR_BGR2LAB)
+    light, a, b = cv2.split(lab)
+
+    clahe = cv2.createCLAHE(
+        clipLimit=1.3,
+        tileGridSize=(8, 8)
+    )
+    light = clahe.apply(light)
+
+    enhanced = cv2.cvtColor(
+        cv2.merge((light, a, b)),
+        cv2.COLOR_LAB2BGR
+    )
+
+    # Gently compress extreme neutral highlights.
+    hsv = cv2.cvtColor(enhanced, cv2.COLOR_BGR2HSV)
+    h, s, v = cv2.split(hsv)
+
+    highlight_mask = (v > 232) & (s < 45)
+    v_float = v.astype(np.float32)
+    v_float[highlight_mask] = (
+        232 + (v_float[highlight_mask] - 232) * 0.45
+    )
+    v = np.clip(v_float, 0, 255).astype(np.uint8)
+
+    enhanced = cv2.cvtColor(
+        cv2.merge((h, s, v)),
+        cv2.COLOR_HSV2BGR
+    )
+
+    # Mild sharpening; avoid aggressive edge enhancement.
+    blurred = cv2.GaussianBlur(enhanced, (0, 0), 1.0)
+    sharpened = cv2.addWeighted(
+        enhanced, 1.35, blurred, -0.35, 0
+    )
+
+    return np.clip(sharpened, 0, 255).astype(np.uint8)
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--input", required=True)
+    parser.add_argument("--output", required=True)
+    args = parser.parse_args()
+
+    source = Path(args.input)
+    destination = Path(args.output)
+
+    if not source.is_file():
+        raise ValueError("Input photo does not exist.")
+
+    if not destination.parent.is_dir():
+        raise ValueError("Output directory does not exist.")
+
+    if source.stat().st_size > 10 * 1024 * 1024:
+        raise ValueError("Input photo exceeds the processing limit.")
+
+    with Image.open(source) as original:
+        if original.format not in ("JPEG", "PNG"):
+            raise ValueError("Only JPEG and PNG images are supported.")
+
+        original = ImageOps.exif_transpose(original).convert("RGB")
+
+        if original.width < 100 or original.height < 100:
+            raise ValueError("Image dimensions are too small.")
+
+        # Limit working dimensions for predictable memory use.
+        original.thumbnail(
+            (MAX_SIDE, MAX_SIDE),
+            Image.Resampling.LANCZOS
+        )
+
+        rgb = np.array(original)
+
+    bgr = cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
+
+    # Face-based gentle straightening, then image enhancement.
+    bgr, rotation, face_detected = straighten(bgr)
+    bgr = enhance(bgr)
+
+    processed_rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
+
+    prepared = BytesIO()
+    Image.fromarray(processed_rgb).save(prepared, format="PNG")
+    input_bytes = prepared.getvalue()
+
+    # Safe fallback: do not remove background when no face is detected.
+    # This protects templates, landscapes and non-person images.
+    segmentation_used = False
+    fallback_reason = "face_not_detected"
+
+    if face_detected:
+        try:
+            session = new_session("u2net_human_seg")
+            result_bytes = remove(
+                input_bytes,
+                session=session,
+                post_process_mask=True
+            )
+
+            with Image.open(BytesIO(result_bytes)) as result:
+                candidate = result.convert("RGBA")
+
+            alpha = np.asarray(candidate.getchannel("A"))
+            foreground_ratio = float(np.mean(alpha > 128))
+
+            # Reject empty or nearly full-frame segmentation masks.
+            if 0.02 <= foreground_ratio <= 0.98:
+                foreground = candidate
+                segmentation_used = True
+                fallback_reason = None
+            else:
+                foreground = Image.fromarray(processed_rgb).convert("RGBA")
+                fallback_reason = "implausible_segmentation_mask"
+
+        except Exception:
+            foreground = Image.fromarray(processed_rgb).convert("RGBA")
+            fallback_reason = "segmentation_failed"
+    else:
+        foreground = Image.fromarray(processed_rgb).convert("RGBA")
+
+    # Preserve the full photo and its proportions.
+    foreground.thumbnail(
+        (800, 800),
+        Image.Resampling.LANCZOS
+    )
+
+    background = Image.new(
+        "RGBA", (800, 800), (250, 250, 250, 255)
+    )
+
+    x = (800 - foreground.width) // 2
+    y = (800 - foreground.height) // 2
+    background.alpha_composite(foreground, (x, y))
+
+    final_image = background.convert("RGB")
+
+    temporary = destination.with_name(destination.name + ".tmp")
+    final_image.save(
+        temporary,
+        format="JPEG",
+        quality=92,
+        optimize=True
+    )
+    os.replace(temporary, destination)
+
+    print(json.dumps({
+        "status": "success",
+        "width": 800,
+        "height": 800,
+        "background": "#FAFAFA",
+        "model": "u2net_human_seg",
+        "face_detected": face_detected,
+        "segmentation_used": segmentation_used,
+        "fallback_reason": fallback_reason,
+        "rotation_degrees": rotation,
+        "enhancements": [
+            "gentle_denoise",
+            "local_contrast",
+            "highlight_compression",
+            "mild_sharpening"
+        ],
+        "output_bytes": destination.stat().st_size
+    }))
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception as exc:
+        print(json.dumps({
+            "status": "error",
+            "message": str(exc)
+        }), file=sys.stderr)
+        sys.exit(1)
 doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$
