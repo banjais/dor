@@ -1,49 +1,681 @@
 doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade || exit 1
 
-echo "===== RECENT LARAVEL ERRORS ====="
-grep -n -E 'ERROR|CRITICAL|Exception|SQLSTATE|FatalError' storage/logs/laravel.log | tail -35
+echo "===== SITE URL CONFIGURATION ====="
+grep -RIn --include='*.php' \
+  -E 'abs_site_url|absolute_site_path' app config
 
 echo
-echo "===== LATEST LOG FILES ====="
-ls -lht storage/logs/
-===== RECENT LARAVEL ERRORS =====
-56092:[2026-11-18 10:38:07] local.ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pn.publication_heading' in 'ORDER BY' (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: dor_upgrade, SQL: select `pndc_p`.`publication_url`, `pndc_c`.`category_url`, `pndc_o`.`office_subdomain`, `pndc_pn`.`publication_heading` as `ne_heading`, `pndc_pe`.`publication_heading` as `en_heading`, `pndc_pn`.`publication_page_title` as `ne_page_title`, `pndc_pe`.`publication_page_title` as `en_page_title`, `pndc_cn`.`category_heading` as `ne_category`, `pndc_ce`.`category_heading` as `en_category` from `pndc_publication` as `pndc_p` inner join `pndc_publication_category` as `pndc_c` on `pndc_c`.`id` = `pndc_p`.`category_id` and `pndc_c`.`office_id` = `pndc_p`.`office_id` inner join `pndc_office` as `pndc_o` on `pndc_o`.`id` = `pndc_p`.`office_id` left join `pndc_publication_detail` as `pndc_pn` on `pndc_pn`.`publication_id` = `pndc_p`.`id` and `pndc_pn`.`language_id` = 1 left join `pndc_publication_detail` as `pndc_pe` on `pndc_pe`.`publication_id` = `pndc_p`.`id` and `pndc_pe`.`language_id` = 2 left join `pndc_publication_category_detail` as `pndc_cn` on `pndc_cn`.`category_id` = `pndc_c`.`id` and `pndc_cn`.`language_id` = 1 left join `pndc_publication_category_detail` as `pndc_ce` on `pndc_ce`.`category_id` = `pndc_c`.`id` and `pndc_ce`.`language_id` = 2 where `pndc_p`.`is_active` = 1 and `pndc_p`.`is_deleted` = 0 and `pndc_c`.`is_active` = 1 and `pndc_c`.`is_deleted` = 0 and `pndc_o`.`is_active` = 1 and `pndc_o`.`is_deleted` = 0 and (`pndc_pn`.`publication_heading` like %ad% or `pndc_pe`.`publication_heading` like %ad% or `pndc_pn`.`publication_page_title` like %ad% or `pndc_pe`.`publication_page_title` like %ad% or `pndc_pn`.`publication_description` like %ad% or `pndc_pe`.`publication_description` like %ad%) order by CASE
-56097:                    THEN 0 ELSE 1 END, `pndc_p`.`published_date` desc limit 20) {"exception":"[object] (Illuminate\\Database\\QueryException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pn.publication_heading' in 'ORDER BY' (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: dor_upgrade, SQL: select `pndc_p`.`publication_url`, `pndc_c`.`category_url`, `pndc_o`.`office_subdomain`, `pndc_pn`.`publication_heading` as `ne_heading`, `pndc_pe`.`publication_heading` as `en_heading`, `pndc_pn`.`publication_page_title` as `ne_page_title`, `pndc_pe`.`publication_page_title` as `en_page_title`, `pndc_cn`.`category_heading` as `ne_category`, `pndc_ce`.`category_heading` as `en_category` from `pndc_publication` as `pndc_p` inner join `pndc_publication_category` as `pndc_c` on `pndc_c`.`id` = `pndc_p`.`category_id` and `pndc_c`.`office_id` = `pndc_p`.`office_id` inner join `pndc_office` as `pndc_o` on `pndc_o`.`id` = `pndc_p`.`office_id` left join `pndc_publication_detail` as `pndc_pn` on `pndc_pn`.`publication_id` = `pndc_p`.`id` and `pndc_pn`.`language_id` = 1 left join `pndc_publication_detail` as `pndc_pe` on `pndc_pe`.`publication_id` = `pndc_p`.`id` and `pndc_pe`.`language_id` = 2 left join `pndc_publication_category_detail` as `pndc_cn` on `pndc_cn`.`category_id` = `pndc_c`.`id` and `pndc_cn`.`language_id` = 1 left join `pndc_publication_category_detail` as `pndc_ce` on `pndc_ce`.`category_id` = `pndc_c`.`id` and `pndc_ce`.`language_id` = 2 where `pndc_p`.`is_active` = 1 and `pndc_p`.`is_deleted` = 0 and `pndc_c`.`is_active` = 1 and `pndc_c`.`is_deleted` = 0 and `pndc_o`.`is_active` = 1 and `pndc_o`.`is_deleted` = 0 and (`pndc_pn`.`publication_heading` like %ad% or `pndc_pe`.`publication_heading` like %ad% or `pndc_pn`.`publication_page_title` like %ad% or `pndc_pe`.`publication_page_title` like %ad% or `pndc_pn`.`publication_description` like %ad% or `pndc_pe`.`publication_description` like %ad%) order by CASE
-56158:[previous exception] [object] (PDOException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pn.publication_heading' in 'ORDER BY' at /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:442)
-56216:[2026-11-18 10:38:08] local.ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pn.publication_heading' in 'ORDER BY' (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: dor_upgrade, SQL: select `pndc_p`.`publication_url`, `pndc_c`.`category_url`, `pndc_o`.`office_subdomain`, `pndc_pn`.`publication_heading` as `ne_heading`, `pndc_pe`.`publication_heading` as `en_heading`, `pndc_pn`.`publication_page_title` as `ne_page_title`, `pndc_pe`.`publication_page_title` as `en_page_title`, `pndc_cn`.`category_heading` as `ne_category`, `pndc_ce`.`category_heading` as `en_category` from `pndc_publication` as `pndc_p` inner join `pndc_publication_category` as `pndc_c` on `pndc_c`.`id` = `pndc_p`.`category_id` and `pndc_c`.`office_id` = `pndc_p`.`office_id` inner join `pndc_office` as `pndc_o` on `pndc_o`.`id` = `pndc_p`.`office_id` left join `pndc_publication_detail` as `pndc_pn` on `pndc_pn`.`publication_id` = `pndc_p`.`id` and `pndc_pn`.`language_id` = 1 left join `pndc_publication_detail` as `pndc_pe` on `pndc_pe`.`publication_id` = `pndc_p`.`id` and `pndc_pe`.`language_id` = 2 left join `pndc_publication_category_detail` as `pndc_cn` on `pndc_cn`.`category_id` = `pndc_c`.`id` and `pndc_cn`.`language_id` = 1 left join `pndc_publication_category_detail` as `pndc_ce` on `pndc_ce`.`category_id` = `pndc_c`.`id` and `pndc_ce`.`language_id` = 2 where `pndc_p`.`is_active` = 1 and `pndc_p`.`is_deleted` = 0 and `pndc_c`.`is_active` = 1 and `pndc_c`.`is_deleted` = 0 and `pndc_o`.`is_active` = 1 and `pndc_o`.`is_deleted` = 0 and (`pndc_pn`.`publication_heading` like %adb% or `pndc_pe`.`publication_heading` like %adb% or `pndc_pn`.`publication_page_title` like %adb% or `pndc_pe`.`publication_page_title` like %adb% or `pndc_pn`.`publication_description` like %adb% or `pndc_pe`.`publication_description` like %adb%) order by CASE
-56221:                    THEN 0 ELSE 1 END, `pndc_p`.`published_date` desc limit 20) {"exception":"[object] (Illuminate\\Database\\QueryException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pn.publication_heading' in 'ORDER BY' (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: dor_upgrade, SQL: select `pndc_p`.`publication_url`, `pndc_c`.`category_url`, `pndc_o`.`office_subdomain`, `pndc_pn`.`publication_heading` as `ne_heading`, `pndc_pe`.`publication_heading` as `en_heading`, `pndc_pn`.`publication_page_title` as `ne_page_title`, `pndc_pe`.`publication_page_title` as `en_page_title`, `pndc_cn`.`category_heading` as `ne_category`, `pndc_ce`.`category_heading` as `en_category` from `pndc_publication` as `pndc_p` inner join `pndc_publication_category` as `pndc_c` on `pndc_c`.`id` = `pndc_p`.`category_id` and `pndc_c`.`office_id` = `pndc_p`.`office_id` inner join `pndc_office` as `pndc_o` on `pndc_o`.`id` = `pndc_p`.`office_id` left join `pndc_publication_detail` as `pndc_pn` on `pndc_pn`.`publication_id` = `pndc_p`.`id` and `pndc_pn`.`language_id` = 1 left join `pndc_publication_detail` as `pndc_pe` on `pndc_pe`.`publication_id` = `pndc_p`.`id` and `pndc_pe`.`language_id` = 2 left join `pndc_publication_category_detail` as `pndc_cn` on `pndc_cn`.`category_id` = `pndc_c`.`id` and `pndc_cn`.`language_id` = 1 left join `pndc_publication_category_detail` as `pndc_ce` on `pndc_ce`.`category_id` = `pndc_c`.`id` and `pndc_ce`.`language_id` = 2 where `pndc_p`.`is_active` = 1 and `pndc_p`.`is_deleted` = 0 and `pndc_c`.`is_active` = 1 and `pndc_c`.`is_deleted` = 0 and `pndc_o`.`is_active` = 1 and `pndc_o`.`is_deleted` = 0 and (`pndc_pn`.`publication_heading` like %adb% or `pndc_pe`.`publication_heading` like %adb% or `pndc_pn`.`publication_page_title` like %adb% or `pndc_pe`.`publication_page_title` like %adb% or `pndc_pn`.`publication_description` like %adb% or `pndc_pe`.`publication_description` like %adb%) order by CASE
-56282:[previous exception] [object] (PDOException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pn.publication_heading' in 'ORDER BY' at /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:442)
-56340:[2026-11-18 10:39:08] local.ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pn.publication_heading' in 'ORDER BY' (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: dor_upgrade, SQL: select `pndc_p`.`publication_url`, `pndc_c`.`category_url`, `pndc_o`.`office_subdomain`, `pndc_pn`.`publication_heading` as `ne_heading`, `pndc_pe`.`publication_heading` as `en_heading`, `pndc_pn`.`publication_page_title` as `ne_page_title`, `pndc_pe`.`publication_page_title` as `en_page_title`, `pndc_cn`.`category_heading` as `ne_category`, `pndc_ce`.`category_heading` as `en_category` from `pndc_publication` as `pndc_p` inner join `pndc_publication_category` as `pndc_c` on `pndc_c`.`id` = `pndc_p`.`category_id` and `pndc_c`.`office_id` = `pndc_p`.`office_id` inner join `pndc_office` as `pndc_o` on `pndc_o`.`id` = `pndc_p`.`office_id` left join `pndc_publication_detail` as `pndc_pn` on `pndc_pn`.`publication_id` = `pndc_p`.`id` and `pndc_pn`.`language_id` = 1 left join `pndc_publication_detail` as `pndc_pe` on `pndc_pe`.`publication_id` = `pndc_p`.`id` and `pndc_pe`.`language_id` = 2 left join `pndc_publication_category_detail` as `pndc_cn` on `pndc_cn`.`category_id` = `pndc_c`.`id` and `pndc_cn`.`language_id` = 1 left join `pndc_publication_category_detail` as `pndc_ce` on `pndc_ce`.`category_id` = `pndc_c`.`id` and `pndc_ce`.`language_id` = 2 where `pndc_p`.`is_active` = 1 and `pndc_p`.`is_deleted` = 0 and `pndc_c`.`is_active` = 1 and `pndc_c`.`is_deleted` = 0 and `pndc_o`.`is_active` = 1 and `pndc_o`.`is_deleted` = 0 and (`pndc_pn`.`publication_heading` like %road% or `pndc_pe`.`publication_heading` like %road% or `pndc_pn`.`publication_page_title` like %road% or `pndc_pe`.`publication_page_title` like %road% or `pndc_pn`.`publication_description` like %road% or `pndc_pe`.`publication_description` like %road%) order by CASE
-56345:                    THEN 0 ELSE 1 END, `pndc_p`.`published_date` desc limit 20) {"exception":"[object] (Illuminate\\Database\\QueryException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pn.publication_heading' in 'ORDER BY' (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: dor_upgrade, SQL: select `pndc_p`.`publication_url`, `pndc_c`.`category_url`, `pndc_o`.`office_subdomain`, `pndc_pn`.`publication_heading` as `ne_heading`, `pndc_pe`.`publication_heading` as `en_heading`, `pndc_pn`.`publication_page_title` as `ne_page_title`, `pndc_pe`.`publication_page_title` as `en_page_title`, `pndc_cn`.`category_heading` as `ne_category`, `pndc_ce`.`category_heading` as `en_category` from `pndc_publication` as `pndc_p` inner join `pndc_publication_category` as `pndc_c` on `pndc_c`.`id` = `pndc_p`.`category_id` and `pndc_c`.`office_id` = `pndc_p`.`office_id` inner join `pndc_office` as `pndc_o` on `pndc_o`.`id` = `pndc_p`.`office_id` left join `pndc_publication_detail` as `pndc_pn` on `pndc_pn`.`publication_id` = `pndc_p`.`id` and `pndc_pn`.`language_id` = 1 left join `pndc_publication_detail` as `pndc_pe` on `pndc_pe`.`publication_id` = `pndc_p`.`id` and `pndc_pe`.`language_id` = 2 left join `pndc_publication_category_detail` as `pndc_cn` on `pndc_cn`.`category_id` = `pndc_c`.`id` and `pndc_cn`.`language_id` = 1 left join `pndc_publication_category_detail` as `pndc_ce` on `pndc_ce`.`category_id` = `pndc_c`.`id` and `pndc_ce`.`language_id` = 2 where `pndc_p`.`is_active` = 1 and `pndc_p`.`is_deleted` = 0 and `pndc_c`.`is_active` = 1 and `pndc_c`.`is_deleted` = 0 and `pndc_o`.`is_active` = 1 and `pndc_o`.`is_deleted` = 0 and (`pndc_pn`.`publication_heading` like %road% or `pndc_pe`.`publication_heading` like %road% or `pndc_pn`.`publication_page_title` like %road% or `pndc_pe`.`publication_page_title` like %road% or `pndc_pn`.`publication_description` like %road% or `pndc_pe`.`publication_description` like %road%) order by CASE
-56406:[previous exception] [object] (PDOException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pn.publication_heading' in 'ORDER BY' at /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:442)
-57733:[2026-11-18 12:58:20] local.ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.category_url' in 'WHERE' (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: dor_upgrade, SQL: select `pndc_c`.`category_url`, `pndc_o`.`office_subdomain`, `pndc_cn`.`category_heading` as `ne_heading`, `pndc_ce`.`category_heading` as `en_heading` from `pndc_publication_category` as `pndc_c` inner join `pndc_office` as `pndc_o` on `pndc_o`.`id` = `pndc_c`.`office_id` left join `pndc_publication_category_detail` as `pndc_cn` on `pndc_cn`.`category_id` = `pndc_c`.`id` and `pndc_cn`.`language_id` = 1 left join `pndc_publication_category_detail` as `pndc_ce` on `pndc_ce`.`category_id` = `pndc_c`.`id` and `pndc_ce`.`language_id` = 2 where `pndc_c`.`office_id` = 4 and `pndc_c`.`is_active` = 1 and `pndc_c`.`is_deleted` = 0 and `pndc_o`.`is_active` = 1 and `pndc_o`.`is_deleted` = 0 and (`pndc_cn`.`category_heading` like %manual% or `pndc_ce`.`category_heading` like %manual% or `pndc_cn`.`category_page_title` like %manual% or `pndc_ce`.`category_page_title` like %manual% or `pndc_c`.`category_url` like %manual% or REPLACE(REPLACE(c.category_url, '-', ' '), '_', ' ') LIKE %manual%) limit 10) {"exception":"[object] (Illuminate\\Database\\QueryException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.category_url' in 'WHERE' (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: dor_upgrade, SQL: select `pndc_c`.`category_url`, `pndc_o`.`office_subdomain`, `pndc_cn`.`category_heading` as `ne_heading`, `pndc_ce`.`category_heading` as `en_heading` from `pndc_publication_category` as `pndc_c` inner join `pndc_office` as `pndc_o` on `pndc_o`.`id` = `pndc_c`.`office_id` left join `pndc_publication_category_detail` as `pndc_cn` on `pndc_cn`.`category_id` = `pndc_c`.`id` and `pndc_cn`.`language_id` = 1 left join `pndc_publication_category_detail` as `pndc_ce` on `pndc_ce`.`category_id` = `pndc_c`.`id` and `pndc_ce`.`language_id` = 2 where `pndc_c`.`office_id` = 4 and `pndc_c`.`is_active` = 1 and `pndc_c`.`is_deleted` = 0 and `pndc_o`.`is_active` = 1 and `pndc_o`.`is_deleted` = 0 and (`pndc_cn`.`category_heading` like %manual% or `pndc_ce`.`category_heading` like %manual% or `pndc_cn`.`category_page_title` like %manual% or `pndc_ce`.`category_page_title` like %manual% or `pndc_c`.`category_url` like %manual% or REPLACE(REPLACE(c.category_url, '-', ' '), '_', ' ') LIKE %manual%) limit 10) at /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:864)
-57789:[previous exception] [object] (PDOException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.category_url' in 'WHERE' at /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:442)
-57847:[2026-11-18 12:58:20] local.ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.category_url' in 'WHERE' (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: dor_upgrade, SQL: select `pndc_c`.`category_url`, `pndc_o`.`office_subdomain`, `pndc_cn`.`category_heading` as `ne_heading`, `pndc_ce`.`category_heading` as `en_heading` from `pndc_publication_category` as `pndc_c` inner join `pndc_office` as `pndc_o` on `pndc_o`.`id` = `pndc_c`.`office_id` left join `pndc_publication_category_detail` as `pndc_cn` on `pndc_cn`.`category_id` = `pndc_c`.`id` and `pndc_cn`.`language_id` = 1 left join `pndc_publication_category_detail` as `pndc_ce` on `pndc_ce`.`category_id` = `pndc_c`.`id` and `pndc_ce`.`language_id` = 2 where `pndc_c`.`office_id` = 4 and `pndc_c`.`is_active` = 1 and `pndc_c`.`is_deleted` = 0 and `pndc_o`.`is_active` = 1 and `pndc_o`.`is_deleted` = 0 and (`pndc_cn`.`category_heading` like %standard-tests% or `pndc_ce`.`category_heading` like %standard-tests% or `pndc_cn`.`category_page_title` like %standard-tests% or `pndc_ce`.`category_page_title` like %standard-tests% or `pndc_c`.`category_url` like %standard-tests% or REPLACE(REPLACE(c.category_url, '-', ' '), '_', ' ') LIKE %standard tests%) limit 10) {"exception":"[object] (Illuminate\\Database\\QueryException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.category_url' in 'WHERE' (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: dor_upgrade, SQL: select `pndc_c`.`category_url`, `pndc_o`.`office_subdomain`, `pndc_cn`.`category_heading` as `ne_heading`, `pndc_ce`.`category_heading` as `en_heading` from `pndc_publication_category` as `pndc_c` inner join `pndc_office` as `pndc_o` on `pndc_o`.`id` = `pndc_c`.`office_id` left join `pndc_publication_category_detail` as `pndc_cn` on `pndc_cn`.`category_id` = `pndc_c`.`id` and `pndc_cn`.`language_id` = 1 left join `pndc_publication_category_detail` as `pndc_ce` on `pndc_ce`.`category_id` = `pndc_c`.`id` and `pndc_ce`.`language_id` = 2 where `pndc_c`.`office_id` = 4 and `pndc_c`.`is_active` = 1 and `pndc_c`.`is_deleted` = 0 and `pndc_o`.`is_active` = 1 and `pndc_o`.`is_deleted` = 0 and (`pndc_cn`.`category_heading` like %standard-tests% or `pndc_ce`.`category_heading` like %standard-tests% or `pndc_cn`.`category_page_title` like %standard-tests% or `pndc_ce`.`category_page_title` like %standard-tests% or `pndc_c`.`category_url` like %standard-tests% or REPLACE(REPLACE(c.category_url, '-', ' '), '_', ' ') LIKE %standard tests%) limit 10) at /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:864)
-57903:[previous exception] [object] (PDOException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.category_url' in 'WHERE' at /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:442)
-57961:[2026-11-18 12:58:20] local.ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.category_url' in 'WHERE' (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: dor_upgrade, SQL: select `pndc_c`.`category_url`, `pndc_o`.`office_subdomain`, `pndc_cn`.`category_heading` as `ne_heading`, `pndc_ce`.`category_heading` as `en_heading` from `pndc_publication_category` as `pndc_c` inner join `pndc_office` as `pndc_o` on `pndc_o`.`id` = `pndc_c`.`office_id` left join `pndc_publication_category_detail` as `pndc_cn` on `pndc_cn`.`category_id` = `pndc_c`.`id` and `pndc_cn`.`language_id` = 1 left join `pndc_publication_category_detail` as `pndc_ce` on `pndc_ce`.`category_id` = `pndc_c`.`id` and `pndc_ce`.`language_id` = 2 where `pndc_c`.`office_id` = 4 and `pndc_c`.`is_active` = 1 and `pndc_c`.`is_deleted` = 0 and `pndc_o`.`is_active` = 1 and `pndc_o`.`is_deleted` = 0 and (`pndc_cn`.`category_heading` like %standard_tests% or `pndc_ce`.`category_heading` like %standard_tests% or `pndc_cn`.`category_page_title` like %standard_tests% or `pndc_ce`.`category_page_title` like %standard_tests% or `pndc_c`.`category_url` like %standard_tests% or REPLACE(REPLACE(c.category_url, '-', ' '), '_', ' ') LIKE %standard tests%) limit 10) {"exception":"[object] (Illuminate\\Database\\QueryException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.category_url' in 'WHERE' (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: dor_upgrade, SQL: select `pndc_c`.`category_url`, `pndc_o`.`office_subdomain`, `pndc_cn`.`category_heading` as `ne_heading`, `pndc_ce`.`category_heading` as `en_heading` from `pndc_publication_category` as `pndc_c` inner join `pndc_office` as `pndc_o` on `pndc_o`.`id` = `pndc_c`.`office_id` left join `pndc_publication_category_detail` as `pndc_cn` on `pndc_cn`.`category_id` = `pndc_c`.`id` and `pndc_cn`.`language_id` = 1 left join `pndc_publication_category_detail` as `pndc_ce` on `pndc_ce`.`category_id` = `pndc_c`.`id` and `pndc_ce`.`language_id` = 2 where `pndc_c`.`office_id` = 4 and `pndc_c`.`is_active` = 1 and `pndc_c`.`is_deleted` = 0 and `pndc_o`.`is_active` = 1 and `pndc_o`.`is_deleted` = 0 and (`pndc_cn`.`category_heading` like %standard_tests% or `pndc_ce`.`category_heading` like %standard_tests% or `pndc_cn`.`category_page_title` like %standard_tests% or `pndc_ce`.`category_page_title` like %standard_tests% or `pndc_c`.`category_url` like %standard_tests% or REPLACE(REPLACE(c.category_url, '-', ' '), '_', ' ') LIKE %standard tests%) limit 10) at /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:864)
-58017:[previous exception] [object] (PDOException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.category_url' in 'WHERE' at /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:442)
-58075:[2026-11-18 12:58:20] local.ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.category_url' in 'WHERE' (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: dor_upgrade, SQL: select `pndc_c`.`category_url`, `pndc_o`.`office_subdomain`, `pndc_cn`.`category_heading` as `ne_heading`, `pndc_ce`.`category_heading` as `en_heading` from `pndc_publication_category` as `pndc_c` inner join `pndc_office` as `pndc_o` on `pndc_o`.`id` = `pndc_c`.`office_id` left join `pndc_publication_category_detail` as `pndc_cn` on `pndc_cn`.`category_id` = `pndc_c`.`id` and `pndc_cn`.`language_id` = 1 left join `pndc_publication_category_detail` as `pndc_ce` on `pndc_ce`.`category_id` = `pndc_c`.`id` and `pndc_ce`.`language_id` = 2 where `pndc_c`.`office_id` = 4 and `pndc_c`.`is_active` = 1 and `pndc_c`.`is_deleted` = 0 and `pndc_o`.`is_active` = 1 and `pndc_o`.`is_deleted` = 0 and (`pndc_cn`.`category_heading` like %मापदण्ड% or `pndc_ce`.`category_heading` like %मापदण्ड% or `pndc_cn`.`category_page_title` like %मापदण्ड% or `pndc_ce`.`category_page_title` like %मापदण्ड% or `pndc_c`.`category_url` like %मापदण्ड% or REPLACE(REPLACE(c.category_url, '-', ' '), '_', ' ') LIKE %मापदण्ड%) limit 10) {"exception":"[object] (Illuminate\\Database\\QueryException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.category_url' in 'WHERE' (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: dor_upgrade, SQL: select `pndc_c`.`category_url`, `pndc_o`.`office_subdomain`, `pndc_cn`.`category_heading` as `ne_heading`, `pndc_ce`.`category_heading` as `en_heading` from `pndc_publication_category` as `pndc_c` inner join `pndc_office` as `pndc_o` on `pndc_o`.`id` = `pndc_c`.`office_id` left join `pndc_publication_category_detail` as `pndc_cn` on `pndc_cn`.`category_id` = `pndc_c`.`id` and `pndc_cn`.`language_id` = 1 left join `pndc_publication_category_detail` as `pndc_ce` on `pndc_ce`.`category_id` = `pndc_c`.`id` and `pndc_ce`.`language_id` = 2 where `pndc_c`.`office_id` = 4 and `pndc_c`.`is_active` = 1 and `pndc_c`.`is_deleted` = 0 and `pndc_o`.`is_active` = 1 and `pndc_o`.`is_deleted` = 0 and (`pndc_cn`.`category_heading` like %मापदण्ड% or `pndc_ce`.`category_heading` like %मापदण्ड% or `pndc_cn`.`category_page_title` like %मापदण्ड% or `pndc_ce`.`category_page_title` like %मापदण्ड% or `pndc_c`.`category_url` like %मापदण्ड% or REPLACE(REPLACE(c.category_url, '-', ' '), '_', ' ') LIKE %मापदण्ड%) limit 10) at /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:864)
-58131:[previous exception] [object] (PDOException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.category_url' in 'WHERE' at /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:442)
-58857:[2026-11-18 13:50:25] local.ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'nd_ne.notice_heading' in 'SELECT' (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: dor_upgrade, SQL: select distinct `pndc_n`.`id`, `pndc_n`.`notice_url`, `pndc_n`.`office_id`, `pndc_o`.`office_subdomain`, `pndc_n`.`published_date`, COALESCE(nd_ne.notice_heading, nd_en.notice_heading) as notice_heading, COALESCE(od_ne.office_name, od_en.office_name) as office_name from `pndc_notice` as `pndc_n` inner join `pndc_office` as `pndc_o` on `pndc_o`.`id` = `pndc_n`.`office_id` left join `pndc_notice_detail` as `pndc_nd_ne` on `pndc_nd_ne`.`notice_id` = `pndc_n`.`id` and `pndc_nd_ne`.`language_id` = 1 left join `pndc_notice_detail` as `pndc_nd_en` on `pndc_nd_en`.`notice_id` = `pndc_n`.`id` and `pndc_nd_en`.`language_id` = 2 left join `pndc_office_detail` as `pndc_od_ne` on `pndc_od_ne`.`office_id` = `pndc_o`.`id` and `pndc_od_ne`.`language_id` = 1 left join `pndc_office_detail` as `pndc_od_en` on `pndc_od_en`.`office_id` = `pndc_o`.`id` and `pndc_od_en`.`language_id` = 2 where `pndc_n`.`is_active` = 1 and `pndc_n`.`is_deleted` = 0 and `pndc_o`.`is_active` = 1 and `pndc_o`.`is_deleted` = 0 and (`pndc_nd_ne`.`notice_heading` like %road% or `pndc_nd_en`.`notice_heading` like %road% or `pndc_nd_ne`.`notice_short_description` like %road% or `pndc_nd_en`.`notice_short_description` like %road% or `pndc_nd_ne`.`notice_description` like %road% or `pndc_nd_en`.`notice_description` like %road% or `pndc_nd_ne`.`notice_page_title` like %road% or `pndc_nd_en`.`notice_page_title` like %road%) order by `pndc_n`.`published_date` desc limit 10) {"exception":"[object] (Illuminate\\Database\\QueryException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'nd_ne.notice_heading' in 'SELECT' (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: dor_upgrade, SQL: select distinct `pndc_n`.`id`, `pndc_n`.`notice_url`, `pndc_n`.`office_id`, `pndc_o`.`office_subdomain`, `pndc_n`.`published_date`, COALESCE(nd_ne.notice_heading, nd_en.notice_heading) as notice_heading, COALESCE(od_ne.office_name, od_en.office_name) as office_name from `pndc_notice` as `pndc_n` inner join `pndc_office` as `pndc_o` on `pndc_o`.`id` = `pndc_n`.`office_id` left join `pndc_notice_detail` as `pndc_nd_ne` on `pndc_nd_ne`.`notice_id` = `pndc_n`.`id` and `pndc_nd_ne`.`language_id` = 1 left join `pndc_notice_detail` as `pndc_nd_en` on `pndc_nd_en`.`notice_id` = `pndc_n`.`id` and `pndc_nd_en`.`language_id` = 2 left join `pndc_office_detail` as `pndc_od_ne` on `pndc_od_ne`.`office_id` = `pndc_o`.`id` and `pndc_od_ne`.`language_id` = 1 left join `pndc_office_detail` as `pndc_od_en` on `pndc_od_en`.`office_id` = `pndc_o`.`id` and `pndc_od_en`.`language_id` = 2 where `pndc_n`.`is_active` = 1 and `pndc_n`.`is_deleted` = 0 and `pndc_o`.`is_active` = 1 and `pndc_o`.`is_deleted` = 0 and (`pndc_nd_ne`.`notice_heading` like %road% or `pndc_nd_en`.`notice_heading` like %road% or `pndc_nd_ne`.`notice_short_description` like %road% or `pndc_nd_en`.`notice_short_description` like %road% or `pndc_nd_ne`.`notice_description` like %road% or `pndc_nd_en`.`notice_description` like %road% or `pndc_nd_ne`.`notice_page_title` like %road% or `pndc_nd_en`.`notice_page_title` like %road%) order by `pndc_n`.`published_date` desc limit 10) at /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:864)
-58914:[previous exception] [object] (PDOException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'nd_ne.notice_heading' in 'SELECT' at /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:442)
-58973:[2026-11-18 13:50:25] local.ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'nd_ne.notice_heading' in 'SELECT' (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: dor_upgrade, SQL: select distinct `pndc_n`.`id`, `pndc_n`.`notice_url`, `pndc_n`.`office_id`, `pndc_o`.`office_subdomain`, `pndc_n`.`published_date`, COALESCE(nd_ne.notice_heading, nd_en.notice_heading) as notice_heading, COALESCE(od_ne.office_name, od_en.office_name) as office_name from `pndc_notice` as `pndc_n` inner join `pndc_office` as `pndc_o` on `pndc_o`.`id` = `pndc_n`.`office_id` left join `pndc_notice_detail` as `pndc_nd_ne` on `pndc_nd_ne`.`notice_id` = `pndc_n`.`id` and `pndc_nd_ne`.`language_id` = 1 left join `pndc_notice_detail` as `pndc_nd_en` on `pndc_nd_en`.`notice_id` = `pndc_n`.`id` and `pndc_nd_en`.`language_id` = 2 left join `pndc_office_detail` as `pndc_od_ne` on `pndc_od_ne`.`office_id` = `pndc_o`.`id` and `pndc_od_ne`.`language_id` = 1 left join `pndc_office_detail` as `pndc_od_en` on `pndc_od_en`.`office_id` = `pndc_o`.`id` and `pndc_od_en`.`language_id` = 2 where `pndc_n`.`is_active` = 1 and `pndc_n`.`is_deleted` = 0 and `pndc_o`.`is_active` = 1 and `pndc_o`.`is_deleted` = 0 and (`pndc_nd_ne`.`notice_heading` like %कार्यालय% or `pndc_nd_en`.`notice_heading` like %कार्यालय% or `pndc_nd_ne`.`notice_short_description` like %कार्यालय% or `pndc_nd_en`.`notice_short_description` like %कार्यालय% or `pndc_nd_ne`.`notice_description` like %कार्यालय% or `pndc_nd_en`.`notice_description` like %कार्यालय% or `pndc_nd_ne`.`notice_page_title` like %कार्यालय% or `pndc_nd_en`.`notice_page_title` like %कार्यालय%) order by `pndc_n`.`published_date` desc limit 10) {"exception":"[object] (Illuminate\\Database\\QueryException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'nd_ne.notice_heading' in 'SELECT' (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: dor_upgrade, SQL: select distinct `pndc_n`.`id`, `pndc_n`.`notice_url`, `pndc_n`.`office_id`, `pndc_o`.`office_subdomain`, `pndc_n`.`published_date`, COALESCE(nd_ne.notice_heading, nd_en.notice_heading) as notice_heading, COALESCE(od_ne.office_name, od_en.office_name) as office_name from `pndc_notice` as `pndc_n` inner join `pndc_office` as `pndc_o` on `pndc_o`.`id` = `pndc_n`.`office_id` left join `pndc_notice_detail` as `pndc_nd_ne` on `pndc_nd_ne`.`notice_id` = `pndc_n`.`id` and `pndc_nd_ne`.`language_id` = 1 left join `pndc_notice_detail` as `pndc_nd_en` on `pndc_nd_en`.`notice_id` = `pndc_n`.`id` and `pndc_nd_en`.`language_id` = 2 left join `pndc_office_detail` as `pndc_od_ne` on `pndc_od_ne`.`office_id` = `pndc_o`.`id` and `pndc_od_ne`.`language_id` = 1 left join `pndc_office_detail` as `pndc_od_en` on `pndc_od_en`.`office_id` = `pndc_o`.`id` and `pndc_od_en`.`language_id` = 2 where `pndc_n`.`is_active` = 1 and `pndc_n`.`is_deleted` = 0 and `pndc_o`.`is_active` = 1 and `pndc_o`.`is_deleted` = 0 and (`pndc_nd_ne`.`notice_heading` like %कार्यालय% or `pndc_nd_en`.`notice_heading` like %कार्यालय% or `pndc_nd_ne`.`notice_short_description` like %कार्यालय% or `pndc_nd_en`.`notice_short_description` like %कार्यालय% or `pndc_nd_ne`.`notice_description` like %कार्यालय% or `pndc_nd_en`.`notice_description` like %कार्यालय% or `pndc_nd_ne`.`notice_page_title` like %कार्यालय% or `pndc_nd_en`.`notice_page_title` like %कार्यालय%) order by `pndc_n`.`published_date` desc limit 10) at /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:864)
-59030:[previous exception] [object] (PDOException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'nd_ne.notice_heading' in 'SELECT' at /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:442)
-59089:[2026-11-18 13:55:08] local.ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pndc_nd_ne.notice_heading' in 'WHERE' (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: dor_upgrade, SQL: select distinct `pndc_n`.`id`, `pndc_n`.`notice_url`, `pndc_n`.`office_id`, `pndc_o`.`office_subdomain`, `pndc_n`.`published_date`, COALESCE(nd_ne.notice_heading, nd_en.notice_heading) as notice_heading, COALESCE(od_ne.office_name, od_en.office_name) as office_name from `pndc_notice` as `pndc_n` inner join `pndc_office` as `pndc_o` on `pndc_o`.`id` = `pndc_n`.`office_id` left join pndc_notice_detail as nd_ne on `pndc_nd_ne`.`notice_id` = `pndc_n`.`id` and `pndc_nd_ne`.`language_id` = 1 left join pndc_notice_detail as nd_en on `pndc_nd_en`.`notice_id` = `pndc_n`.`id` and `pndc_nd_en`.`language_id` = 2 left join pndc_office_detail as od_ne on `pndc_od_ne`.`office_id` = `pndc_o`.`id` and `pndc_od_ne`.`language_id` = 1 left join pndc_office_detail as od_en on `pndc_od_en`.`office_id` = `pndc_o`.`id` and `pndc_od_en`.`language_id` = 2 where `pndc_n`.`is_active` = 1 and `pndc_n`.`is_deleted` = 0 and `pndc_o`.`is_active` = 1 and `pndc_o`.`is_deleted` = 0 and (`pndc_nd_ne`.`notice_heading` like %road% or `pndc_nd_en`.`notice_heading` like %road% or `pndc_nd_ne`.`notice_short_description` like %road% or `pndc_nd_en`.`notice_short_description` like %road% or `pndc_nd_ne`.`notice_description` like %road% or `pndc_nd_en`.`notice_description` like %road% or `pndc_nd_ne`.`notice_page_title` like %road% or `pndc_nd_en`.`notice_page_title` like %road%) order by `pndc_n`.`published_date` desc limit 10) {"exception":"[object] (Illuminate\\Database\\QueryException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pndc_nd_ne.notice_heading' in 'WHERE' (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: dor_upgrade, SQL: select distinct `pndc_n`.`id`, `pndc_n`.`notice_url`, `pndc_n`.`office_id`, `pndc_o`.`office_subdomain`, `pndc_n`.`published_date`, COALESCE(nd_ne.notice_heading, nd_en.notice_heading) as notice_heading, COALESCE(od_ne.office_name, od_en.office_name) as office_name from `pndc_notice` as `pndc_n` inner join `pndc_office` as `pndc_o` on `pndc_o`.`id` = `pndc_n`.`office_id` left join pndc_notice_detail as nd_ne on `pndc_nd_ne`.`notice_id` = `pndc_n`.`id` and `pndc_nd_ne`.`language_id` = 1 left join pndc_notice_detail as nd_en on `pndc_nd_en`.`notice_id` = `pndc_n`.`id` and `pndc_nd_en`.`language_id` = 2 left join pndc_office_detail as od_ne on `pndc_od_ne`.`office_id` = `pndc_o`.`id` and `pndc_od_ne`.`language_id` = 1 left join pndc_office_detail as od_en on `pndc_od_en`.`office_id` = `pndc_o`.`id` and `pndc_od_en`.`language_id` = 2 where `pndc_n`.`is_active` = 1 and `pndc_n`.`is_deleted` = 0 and `pndc_o`.`is_active` = 1 and `pndc_o`.`is_deleted` = 0 and (`pndc_nd_ne`.`notice_heading` like %road% or `pndc_nd_en`.`notice_heading` like %road% or `pndc_nd_ne`.`notice_short_description` like %road% or `pndc_nd_en`.`notice_short_description` like %road% or `pndc_nd_ne`.`notice_description` like %road% or `pndc_nd_en`.`notice_description` like %road% or `pndc_nd_ne`.`notice_page_title` like %road% or `pndc_nd_en`.`notice_page_title` like %road%) order by `pndc_n`.`published_date` desc limit 10) at /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:864)
-59146:[previous exception] [object] (PDOException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pndc_nd_ne.notice_heading' in 'WHERE' at /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:442)
-59205:[2026-11-18 13:55:08] local.ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pndc_nd_ne.notice_heading' in 'WHERE' (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: dor_upgrade, SQL: select distinct `pndc_n`.`id`, `pndc_n`.`notice_url`, `pndc_n`.`office_id`, `pndc_o`.`office_subdomain`, `pndc_n`.`published_date`, COALESCE(nd_ne.notice_heading, nd_en.notice_heading) as notice_heading, COALESCE(od_ne.office_name, od_en.office_name) as office_name from `pndc_notice` as `pndc_n` inner join `pndc_office` as `pndc_o` on `pndc_o`.`id` = `pndc_n`.`office_id` left join pndc_notice_detail as nd_ne on `pndc_nd_ne`.`notice_id` = `pndc_n`.`id` and `pndc_nd_ne`.`language_id` = 1 left join pndc_notice_detail as nd_en on `pndc_nd_en`.`notice_id` = `pndc_n`.`id` and `pndc_nd_en`.`language_id` = 2 left join pndc_office_detail as od_ne on `pndc_od_ne`.`office_id` = `pndc_o`.`id` and `pndc_od_ne`.`language_id` = 1 left join pndc_office_detail as od_en on `pndc_od_en`.`office_id` = `pndc_o`.`id` and `pndc_od_en`.`language_id` = 2 where `pndc_n`.`is_active` = 1 and `pndc_n`.`is_deleted` = 0 and `pndc_o`.`is_active` = 1 and `pndc_o`.`is_deleted` = 0 and (`pndc_nd_ne`.`notice_heading` like %कार्यालय% or `pndc_nd_en`.`notice_heading` like %कार्यालय% or `pndc_nd_ne`.`notice_short_description` like %कार्यालय% or `pndc_nd_en`.`notice_short_description` like %कार्यालय% or `pndc_nd_ne`.`notice_description` like %कार्यालय% or `pndc_nd_en`.`notice_description` like %कार्यालय% or `pndc_nd_ne`.`notice_page_title` like %कार्यालय% or `pndc_nd_en`.`notice_page_title` like %कार्यालय%) order by `pndc_n`.`published_date` desc limit 10) {"exception":"[object] (Illuminate\\Database\\QueryException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pndc_nd_ne.notice_heading' in 'WHERE' (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: dor_upgrade, SQL: select distinct `pndc_n`.`id`, `pndc_n`.`notice_url`, `pndc_n`.`office_id`, `pndc_o`.`office_subdomain`, `pndc_n`.`published_date`, COALESCE(nd_ne.notice_heading, nd_en.notice_heading) as notice_heading, COALESCE(od_ne.office_name, od_en.office_name) as office_name from `pndc_notice` as `pndc_n` inner join `pndc_office` as `pndc_o` on `pndc_o`.`id` = `pndc_n`.`office_id` left join pndc_notice_detail as nd_ne on `pndc_nd_ne`.`notice_id` = `pndc_n`.`id` and `pndc_nd_ne`.`language_id` = 1 left join pndc_notice_detail as nd_en on `pndc_nd_en`.`notice_id` = `pndc_n`.`id` and `pndc_nd_en`.`language_id` = 2 left join pndc_office_detail as od_ne on `pndc_od_ne`.`office_id` = `pndc_o`.`id` and `pndc_od_ne`.`language_id` = 1 left join pndc_office_detail as od_en on `pndc_od_en`.`office_id` = `pndc_o`.`id` and `pndc_od_en`.`language_id` = 2 where `pndc_n`.`is_active` = 1 and `pndc_n`.`is_deleted` = 0 and `pndc_o`.`is_active` = 1 and `pndc_o`.`is_deleted` = 0 and (`pndc_nd_ne`.`notice_heading` like %कार्यालय% or `pndc_nd_en`.`notice_heading` like %कार्यालय% or `pndc_nd_ne`.`notice_short_description` like %कार्यालय% or `pndc_nd_en`.`notice_short_description` like %कार्यालय% or `pndc_nd_ne`.`notice_description` like %कार्यालय% or `pndc_nd_en`.`notice_description` like %कार्यालय% or `pndc_nd_ne`.`notice_page_title` like %कार्यालय% or `pndc_nd_en`.`notice_page_title` like %कार्यालय%) order by `pndc_n`.`published_date` desc limit 10) at /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:864)
-59262:[previous exception] [object] (PDOException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pndc_nd_ne.notice_heading' in 'WHERE' at /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:442)
-59321:[2026-11-18 13:58:28] local.ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'nd_ne.notice_heading' in 'SELECT' (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: dor_upgrade, SQL: select distinct `pndc_n`.`id`, `pndc_n`.`notice_url`, `pndc_n`.`office_id`, `pndc_o`.`office_subdomain`, `pndc_n`.`published_date`, COALESCE(nd_ne.notice_heading, nd_en.notice_heading) as notice_heading, COALESCE(od_ne.office_name, od_en.office_name) as office_name from `pndc_notice` as `pndc_n` inner join `pndc_office` as `pndc_o` on `pndc_o`.`id` = `pndc_n`.`office_id` left join pndc_notice_detail as pndc_nd_ne on `pndc_nd_ne`.`notice_id` = `pndc_n`.`id` and `pndc_nd_ne`.`language_id` = 1 left join pndc_notice_detail as pndc_nd_en on `pndc_nd_en`.`notice_id` = `pndc_n`.`id` and `pndc_nd_en`.`language_id` = 2 left join pndc_office_detail as pndc_od_ne on `pndc_od_ne`.`office_id` = `pndc_o`.`id` and `pndc_od_ne`.`language_id` = 1 left join pndc_office_detail as pndc_od_en on `pndc_od_en`.`office_id` = `pndc_o`.`id` and `pndc_od_en`.`language_id` = 2 where `pndc_n`.`is_active` = 1 and `pndc_n`.`is_deleted` = 0 and `pndc_o`.`is_active` = 1 and `pndc_o`.`is_deleted` = 0 and (`pndc_nd_ne`.`notice_heading` like %road% or `pndc_nd_en`.`notice_heading` like %road% or `pndc_nd_ne`.`notice_short_description` like %road% or `pndc_nd_en`.`notice_short_description` like %road% or `pndc_nd_ne`.`notice_description` like %road% or `pndc_nd_en`.`notice_description` like %road% or `pndc_nd_ne`.`notice_page_title` like %road% or `pndc_nd_en`.`notice_page_title` like %road%) order by `pndc_n`.`published_date` desc limit 10) {"exception":"[object] (Illuminate\\Database\\QueryException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'nd_ne.notice_heading' in 'SELECT' (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: dor_upgrade, SQL: select distinct `pndc_n`.`id`, `pndc_n`.`notice_url`, `pndc_n`.`office_id`, `pndc_o`.`office_subdomain`, `pndc_n`.`published_date`, COALESCE(nd_ne.notice_heading, nd_en.notice_heading) as notice_heading, COALESCE(od_ne.office_name, od_en.office_name) as office_name from `pndc_notice` as `pndc_n` inner join `pndc_office` as `pndc_o` on `pndc_o`.`id` = `pndc_n`.`office_id` left join pndc_notice_detail as pndc_nd_ne on `pndc_nd_ne`.`notice_id` = `pndc_n`.`id` and `pndc_nd_ne`.`language_id` = 1 left join pndc_notice_detail as pndc_nd_en on `pndc_nd_en`.`notice_id` = `pndc_n`.`id` and `pndc_nd_en`.`language_id` = 2 left join pndc_office_detail as pndc_od_ne on `pndc_od_ne`.`office_id` = `pndc_o`.`id` and `pndc_od_ne`.`language_id` = 1 left join pndc_office_detail as pndc_od_en on `pndc_od_en`.`office_id` = `pndc_o`.`id` and `pndc_od_en`.`language_id` = 2 where `pndc_n`.`is_active` = 1 and `pndc_n`.`is_deleted` = 0 and `pndc_o`.`is_active` = 1 and `pndc_o`.`is_deleted` = 0 and (`pndc_nd_ne`.`notice_heading` like %road% or `pndc_nd_en`.`notice_heading` like %road% or `pndc_nd_ne`.`notice_short_description` like %road% or `pndc_nd_en`.`notice_short_description` like %road% or `pndc_nd_ne`.`notice_description` like %road% or `pndc_nd_en`.`notice_description` like %road% or `pndc_nd_ne`.`notice_page_title` like %road% or `pndc_nd_en`.`notice_page_title` like %road%) order by `pndc_n`.`published_date` desc limit 10) at /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:864)
-59378:[previous exception] [object] (PDOException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'nd_ne.notice_heading' in 'SELECT' at /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:442)
-59437:[2026-11-18 14:00:07] local.ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pndc_pndc_nd_ne.notice_heading' in 'WHERE' (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: dor_upgrade, SQL: select distinct `pndc_n`.`id`, `pndc_n`.`notice_url`, `pndc_n`.`office_id`, `pndc_o`.`office_subdomain`, `pndc_n`.`published_date`, COALESCE(pndc_nd_ne.notice_heading, pndc_nd_en.notice_heading) as notice_heading, COALESCE(pndc_od_ne.office_name, pndc_od_en.office_name) as office_name from `pndc_notice` as `pndc_n` inner join `pndc_office` as `pndc_o` on `pndc_o`.`id` = `pndc_n`.`office_id` left join pndc_notice_detail as pndc_nd_ne on `pndc_pndc_nd_ne`.`notice_id` = `pndc_n`.`id` and `pndc_pndc_nd_ne`.`language_id` = 1 left join pndc_notice_detail as pndc_nd_en on `pndc_pndc_nd_en`.`notice_id` = `pndc_n`.`id` and `pndc_pndc_nd_en`.`language_id` = 2 left join pndc_office_detail as pndc_od_ne on `pndc_pndc_od_ne`.`office_id` = `pndc_o`.`id` and `pndc_pndc_od_ne`.`language_id` = 1 left join pndc_office_detail as pndc_od_en on `pndc_pndc_od_en`.`office_id` = `pndc_o`.`id` and `pndc_pndc_od_en`.`language_id` = 2 where `pndc_n`.`is_active` = 1 and `pndc_n`.`is_deleted` = 0 and `pndc_o`.`is_active` = 1 and `pndc_o`.`is_deleted` = 0 and (`pndc_pndc_nd_ne`.`notice_heading` like %road% or `pndc_pndc_nd_en`.`notice_heading` like %road% or `pndc_pndc_nd_ne`.`notice_short_description` like %road% or `pndc_pndc_nd_en`.`notice_short_description` like %road% or `pndc_pndc_nd_ne`.`notice_description` like %road% or `pndc_pndc_nd_en`.`notice_description` like %road% or `pndc_pndc_nd_ne`.`notice_page_title` like %road% or `pndc_pndc_nd_en`.`notice_page_title` like %road%) order by `pndc_n`.`published_date` desc limit 10) {"exception":"[object] (Illuminate\\Database\\QueryException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pndc_pndc_nd_ne.notice_heading' in 'WHERE' (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: dor_upgrade, SQL: select distinct `pndc_n`.`id`, `pndc_n`.`notice_url`, `pndc_n`.`office_id`, `pndc_o`.`office_subdomain`, `pndc_n`.`published_date`, COALESCE(pndc_nd_ne.notice_heading, pndc_nd_en.notice_heading) as notice_heading, COALESCE(pndc_od_ne.office_name, pndc_od_en.office_name) as office_name from `pndc_notice` as `pndc_n` inner join `pndc_office` as `pndc_o` on `pndc_o`.`id` = `pndc_n`.`office_id` left join pndc_notice_detail as pndc_nd_ne on `pndc_pndc_nd_ne`.`notice_id` = `pndc_n`.`id` and `pndc_pndc_nd_ne`.`language_id` = 1 left join pndc_notice_detail as pndc_nd_en on `pndc_pndc_nd_en`.`notice_id` = `pndc_n`.`id` and `pndc_pndc_nd_en`.`language_id` = 2 left join pndc_office_detail as pndc_od_ne on `pndc_pndc_od_ne`.`office_id` = `pndc_o`.`id` and `pndc_pndc_od_ne`.`language_id` = 1 left join pndc_office_detail as pndc_od_en on `pndc_pndc_od_en`.`office_id` = `pndc_o`.`id` and `pndc_pndc_od_en`.`language_id` = 2 where `pndc_n`.`is_active` = 1 and `pndc_n`.`is_deleted` = 0 and `pndc_o`.`is_active` = 1 and `pndc_o`.`is_deleted` = 0 and (`pndc_pndc_nd_ne`.`notice_heading` like %road% or `pndc_pndc_nd_en`.`notice_heading` like %road% or `pndc_pndc_nd_ne`.`notice_short_description` like %road% or `pndc_pndc_nd_en`.`notice_short_description` like %road% or `pndc_pndc_nd_ne`.`notice_description` like %road% or `pndc_pndc_nd_en`.`notice_description` like %road% or `pndc_pndc_nd_ne`.`notice_page_title` like %road% or `pndc_pndc_nd_en`.`notice_page_title` like %road%) order by `pndc_n`.`published_date` desc limit 10) at /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:864)
-59494:[previous exception] [object] (PDOException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pndc_pndc_nd_ne.notice_heading' in 'WHERE' at /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:442)
-59553:[2026-11-18 14:02:19] local.ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pndc_pndc_nd_ne.notice_id' in 'ON' (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: dor_upgrade, SQL: select distinct `pndc_n`.`id`, `pndc_n`.`notice_url`, `pndc_n`.`office_id`, `pndc_o`.`office_subdomain`, `pndc_n`.`published_date`, COALESCE(pndc_nd_ne.notice_heading, pndc_nd_en.notice_heading) as notice_heading, COALESCE(pndc_od_ne.office_name, pndc_od_en.office_name) as office_name from `pndc_notice` as `pndc_n` inner join `pndc_office` as `pndc_o` on `pndc_o`.`id` = `pndc_n`.`office_id` left join pndc_notice_detail as pndc_nd_ne on `pndc_pndc_nd_ne`.`notice_id` = `pndc_n`.`id` and `pndc_pndc_nd_ne`.`language_id` = 1 left join pndc_notice_detail as pndc_nd_en on `pndc_pndc_nd_en`.`notice_id` = `pndc_n`.`id` and `pndc_pndc_nd_en`.`language_id` = 2 left join pndc_office_detail as pndc_od_ne on `pndc_pndc_od_ne`.`office_id` = `pndc_o`.`id` and `pndc_pndc_od_ne`.`language_id` = 1 left join pndc_office_detail as pndc_od_en on `pndc_pndc_od_en`.`office_id` = `pndc_o`.`id` and `pndc_pndc_od_en`.`language_id` = 2 where `pndc_n`.`is_active` = 1 and `pndc_n`.`is_deleted` = 0 and `pndc_o`.`is_active` = 1 and `pndc_o`.`is_deleted` = 0 and (`pndc_nd_ne`.`notice_heading` like %road% or `pndc_nd_en`.`notice_heading` like %road% or `pndc_nd_ne`.`notice_short_description` like %road% or `pndc_nd_en`.`notice_short_description` like %road% or `pndc_nd_ne`.`notice_description` like %road% or `pndc_nd_en`.`notice_description` like %road% or `pndc_nd_ne`.`notice_page_title` like %road% or `pndc_nd_en`.`notice_page_title` like %road%) order by `pndc_n`.`published_date` desc limit 10) {"exception":"[object] (Illuminate\\Database\\QueryException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pndc_pndc_nd_ne.notice_id' in 'ON' (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: dor_upgrade, SQL: select distinct `pndc_n`.`id`, `pndc_n`.`notice_url`, `pndc_n`.`office_id`, `pndc_o`.`office_subdomain`, `pndc_n`.`published_date`, COALESCE(pndc_nd_ne.notice_heading, pndc_nd_en.notice_heading) as notice_heading, COALESCE(pndc_od_ne.office_name, pndc_od_en.office_name) as office_name from `pndc_notice` as `pndc_n` inner join `pndc_office` as `pndc_o` on `pndc_o`.`id` = `pndc_n`.`office_id` left join pndc_notice_detail as pndc_nd_ne on `pndc_pndc_nd_ne`.`notice_id` = `pndc_n`.`id` and `pndc_pndc_nd_ne`.`language_id` = 1 left join pndc_notice_detail as pndc_nd_en on `pndc_pndc_nd_en`.`notice_id` = `pndc_n`.`id` and `pndc_pndc_nd_en`.`language_id` = 2 left join pndc_office_detail as pndc_od_ne on `pndc_pndc_od_ne`.`office_id` = `pndc_o`.`id` and `pndc_pndc_od_ne`.`language_id` = 1 left join pndc_office_detail as pndc_od_en on `pndc_pndc_od_en`.`office_id` = `pndc_o`.`id` and `pndc_pndc_od_en`.`language_id` = 2 where `pndc_n`.`is_active` = 1 and `pndc_n`.`is_deleted` = 0 and `pndc_o`.`is_active` = 1 and `pndc_o`.`is_deleted` = 0 and (`pndc_nd_ne`.`notice_heading` like %road% or `pndc_nd_en`.`notice_heading` like %road% or `pndc_nd_ne`.`notice_short_description` like %road% or `pndc_nd_en`.`notice_short_description` like %road% or `pndc_nd_ne`.`notice_description` like %road% or `pndc_nd_en`.`notice_description` like %road% or `pndc_nd_ne`.`notice_page_title` like %road% or `pndc_nd_en`.`notice_page_title` like %road%) order by `pndc_n`.`published_date` desc limit 10) at /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:864)
-59610:[previous exception] [object] (PDOException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pndc_pndc_nd_ne.notice_id' in 'ON' at /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:442)
-59669:[2026-11-18 14:02:19] local.ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pndc_pndc_nd_ne.notice_id' in 'ON' (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: dor_upgrade, SQL: select distinct `pndc_n`.`id`, `pndc_n`.`notice_url`, `pndc_n`.`office_id`, `pndc_o`.`office_subdomain`, `pndc_n`.`published_date`, COALESCE(pndc_nd_ne.notice_heading, pndc_nd_en.notice_heading) as notice_heading, COALESCE(pndc_od_ne.office_name, pndc_od_en.office_name) as office_name from `pndc_notice` as `pndc_n` inner join `pndc_office` as `pndc_o` on `pndc_o`.`id` = `pndc_n`.`office_id` left join pndc_notice_detail as pndc_nd_ne on `pndc_pndc_nd_ne`.`notice_id` = `pndc_n`.`id` and `pndc_pndc_nd_ne`.`language_id` = 1 left join pndc_notice_detail as pndc_nd_en on `pndc_pndc_nd_en`.`notice_id` = `pndc_n`.`id` and `pndc_pndc_nd_en`.`language_id` = 2 left join pndc_office_detail as pndc_od_ne on `pndc_pndc_od_ne`.`office_id` = `pndc_o`.`id` and `pndc_pndc_od_ne`.`language_id` = 1 left join pndc_office_detail as pndc_od_en on `pndc_pndc_od_en`.`office_id` = `pndc_o`.`id` and `pndc_pndc_od_en`.`language_id` = 2 where `pndc_n`.`is_active` = 1 and `pndc_n`.`is_deleted` = 0 and `pndc_o`.`is_active` = 1 and `pndc_o`.`is_deleted` = 0 and (`pndc_nd_ne`.`notice_heading` like %कार्यालय% or `pndc_nd_en`.`notice_heading` like %कार्यालय% or `pndc_nd_ne`.`notice_short_description` like %कार्यालय% or `pndc_nd_en`.`notice_short_description` like %कार्यालय% or `pndc_nd_ne`.`notice_description` like %कार्यालय% or `pndc_nd_en`.`notice_description` like %कार्यालय% or `pndc_nd_ne`.`notice_page_title` like %कार्यालय% or `pndc_nd_en`.`notice_page_title` like %कार्यालय%) order by `pndc_n`.`published_date` desc limit 10) {"exception":"[object] (Illuminate\\Database\\QueryException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pndc_pndc_nd_ne.notice_id' in 'ON' (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: dor_upgrade, SQL: select distinct `pndc_n`.`id`, `pndc_n`.`notice_url`, `pndc_n`.`office_id`, `pndc_o`.`office_subdomain`, `pndc_n`.`published_date`, COALESCE(pndc_nd_ne.notice_heading, pndc_nd_en.notice_heading) as notice_heading, COALESCE(pndc_od_ne.office_name, pndc_od_en.office_name) as office_name from `pndc_notice` as `pndc_n` inner join `pndc_office` as `pndc_o` on `pndc_o`.`id` = `pndc_n`.`office_id` left join pndc_notice_detail as pndc_nd_ne on `pndc_pndc_nd_ne`.`notice_id` = `pndc_n`.`id` and `pndc_pndc_nd_ne`.`language_id` = 1 left join pndc_notice_detail as pndc_nd_en on `pndc_pndc_nd_en`.`notice_id` = `pndc_n`.`id` and `pndc_pndc_nd_en`.`language_id` = 2 left join pndc_office_detail as pndc_od_ne on `pndc_pndc_od_ne`.`office_id` = `pndc_o`.`id` and `pndc_pndc_od_ne`.`language_id` = 1 left join pndc_office_detail as pndc_od_en on `pndc_pndc_od_en`.`office_id` = `pndc_o`.`id` and `pndc_pndc_od_en`.`language_id` = 2 where `pndc_n`.`is_active` = 1 and `pndc_n`.`is_deleted` = 0 and `pndc_o`.`is_active` = 1 and `pndc_o`.`is_deleted` = 0 and (`pndc_nd_ne`.`notice_heading` like %कार्यालय% or `pndc_nd_en`.`notice_heading` like %कार्यालय% or `pndc_nd_ne`.`notice_short_description` like %कार्यालय% or `pndc_nd_en`.`notice_short_description` like %कार्यालय% or `pndc_nd_ne`.`notice_description` like %कार्यालय% or `pndc_nd_en`.`notice_description` like %कार्यालय% or `pndc_nd_ne`.`notice_page_title` like %कार्यालय% or `pndc_nd_en`.`notice_page_title` like %कार्यालय%) order by `pndc_n`.`published_date` desc limit 10) at /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:864)
-59726:[previous exception] [object] (PDOException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pndc_pndc_nd_ne.notice_id' in 'ON' at /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:442)
-59785:[2026-11-18 14:21:03] local.ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'n.published_date' in 'SELECT' (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: dor_upgrade, SQL: select distinct `pndc_n`.`id`, `pndc_n`.`notice_url`, `pndc_n`.`notice_attachment`, `pndc_n`.`published_date`, `pndc_n`.`office_id`, `pndc_o`.`office_subdomain`, COALESCE(pndc_nd_ne.notice_heading, pndc_nd_en.notice_heading) as notice_heading, COALESCE(pndc_od_ne.office_name, pndc_od_en.office_name) as office_name, date_format(n.published_date, "%d %b, %Y") as en_published_date from `pndc_notice` as `pndc_n` inner join `pndc_office` as `pndc_o` on `pndc_o`.`id` = `pndc_n`.`office_id` left join pndc_notice_detail as pndc_nd_ne on `pndc_nd_ne`.`notice_id` = `pndc_n`.`id` and `pndc_nd_ne`.`language_id` = 1 left join pndc_notice_detail as pndc_nd_en on `pndc_nd_en`.`notice_id` = `pndc_n`.`id` and `pndc_nd_en`.`language_id` = 2 left join pndc_office_detail as pndc_od_ne on `pndc_od_ne`.`office_id` = `pndc_o`.`id` and `pndc_od_ne`.`language_id` = 1 left join pndc_office_detail as pndc_od_en on `pndc_od_en`.`office_id` = `pndc_o`.`id` and `pndc_od_en`.`language_id` = 2 where `pndc_n`.`is_active` = 1 and `pndc_n`.`is_deleted` = 0 and `pndc_o`.`is_active` = 1 and `pndc_o`.`is_deleted` = 0 and (`pndc_nd_ne`.`notice_heading` like %road% or `pndc_nd_en`.`notice_heading` like %road% or `pndc_nd_ne`.`notice_short_description` like %road% or `pndc_nd_en`.`notice_short_description` like %road% or `pndc_nd_ne`.`notice_description` like %road% or `pndc_nd_en`.`notice_description` like %road% or `pndc_nd_ne`.`notice_page_title` like %road% or `pndc_nd_en`.`notice_page_title` like %road% or `pndc_od_ne`.`office_name` like %road% or `pndc_od_en`.`office_name` like %road%) order by `pndc_n`.`published_date` desc limit 20 offset 0) {"exception":"[object] (Illuminate\\Database\\QueryException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'n.published_date' in 'SELECT' (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: dor_upgrade, SQL: select distinct `pndc_n`.`id`, `pndc_n`.`notice_url`, `pndc_n`.`notice_attachment`, `pndc_n`.`published_date`, `pndc_n`.`office_id`, `pndc_o`.`office_subdomain`, COALESCE(pndc_nd_ne.notice_heading, pndc_nd_en.notice_heading) as notice_heading, COALESCE(pndc_od_ne.office_name, pndc_od_en.office_name) as office_name, date_format(n.published_date, \"%d %b, %Y\") as en_published_date from `pndc_notice` as `pndc_n` inner join `pndc_office` as `pndc_o` on `pndc_o`.`id` = `pndc_n`.`office_id` left join pndc_notice_detail as pndc_nd_ne on `pndc_nd_ne`.`notice_id` = `pndc_n`.`id` and `pndc_nd_ne`.`language_id` = 1 left join pndc_notice_detail as pndc_nd_en on `pndc_nd_en`.`notice_id` = `pndc_n`.`id` and `pndc_nd_en`.`language_id` = 2 left join pndc_office_detail as pndc_od_ne on `pndc_od_ne`.`office_id` = `pndc_o`.`id` and `pndc_od_ne`.`language_id` = 1 left join pndc_office_detail as pndc_od_en on `pndc_od_en`.`office_id` = `pndc_o`.`id` and `pndc_od_en`.`language_id` = 2 where `pndc_n`.`is_active` = 1 and `pndc_n`.`is_deleted` = 0 and `pndc_o`.`is_active` = 1 and `pndc_o`.`is_deleted` = 0 and (`pndc_nd_ne`.`notice_heading` like %road% or `pndc_nd_en`.`notice_heading` like %road% or `pndc_nd_ne`.`notice_short_description` like %road% or `pndc_nd_en`.`notice_short_description` like %road% or `pndc_nd_ne`.`notice_description` like %road% or `pndc_nd_en`.`notice_description` like %road% or `pndc_nd_ne`.`notice_page_title` like %road% or `pndc_nd_en`.`notice_page_title` like %road% or `pndc_od_ne`.`office_name` like %road% or `pndc_od_en`.`office_name` like %road%) order by `pndc_n`.`published_date` desc limit 20 offset 0) at /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:864)
-59843:[previous exception] [object] (PDOException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'n.published_date' in 'SELECT' at /home/doradmin/dor13-vendor/laravel/framework/src/Illuminate/Database/Connection.php:442)
+echo "===== NEWS DESCRIPTION RENDERING ====="
+grep -n -B 5 -A 5 'news_description' \
+  resources/views/news/news-detail.blade.php
 
-===== LATEST LOG FILES =====
-total 5.6M
--rwxrwxrwx 1 doradmin doradmin 5.6M Nov 18 14:29 laravel.log
+echo
+echo "===== INTERNAL DOR LINKS IN NEWS DATA ====="
+php8.5 artisan tinker --execute='
+$rows=DB::table("news")
+ ->join("news_detail","news.id","=","news_detail.news_id")
+ ->where("news_detail.news_description","like","%dor.gov.np%")
+ ->select("news.id","news.news_url","news_detail.news_description")
+ ->limit(10)->get();
+foreach($rows as $r){
+ echo "ID: ".$r->id." | ".$r->news_url."\n";
+ preg_match_all("~https?://(?:www\.)?dor\.gov\.np[^\"'\'' <]*~i",$r->news_description,$m);
+ foreach($m[0] as $url) echo "  ".$url."\n";
+}
+'
+===== SITE URL CONFIGURATION =====
+app/Helpers/Helper.php:100:        $sitePath    = Configuration::getValueFromName('absolute_site_path');
+app/Helpers/Helper.php:241:        $sitePath = Configuration::getValueFromName('absolute_site_path');
+app/Helpers/Helper.php:285:        $sitePath = Configuration::getValueFromName('absolute_site_path');
+app/Http/Controllers/Admin/AccessListController.php:21:    public $abs_site_url;
+app/Http/Controllers/Admin/AccessListController.php:27:        $this->abs_site_url = ConfigurationController:abs_site_url();
+app/Http/Controllers/Admin/AccessListController.php:49:        return view('500')->with('abs_site_url',$this-abs_site_url)
+app/Http/Controllers/Admin/AccessListController.php:55:        return view('users.access.accesslist')->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/AccessListController.php:79:        return view('500')->with('abs_site_url',$this-abs_site_url)
+app/Http/Controllers/Admin/AccessListController.php:85:        return view('users.access.useraccesslist')->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/AccessListController.php:376:        return view('500')->with('abs_site_url',$this->abs_site_url)
+app/Http/Controllers/Admin/AccessListController.php:387:        return view('users.access.editaccess')->with(abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/AccessListController.php:410:        return view('500')->with('abs_site_url',$this->abs_site_url)
+app/Http/Controllers/Admin/AccessListController.php:430:        return view('users.access.usereditaccess')->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/AlbumController.php:19:    public $abs_site_url;
+app/Http/Controllers/Admin/AlbumController.php:25:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/Admin/AlbumController.php:66:            ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/AlbumController.php:106:            'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/Admin/AlbumController.php:137:            ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/AlbumController.php:254:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/BannerController.php:28:    public $abs_site_url;
+app/Http/Controllers/Admin/BannerController.php:34:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/Admin/BannerController.php:93:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/BannerController.php:102:                ->with('abs_site_url', $this->abs_site_ur)
+app/Http/Controllers/Admin/BannerController.php:119:                ->with('abs_site_url', $this->abs_site_ur)
+app/Http/Controllers/Admin/BannerController.php:125:                ->with('abs_site_url', $this->abs_site_ur)
+app/Http/Controllers/Admin/BannerController.php:229:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/BannerController.php:236:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/BannerController.php:242:                ->with('abs_site_url', $this->abs_site_ur)
+app/Http/Controllers/Admin/BillController.php:26:    public $abs_site_url;
+app/Http/Controllers/Admin/BillController.php:33:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/Admin/BillController.php:58:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/BillController.php:67:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/BillController.php:84:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/BillController.php:90:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/BillController.php:126:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/BillController.php:185:                        ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/BillController.php:195:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/BillController.php:224:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/BillController.php:231:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/BillController.php:237:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/BillController.php:281:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/BillController.php:366:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/BillController.php:378:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/CategoryController.php:26:    public $abs_site_url;
+app/Http/Controllers/Admin/CategoryController.php:32:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/Admin/CategoryController.php:63:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/CategoryController.php:72:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/CategoryController.php:89:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/CategoryController.php:95:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/CategoryController.php:193:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/CategoryController.php:200:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/CategoryController.php:206:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/CircularAdminController.php:16:    public $abs_site_url;
+app/Http/Controllers/Admin/CircularAdminController.php:22:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/Admin/CircularAdminController.php:30:            'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/Admin/CircularController.php:22:    public $abs_site_url;
+app/Http/Controllers/Admin/CircularController.php:28:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/Admin/CircularController.php:77:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/CircularController.php:88:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/CircularController.php:105:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/CircularController.php:111:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/CircularController.php:257:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/CircularController.php:264:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/CircularController.php:270:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/CircularController.php:540:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/CircularController.php:549:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/CircularController.php:565:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/CircularController.php:571:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/CircularController.php:603:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/CircularController.php:648:                        $home .= '<tr style="margin-top: 10px;"><td ><img src="' . $this->abs_site_url . 'uploads/circular/' . $image . '" alt="Image" /></td></tr>';
+app/Http/Controllers/Admin/CircularController.php:650:                        $home .= '<tr style="margin-top: 10px;"><td ><a href="' . $this->abs_site_url . 'uploads/circular/' . $image . '" target="_blank" download>Download</a></td></tr>';
+app/Http/Controllers/Admin/CircularController.php:682:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/CircularController.php:691:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/CircularController.php:715:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/CircularController.php:722:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/CircularController.php:728:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/CircularController.php:751:                        ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/CircularController.php:764:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/CircularController.php:773:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/CircularController.php:780:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/ContactBccSettingController.php:34:        $abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/Admin/ContactBccSettingController.php:40:            'abs_site_url'
+app/Http/Controllers/Admin/ContentController.php:26:    public $abs_site_url;
+app/Http/Controllers/Admin/ContentController.php:32:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/Admin/ContentController.php:65:                ->with('abs_site_url', $this->abs_site_ur)
+app/Http/Controllers/Admin/ContentController.php:74:                ->with('abs_site_url', $this->abs_site_ur)
+app/Http/Controllers/Admin/ContentController.php:92:                ->with('abs_site_url', $this->abs_site_ur)
+app/Http/Controllers/Admin/ContentController.php:99:                ->with('abs_site_url', $this->abs_site_ur)
+app/Http/Controllers/Admin/ContentController.php:263:                        ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/ContentController.php:271:                        ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/ContentController.php:277:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/ContentController.php:284:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/DownloadController.php:26:    public $abs_site_url;
+app/Http/Controllers/Admin/DownloadController.php:32:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/Admin/DownloadController.php:62:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/DownloadController.php:71:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/DownloadController.php:88:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/DownloadController.php:94:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/DownloadController.php:205:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/DownloadController.php:212:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/DownloadController.php:218:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/EmailRequestController.php:31:    public $abs_site_url;
+app/Http/Controllers/Admin/EmailRequestController.php:37:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/Admin/EmailRequestController.php:51:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/EmailRequestController.php:57:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/EmailRequestController.php:70:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/EmailRequestController.php:76:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/EmailRequestController.php:226:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/EquipmentController.php:26:    public $abs_site_url;
+app/Http/Controllers/Admin/EquipmentController.php:32:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/Admin/EquipmentController.php:56:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/EquipmentController.php:65:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/EquipmentController.php:82:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/EquipmentController.php:88:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/EquipmentController.php:158:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/EquipmentController.php:165:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/EquipmentController.php:171:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/EquipmentController.php:338:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/EquipmentController.php:343:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/ExternalToolController.php:19:    public $abs_site_url;
+app/Http/Controllers/Admin/ExternalToolController.php:25:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/Admin/ExternalToolController.php:49:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/ExternalToolController.php:58:                ->with('abs_site_url', $this->guideline_e_url)
+app/Http/Controllers/Admin/ExternalToolController.php:74:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/ExternalToolController.php:79:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/ExternalToolController.php:140:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/ExternalToolController.php:146:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/ExternalToolController.php:152:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/ExternalToolController.php:186:                        ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/FaqController.php:26:    public $abs_site_url;
+app/Http/Controllers/Admin/FaqController.php:32:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/Admin/FaqController.php:56:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/FaqController.php:65:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/FaqController.php:82:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/FaqController.php:88:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/FaqController.php:169:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/FaqController.php:176:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/FaqController.php:182:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/FlashBoxSettingController.php:33:                ->with('abs_site_url', ConfigurationController::abs_site_url())
+app/Http/Controllers/Admin/FlashBoxSettingController.php:62:            'abs_site_url' => ConfigurationController::abs_site_url(),
+app/Http/Controllers/Admin/GalleryController.php:22:    public $abs_site_url;
+app/Http/Controllers/Admin/GalleryController.php:28:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/Admin/GalleryController.php:102:            ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/GalleryController.php:158:            ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/GalleryController.php:178:            ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/GalleryController.php:276:            ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/GuidelineController.php:20:    public $abs_site_url;
+app/Http/Controllers/Admin/GuidelineController.php:26:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/Admin/GuidelineController.php:56:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/GuidelineController.php:65:                ->with('abs_site_url', $this->guideline_e_url)
+app/Http/Controllers/Admin/GuidelineController.php:82:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/GuidelineController.php:88:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/GuidelineController.php:216:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/GuidelineController.php:223:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/GuidelineController.php:230:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/HomeController.php:32:    public $abs_site_url;
+app/Http/Controllers/Admin/HomeController.php:38:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/Admin/HomeController.php:84:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/HomeController.php:99:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/HomeController.php:117:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/HomeController.php:123:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/HomeController.php:138:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/HomeController.php:165:            ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/HomeController.php:207:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/HomeController.php:388:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/HomeController.php:404:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/HomeController.php:411:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/HomeController.php:428:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/HomeController.php:435:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/HomeController.php:452:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/HomeController.php:459:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/HomeController.php:476:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/HomeController.php:483:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/HomeController.php:500:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/HomeController.php:508:            ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/HomeController.php:519:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/HomeController.php:527:            ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/HomeController.php:548:                        ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/HomeController.php:556:                        ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/HomeController.php:562:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/HomeController.php:568:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/HomeController.php:818:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/HomeController.php:824:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/HomeController.php:865:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/HomeController.php:874:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/HomeController.php:900:                        ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/HomeController.php:908:                        ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/HomeController.php:914:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/HomeController.php:922:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/LawController.php:26:    public $abs_site_url;
+app/Http/Controllers/Admin/LawController.php:32:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/Admin/LawController.php:56:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/LawController.php:65:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/LawController.php:82:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/LawController.php:88:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/LawController.php:214:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/LawController.php:221:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/LawController.php:227:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/LogController.php:25:    public $abs_site_url;
+app/Http/Controllers/Admin/LogController.php:31:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/Admin/LogController.php:51:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/LogController.php:56:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/LoginController.php:30:    public $abs_site_url;
+app/Http/Controllers/Admin/LoginController.php:35:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/Admin/LoginController.php:47:            ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/LoginController.php:91:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/LoginController.php:97:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/LoginController.php:122:        return view('users.changepassword')->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/LoginController.php:149:        return view('users.changepasswordadmin')->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/LoginController.php:186:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/LoginController.php:204:            ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/LoginRequestController.php:32:    public $abs_site_url;
+app/Http/Controllers/Admin/LoginRequestController.php:38:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/Admin/LoginRequestController.php:51:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/LoginRequestController.php:57:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/NewsController.php:26:    public $abs_site_url;
+app/Http/Controllers/Admin/NewsController.php:32:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/Admin/NewsController.php:67:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/NewsController.php:76:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/NewsController.php:93:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/NewsController.php:99:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/NewsController.php:227:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/NewsController.php:234:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/NewsController.php:240:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/NewsletterController.php:25:    public $abs_site_url;
+app/Http/Controllers/Admin/NewsletterController.php:31:        $this->abs_site_url = ConfigurationController:abs_site_url();
+app/Http/Controllers/Admin/NewsletterController.php:57:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/NewsletterController.php:66:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/NewsletterController.php:83:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/NewsletterController.php:89:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/NewsletterController.php:218:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/NewsletterController.php:225:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/NewsletterController.php:231:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/NoticeController.php:26:    public $abs_site_url;
+app/Http/Controllers/Admin/NoticeController.php:32:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/Admin/NoticeController.php:62:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/NoticeController.php:71:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/NoticeController.php:88:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/NoticeController.php:94:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/NoticeController.php:235:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/NoticeController.php:242:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/NoticeController.php:248:                ->with('abs_site_url', $this->abs_site_ur)
+app/Http/Controllers/Admin/OfficeChiefController.php:38:    public $abs_site_url;
+app/Http/Controllers/Admin/OfficeChiefController.php:44:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/Admin/OfficeChiefController.php:68:            ->with('abs_site_url', $this->abs_site_ur)
+app/Http/Controllers/Admin/OfficeChiefController.php:83:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/OfficeChiefController.php:94:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/OfficeChiefController.php:397:            ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/OfficeChiefController.php:617:            ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/OfficeController.php:32:    public $abs_site_url;
+app/Http/Controllers/Admin/OfficeController.php:38:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/Admin/OfficeController.php:80:            $editlink    = '<a href="' . $this->abs_site_url . 'admin/office/edit/' . $office->id . '"><i class="icon-edit"></i>Edit</a>';
+app/Http/Controllers/Admin/OfficeController.php:99:            ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/OfficeController.php:113:        return view('users.offices.addoffice')->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/OfficeController.php:399:            ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/OfficeController.php:692:            ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/PressController.php:26:    public $abs_site_url;
+app/Http/Controllers/Admin/PressController.php:32:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/Admin/PressController.php:62:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/PressController.php:71:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/PressController.php:88:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/PressController.php:94:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/PressController.php:223:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/PressController.php:230:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/PressController.php:237:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/Project/UserController.php:20:    public $abs_site_url;
+app/Http/Controllers/Admin/Project/UserController.php:26:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/Admin/Project/UserController.php:38:        return view('users.project.change_password')->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/ProjectController.php:26:    public $abs_site_url;
+app/Http/Controllers/Admin/ProjectController.php:32:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/Admin/ProjectController.php:63:                ->with('abs_site_url', $this->abs_site_ur)
+app/Http/Controllers/Admin/ProjectController.php:72:                ->with('abs_site_url', $this->abs_site_ur)
+app/Http/Controllers/Admin/ProjectController.php:89:                ->with('abs_site_url', $this->abs_site_ur)
+app/Http/Controllers/Admin/ProjectController.php:95:                ->with('abs_site_url', $this->abs_site_ur)
+app/Http/Controllers/Admin/ProjectController.php:232:                        ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/ProjectController.php:241:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/ProjectController.php:247:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/PublicationController.php:27:    public $abs_site_url;
+app/Http/Controllers/Admin/PublicationController.php:32:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/Admin/PublicationController.php:66:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/PublicationController.php:75:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/PublicationController.php:100:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/PublicationController.php:107:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/PublicationController.php:246:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/PublicationController.php:253:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/PublicationController.php:259:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/SearchController.php:26:    public $abs_site_url;
+app/Http/Controllers/Admin/SearchController.php:33:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/Admin/SearchController.php:59:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/SearchController.php:68:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/SearchController.php:85:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/SearchController.php:91:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/SearchController.php:124:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/SearchController.php:138:                        ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/SearchController.php:198:                            ->with('abs_site_url', $this-abs_site_url)
+app/Http/Controllers/Admin/SearchController.php:209:                ->with('abs_site_url', $this->abs_site_ur)
+app/Http/Controllers/Admin/SearchController.php:237:                        ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/SearchController.php:244:                        ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/SearchController.php:250:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/SearchController.php:256:                ->with('abs_site_url', $this->abs_site_ur)
+app/Http/Controllers/Admin/SearchController.php:294:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/SearchController.php:310:                        ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/SearchController.php:394:                        ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/SearchController.php:406:                ->with('abs_site_url', $this->abs_site_ur)
+app/Http/Controllers/Admin/SeoController.php:27:    public $abs_site_url;
+app/Http/Controllers/Admin/SeoController.php:33:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/Admin/SeoController.php:62:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/SeoController.php:71:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/SeoController.php:88:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/SeoController.php:94:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/SeoController.php:125:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/SeoController.php:161:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/SeoController.php:171:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/SeoController.php:197:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/SeoController.php:204:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/SeoController.php:211:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/StaffController.php:36:    public $abs_site_url;
+app/Http/Controllers/Admin/StaffController.php:42:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/Admin/StaffController.php:72:            ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/StaffController.php:93:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/StaffController.php:105:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/StaffController.php:429:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/StaffController.php:437:            ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/StaffController.php:468:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/StaffController.php:679:            ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/StaffController.php:709:        return view('staffs.staffs.emailrequest')->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/TenderController.php:26:    public $abs_site_url;
+app/Http/Controllers/Admin/TenderController.php:32:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/Admin/TenderController.php:62:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/TenderController.php:71:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/TenderController.php:88:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/TenderController.php:94:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/TenderController.php:222:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/TenderController.php:229:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/TenderController.php:235:                ->with('abs_site_url', $this->abs_site_ur)
+app/Http/Controllers/Admin/TestimonialController.php:26:    public $abs_site_url;
+app/Http/Controllers/Admin/TestimonialController.php:33:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/Admin/TestimonialController.php:58:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/TestimonialController.php:67:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/TestimonialController.php:84:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/TestimonialController.php:90:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/TestimonialController.php:123:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/TestimonialController.php:175:                        ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/TestimonialController.php:185:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/TestimonialController.php:214:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/TestimonialController.php:221:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/TestimonialController.php:227:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/TestimonialController.php:266:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/TestimonialController.php:351:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/TestimonialController.php:362:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/TrainingController.php:26:    public $abs_site_url;
+app/Http/Controllers/Admin/TrainingController.php:32:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/Admin/TrainingController.php:56:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/TrainingController.php:65:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/TrainingController.php:82:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/TrainingController.php:88:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/TrainingController.php:212:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/TrainingController.php:219:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/TrainingController.php:226:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/UserController.php:28:    public $abs_site_url;
+app/Http/Controllers/Admin/UserController.php:34:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/Admin/UserController.php:65:            ->with('abs_site_url', $this->abs_site_url);
+app/Http/Controllers/Admin/UserController.php:79:            ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/UserController.php:147:            ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/UserController.php:354:        return view('users.users.changepassword')->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/UserController.php:409:            ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/UserController.php:446:        return view('users.users.sort_users')->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/UserController.php:475:        return view('users.users.emailrequest')->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/UserTypeController.php:21:    public $abs_site_url;
+app/Http/Controllers/Admin/UserTypeController.php:27:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/Admin/UserTypeController.php:70:            ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/UserTypeController.php:92:        return view('users.usertype.addusertype')->with(abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/VehicleController.php:26:    public $abs_site_url;
+app/Http/Controllers/Admin/VehicleController.php:32:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/Admin/VehicleController.php:62:                ->with('abs_site_url', $this->abs_site_ur)
+app/Http/Controllers/Admin/VehicleController.php:71:                ->with('abs_site_url', $this->abs_site_ur)
+app/Http/Controllers/Admin/VehicleController.php:88:                ->with('abs_site_url', $this->abs_site_ur)
+app/Http/Controllers/Admin/VehicleController.php:94:                ->with('abs_site_url', $this->abs_site_ur)
+app/Http/Controllers/Admin/VehicleController.php:179:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/VehicleController.php:186:                    ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/VehicleController.php:192:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/WebsiteThemeSettingController.php:31:        $abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/Admin/WebsiteThemeSettingController.php:33:        return view('website_theme.admin.index', compact('theme', 'identity', 'site_name', 'abs_site_url'));
+app/Http/Controllers/AlbumController.php:14:    public $abs_site_url;
+app/Http/Controllers/AlbumController.php:21:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/AlbumController.php:48:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/AlbumController.php:63:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/CalendarController.php:40:                    'abs_site_url' => ConfigurationController:abs_site_url(),
+app/Http/Controllers/CalendarController.php:67:                    'abs_site_url' => ConfigurationController:abs_site_url(),
+app/Http/Controllers/CalendarController.php:101:                'abs_site_url' => ConfigurationController::abs_site_url(),
+app/Http/Controllers/CalendarController.php:234:                'abs_site_url' => ConfigurationController::abs_site_url(),
+app/Http/Controllers/CircularController.php:19:    public $abs_site_url;
+app/Http/Controllers/CircularController.php:27:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/CircularController.php:55:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/CircularController.php:80:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/CircularController.php:95:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/CircularController.php:126:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/CircularController.php:164:            //                          'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/CircularController.php:179:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/CircularController.php:198:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/CircularController.php:232:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/CircularController.php:252:                        'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/CircularController.php:268:                        'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/CircularController.php:284:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/CircularController.php:317:                        'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/CircularController.php:332:                        'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/CircularController.php:347:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/CircularController.php:401:                        'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/CircularController.php:416:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/ConfigurationController.php:17:    public static function abs_site_url()
+app/Http/Controllers/ConfigurationController.php:19:        return Configuration::getValueFromName('absolute_site_path');
+app/Http/Controllers/ContentController.php:17:    public $abs_site_url;
+app/Http/Controllers/ContentController.php:25:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/ContentController.php:69:                        'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/ContentController.php:87:                        'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/ContentController.php:102:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/ContentController.php:154:                        'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/ContentController.php:169:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/ContentController.php:217:                        'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/ContentController.php:233:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/DownloadController.php:17:    public $abs_site_url;
+app/Http/Controllers/DownloadController.php:24:         $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/DownloadController.php:49:                                                 'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/DownloadController.php:64:                                                 'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/DownloadController.php:95:                                                         'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/DownloadController.php:109:                                                        'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/DownloadController.php:123:                                                        'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/DownloadController.php:154:                                                             abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/DownloadController.php:168:                                                        'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/DownloadController.php:182:                                                        'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/DownloadController.php:231:                                                        'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/DownloadController.php:245:                                                        'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/EquipmentController.php:14:    public $abs_site_url;
+app/Http/Controllers/EquipmentController.php:22:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/EquipmentController.php:50:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/EquipmentController.php:65:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/FaqController.php:14:    public $abs_site_url;
+app/Http/Controllers/FaqController.php:22:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/FaqController.php:48:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/FaqController.php:63:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/GalleryController.php:15:    public $abs_site_url;
+app/Http/Controllers/GalleryController.php:22:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/GalleryController.php:52:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/GalleryController.php:68:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/GuidelineController.php:18:    public $abs_site_url;
+app/Http/Controllers/GuidelineController.php:26:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/GuidelineController.php:53:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/GuidelineController.php:68:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/GuidelineController.php:101:                        'abs_site_url' => $this->abs_site_ur,
+app/Http/Controllers/GuidelineController.php:116:                        'abs_site_url' => $this->abs_site_ur,
+app/Http/Controllers/GuidelineController.php:132:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/GuidelineController.php:164:                        'abs_site_url' => $this->abs_site_ur,
+app/Http/Controllers/GuidelineController.php:179:                        'abs_site_url' => $this->abs_site_ur,
+app/Http/Controllers/GuidelineController.php:194:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/GuidelineController.php:253:                        'abs_site_url' => $this->abs_site_ur,
+app/Http/Controllers/GuidelineController.php:269:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/HomeController.php:35:    public $abs_site_url;
+app/Http/Controllers/HomeController.php:41:        $this->abs_site_url = ConfigurationController::abs_site_ur();
+app/Http/Controllers/HomeController.php:110:                            'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/HomeController.php:141:                            'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/HomeController.php:168:                        'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/HomeController.php:184:                    'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/HomeController.php:225:            'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/HomeController.php:266:                        'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/HomeController.php:282:                        'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/HomeController.php:298:                    'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/HomeController.php:328:                    'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/HomeController.php:344:                    'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/HomeController.php:396:            //         'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/HomeController.php:418:                //         'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/HomeController.php:598:                //         'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/HomeController.php:634:                    'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/HomeController.php:654:                    'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/HomeController.php:682:                    'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/HomeController.php:696:                    'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/HomeController.php:731:                        'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/HomeController.php:748:                        'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/HomeController.php:763:                    'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/HomeController.php:793:                    'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/HomeController.php:808:                    'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/HomeController.php:877:                        'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/HomeController.php:894:                        'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/HomeController.php:909:                    'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/HomeController.php:954:                        'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/HomeController.php:971:                        'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/HomeController.php:986:                    'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/HomeController.php:1015:                        'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/HomeController.php:1032:                        'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/HomeController.php:1047:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/HomeController.php:1072:            'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/HomeController.php:1156:            'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/LawController.php:17:    public $abs_site_url;
+app/Http/Controllers/LawController.php:24:              $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/LawController.php:49:                                                      'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/LawController.php:63:                                                      'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/LawController.php:96:                                                              'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/LawController.php:110:                                                     'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/LawController.php:124:                                                     'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/LawController.php:156:                                                             'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/LawController.php:170:                                                     'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/LawController.php:184:                                                     'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/LawController.php:236:                                                     'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/LawController.php:251:                                                     'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/NewsController.php:17:    public $abs_site_url;
+app/Http/Controllers/NewsController.php:25:        $this->abs_site_url = ConfigurationController::abs_site_ur();
+app/Http/Controllers/NewsController.php:52:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/NewsController.php:67:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/NewsController.php:100:                        'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/NewsController.php:115:                        'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/NewsController.php:130:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/NewsController.php:163:                        'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/NewsController.php:178:                        'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/NewsController.php:193:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/NewsController.php:247:                        'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/NewsController.php:262:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/NoticeController.php:17:    public $abs_site_url;
+app/Http/Controllers/NoticeController.php:25:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/NoticeController.php:91:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/NoticeController.php:107:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/NoticeController.php:143:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/NoticeController.php:162:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/NoticeController.php:194:                        'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/NoticeController.php:209:                        'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/NoticeController.php:225:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/NoticeController.php:258:                        'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/NoticeController.php:273:                        'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/NoticeController.php:288:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/NoticeController.php:346:                        'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/NoticeController.php:361:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/OfficeChiefController.php:18:    public $abs_site_url;
+app/Http/Controllers/OfficeChiefController.php:26:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/OfficeChiefController.php:69:                        'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/OfficeChiefController.php:84:                        'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/OfficeChiefController.php:100:                    'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/PressController.php:17:    public $abs_site_url;
+app/Http/Controllers/PressController.php:24:            $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/PressController.php:50:                                            'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/PressController.php:64:                                            'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/PressController.php:95:                                                            'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/PressController.php:109:                                                   'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/PressController.php:123:                                                   'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/PressController.php:155:                                                           'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/PressController.php:169:                                                   'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/PressController.php:183:                                                   'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/PressController.php:236:                                                   'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/PressController.php:250:                                                   'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/Project/ProjectController.php:17:    public $abs_site_url;
+app/Http/Controllers/Project/ProjectController.php:23:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/Project/ProjectController.php:31:            ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Project/ProjectController.php:66:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Project/ProjectController.php:126:                ->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/ProjectController.php:15:    public $abs_site_url;
+app/Http/Controllers/ProjectController.php:23:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/ProjectController.php:50:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/ProjectController.php:65:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/ProjectController.php:98:                        'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/ProjectController.php:113:                        'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/ProjectController.php:128:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/PublicationController.php:18:    public $abs_site_url;
+app/Http/Controllers/PublicationController.php:26:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/PublicationController.php:58:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/PublicationController.php:74:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/PublicationController.php:118:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/PublicationController.php:135:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/PublicationController.php:173:                        'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/PublicationController.php:190:                        'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/PublicationController.php:205:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/PublicationController.php:241:                        'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/PublicationController.php:256:                        'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/PublicationController.php:271:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/PublicationController.php:664:                        'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/PublicationController.php:679:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/SearchController.php:11:    public $abs_site_url;
+app/Http/Controllers/SearchController.php:19:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/SearchController.php:45:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/SearchController.php:60:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/StaffController.php:17:    public $abs_site_url;
+app/Http/Controllers/StaffController.php:25:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/StaffController.php:69:                        'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/StaffController.php:84:                        'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/StaffController.php:100:                    'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/StaffController.php:139:                        'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/StaffController.php:154:                        'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/StaffController.php:169:                    'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/StaffController.php:208:                        'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/StaffController.php:223:                        'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/StaffController.php:238:                    'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/TenderController.php:17:    public $abs_site_url;
+app/Http/Controllers/TenderController.php:24:           $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/TenderController.php:51:                                                   'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/TenderController.php:67:                                                   'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/TenderController.php:82:                                                   'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/TenderController.php:113:                                                  'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/TenderController.php:129:                                                  'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/TenderController.php:144:                                                  'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/TenderController.php:177:                                                          'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/TenderController.php:191:                                                  'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/TenderController.php:205:                                                  'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/TenderController.php:237:                                                          'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/TenderController.php:251:                                                  'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/TenderController.php:266:                                                  'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/TenderController.php:319:                                                  'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/TenderController.php:333:                                                  'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/TrainingController.php:15:    public $abs_site_url;
+app/Http/Controllers/TrainingController.php:23:        $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/TrainingController.php:53:                    'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/TrainingController.php:68:                    'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/TrainingController.php:102:                        'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/TrainingController.php:117:                        'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/TrainingController.php:133:                    'abs_site_url'    => $this->abs_site_url,
+app/Http/Controllers/UserController.php:15:    public $abs_site_url;
+app/Http/Controllers/UserController.php:23:        $this->abs_site_url = ConfigurationController::abs_site_ur();
+app/Http/Controllers/UserController.php:54:                        'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/UserController.php:69:                        'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/UserController.php:84:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/UserController.php:118:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/UserController.php:133:                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/UserController.php:147:                                                    'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/VehicleController.php:14:    public $abs_site_url;
+app/Http/Controllers/VehicleController.php:21:          $this->abs_site_url = ConfigurationController::abs_site_url();
+app/Http/Controllers/VehicleController.php:48:                                          'abs_site_url' => $this->abs_site_url,
+app/Http/Controllers/VehicleController.php:62:                                                  'abs_site_url' => $this->abs_site_url,
+app/Models/Distance.php:26:             // $sitePath            = Configuration::getValueFromName('absolute_site_path');
+
+===== NEWS DESCRIPTION RENDERING =====
+29-                                <div class="divider"></div>
+30-                            </div>
+31-                            <div class="block-list">
+32-                                <p><i class="far fa-calendar-alt" aria-hidden="true"></i> {{ $newsDate }}</p>
+33-                            </div>
+34:                            <div>{!! $newsData->news_description !!}</div>
+35-                            <br />
+36-
+37-                            @if (is_file(public_path('uploads/news/' . $newsData->news_attachment)) && $newsData->news_attachment != '')
+38-                                <p><a
+39-                                        href="{{ $abs_site_url . $subdomain }}/news/force/{{ $newsData->news_url }}"
+
+===== INTERNAL DOR LINKS IN NEWS DATA =====
+ID: 3 | e-bidding
+  http://www.dor.gov.np
+ID: 3 | e-bidding
+  http://www.dor.gov.np
+ID: 4 | pmeu-unit-progress-format-part-1
+ID: 4 | pmeu-unit-progress-format-part-1
+ID: 5 | pmeu-unit-progress-format-part-2
+ID: 5 | pmeu-unit-progress-format-part-2
+ID: 7 | quarterly-progress
+  http://www.dor.gov.np/news/index.php
+ID: 7 | quarterly-progress
+  http://www.dor.gov.np/news/index.php
+ID: 89 | circular-regarding-participation-on-the-progress-evaluation-meeting-7-8-poush-2076
+  https://dor.gov.np/home/notice/circular-regarding-participation-on-the-progress-evaluation-meeting-7-8-poush-2076
+ID: 111 | dor-newsletter
+  https://dor.gov.np/home/publication/dor-news-letters/
 doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$
