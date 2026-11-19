@@ -1,0 +1,1806 @@
+===== app/Services/Chatbot/ChatbotKnowledgeIndexer.php =====
+<?php
+
+namespace App\Services\Chatbot;
+
+use App\Models\ChatbotKnowledgeDocument;
+use App\Models\ChatbotKnowledgeSource;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use InvalidArgumentException;
+use RuntimeException;
+
+class ChatbotKnowledgeIndexer
+{
+    private const CHUNK_SIZE = 1200;
+    private const CHUNK_OVERLAP = 150;
+
+    public function __construct(
+        private readonly ChatbotDocumentExtractor $extractor
+    ) {
+    }
+
+    /**
+     * Extract and index a local document.
+     *
+     * Required: title, storage_disk, storage_path.
+     * Optional: source_id, office_id, language_id, document_type,
+     * source_key, source_url, mime_type, source_updated_at, metadata.
+     */
+    public function indexDocument(array $data): array
+    {
+        foreach (['title', 'storage_disk', 'storage_path'] as $field) {
+            if (!isset($data[$field]) || trim((string) $data[$field]) === '') {
+                throw new InvalidArgumentException("Missing required field: {$field}");
+            }
+        }
+
+        $disk = (string) $data['storage_disk'];
+        $path = (string) $data['storage_path'];
+
+        if (!in_array($disk, ['local', 'public'], true)) {
+            throw new InvalidArgumentException('Unapproved storage disk.');
+        }
+
+        $extraction = $this->extractor->extract($disk, $path);
+
+        // Never replace an existing successful index after extraction failure.
+        if (($extraction['status'] ?? null) !== 'extracted'
+            || trim((string) ($extraction['text'] ?? '')) === '') {
+            return [
+                'status' => 'failed',
+                'error' => $extraction['error'] ?? 'No extractable text found.',
+                'document' => null,
+                'chunks' => 0,
+            ];
+        }
+
+        $absolutePath = Storage::disk($disk)->path($path);
+
+        if (!is_file($absolutePath) || !is_readable($absolutePath)) {
+            return [
+                'status' => 'failed',
+                'error' => 'Document is not available for indexing.',
+                'document' => null,
+                'chunks' => 0,
+            ];
+        }
+
+        $checksum = hash_file('sha256', $absolutePath);
+
+        if ($checksum === false) {
+            throw new RuntimeException('Unable to calculate document checksum.');
+        }
+
+        $source = null;
+
+        if (!empty($data['source_id'])) {
+            $source = ChatbotKnowledgeSource::findOrFail($data['source_id']);
+        }
+
+        $officeId = $data['office_id'] ?? $source?->office_id;
+        $languageId = $data['language_id'] ?? null;
+        $sourceId = $source?->id;
+
+        $documentQuery = ChatbotKnowledgeDocument::query();
+
+        if ($sourceId !== null) {
+            $documentQuery->where('source_id', $sourceId);
+        } else {
+            $documentQuery->whereNull('source_id');
+        }
+
+        if (!empty($data['source_key'])) {
+            $documentQuery->where('source_key', $data['source_key']);
+        } else {
+            $documentQuery
+                ->where('storage_disk', $disk)
+                ->where('storage_path', $path);
+        }
+
+        $existing = $documentQuery->first();
+
+        // Identical content with existing chunks needs no re-indexing.
+        if ($existing
+            && $existing->checksum === $checksum
+            && $existing->parser_status === 'indexed'
+            && $existing->chunks()->exists()) {
+            return [
+                'status' => 'unchanged',
+                'document' => $existing,
+                'chunks' => $existing->chunks()->count(),
+                'checksum' => $checksum,
+            ];
+        }
+
+        $chunks = $this->splitText((string) $extraction['text']);
+
+        if ($chunks === []) {
+            return [
+                'status' => 'failed',
+                'error' => 'Document did not produce usable text chunks.',
+                'document' => null,
+                'chunks' => 0,
+            ];
+        }
+
+        // All document changes and chunk replacement are atomic.
+        $document = DB::transaction(function () use (
+            $existing,
+            $data,
+            $source,
+            $sourceId,
+            $officeId,
+            $languageId,
+            $disk,
+            $path,
+            $checksum,
+            $extraction,
+            $chunks
+        ) {
+            $document = $existing
+                ? ChatbotKnowledgeDocument::query()
+                    ->whereKey($existing->id)
+                    ->lockForUpdate()
+                    ->firstOrFail()
+                : new ChatbotKnowledgeDocument();
+
+            $document->fill([
+                'source_id' => $sourceId,
+                'office_id' => $officeId,
+                'language_id' => $languageId,
+                'document_type' => $data['document_type'] ?? 'document',
+                'source_key' => $data['source_key'] ?? null,
+                'title' => $data['title'],
+                'source_url' => $data['source_url'] ?? null,
+                'storage_disk' => $disk,
+                'storage_path' => $path,
+                'mime_type' => $data['mime_type'] ?? null,
+                'file_size' => filesize(Storage::disk($disk)->path($path)),
+                'checksum' => $checksum,
+                'source_updated_at' => $data['source_updated_at'] ?? null,
+                'extracted_text' => $extraction['text'],
+                'extraction_method' => $extraction['method'] ?? null,
+                'parser_status' => 'indexed',
+                'indexed_at' => now(),
+                'last_error' => null,
+                'metadata' => $data['metadata'] ?? null,
+            ]);
+
+            $document->save();
+
+            // Old chunks are removed only inside the successful transaction.
+            $document->chunks()->delete();
+
+            foreach ($chunks as $number => $chunkText) {
+                $document->chunks()->create([
+                    'source_id' => $sourceId,
+                    'office_id' => $officeId,
+                    'language_id' => $languageId,
+                    'chunk_number' => $number + 1,
+                    'chunk_text' => $chunkText,
+                    'token_count' => max(
+                        1,
+                        (int) ceil(mb_strlen($chunkText, 'UTF-8') / 4)
+                    ),
+                    'chunk_hash' => hash('sha256', $chunkText),
+                    'status' => 'active',
+                ]);
+            }
+
+            if ($source) {
+                $source->forceFill([
+                    'last_indexed_at' => now(),
+                    'content_checksum' => $checksum,
+                    'last_error' => null,
+                ])->save();
+            }
+
+            return $document->fresh();
+        });
+
+        return [
+            'status' => 'indexed',
+            'document' => $document,
+            'chunks' => count($chunks),
+            'checksum' => $checksum,
+            'method' => $extraction['method'] ?? null,
+        ];
+    }
+
+    /**
+     * Split Unicode text without cutting Nepali characters.
+     */
+    public function splitText(string $text): array
+    {
+        $text = trim(str_replace("\0", '', $text));
+
+        if ($text === '') {
+            return [];
+        }
+
+        $result = [];
+        $length = mb_strlen($text, 'UTF-8');
+        $start = 0;
+
+        while ($start < $length) {
+            $remaining = $length - $start;
+            $take = min(self::CHUNK_SIZE, $remaining);
+            $piece = mb_substr($text, $start, $take, 'UTF-8');
+
+            if ($remaining > self::CHUNK_SIZE) {
+                $newline = mb_strrpos($piece, "\n", 0, 'UTF-8');
+                $space = mb_strrpos($piece, ' ', 0, 'UTF-8');
+                $boundary = max(
+                    $newline === false ? -1 : $newline,
+                    $space === false ? -1 : $space
+                );
+
+                // Avoid producing very small chunks at an early boundary.
+                if ($boundary >= (int) (self::CHUNK_SIZE * 0.60)) {
+                    $take = $boundary + 1;
+                    $piece = mb_substr($text, $start, $take, 'UTF-8');
+                }
+            }
+
+            $piece = trim($piece);
+
+            if ($piece !== '') {
+                $result[] = $piece;
+            }
+
+            if ($start + $take >= $length) {
+                break;
+            }
+
+            $nextStart = $start + $take - self::CHUNK_OVERLAP;
+
+            // Guarantee forward progress.
+            $start = max($start + 1, $nextStart);
+        }
+
+        return $result;
+    }
+}
+===== app/Services/Chatbot/ChatbotDocumentExtractor.php =====
+<?php
+
+namespace App\Services\Chatbot;
+
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\Process\Process;
+use Throwable;
+use ZipArchive;
+use SimpleXMLElement;
+
+class ChatbotDocumentExtractor
+{
+    private const MAX_FILE_BYTES = 104857600; // 100 MB
+    private const MAX_PDF_PAGES = 30;
+    private const MAX_OCR_PAGES = 10;
+    private const PROCESS_TIMEOUT = 120;
+
+    /**
+     * Extract text from a document stored on an approved local Laravel disk.
+     */
+    public function extract(string $disk, string $path): array
+    {
+        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+
+        if (!in_array($extension, ['pdf', 'docx', 'xlsx', 'pptx'], true)) {
+            return $this->failure('unsupported', 'This document format is not supported.');
+        }
+
+        try {
+            $absolutePath = $this->resolveLocalFile($disk, $path);
+
+            if (filesize($absolutePath) > self::MAX_FILE_BYTES) {
+                return $this->failure('too_large', 'Document exceeds the 100 MB extraction limit.');
+            }
+
+            return match ($extension) {
+                'pdf' => $this->extractPdf($absolutePath),
+                'docx' => $this->extractDocx($absolutePath),
+                'xlsx' => $this->extractXlsx($absolutePath),
+                'pptx' => $this->extractPptx($absolutePath),
+            };
+        } catch (Throwable $e) {
+            report($e);
+
+            return $this->failure('failed', 'Document extraction failed. Check the server log.');
+        }
+    }
+
+    private function resolveLocalFile(string $disk, string $path): string
+    {
+        if (!in_array($disk, ['local', 'public'], true)) {
+            throw new \RuntimeException('Unapproved storage disk.');
+        }
+
+        if ($path === '' || str_contains($path, "\0")) {
+            throw new \RuntimeException('Invalid document path.');
+        }
+
+        $storage = Storage::disk($disk);
+        $root = realpath($storage->path(''));
+        $file = realpath($storage->path($path));
+
+        if (!$root || !$file || !is_file($file) || !is_readable($file)) {
+            throw new \RuntimeException('Document is not available.');
+        }
+
+        $prefix = rtrim($root, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+
+        if (!str_starts_with($file, $prefix)) {
+            throw new \RuntimeException('Document path is outside storage.');
+        }
+
+        return $file;
+    }
+
+    private function extractPdf(string $file): array
+    {
+        $info = $this->run(['pdfinfo', $file]);
+        preg_match('/^Pages:\s+(\d+)/mi', $info, $matches);
+
+        $pages = isset($matches[1]) ? (int) $matches[1] : 0;
+
+        if ($pages < 1) {
+            return $this->failure('invalid_document', 'PDF page count could not be read.');
+        }
+
+        if ($pages > self::MAX_PDF_PAGES) {
+            return $this->failure('page_limit', 'PDF exceeds the 30-page extraction limit.');
+        }
+
+        $text = trim($this->run(['pdftotext', '-enc', 'UTF-8', '-layout', $file, '-']));
+
+        if (mb_strlen($text) >= 80) {
+            return [
+                'status' => 'extracted',
+                'method' => 'pdftotext',
+                'text' => $this->cleanText($text),
+                'pages' => $pages,
+            ];
+        }
+
+        $ocrPages = min($pages, self::MAX_OCR_PAGES);
+        $directory = sys_get_temp_dir() . '/dor-chatbot-' . bin2hex(random_bytes(8));
+
+        if (!mkdir($directory, 0700)) {
+            throw new \RuntimeException('Unable to create OCR temporary directory.');
+        }
+
+        try {
+            $prefix = $directory . '/page';
+
+            $this->run([
+                'pdftoppm',
+                '-f', '1',
+                '-l', (string) $ocrPages,
+                '-r', '130',
+                '-png',
+                $file,
+                $prefix,
+            ]);
+
+            $images = glob($prefix . '-*.png') ?: [];
+            sort($images, SORT_NATURAL);
+
+            $parts = [];
+
+            foreach ($images as $image) {
+                $parts[] = $this->run([
+                    'tesseract',
+                    $image,
+                    'stdout',
+                    '-l',
+                    'eng+nep',
+                    '--psm',
+                    '3',
+                ]);
+            }
+
+            $ocrText = $this->cleanText(implode("\n\n", $parts));
+
+            if ($ocrText === '') {
+                return $this->failure('empty_text', 'No readable text was found in this PDF.');
+            }
+
+            return [
+                'status' => 'extracted',
+                'method' => 'tesseract_eng_nep',
+                'text' => $ocrText,
+                'pages' => $pages,
+                'ocr_pages' => count($images),
+                'partial' => $pages > $ocrPages,
+            ];
+        } finally {
+            foreach (glob($directory . '/*') ?: [] as $temporaryFile) {
+                if (is_file($temporaryFile)) {
+                    @unlink($temporaryFile);
+                }
+            }
+
+            @rmdir($directory);
+        }
+    }
+
+    private function extractDocx(string $file): array
+    {
+        $zip = $this->openZip($file);
+
+        try {
+            $xml = $this->readZipXml($zip, 'word/document.xml');
+            $xml->registerXPathNamespace('w', 'http://schemas.openxmlformats.org/wordprocessingml/2006/main');
+
+            $parts = [];
+
+            foreach ($xml->xpath('//w:p') ?: [] as $paragraph) {
+                $paragraph->registerXPathNamespace('w', 'http://schemas.openxmlformats.org/wordprocessingml/2006/main');
+                $words = [];
+
+                foreach ($paragraph->xpath('.//w:t') ?: [] as $node) {
+                    $words[] = (string) $node;
+                }
+
+                $parts[] = implode('', $words);
+            }
+
+            $text = $this->cleanText(implode("\n", $parts));
+
+            return $text === ''
+                ? $this->failure('empty_text', 'No readable text found in DOCX.')
+                : ['status' => 'extracted', 'method' => 'php_zip_xml', 'text' => $text];
+        } finally {
+            $zip->close();
+        }
+    }
+
+    private function extractXlsx(string $file): array
+    {
+        $zip = $this->openZip($file);
+
+        try {
+            $shared = [];
+
+            if ($zip->locateName('xl/sharedStrings.xml') !== false) {
+                $xml = $this->readZipXml($zip, 'xl/sharedStrings.xml');
+                $xml->registerXPathNamespace('a', 'http://schemas.openxmlformats.org/spreadsheetml/2006/main');
+
+                foreach ($xml->xpath('//a:si') ?: [] as $item) {
+                    $item->registerXPathNamespace('a', 'http://schemas.openxmlformats.org/spreadsheetml/2006/main');
+                    $values = [];
+
+                    foreach ($item->xpath('.//a:t') ?: [] as $node) {
+                        $values[] = (string) $node;
+                    }
+
+                    $shared[] = implode('', $values);
+                }
+            }
+
+            $parts = [];
+            $count = 0;
+
+            for ($i = 0; $i < $zip->numFiles; $i++) {
+                $name = $zip->getNameIndex($i);
+
+                if (!preg_match('#^xl/worksheets/sheet\d+\.xml$#', $name)) {
+                    continue;
+                }
+
+                $sheet = $this->readZipXml($zip, $name);
+                $sheet->registerXPathNamespace('a', 'http://schemas.openxmlformats.org/spreadsheetml/2006/main');
+
+                foreach ($sheet->xpath('//a:row') ?: [] as $row) {
+                    $row->registerXPathNamespace('a', 'http://schemas.openxmlformats.org/spreadsheetml/2006/main');
+                    $cells = [];
+
+                    foreach ($row->xpath('./a:c') ?: [] as $cell) {
+                        $type = (string) $cell['t'];
+                        $value = (string) ($cell->v ?? '');
+
+                        if ($type === 's' && isset($shared[(int) $value])) {
+                            $value = $shared[(int) $value];
+                        } elseif ($type === 'inlineStr') {
+                            $cell->registerXPathNamespace('a', 'http://schemas.openxmlformats.org/spreadsheetml/2006/main');
+                            $inline = [];
+
+                            foreach ($cell->xpath('.//a:t') ?: [] as $node) {
+                                $inline[] = (string) $node;
+                            }
+
+                            $value = implode('', $inline);
+                        }
+
+                        $cells[] = $value;
+                    }
+
+                    $parts[] = implode(' | ', $cells);
+
+                    if (++$count >= 10000) {
+                        break 2;
+                    }
+                }
+            }
+
+            $text = $this->cleanText(implode("\n", $parts));
+
+            return $text === ''
+                ? $this->failure('empty_text', 'No readable cell values found in XLSX.')
+                : ['status' => 'extracted', 'method' => 'php_zip_xml', 'text' => $text];
+        } finally {
+            $zip->close();
+        }
+    }
+
+    private function extractPptx(string $file): array
+    {
+        $zip = $this->openZip($file);
+
+        try {
+            $slides = [];
+
+            for ($i = 0; $i < $zip->numFiles; $i++) {
+                $name = $zip->getNameIndex($i);
+
+                if (!preg_match('#^ppt/slides/slide\d+\.xml$#', $name)) {
+                    continue;
+                }
+
+                $slides[$name] = $name;
+            }
+
+            uksort($slides, 'strnatcmp');
+
+            $parts = [];
+
+            foreach ($slides as $name) {
+                $xml = $this->readZipXml($zip, $name);
+                $xml->registerXPathNamespace('a', 'http://schemas.openxmlformats.org/drawingml/2006/main');
+
+                $texts = [];
+
+                foreach ($xml->xpath('//a:t') ?: [] as $node) {
+                    $texts[] = (string) $node;
+                }
+
+                $parts[] = implode(' ', $texts);
+            }
+
+            $text = $this->cleanText(implode("\n\n", $parts));
+
+            return $text === ''
+                ? $this->failure('empty_text', 'No readable slide text found in PPTX.')
+                : ['status' => 'extracted', 'method' => 'php_zip_xml', 'text' => $text, 'slides' => count($slides)];
+        } finally {
+            $zip->close();
+        }
+    }
+
+    private function openZip(string $file): ZipArchive
+    {
+        $zip = new ZipArchive();
+
+        if ($zip->open($file) !== true) {
+            throw new \RuntimeException('Invalid Office document archive.');
+        }
+
+        try {
+            $maxEntries = 5000;
+            $maxTotalSize = 150 * 1024 * 1024;
+            $maxEntrySize = 50 * 1024 * 1024;
+            $maxCompressionRatio = 100;
+            $totalSize = 0;
+
+            if ($zip->numFiles > $maxEntries) {
+                throw new \RuntimeException('Document contains too many archive entries.');
+            }
+
+            for ($i = 0; $i < $zip->numFiles; $i++) {
+                $stat = $zip->statIndex($i);
+
+                if ($stat === false || !isset($stat['size'], $stat['comp_size'], $stat['name'])) {
+                    throw new \RuntimeException('Unable to inspect document archive entry.');
+                }
+
+                $name = (string) $stat['name'];
+                $size = (int) $stat['size'];
+                $compressedSize = (int) $stat['comp_size'];
+
+                if ($size < 0 || $compressedSize < 0) {
+                    throw new \RuntimeException('Invalid document archive entry size.');
+                }
+
+                // Directory entries do not contribute to extracted file size.
+                if (str_ends_with($name, '/')) {
+                    continue;
+                }
+
+                if ($size > $maxEntrySize) {
+                    throw new \RuntimeException('Document archive entry exceeds the 50 MB limit.');
+                }
+
+                $totalSize += $size;
+
+                if ($totalSize > $maxTotalSize) {
+                    throw new \RuntimeException('Document archive exceeds the 150 MB expanded size limit.');
+                }
+
+                if (
+                    $size > 1024 * 1024
+                    && ($compressedSize === 0 || ($size / $compressedSize) > $maxCompressionRatio)
+                ) {
+                    throw new \RuntimeException('Document archive has a suspicious compression ratio.');
+                }
+            }
+
+            return $zip;
+        } catch (\Throwable $e) {
+            $zip->close();
+            throw $e;
+        }
+    }
+
+    private function readZipXml(ZipArchive $zip, string $name): SimpleXMLElement
+    {
+        $index = $zip->locateName($name);
+
+        if ($index === false) {
+            throw new \RuntimeException('Required document XML is missing.');
+        }
+
+        $stat = $zip->statIndex($index);
+
+        if (!$stat || $stat['size'] > 20 * 1024 * 1024) {
+            throw new \RuntimeException('Document XML part exceeds the 20 MB limit.');
+        }
+
+        $content = $zip->getFromIndex($index);
+
+        if ($content === false) {
+            throw new \RuntimeException('Unable to read document XML.');
+        }
+
+        // Remove UTF-8 BOM if present in the ZIP XML part.
+        $content = preg_replace('/^\xEF\xBB\xBF/', '', $content);
+
+        $previous = libxml_use_internal_errors(true);
+        libxml_clear_errors();
+
+        try {
+            $xml = simplexml_load_string(
+                $content,
+                SimpleXMLElement::class,
+                LIBXML_NONET | LIBXML_NOBLANKS
+            );
+
+            if ($xml === false) {
+                $details = [];
+
+                foreach (array_slice(libxml_get_errors(), 0, 3) as $error) {
+                    $details[] = trim($error->message)
+                        . ' (line ' . $error->line
+                        . ', column ' . $error->column . ')';
+                }
+
+                throw new \RuntimeException(
+                    'Invalid document XML: ' . implode('; ', $details)
+                );
+            }
+
+            return $xml;
+        } finally {
+            libxml_clear_errors();
+            libxml_use_internal_errors($previous);
+        }
+    }
+
+    private function run(array $command): string
+    {
+        $process = new Process($command);
+        $process->setTimeout(self::PROCESS_TIMEOUT);
+        $process->mustRun();
+
+        return $process->getOutput();
+    }
+
+    private function cleanText(string $text): string
+    {
+        $text = str_replace("\0", '', $text);
+        $text = preg_replace('/[ \t]+/u', ' ', $text) ?? $text;
+        $text = preg_replace('/\n{3,}/u', "\n\n", $text) ?? $text;
+
+        return trim($text);
+    }
+
+    private function failure(string $status, string $message): array
+    {
+        return [
+            'status' => $status,
+            'method' => null,
+            'text' => '',
+            'error' => $message,
+        ];
+    }
+}
+===== tests/Feature/ChatbotKnowledgeIndexerTest.php =====
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\ChatbotKnowledgeDocument;
+use App\Models\ChatbotKnowledgeSource;
+use App\Services\Chatbot\ChatbotKnowledgeIndexer;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
+use Tests\TestCase;
+use ZipArchive;
+
+class ChatbotKnowledgeIndexerTest extends TestCase
+{
+    private ChatbotKnowledgeIndexer $indexer;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Schema::dropIfExists('chatbot_knowledge_chunks');
+        Schema::dropIfExists('chatbot_knowledge_documents');
+        Schema::dropIfExists('chatbot_knowledge_sources');
+
+        Schema::create('chatbot_knowledge_sources', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('office_id')->nullable();
+            $table->string('source_type', 40);
+            $table->string('name', 200);
+            $table->text('source_url')->nullable();
+            $table->string('storage_disk', 50)->nullable();
+            $table->text('storage_path')->nullable();
+            $table->string('external_id', 191)->nullable();
+            $table->longText('auth_config')->nullable();
+            $table->string('language_code', 20)->default('both');
+            $table->string('status', 30)->default('pending');
+            $table->boolean('is_enabled')->default(true);
+            $table->boolean('is_public')->default(true);
+            $table->timestamp('last_checked_at')->nullable();
+            $table->timestamp('last_indexed_at')->nullable();
+            $table->char('content_checksum', 64)->nullable();
+            $table->string('source_version', 100)->nullable();
+            $table->text('last_error')->nullable();
+            $table->unsignedBigInteger('created_by')->nullable();
+            $table->unsignedBigInteger('updated_by')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('chatbot_knowledge_documents', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('source_id')->nullable();
+            $table->unsignedBigInteger('office_id')->nullable();
+            $table->unsignedBigInteger('language_id')->nullable();
+            $table->string('document_type', 40)->default('webpage');
+            $table->string('source_key', 191)->nullable();
+            $table->string('title', 500);
+            $table->text('source_url')->nullable();
+            $table->string('storage_disk', 50)->nullable();
+            $table->text('storage_path')->nullable();
+            $table->string('mime_type', 150)->nullable();
+            $table->unsignedBigInteger('file_size')->nullable();
+            $table->char('checksum', 64)->nullable();
+            $table->timestamp('source_updated_at')->nullable();
+            $table->longText('extracted_text')->nullable();
+            $table->string('extraction_method', 40)->nullable();
+            $table->string('parser_status', 30)->default('pending');
+            $table->timestamp('indexed_at')->nullable();
+            $table->text('last_error')->nullable();
+            $table->longText('metadata')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('chatbot_knowledge_chunks', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('document_id');
+            $table->unsignedBigInteger('source_id')->nullable();
+            $table->unsignedBigInteger('office_id')->nullable();
+            $table->unsignedBigInteger('language_id')->nullable();
+            $table->unsignedInteger('chunk_number');
+            $table->longText('chunk_text');
+            $table->unsignedInteger('token_count')->default(0);
+            $table->char('chunk_hash', 64);
+            $table->string('status', 20)->default('active');
+            $table->timestamps();
+
+            $table->unique(
+                ['document_id', 'chunk_number'],
+                'cb_chunks_document_number_unique'
+            );
+        });
+
+        Storage::fake('local');
+
+        $this->indexer = app(ChatbotKnowledgeIndexer::class);
+    }
+
+    private function makeDocx(string $path, string $text): void
+    {
+        Storage::disk('local')->makeDirectory(dirname($path));
+
+        $absolute = Storage::disk('local')->path($path);
+        $zip = new ZipArchive();
+
+        if ($zip->open($absolute, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+            throw new \RuntimeException('Unable to create DOCX fixture.');
+        }
+
+        $escaped = htmlspecialchars($text, ENT_XML1 | ENT_QUOTES, 'UTF-8');
+
+        $zip->addFromString(
+            'word/document.xml',
+            '<?xml version="1.0" encoding="UTF-8"?>'
+            . '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">'
+            . '<w:body><w:p><w:r><w:t>' . $escaped . '</w:t></w:r></w:p></w:body>'
+            . '</w:document>'
+        );
+
+        $zip->close();
+    }
+
+    private function input(string $path, string $title = 'DoR Test Document'): array
+    {
+        return [
+            'title' => $title,
+            'document_type' => 'document',
+            'source_key' => 'dor-test-document',
+            'storage_disk' => 'local',
+            'storage_path' => $path,
+            'mime_type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'office_id' => 4,
+            'language_id' => 1,
+        ];
+    }
+
+    public function test_document_is_extracted_and_indexed_into_chunks(): void
+    {
+        $path = 'chatbot-tests/index.docx';
+        $this->makeDocx($path, 'Department of Roads सडक विभाग');
+
+        $result = $this->indexer->indexDocument($this->input($path));
+
+        $this->assertSame('indexed', $result['status']);
+        $this->assertSame(1, $result['chunks']);
+        $this->assertSame('indexed', $result['document']->parser_status);
+        $this->assertSame(4, $result['document']->office_id);
+        $this->assertSame(1, $result['document']->language_id);
+
+        $chunk = $result['document']->chunks()->first();
+
+        $this->assertNotNull($chunk);
+        $this->assertSame(4, $chunk->office_id);
+        $this->assertSame(1, $chunk->language_id);
+        $this->assertStringContainsString('सडक विभाग', $chunk->chunk_text);
+        $this->assertSame(hash('sha256', $chunk->chunk_text), $chunk->chunk_hash);
+    }
+
+    public function test_identical_document_is_not_indexed_twice(): void
+    {
+        $path = 'chatbot-tests/same.docx';
+        $this->makeDocx($path, 'Department of Roads सडक विभाग');
+
+        $first = $this->indexer->indexDocument($this->input($path));
+        $second = $this->indexer->indexDocument($this->input($path));
+
+        $this->assertSame('indexed', $first['status']);
+        $this->assertSame('unchanged', $second['status']);
+        $this->assertSame($first['document']->id, $second['document']->id);
+        $this->assertSame(1, ChatbotKnowledgeDocument::count());
+        $this->assertSame(1, $second['document']->chunks()->count());
+    }
+
+    public function test_updated_document_replaces_old_chunks(): void
+    {
+        $path = 'chatbot-tests/update.docx';
+
+        $this->makeDocx($path, 'OLD CONTENT सडक विभाग');
+        $first = $this->indexer->indexDocument($this->input($path));
+
+        $this->makeDocx($path, 'NEW CONTENT नेपाल सरकार सडक विभाग');
+        $second = $this->indexer->indexDocument($this->input($path));
+
+        $this->assertSame('indexed', $second['status']);
+        $this->assertSame($first['document']->id, $second['document']->id);
+        $this->assertStringContainsString('NEW CONTENT', $second['document']->extracted_text);
+        $this->assertStringNotContainsString('OLD CONTENT', $second['document']->extracted_text);
+        $this->assertSame(1, $second['document']->chunks()->count());
+    }
+
+    public function test_failed_extraction_preserves_previous_successful_index(): void
+    {
+        $path = 'chatbot-tests/failure.docx';
+
+        $this->makeDocx($path, 'PREVIOUS GOOD CONTENT सडक विभाग');
+        $first = $this->indexer->indexDocument($this->input($path));
+        $oldChunk = $first['document']->chunks()->first()->chunk_text;
+
+        Storage::disk('local')->put($path, 'not a valid DOCX archive');
+
+        $failed = $this->indexer->indexDocument($this->input($path));
+
+        $this->assertSame('failed', $failed['status']);
+
+        $document = ChatbotKnowledgeDocument::findOrFail($first['document']->id);
+
+        $this->assertSame('indexed', $document->parser_status);
+        $this->assertStringContainsString('PREVIOUS GOOD CONTENT', $document->extracted_text);
+        $this->assertSame($oldChunk, $document->chunks()->first()->chunk_text);
+        $this->assertSame(1, $document->chunks()->count());
+    }
+
+    public function test_chunking_preserves_nepali_unicode_and_splits_long_text(): void
+    {
+        $text = str_repeat('नेपाल सरकार सडक विभाग सार्वजनिक सूचना । ', 100);
+        $chunks = $this->indexer->splitText($text);
+
+        $this->assertGreaterThan(1, count($chunks));
+
+        foreach ($chunks as $chunk) {
+            $this->assertLessThanOrEqual(1200, mb_strlen($chunk, 'UTF-8'));
+            $this->assertStringContainsString('नेपाल', $chunk);
+        }
+    }
+
+    public function test_missing_required_fields_are_rejected(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        $this->indexer->indexDocument([
+            'title' => 'Missing storage information',
+        ]);
+    }
+}
+===== tests/Feature/ChatbotDocumentExtractorTest.php =====
+<?php
+
+namespace Tests\Feature;
+
+use App\Services\Chatbot\ChatbotDocumentExtractor;
+use Illuminate\Support\Facades\Storage;
+use Tests\TestCase;
+use ZipArchive;
+
+class ChatbotDocumentExtractorTest extends TestCase
+{
+    private ChatbotDocumentExtractor $extractor;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Storage::fake('local');
+        $this->extractor = app(ChatbotDocumentExtractor::class);
+    }
+
+    private function makeArchive(string $name, array $files): string
+    {
+        $path = Storage::disk('local')->path('chatbot-tests/' . $name);
+
+        Storage::disk('local')->makeDirectory('chatbot-tests');
+
+        $zip = new ZipArchive();
+
+        if ($zip->open($path, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+            throw new \RuntimeException('Unable to create test archive.');
+        }
+
+        foreach ($files as $file => $content) {
+            $zip->addFromString($file, $content);
+        }
+
+        $zip->close();
+
+        return 'chatbot-tests/' . $name;
+    }
+
+    public function test_docx_extracts_english_and_nepali_text(): void
+    {
+        $path = $this->makeArchive('sample.docx', [
+            'word/document.xml' => '<?xml version="1.0" encoding="UTF-8"?>
+                <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+                    <w:body>
+                        <w:p><w:r><w:t>Department of Roads</w:t></w:r></w:p>
+                        <w:p><w:r><w:t>सडक विभाग</w:t></w:r></w:p>
+                    </w:body>
+                </w:document>',
+        ]);
+
+        $result = $this->extractor->extract('local', $path);
+
+        $this->assertSame('extracted', $result['status']);
+        $this->assertSame('php_zip_xml', $result['method']);
+        $this->assertStringContainsString('Department of Roads', $result['text']);
+        $this->assertStringContainsString('सडक विभाग', $result['text']);
+    }
+
+    public function test_xlsx_extracts_shared_and_inline_cell_values(): void
+    {
+        $path = $this->makeArchive('sample.xlsx', [
+            'xl/sharedStrings.xml' => '<?xml version="1.0"?>
+                <sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+                    <si><t>Office Name</t></si>
+                    <si><t>सडक विभाग</t></si>
+                </sst>',
+            'xl/worksheets/sheet1.xml' => '<?xml version="1.0"?>
+                <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+                    <sheetData>
+                        <row r="1">
+                            <c r="A1" t="s"><v>0</v></c>
+                            <c r="B1" t="s"><v>1</v></c>
+                        </row>
+                        <row r="2">
+                            <c r="A2" t="inlineStr"><is><t>Head Office</t></is></c>
+                            <c r="B2"><v>4</v></c>
+                        </row>
+                    </sheetData>
+                </worksheet>',
+        ]);
+
+        $result = $this->extractor->extract('local', $path);
+
+        $this->assertSame('extracted', $result['status']);
+        $this->assertStringContainsString('Office Name', $result['text']);
+        $this->assertStringContainsString('सडक विभाग', $result['text']);
+        $this->assertStringContainsString('Head Office', $result['text']);
+        $this->assertStringContainsString('4', $result['text']);
+    }
+
+    public function test_pptx_extracts_slide_text_in_order(): void
+    {
+        $path = $this->makeArchive('sample.pptx', [
+            'ppt/slides/slide2.xml' => '<p:sld xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"
+                xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                <a:t>Second Slide</a:t></p:sld>',
+            'ppt/slides/slide1.xml' => '<p:sld xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"
+                xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                <a:t>First Slide</a:t></p:sld>',
+        ]);
+
+        $result = $this->extractor->extract('local', $path);
+
+        $this->assertSame('extracted', $result['status']);
+        $this->assertSame(2, $result['slides']);
+        $this->assertLessThan(
+            strpos($result['text'], 'Second Slide'),
+            strpos($result['text'], 'First Slide')
+        );
+    }
+
+    public function test_suspicious_zip_compression_ratio_is_rejected(): void
+    {
+        $largeText = str_repeat('A', 2 * 1024 * 1024);
+
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>'
+            . '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">'
+            . '<w:body><w:p><w:r><w:t>'
+            . $largeText
+            . '</w:t></w:r></w:p></w:body></w:document>';
+
+        $path = $this->makeArchive('high-ratio.docx', [
+            'word/document.xml' => $xml,
+        ]);
+
+        $result = $this->extractor->extract('local', $path);
+
+        $this->assertSame('failed', $result['status']);
+        $this->assertSame('', $result['text']);
+    }
+
+    public function test_digital_pdf_extracts_english_and_nepali_text(): void
+    {
+        $fixture = base_path('tests/Fixtures/chatbot/digital-nepali.pdf');
+
+        $this->assertFileExists($fixture);
+
+        $path = 'chatbot-tests/digital-nepali.pdf';
+        Storage::disk('local')->put($path, file_get_contents($fixture));
+
+        $result = $this->extractor->extract('local', $path);
+
+        $this->assertSame('extracted', $result['status']);
+        $this->assertSame('pdftotext', $result['method']);
+        $this->assertStringContainsString('Department of Roads', $result['text']);
+        $this->assertStringContainsString('नेपाल सरकार', $result['text']);
+        $this->assertStringContainsString('सडक विभाग', $result['text']);
+    }
+
+    public function test_scanned_pdf_uses_english_and_nepali_ocr(): void
+    {
+        $fixture = base_path('tests/Fixtures/chatbot/scanned-nepali.pdf');
+
+        $this->assertFileExists($fixture);
+
+        $path = 'chatbot-tests/scanned-nepali.pdf';
+        Storage::disk('local')->put($path, file_get_contents($fixture));
+
+        $result = $this->extractor->extract('local', $path);
+
+        $this->assertSame('extracted', $result['status']);
+        $this->assertSame('tesseract_eng_nep', $result['method']);
+        $this->assertSame(1, $result['pages']);
+        $this->assertSame(1, $result['ocr_pages']);
+        $this->assertStringContainsString('Department of Roads', $result['text']);
+        $this->assertStringContainsString('नेपाल', $result['text']);
+    }
+
+    public function test_unsupported_legacy_doc_is_not_processed(): void
+    {
+        $result = $this->extractor->extract('local', 'missing.doc');
+
+        $this->assertSame('unsupported', $result['status']);
+        $this->assertSame('', $result['text']);
+    }
+
+    public function test_unapproved_storage_disk_is_rejected(): void
+    {
+        $result = $this->extractor->extract('s3', 'sample.docx');
+
+        $this->assertSame('failed', $result['status']);
+        $this->assertSame('', $result['text']);
+    }
+
+    public function test_missing_document_returns_safe_failure(): void
+    {
+        $result = $this->extractor->extract('local', 'missing.docx');
+
+        $this->assertSame('failed', $result['status']);
+        $this->assertSame('', $result['text']);
+        $this->assertArrayHasKey('error', $result);
+    }
+}
+===== tests/Feature/ChatbotProviderTest.php =====
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\ChatbotProvider;
+use App\Models\ChatbotSetting;
+use App\Models\ChatbotUsageLog;
+use App\Services\Chatbot\ChatbotProviderClient;
+use App\Services\Chatbot\ChatbotProviderException;
+use App\Services\Chatbot\ChatbotProviderRouter;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Schema;
+use Tests\TestCase;
+
+class ChatbotProviderTest extends TestCase
+{
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Schema::dropIfExists('chatbot_usage_logs');
+        Schema::dropIfExists('chatbot_providers');
+        Schema::dropIfExists('chatbot_settings');
+
+        Schema::create('chatbot_settings', function (Blueprint $table) {
+            $table->id();
+            $table->string('scope', 30)->default('global')->unique();
+            $table->boolean('enabled')->default(false);
+            $table->string('bot_name', 100)->default('DoR Assistant');
+            $table->text('welcome_message')->nullable();
+            $table->text('offline_message')->nullable();
+            $table->string('response_language', 10)->default('both');
+            $table->string('position', 20)->default('bottom_right');
+            $table->string('panel_color', 7)->default('#FFFFFF');
+            $table->string('header_color', 7)->default('#142D4E');
+            $table->string('user_message_color', 7)->default('#1769AA');
+            $table->string('bot_message_color', 7)->default('#F1F4F7');
+            $table->string('text_color', 7)->default('#263238');
+            $table->string('ai_provider', 20)->default('openai');
+            $table->string('ai_model', 100)->default('gpt-4o-mini');
+            $table->text('api_key')->nullable();
+            $table->string('api_format', 30)->default('openai_compatible');
+            $table->string('website_base_url', 2048)->default('https://dor.gov.np');
+            $table->boolean('website_index_enabled')->default(true);
+            $table->boolean('external_api_enabled')->default(false);
+            $table->boolean('internal_ai_enabled')->default(false);
+            $table->string('hardware_mode', 10)->default('cpu');
+            $table->boolean('gpu_enabled')->default(false);
+            $table->boolean('supported_by_visible')->default(false);
+            $table->boolean('primary_enabled')->default(false);
+            $table->string('primary_provider', 30)->nullable();
+            $table->string('primary_model', 150)->nullable();
+            $table->text('primary_base_url')->nullable();
+            $table->text('primary_api_key')->nullable();
+            $table->boolean('secondary_enabled')->default(false);
+            $table->string('secondary_provider', 30)->nullable();
+            $table->string('secondary_model', 150)->nullable();
+            $table->text('secondary_base_url')->nullable();
+            $table->text('secondary_api_key')->nullable();
+            $table->boolean('fallback_enabled')->default(false);
+            $table->string('fallback_provider', 30)->nullable();
+            $table->string('fallback_model', 150)->nullable();
+            $table->text('fallback_base_url')->nullable();
+            $table->text('fallback_api_key')->nullable();
+            $table->boolean('cache_enabled')->default(true);
+            $table->boolean('cache_exact_match_enabled')->default(true);
+            $table->unsignedInteger('cache_ttl_minutes')->default(1440);
+            $table->boolean('voice_enabled')->default(false);
+            $table->boolean('speech_input_enabled')->default(false);
+            $table->boolean('voice_output_enabled')->default(false);
+            $table->string('voice_type', 10)->default('female');
+            $table->decimal('voice_speed', 3, 2)->default(1.00);
+            $table->timestamps();
+        });
+
+        Schema::create('chatbot_providers', function (Blueprint $table) {
+            $table->id();
+            $table->string('provider_code', 80)->unique();
+            $table->string('provider_name', 150);
+            $table->string('provider_type', 20)->default('external');
+            $table->string('api_format', 40)->default('openai_compatible');
+            $table->string('model', 150)->nullable();
+            $table->text('base_url')->nullable();
+            $table->longText('api_key')->nullable();
+            $table->unsignedSmallInteger('priority')->default(100);
+            $table->boolean('is_enabled')->default(false);
+            $table->unsignedSmallInteger('timeout_seconds')->default(30);
+            $table->unsignedTinyInteger('max_retries')->default(1);
+            $table->string('health_status', 30)->default('unknown');
+            $table->timestamp('last_health_check_at')->nullable();
+            $table->timestamp('quota_reset_at')->nullable();
+            $table->text('last_error')->nullable();
+            $table->longText('metadata')->nullable();
+            $table->unsignedBigInteger('created_by')->nullable();
+            $table->unsignedBigInteger('updated_by')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('chatbot_usage_logs', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('provider_id')
+                ->nullable()
+                ->constrained('chatbot_providers')
+                ->nullOnDelete();
+            $table->unsignedBigInteger('office_id')->nullable();
+            $table->uuid('request_id')->nullable();
+            $table->string('provider_slot', 20)->nullable();
+            $table->string('model', 150)->nullable();
+            $table->string('status', 30);
+            $table->string('error_code', 80)->nullable();
+            $table->unsignedInteger('latency_ms')->nullable();
+            $table->unsignedInteger('prompt_tokens')->nullable();
+            $table->unsignedInteger('completion_tokens')->nullable();
+            $table->unsignedInteger('total_tokens')->nullable();
+            $table->decimal('estimated_cost', 12, 6)->nullable();
+            $table->char('request_hash', 64)->nullable();
+            $table->text('safe_error_message')->nullable();
+            $table->timestamp('created_at')->useCurrent();
+        });
+    }
+
+    private function message(): array
+    {
+        return [
+            ['role' => 'user', 'content' => 'Test question'],
+        ];
+    }
+
+    private function provider(
+        string $code,
+        int $priority,
+        string $url,
+        string $key
+    ): ChatbotProvider {
+        return ChatbotProvider::create([
+            'provider_code' => $code,
+            'provider_name' => ucfirst($code),
+            'provider_type' => 'external',
+            'api_format' => 'openai_compatible',
+            'model' => $code . '-model',
+            'base_url' => $url,
+            'api_key' => $key,
+            'priority' => $priority,
+            'is_enabled' => true,
+            'timeout_seconds' => 10,
+            'max_retries' => 0,
+        ]);
+    }
+
+    public function test_external_api_off_blocks_request_before_http(): void
+    {
+        ChatbotSetting::current();
+
+        Http::fake();
+
+        try {
+            app(ChatbotProviderClient::class)->chat([
+                'type' => 'external',
+                'api_format' => 'openai_compatible',
+                'base_url' => 'https://api.example.com/v1',
+                'model' => 'test-model',
+                'api_key' => 'test-secret',
+            ], $this->message());
+
+            $this->fail('External request should have been blocked.');
+        } catch (ChatbotProviderException $e) {
+            $this->assertSame('external_api_disabled', $e->errorCode);
+        }
+
+        Http::assertNothingSent();
+    }
+
+    public function test_internal_ai_off_blocks_request_before_http(): void
+    {
+        ChatbotSetting::current();
+
+        Http::fake();
+
+        try {
+            app(ChatbotProviderClient::class)->chat([
+                'type' => 'internal',
+                'api_format' => 'openai_compatible',
+                'base_url' => 'http://127.0.0.1:8001/v1',
+                'model' => 'internal-model',
+                'api_key' => '',
+            ], $this->message());
+
+            $this->fail('Internal request should have been blocked.');
+        } catch (ChatbotProviderException $e) {
+            $this->assertSame('internal_ai_disabled', $e->errorCode);
+        }
+
+        Http::assertNothingSent();
+    }
+
+    public function test_external_provider_returns_successful_response_when_enabled(): void
+    {
+        $settings = ChatbotSetting::current();
+        $settings->external_api_enabled = true;
+        $settings->save();
+
+        Http::fake([
+            'api.example.com/*' => Http::response([
+                'model' => 'test-model',
+                'choices' => [
+                    ['message' => ['content' => 'DoR test answer']],
+                ],
+                'usage' => [
+                    'prompt_tokens' => 10,
+                    'completion_tokens' => 5,
+                    'total_tokens' => 15,
+                ],
+            ], 200),
+        ]);
+
+        $result = app(ChatbotProviderClient::class)->chat([
+            'type' => 'external',
+            'api_format' => 'openai_compatible',
+            'base_url' => 'https://api.example.com/v1',
+            'model' => 'test-model',
+            'api_key' => 'test-secret',
+        ], $this->message());
+
+        $this->assertSame('DoR test answer', $result['content']);
+        $this->assertSame('test-model', $result['model']);
+        $this->assertSame(15, $result['usage']['total_tokens']);
+
+        Http::assertSent(function ($request) {
+            return $request->url() === 'https://api.example.com/v1/chat/completions'
+                && $request->hasHeader('Authorization', 'Bearer test-secret');
+        });
+    }
+
+    public function test_router_fails_over_after_rate_limit_and_logs_without_api_key(): void
+    {
+        $settings = ChatbotSetting::current();
+        $settings->external_api_enabled = true;
+        $settings->save();
+
+        $this->provider(
+            'first-provider',
+            1,
+            'https://first.example.com/v1',
+            'first-secret-key'
+        );
+
+        $this->provider(
+            'second-provider',
+            2,
+            'https://second.example.com/v1',
+            'second-secret-key'
+        );
+
+        Http::fake(function ($request) {
+            if (str_contains($request->url(), 'first.example.com')) {
+                return Http::response(['error' => 'rate limited'], 429);
+            }
+
+            return Http::response([
+                'model' => 'second-provider-model',
+                'choices' => [
+                    ['message' => ['content' => 'Fallback answer']],
+                ],
+                'usage' => [
+                    'prompt_tokens' => 12,
+                    'completion_tokens' => 8,
+                    'total_tokens' => 20,
+                ],
+            ], 200);
+        });
+
+        $result = app(ChatbotProviderRouter::class)->chat($this->message());
+
+        $this->assertSame('Fallback answer', $result['content']);
+        $this->assertSame('second-provider', $result['provider_code']);
+
+        $this->assertSame(2, ChatbotUsageLog::count());
+        $this->assertSame(
+            ['failed', 'success'],
+            ChatbotUsageLog::orderBy('id')->pluck('status')->all()
+        );
+        $this->assertSame(
+            'rate_limit',
+            ChatbotUsageLog::where('status', 'failed')->value('error_code')
+        );
+
+        $logs = json_encode(ChatbotUsageLog::all()->toArray());
+
+        $this->assertStringNotContainsString('first-secret-key', $logs);
+        $this->assertStringNotContainsString('second-secret-key', $logs);
+    }
+}
+===== KNOWLEDGE MIGRATION FILES =====
+database/migrations/2026_11_19_120000_add_chatbot_api_and_knowledge_sources.php
+database/migrations/2026_11_19_143713_create_chatbot_knowledge_sources_table.php
+database/migrations/2026_11_19_143713_create_chatbot_knowledge_sources_table.php.backup-20261119-143910
+database/migrations/2026_11_19_143714_create_chatbot_knowledge_documents_table.php
+database/migrations/2026_11_19_143714_create_chatbot_knowledge_documents_table.php.backup-20261119-143910
+database/migrations/2026_11_19_143715_create_chatbot_knowledge_chunks_table.php
+database/migrations/2026_11_19_143715_create_chatbot_knowledge_chunks_table.php.backup-20261119-143910
+===== database/migrations/2026_11_19_120000_add_chatbot_api_and_knowledge_sources.php =====
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::table('chatbot_settings', function (Blueprint $table) {
+            $table->string('api_base_url', 2048)->nullable();
+            $table->string('api_format', 30)->default('openai_compatible');
+            $table->string('appsheet_url', 2048)->nullable();
+            $table->string('google_sheet_url', 2048)->nullable();
+            $table->string('website_base_url', 2048)->default('https://dor.gov.np');
+            $table->boolean('website_index_enabled')->default(true);
+
+            // Internal DoR AI and hardware configuration
+            $table->boolean('internal_ai_enabled')->default(false);
+            $table->string('hardware_mode', 10)->default('cpu');
+            $table->boolean('gpu_enabled')->default(false);
+            $table->string('gpu_server_url', 2048)->nullable();
+            $table->string('gpu_model', 100)->nullable();
+
+            // Public chatbot attribution (hidden by default)
+            $table->string('supported_by_name', 150)->nullable();
+            $table->string('supported_by_email', 254)->nullable();
+            $table->boolean('supported_by_visible')->default(false);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('chatbot_settings', function (Blueprint $table) {
+            $table->dropColumn([
+                'api_base_url',
+                'api_format',
+                'appsheet_url',
+                'google_sheet_url',
+                'website_base_url',
+                'website_index_enabled',
+                'internal_ai_enabled',
+                'hardware_mode',
+                'gpu_enabled',
+                'gpu_server_url',
+                'gpu_model',
+                'supported_by_name',
+                'supported_by_email',
+                'supported_by_visible',
+            ]);
+        });
+    }
+};
+===== database/migrations/2026_11_19_143713_create_chatbot_knowledge_sources_table.php =====
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('chatbot_knowledge_sources', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('office_id')->nullable();
+            $table->string('source_type', 40);
+            $table->string('name', 200);
+            $table->text('source_url')->nullable();
+            $table->string('storage_disk', 50)->nullable();
+            $table->text('storage_path')->nullable();
+            $table->string('external_id', 191)->nullable();
+            $table->longText('auth_config')->nullable();
+            $table->string('language_code', 20)->default('both');
+            $table->string('status', 30)->default('pending');
+            $table->boolean('is_enabled')->default(true);
+            $table->boolean('is_public')->default(true);
+            $table->timestamp('last_checked_at')->nullable();
+            $table->timestamp('last_indexed_at')->nullable();
+            $table->char('content_checksum', 64)->nullable();
+            $table->string('source_version', 100)->nullable();
+            $table->text('last_error')->nullable();
+            $table->unsignedBigInteger('created_by')->nullable();
+            $table->unsignedBigInteger('updated_by')->nullable();
+            $table->timestamps();
+
+            $table->index(['office_id', 'is_enabled', 'status'], 'cb_sources_office_status_idx');
+            $table->index(['source_type', 'status']);
+            $table->index(['external_id']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('chatbot_knowledge_sources');
+    }
+};
+===== database/migrations/2026_11_19_143713_create_chatbot_knowledge_sources_table.php.backup-20261119-143910 =====
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('chatbot_knowledge_sources', function (Blueprint $table) {
+            $table->id();
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('chatbot_knowledge_sources');
+    }
+};
+===== database/migrations/2026_11_19_143714_create_chatbot_knowledge_documents_table.php =====
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('chatbot_knowledge_documents', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('source_id')
+                ->nullable()
+                ->constrained('chatbot_knowledge_sources')
+                ->cascadeOnDelete();
+
+            $table->unsignedBigInteger('office_id')->nullable();
+            $table->unsignedBigInteger('language_id')->nullable();
+            $table->string('document_type', 40)->default('webpage');
+            $table->string('source_key', 191)->nullable();
+            $table->string('title', 500);
+            $table->text('source_url')->nullable();
+            $table->string('storage_disk', 50)->nullable();
+            $table->text('storage_path')->nullable();
+            $table->string('mime_type', 150)->nullable();
+            $table->unsignedBigInteger('file_size')->nullable();
+            $table->char('checksum', 64)->nullable();
+            $table->timestamp('source_updated_at')->nullable();
+            $table->longText('extracted_text')->nullable();
+            $table->string('extraction_method', 40)->nullable();
+            $table->string('parser_status', 30)->default('pending');
+            $table->timestamp('indexed_at')->nullable();
+            $table->text('last_error')->nullable();
+            $table->longText('metadata')->nullable();
+            $table->timestamps();
+
+            $table->index(['office_id', 'language_id', 'parser_status'], 'cb_docs_office_lang_status_idx');
+            $table->index(['source_id', 'parser_status']);
+            $table->index(['checksum']);
+            $table->index(['source_key']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('chatbot_knowledge_documents');
+    }
+};
+===== database/migrations/2026_11_19_143714_create_chatbot_knowledge_documents_table.php.backup-20261119-143910 =====
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('chatbot_knowledge_documents', function (Blueprint $table) {
+            $table->id();
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('chatbot_knowledge_documents');
+    }
+};
+===== database/migrations/2026_11_19_143715_create_chatbot_knowledge_chunks_table.php =====
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('chatbot_knowledge_chunks', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('document_id')
+                ->constrained('chatbot_knowledge_documents')
+                ->cascadeOnDelete();
+
+            $table->unsignedBigInteger('source_id')->nullable();
+            $table->unsignedBigInteger('office_id')->nullable();
+            $table->unsignedBigInteger('language_id')->nullable();
+            $table->unsignedInteger('chunk_number');
+            $table->longText('chunk_text');
+            $table->unsignedInteger('token_count')->default(0);
+            $table->char('chunk_hash', 64);
+            $table->string('status', 20)->default('active');
+            $table->timestamps();
+
+            $table->unique(['document_id', 'chunk_number'], 'cb_chunks_document_number_unique');
+            $table->index(['office_id', 'language_id', 'status'], 'cb_chunks_office_lang_status_idx');
+            $table->index(['source_id']);
+            $table->index(['chunk_hash']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('chatbot_knowledge_chunks');
+    }
+};
+===== database/migrations/2026_11_19_143715_create_chatbot_knowledge_chunks_table.php.backup-20261119-143910 =====
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('chatbot_knowledge_chunks', function (Blueprint $table) {
+            $table->id();
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('chatbot_knowledge_chunks');
+    }
+};
+===== KNOWLEDGE TABLE SCHEMA =====
+
+--- chatbot_knowledge_sources ---
+Array
+(
+    [0] => id
+    [1] => office_id
+    [2] => source_type
+    [3] => name
+    [4] => source_url
+    [5] => storage_disk
+    [6] => storage_path
+    [7] => external_id
+    [8] => auth_config
+    [9] => language_code
+    [10] => status
+    [11] => is_enabled
+    [12] => is_public
+    [13] => last_checked_at
+    [14] => last_indexed_at
+    [15] => content_checksum
+    [16] => source_version
+    [17] => last_error
+    [18] => created_by
+    [19] => updated_by
+    [20] => created_at
+    [21] => updated_at
+)
+
+--- chatbot_knowledge_documents ---
+Array
+(
+    [0] => id
+    [1] => source_id
+    [2] => office_id
+    [3] => language_id
+    [4] => document_type
+    [5] => source_key
+    [6] => title
+    [7] => source_url
+    [8] => storage_disk
+    [9] => storage_path
+    [10] => mime_type
+    [11] => file_size
+    [12] => checksum
+    [13] => source_updated_at
+    [14] => extracted_text
+    [15] => extraction_method
+    [16] => parser_status
+    [17] => indexed_at
+    [18] => last_error
+    [19] => metadata
+    [20] => created_at
+    [21] => updated_at
+)
+
+--- chatbot_knowledge_chunks ---
+Array
+(
+    [0] => id
+    [1] => document_id
+    [2] => source_id
+    [3] => office_id
+    [4] => language_id
+    [5] => chunk_number
+    [6] => chunk_text
+    [7] => token_count
+    [8] => chunk_hash
+    [9] => status
+    [10] => created_at
+    [11] => updated_at
+)
