@@ -1,0 +1,751 @@
+===== CHATBOT SERVICE FILES =====
+app/Services/Chatbot/ChatbotDocumentExtractor.php
+app/Services/Chatbot/ChatbotKnowledgeIndexer.php
+app/Services/Chatbot/ChatbotProviderClient.php
+app/Services/Chatbot/ChatbotProviderException.php
+app/Services/Chatbot/ChatbotProviderRegistry.php
+app/Services/Chatbot/ChatbotProviderRouter.php
+===== KNOWLEDGE INDEXER =====
+<?php
+
+namespace App\Services\Chatbot;
+
+use App\Models\ChatbotKnowledgeDocument;
+use App\Models\ChatbotKnowledgeSource;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use InvalidArgumentException;
+use RuntimeException;
+
+class ChatbotKnowledgeIndexer
+{
+    private const CHUNK_SIZE = 1200;
+    private const CHUNK_OVERLAP = 150;
+
+    public function __construct(
+        private readonly ChatbotDocumentExtractor $extractor
+    ) {
+    }
+
+    /**
+     * Extract and index a local document.
+     *
+     * Required: title, storage_disk, storage_path.
+     * Optional: source_id, office_id, language_id, document_type,
+     * source_key, source_url, mime_type, source_updated_at, metadata.
+     */
+    public function indexDocument(array $data): array
+    {
+        foreach (['title', 'storage_disk', 'storage_path'] as $field) {
+            if (!isset($data[$field]) || trim((string) $data[$field]) === '') {
+                throw new InvalidArgumentException("Missing required field: {$field}");
+            }
+        }
+
+        $disk = (string) $data['storage_disk'];
+        $path = (string) $data['storage_path'];
+
+        if (!in_array($disk, ['local', 'public'], true)) {
+            throw new InvalidArgumentException('Unapproved storage disk.');
+        }
+
+        $extraction = $this->extractor->extract($disk, $path);
+
+        // Never replace an existing successful index after extraction failure.
+        if (($extraction['status'] ?? null) !== 'extracted'
+            || trim((string) ($extraction['text'] ?? '')) === '') {
+            return [
+                'status' => 'failed',
+                'error' => $extraction['error'] ?? 'No extractable text found.',
+                'document' => null,
+                'chunks' => 0,
+            ];
+        }
+
+        $absolutePath = Storage::disk($disk)->path($path);
+
+        if (!is_file($absolutePath) || !is_readable($absolutePath)) {
+            return [
+                'status' => 'failed',
+                'error' => 'Document is not available for indexing.',
+                'document' => null,
+                'chunks' => 0,
+            ];
+        }
+
+        $checksum = hash_file('sha256', $absolutePath);
+
+        if ($checksum === false) {
+            throw new RuntimeException('Unable to calculate document checksum.');
+        }
+
+        $source = null;
+
+        if (!empty($data['source_id'])) {
+            $source = ChatbotKnowledgeSource::findOrFail($data['source_id']);
+        }
+
+        $officeId = $data['office_id'] ?? $source?->office_id;
+        $languageId = $data['language_id'] ?? null;
+        $sourceId = $source?->id;
+
+        $documentQuery = ChatbotKnowledgeDocument::query();
+
+        if ($sourceId !== null) {
+            $documentQuery->where('source_id', $sourceId);
+        } else {
+            $documentQuery->whereNull('source_id');
+        }
+
+        if (!empty($data['source_key'])) {
+            $documentQuery->where('source_key', $data['source_key']);
+        } else {
+            $documentQuery
+                ->where('storage_disk', $disk)
+                ->where('storage_path', $path);
+        }
+
+        $existing = $documentQuery->first();
+
+        // Identical content with existing chunks needs no re-indexing.
+        if ($existing
+            && $existing->checksum === $checksum
+            && $existing->parser_status === 'indexed'
+            && $existing->chunks()->exists()) {
+            return [
+                'status' => 'unchanged',
+                'document' => $existing,
+                'chunks' => $existing->chunks()->count(),
+                'checksum' => $checksum,
+            ];
+        }
+
+        $chunks = $this->splitText((string) $extraction['text']);
+
+        if ($chunks === []) {
+            return [
+                'status' => 'failed',
+                'error' => 'Document did not produce usable text chunks.',
+                'document' => null,
+                'chunks' => 0,
+            ];
+        }
+
+        // All document changes and chunk replacement are atomic.
+        $document = DB::transaction(function () use (
+            $existing,
+            $data,
+            $source,
+            $sourceId,
+            $officeId,
+            $languageId,
+            $disk,
+            $path,
+            $checksum,
+            $extraction,
+            $chunks
+        ) {
+            $document = $existing
+                ? ChatbotKnowledgeDocument::query()
+                    ->whereKey($existing->id)
+                    ->lockForUpdate()
+                    ->firstOrFail()
+                : new ChatbotKnowledgeDocument();
+
+            $document->fill([
+                'source_id' => $sourceId,
+                'office_id' => $officeId,
+                'language_id' => $languageId,
+                'document_type' => $data['document_type'] ?? 'document',
+                'source_key' => $data['source_key'] ?? null,
+                'title' => $data['title'],
+                'source_url' => $data['source_url'] ?? null,
+                'storage_disk' => $disk,
+                'storage_path' => $path,
+                'mime_type' => $data['mime_type'] ?? null,
+                'file_size' => filesize(Storage::disk($disk)->path($path)),
+                'checksum' => $checksum,
+                'source_updated_at' => $data['source_updated_at'] ?? null,
+                'extracted_text' => $extraction['text'],
+                'extraction_method' => $extraction['method'] ?? null,
+                'parser_status' => 'indexed',
+                'indexed_at' => now(),
+                'last_error' => null,
+                'metadata' => $data['metadata'] ?? null,
+            ]);
+
+            $document->save();
+
+            // Old chunks are removed only inside the successful transaction.
+            $document->chunks()->delete();
+
+            foreach ($chunks as $number => $chunkText) {
+                $document->chunks()->create([
+                    'source_id' => $sourceId,
+                    'office_id' => $officeId,
+                    'language_id' => $languageId,
+                    'chunk_number' => $number + 1,
+                    'chunk_text' => $chunkText,
+                    'token_count' => max(
+                        1,
+                        (int) ceil(mb_strlen($chunkText, 'UTF-8') / 4)
+                    ),
+                    'chunk_hash' => hash('sha256', $chunkText),
+                    'status' => 'active',
+                ]);
+            }
+
+            if ($source) {
+                $source->forceFill([
+                    'last_indexed_at' => now(),
+                    'content_checksum' => $checksum,
+                    'last_error' => null,
+                ])->save();
+            }
+
+            return $document->fresh();
+        });
+
+        return [
+            'status' => 'indexed',
+            'document' => $document,
+            'chunks' => count($chunks),
+            'checksum' => $checksum,
+            'method' => $extraction['method'] ?? null,
+        ];
+    }
+
+    /**
+     * Split Unicode text without cutting Nepali characters.
+     */
+    public function splitText(string $text): array
+    {
+        $text = trim(str_replace("\0", '', $text));
+
+        if ($text === '') {
+            return [];
+        }
+
+        $result = [];
+        $length = mb_strlen($text, 'UTF-8');
+        $start = 0;
+
+        while ($start < $length) {
+            $remaining = $length - $start;
+            $take = min(self::CHUNK_SIZE, $remaining);
+            $piece = mb_substr($text, $start, $take, 'UTF-8');
+
+            if ($remaining > self::CHUNK_SIZE) {
+                $newline = mb_strrpos($piece, "\n", 0, 'UTF-8');
+                $space = mb_strrpos($piece, ' ', 0, 'UTF-8');
+                $boundary = max(
+                    $newline === false ? -1 : $newline,
+                    $space === false ? -1 : $space
+                );
+
+                // Avoid producing very small chunks at an early boundary.
+                if ($boundary >= (int) (self::CHUNK_SIZE * 0.60)) {
+                    $take = $boundary + 1;
+                    $piece = mb_substr($text, $start, $take, 'UTF-8');
+                }
+            }
+
+            $piece = trim($piece);
+
+            if ($piece !== '') {
+                $result[] = $piece;
+            }
+
+            if ($start + $take >= $length) {
+                break;
+            }
+
+            $nextStart = $start + $take - self::CHUNK_OVERLAP;
+
+            // Guarantee forward progress.
+            $start = max($start + 1, $nextStart);
+        }
+
+        return $result;
+    }
+}
+===== DOCUMENT EXTRACTOR =====
+===== app/Services/Chatbot/ChatbotDocumentExtractor.php =====
+<?php
+
+namespace App\Services\Chatbot;
+
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\Process\Process;
+use Throwable;
+use ZipArchive;
+use SimpleXMLElement;
+
+class ChatbotDocumentExtractor
+{
+    private const MAX_FILE_BYTES = 104857600; // 100 MB
+    private const MAX_PDF_PAGES = 30;
+    private const MAX_OCR_PAGES = 10;
+    private const PROCESS_TIMEOUT = 120;
+
+    /**
+     * Extract text from a document stored on an approved local Laravel disk.
+     */
+    public function extract(string $disk, string $path): array
+    {
+        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+
+        if (!in_array($extension, ['pdf', 'docx', 'xlsx', 'pptx'], true)) {
+            return $this->failure('unsupported', 'This document format is not supported.');
+        }
+
+        try {
+            $absolutePath = $this->resolveLocalFile($disk, $path);
+
+            if (filesize($absolutePath) > self::MAX_FILE_BYTES) {
+                return $this->failure('too_large', 'Document exceeds the 100 MB extraction limit.');
+            }
+
+            return match ($extension) {
+                'pdf' => $this->extractPdf($absolutePath),
+                'docx' => $this->extractDocx($absolutePath),
+                'xlsx' => $this->extractXlsx($absolutePath),
+                'pptx' => $this->extractPptx($absolutePath),
+            };
+        } catch (Throwable $e) {
+            report($e);
+
+            return $this->failure('failed', 'Document extraction failed. Check the server log.');
+        }
+    }
+
+    private function resolveLocalFile(string $disk, string $path): string
+    {
+        if (!in_array($disk, ['local', 'public'], true)) {
+            throw new \RuntimeException('Unapproved storage disk.');
+        }
+
+        if ($path === '' || str_contains($path, "\0")) {
+            throw new \RuntimeException('Invalid document path.');
+        }
+
+        $storage = Storage::disk($disk);
+        $root = realpath($storage->path(''));
+        $file = realpath($storage->path($path));
+
+        if (!$root || !$file || !is_file($file) || !is_readable($file)) {
+            throw new \RuntimeException('Document is not available.');
+        }
+
+        $prefix = rtrim($root, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+
+        if (!str_starts_with($file, $prefix)) {
+            throw new \RuntimeException('Document path is outside storage.');
+        }
+
+        return $file;
+    }
+
+    private function extractPdf(string $file): array
+    {
+        $info = $this->run(['pdfinfo', $file]);
+        preg_match('/^Pages:\s+(\d+)/mi', $info, $matches);
+
+        $pages = isset($matches[1]) ? (int) $matches[1] : 0;
+
+        if ($pages < 1) {
+            return $this->failure('invalid_document', 'PDF page count could not be read.');
+        }
+
+        if ($pages > self::MAX_PDF_PAGES) {
+            return $this->failure('page_limit', 'PDF exceeds the 30-page extraction limit.');
+        }
+
+        $text = trim($this->run(['pdftotext', '-enc', 'UTF-8', '-layout', $file, '-']));
+
+        if (mb_strlen($text) >= 80) {
+            return [
+                'status' => 'extracted',
+                'method' => 'pdftotext',
+                'text' => $this->cleanText($text),
+                'pages' => $pages,
+            ];
+        }
+
+        $ocrPages = min($pages, self::MAX_OCR_PAGES);
+        $directory = sys_get_temp_dir() . '/dor-chatbot-' . bin2hex(random_bytes(8));
+
+        if (!mkdir($directory, 0700)) {
+            throw new \RuntimeException('Unable to create OCR temporary directory.');
+        }
+
+        try {
+            $prefix = $directory . '/page';
+
+            $this->run([
+                'pdftoppm',
+                '-f', '1',
+                '-l', (string) $ocrPages,
+                '-r', '130',
+                '-png',
+                $file,
+                $prefix,
+            ]);
+
+            $images = glob($prefix . '-*.png') ?: [];
+            sort($images, SORT_NATURAL);
+
+            $parts = [];
+
+            foreach ($images as $image) {
+                $parts[] = $this->run([
+                    'tesseract',
+                    $image,
+                    'stdout',
+                    '-l',
+                    'eng+nep',
+                    '--psm',
+                    '3',
+                ]);
+            }
+
+            $ocrText = $this->cleanText(implode("\n\n", $parts));
+
+            if ($ocrText === '') {
+                return $this->failure('empty_text', 'No readable text was found in this PDF.');
+            }
+
+            return [
+                'status' => 'extracted',
+                'method' => 'tesseract_eng_nep',
+                'text' => $ocrText,
+                'pages' => $pages,
+                'ocr_pages' => count($images),
+                'partial' => $pages > $ocrPages,
+            ];
+        } finally {
+            foreach (glob($directory . '/*') ?: [] as $temporaryFile) {
+                if (is_file($temporaryFile)) {
+                    @unlink($temporaryFile);
+                }
+            }
+
+            @rmdir($directory);
+        }
+    }
+
+    private function extractDocx(string $file): array
+    {
+        $zip = $this->openZip($file);
+
+        try {
+            $xml = $this->readZipXml($zip, 'word/document.xml');
+            $xml->registerXPathNamespace('w', 'http://schemas.openxmlformats.org/wordprocessingml/2006/main');
+
+            $parts = [];
+
+            foreach ($xml->xpath('//w:p') ?: [] as $paragraph) {
+                $paragraph->registerXPathNamespace('w', 'http://schemas.openxmlformats.org/wordprocessingml/2006/main');
+                $words = [];
+
+                foreach ($paragraph->xpath('.//w:t') ?: [] as $node) {
+                    $words[] = (string) $node;
+                }
+
+                $parts[] = implode('', $words);
+            }
+
+            $text = $this->cleanText(implode("\n", $parts));
+
+            return $text === ''
+                ? $this->failure('empty_text', 'No readable text found in DOCX.')
+                : ['status' => 'extracted', 'method' => 'php_zip_xml', 'text' => $text];
+        } finally {
+            $zip->close();
+        }
+    }
+
+    private function extractXlsx(string $file): array
+    {
+        $zip = $this->openZip($file);
+
+        try {
+            $shared = [];
+
+            if ($zip->locateName('xl/sharedStrings.xml') !== false) {
+                $xml = $this->readZipXml($zip, 'xl/sharedStrings.xml');
+                $xml->registerXPathNamespace('a', 'http://schemas.openxmlformats.org/spreadsheetml/2006/main');
+
+                foreach ($xml->xpath('//a:si') ?: [] as $item) {
+                    $item->registerXPathNamespace('a', 'http://schemas.openxmlformats.org/spreadsheetml/2006/main');
+                    $values = [];
+
+                    foreach ($item->xpath('.//a:t') ?: [] as $node) {
+                        $values[] = (string) $node;
+                    }
+
+                    $shared[] = implode('', $values);
+                }
+            }
+
+            $parts = [];
+            $count = 0;
+
+            for ($i = 0; $i < $zip->numFiles; $i++) {
+                $name = $zip->getNameIndex($i);
+
+                if (!preg_match('#^xl/worksheets/sheet\d+\.xml$#', $name)) {
+                    continue;
+                }
+
+                $sheet = $this->readZipXml($zip, $name);
+                $sheet->registerXPathNamespace('a', 'http://schemas.openxmlformats.org/spreadsheetml/2006/main');
+
+                foreach ($sheet->xpath('//a:row') ?: [] as $row) {
+                    $row->registerXPathNamespace('a', 'http://schemas.openxmlformats.org/spreadsheetml/2006/main');
+                    $cells = [];
+
+                    foreach ($row->xpath('./a:c') ?: [] as $cell) {
+                        $type = (string) $cell['t'];
+                        $value = (string) ($cell->v ?? '');
+
+                        if ($type === 's' && isset($shared[(int) $value])) {
+                            $value = $shared[(int) $value];
+                        } elseif ($type === 'inlineStr') {
+                            $cell->registerXPathNamespace('a', 'http://schemas.openxmlformats.org/spreadsheetml/2006/main');
+                            $inline = [];
+
+                            foreach ($cell->xpath('.//a:t') ?: [] as $node) {
+                                $inline[] = (string) $node;
+                            }
+
+                            $value = implode('', $inline);
+                        }
+
+                        $cells[] = $value;
+                    }
+
+                    $parts[] = implode(' | ', $cells);
+
+                    if (++$count >= 10000) {
+                        break 2;
+                    }
+                }
+            }
+
+            $text = $this->cleanText(implode("\n", $parts));
+
+            return $text === ''
+                ? $this->failure('empty_text', 'No readable cell values found in XLSX.')
+                : ['status' => 'extracted', 'method' => 'php_zip_xml', 'text' => $text];
+        } finally {
+            $zip->close();
+        }
+    }
+
+    private function extractPptx(string $file): array
+    {
+        $zip = $this->openZip($file);
+
+        try {
+            $slides = [];
+
+            for ($i = 0; $i < $zip->numFiles; $i++) {
+                $name = $zip->getNameIndex($i);
+
+                if (!preg_match('#^ppt/slides/slide\d+\.xml$#', $name)) {
+                    continue;
+                }
+
+                $slides[$name] = $name;
+            }
+
+            uksort($slides, 'strnatcmp');
+
+            $parts = [];
+
+            foreach ($slides as $name) {
+                $xml = $this->readZipXml($zip, $name);
+                $xml->registerXPathNamespace('a', 'http://schemas.openxmlformats.org/drawingml/2006/main');
+
+                $texts = [];
+
+                foreach ($xml->xpath('//a:t') ?: [] as $node) {
+                    $texts[] = (string) $node;
+                }
+
+                $parts[] = implode(' ', $texts);
+            }
+
+            $text = $this->cleanText(implode("\n\n", $parts));
+
+            return $text === ''
+                ? $this->failure('empty_text', 'No readable slide text found in PPTX.')
+                : ['status' => 'extracted', 'method' => 'php_zip_xml', 'text' => $text, 'slides' => count($slides)];
+        } finally {
+            $zip->close();
+        }
+    }
+
+    private function openZip(string $file): ZipArchive
+    {
+        $zip = new ZipArchive();
+
+        if ($zip->open($file) !== true) {
+            throw new \RuntimeException('Invalid Office document archive.');
+        }
+
+        try {
+            $maxEntries = 5000;
+            $maxTotalSize = 150 * 1024 * 1024;
+            $maxEntrySize = 50 * 1024 * 1024;
+            $maxCompressionRatio = 100;
+            $totalSize = 0;
+
+            if ($zip->numFiles > $maxEntries) {
+                throw new \RuntimeException('Document contains too many archive entries.');
+            }
+
+            for ($i = 0; $i < $zip->numFiles; $i++) {
+                $stat = $zip->statIndex($i);
+
+                if ($stat === false || !isset($stat['size'], $stat['comp_size'], $stat['name'])) {
+                    throw new \RuntimeException('Unable to inspect document archive entry.');
+                }
+
+                $name = (string) $stat['name'];
+                $size = (int) $stat['size'];
+                $compressedSize = (int) $stat['comp_size'];
+
+                if ($size < 0 || $compressedSize < 0) {
+                    throw new \RuntimeException('Invalid document archive entry size.');
+                }
+
+                // Directory entries do not contribute to extracted file size.
+                if (str_ends_with($name, '/')) {
+                    continue;
+                }
+
+                if ($size > $maxEntrySize) {
+                    throw new \RuntimeException('Document archive entry exceeds the 50 MB limit.');
+                }
+
+                $totalSize += $size;
+
+                if ($totalSize > $maxTotalSize) {
+                    throw new \RuntimeException('Document archive exceeds the 150 MB expanded size limit.');
+                }
+
+                if (
+                    $size > 1024 * 1024
+                    && ($compressedSize === 0 || ($size / $compressedSize) > $maxCompressionRatio)
+                ) {
+                    throw new \RuntimeException('Document archive has a suspicious compression ratio.');
+                }
+            }
+
+            return $zip;
+        } catch (\Throwable $e) {
+            $zip->close();
+            throw $e;
+        }
+    }
+
+    private function readZipXml(ZipArchive $zip, string $name): SimpleXMLElement
+    {
+        $index = $zip->locateName($name);
+
+        if ($index === false) {
+            throw new \RuntimeException('Required document XML is missing.');
+        }
+
+        $stat = $zip->statIndex($index);
+
+        if (!$stat || $stat['size'] > 20 * 1024 * 1024) {
+            throw new \RuntimeException('Document XML part exceeds the 20 MB limit.');
+        }
+
+        $content = $zip->getFromIndex($index);
+
+        if ($content === false) {
+            throw new \RuntimeException('Unable to read document XML.');
+        }
+
+        // Remove UTF-8 BOM if present in the ZIP XML part.
+        $content = preg_replace('/^\xEF\xBB\xBF/', '', $content);
+
+        $previous = libxml_use_internal_errors(true);
+        libxml_clear_errors();
+
+        try {
+            $xml = simplexml_load_string(
+                $content,
+                SimpleXMLElement::class,
+                LIBXML_NONET | LIBXML_NOBLANKS
+            );
+
+            if ($xml === false) {
+                $details = [];
+
+                foreach (array_slice(libxml_get_errors(), 0, 3) as $error) {
+                    $details[] = trim($error->message)
+                        . ' (line ' . $error->line
+                        . ', column ' . $error->column . ')';
+                }
+
+                throw new \RuntimeException(
+                    'Invalid document XML: ' . implode('; ', $details)
+                );
+            }
+
+            return $xml;
+        } finally {
+            libxml_clear_errors();
+            libxml_use_internal_errors($previous);
+        }
+    }
+
+    private function run(array $command): string
+    {
+        $process = new Process($command);
+        $process->setTimeout(self::PROCESS_TIMEOUT);
+        $process->mustRun();
+
+        return $process->getOutput();
+    }
+
+    private function cleanText(string $text): string
+    {
+        $text = str_replace("\0", '', $text);
+        $text = preg_replace('/[ \t]+/u', ' ', $text) ?? $text;
+        $text = preg_replace('/\n{3,}/u', "\n\n", $text) ?? $text;
+
+        return trim($text);
+    }
+
+    private function failure(string $status, string $message): array
+    {
+        return [
+            'status' => $status,
+            'method' => null,
+            'text' => '',
+            'error' => $message,
+        ];
+    }
+}
+===== KNOWLEDGE CHUNK RETRIEVAL REFERENCES =====
+app/Models/ChatbotKnowledgeChunk.php:8:class ChatbotKnowledgeChunk extends Model
+app/Models/ChatbotKnowledgeChunk.php:10:    protected $table = 'chatbot_knowledge_chunks';
+app/Models/ChatbotKnowledgeChunk.php:14:        'chunk_number', 'chunk_text', 'token_count',
+app/Models/ChatbotKnowledgeDocument.php:38:        return $this->hasMany(ChatbotKnowledgeChunk::class, 'document_id');
+app/Services/Chatbot/ChatbotKnowledgeIndexer.php:180:                    'chunk_text' => $chunkText,
+app/Services/NepalSambatService.php:71:            Log::warning('Nepal Sambat monthly data could not be retrieved.', [
+app/Services/NepalSambatService.php:131:            Log::warning('Nepal Sambat date could not be retrieved.', [
+===== CHATBOT ROUTES =====
+routes/web.php:64:    // Chatbot global settings (Super Admin only)
+routes/web.php:65:    Route::get('chatbot-settings', [
+routes/web.php:66:        'as' => 'admin.chatbot-settings.index',
+routes/web.php:67:        'uses' => 'Admin\\ChatbotSettingController@index'
+routes/web.php:69:    Route::post('chatbot-settings', [
+routes/web.php:70:        'as' => 'admin.chatbot-settings.update',
+routes/web.php:71:        'uses' => 'Admin\\ChatbotSettingController@update'
