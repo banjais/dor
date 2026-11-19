@@ -1,395 +1,1329 @@
 doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade || exit 1
 
-python3 -u - <<'PY'
-import urllib.request, csv, re
-from html.parser import HTMLParser
-from urllib.parse import urljoin, urlparse, urlunparse
-from concurrent.futures import ThreadPoolExecutor
-from collections import deque, defaultdict
+echo "===== NOTICE VIEW JAVASCRIPT ====="
+sed -n '150,430p' resources/views/notice/notices.blade.php
 
-BASE = "http://127.0.0.1:8000"
-WORKERS = 10
-MAX_PER_OFFICE = 3000
-SKIP = {
-    "home", "admin", "login", "logout", "register",
-    "uploads", "storage", "assets", "build", "vendor",
-    "favicon.ico", "robots.txt", "sitemap.xml"
+echo "===== NOTICE MODEL: SEARCH SUGGESTIONS ====="
+sed -n '520,680p' app/Models/Notice.php
+
+echo "===== PUBLICATION VIEW JAVASCRIPT ====="
+sed -n '120,330p' resources/views/publication/categories.blade.php
+
+echo "===== PUBLICATION SEARCH CONTROLLER: START ====="
+sed -n '285,410p' app/Http/Controllers/PublicationController.php
+
+echo "===== PUBLICATION FORCE DOWNLOAD ====="
+sed -n '600,680p' app/Http/Controllers/PublicationController.php
+
+echo "===== PUBLICATION MODEL: DETAIL QUERIES ====="
+sed -n '220,340p' app/Models/Publication.php
+
+echo "===== CURRENT CHANGES ====="
+git status --short
+===== NOTICE VIEW JAVASCRIPT =====
+                                                                    target="_blank">
+                                                                    <i class="fa fa-download"></i>
+                                                                    {{ \Helper::getNameOftext('download', $languageId) }}
+                                                                </a>
+                                                            </span>
+                                                        @else
+                                                            {{ \Helper::getNameOftext('file-not-found', $languageId) }}
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                    <div>
+                                    @else
+                                        <p>{{ \Helper::getNameOftext('record-not-found', $languageId) }}</p>
+                            @endif
+                        </div>
+
+                        {{ $notices->appends($_GET)->links() }}
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <link rel="stylesheet" href="{{ asset('assets/css_2021/ui-lightness/jquery-ui-1.10.4.custom.min.css') }}"
+        type="text/css" />
+<style>
+    .notice-search-autocomplete-menu .ui-menu-item a {
+        display: flex;
+        align-items: flex-start;
+        gap: 9px;
+        padding: 9px 11px;
+        white-space: normal;
+        line-height: 1.5;
+    }
+
+    .notice-suggestion-badge {
+        flex: 0 0 auto;
+        min-width: 57px;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-size: 10px;
+        font-weight: 700;
+        text-align: center;
+        letter-spacing: .3px;
+    }
+
+    .notice-suggestion-badge.office {
+        color: #1769aa;
+        background: #eaf3fb;
+    }
+
+    .notice-suggestion-badge.notice {
+        color: #455468;
+        background: #edf0f3;
+    }
+
+    .notice-suggestion-text {
+        flex: 1;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+</style>
+@section('scripts')
+    <script type="text/javascript" src="{{ asset('assets/js_2021/jquery-ui-1.10.4.custom.min.js') }}"></script>
+    <script type="text/javascript">
+        $(function() {
+            // Office autocomplete on office-specific Notice pages.
+            $(".auto").autocomplete({
+                source: "{{ $abs_site_url }}home/searchoffice",
+                minLength: 1,
+            });
+
+            // Search offices and notice titles/content on the main Notice page.
+            @if ($subdomain === 'home')
+                $("#notice-search-term").autocomplete({
+                    source: function(request, response) {
+                        $.getJSON("{{ $abs_site_url }}home/searchnotice", {
+                            term: request.term
+                        }, response);
+                    },
+                    minLength: 2,
+                    create: function() {
+                        var autocomplete = $(this).data("ui-autocomplete");
+                        autocomplete.widget().addClass("notice-search-autocomplete-menu");
+
+                        autocomplete._renderItem = function(ul, item) {
+                            var isOffice = item.type === "office";
+                            var isSuggestion = item.type === "suggestion";
+
+                            var badge = $("<span>")
+                                .addClass("notice-suggestion-badge")
+                                .addClass(isSuggestion ? "suggestion" : (isOffice ? "office" : "notice"))
+                                .text(isSuggestion ? "DID YOU MEAN" : (isOffice ? "OFFICE" : "NOTICE"));
+
+                            var description = $("<span>")
+                                .addClass("notice-suggestion-text")
+                                .text(isOffice ? item.value : item.label);
+
+                            var link = $("<a>")
+                                .attr("href", "#")
+                                .append(badge)
+                                .append(description);
+
+                            return $("<li>")
+                                .append(link)
+                                .appendTo(ul);
+                        };
+                    },
+                    select: function(event, ui) {
+                        if (ui.item.type === "suggestion") {
+                            $("#notice-search-term").val(ui.item.value);
+                            $(this).autocomplete("close");
+                            return false;
+                        }
+
+                        if (ui.item.url) {
+                            window.location.href = ui.item.url;
+                            return false;
+                        }
+                    }
+                });
+            @endif
+            // date picker
+            $(".date-picker").datepicker({
+                dateFormat: 'yy-mm-dd'
+            });
+
+        });
+    </script>
+@endsection
+@stop
+===== NOTICE MODEL: SEARCH SUGGESTIONS =====
+    public static function getActiveNoticeSearchSuggestions($term, $langId, $limit = 10)
+    {
+        $term = trim(preg_replace('/\s+/u', ' ', (string) $term));
+
+        if (mb_strlen($term) < 1) {
+            return ['offices' => collect(), 'notices' => collect()];
+        }
+
+        $normalizedTerm = $term;
+
+        if (!mb_check_encoding($normalizedTerm, 'UTF-8')) {
+            $normalizedTerm = iconv('UTF-8', 'UTF-8//IGNORE', $normalizedTerm) ?: '';
+        }
+
+        if (class_exists(\Normalizer::class)) {
+            $normalizedTerm = \Normalizer::normalize($normalizedTerm, \Normalizer::FORM_C) ?: $normalizedTerm;
+        }
+
+        $normalizedTerm = mb_strtolower($normalizedTerm, 'UTF-8');
+        $normalizedTerm = preg_replace('/[^\p{L}\p{M}\p{N}]+/u', ' ', $normalizedTerm);
+        $normalizedTerm = trim(preg_replace('/\s+/u', ' ', $normalizedTerm));
+
+        if ($normalizedTerm === '') {
+            return ['offices' => collect(), 'notices' => collect()];
+        }
+
+        $like = '%' . $normalizedTerm . '%';
+        $officeLike = '%' . str_replace(' ', '%', $normalizedTerm) . '%';
+        $neId = Language::getIdFromCode('ne');
+        $enId = Language::getIdFromCode('en');
+        $prefix = DB::getTablePrefix();
+
+        $offices = DB::table('office as o')
+            ->join('office_detail as od', 'od.office_id', '=', 'o.id')
+            ->where('o.is_active', '1')
+            ->where('o.is_deleted', '0')
+            ->whereIn('od.language_id', [$neId, $enId])
+            ->where('od.office_name', 'like', $officeLike)
+            ->select('o.id', 'o.office_subdomain', 'od.office_name', 'od.language_id')
+            ->orderBy('od.office_name')
+            ->limit(30)
+            ->get()
+            ->groupBy('id')
+            ->map(function ($records) use ($langId, $enId) {
+                $preferred = $records->firstWhere('language_id', $langId);
+                $fallback = $records->firstWhere('language_id', $langId == $enId
+                    ? Language::getIdFromCode('ne')
+                    : $enId);
+                $record = $preferred ?: $fallback ?: $records->first();
+
+                return [
+                    'id' => $record->id,
+                    'office_subdomain' => $record->office_subdomain,
+                    'office_name' => $record->office_name,
+                ];
+            })
+            ->take(10)
+            ->values();
+
+        $preferredNotice = $langId == $enId
+            ? $prefix . 'nd_en.notice_heading, ' . $prefix . 'nd_ne.notice_heading'
+            : $prefix . 'nd_ne.notice_heading, ' . $prefix . 'nd_en.notice_heading';
+
+        $preferredOffice = $langId == $enId
+            ? $prefix . 'od_en.office_name, ' . $prefix . 'od_ne.office_name'
+            : $prefix . 'od_ne.office_name, ' . $prefix . 'od_en.office_name';
+
+        $notices = DB::table('notice as n')
+            ->join('office as o', 'o.id', '=', 'n.office_id')
+            ->leftJoin(DB::raw($prefix . 'notice_detail as ' . $prefix . 'nd_ne'), function ($join) use ($neId) {
+                $join->on('nd_ne.notice_id', '=', 'n.id')
+                    ->where('nd_ne.language_id', '=', $neId);
+            })
+            ->leftJoin(DB::raw($prefix . 'notice_detail as ' . $prefix . 'nd_en'), function ($join) use ($enId) {
+                $join->on('nd_en.notice_id', '=', 'n.id')
+                    ->where('nd_en.language_id', '=', $enId);
+            })
+            ->leftJoin(DB::raw($prefix . 'office_detail as ' . $prefix . 'od_ne'), function ($join) use ($neId) {
+                $join->on('od_ne.office_id', '=', 'o.id')
+                    ->where('od_ne.language_id', '=', $neId);
+            })
+            ->leftJoin(DB::raw($prefix . 'office_detail as ' . $prefix . 'od_en'), function ($join) use ($enId) {
+                $join->on('od_en.office_id', '=', 'o.id')
+                    ->where('od_en.language_id', '=', $enId);
+            })
+            ->where('n.is_active', '1')
+            ->where('n.is_deleted', '0')
+            ->where('o.is_active', '1')
+            ->where('o.is_deleted', '0')
+            ->whereExists(function ($subquery) use ($like) {
+                $subquery->select(DB::raw('1'))
+                    ->from('notice_search_indexes as si')
+                    ->whereColumn('si.notice_id', 'n.id')
+                    ->where('si.normalized_text', 'like', $like);
+            })
+            ->select(
+                'n.id',
+                'n.notice_url',
+                'n.office_id',
+                'o.office_subdomain',
+                'n.published_date',
+                DB::raw('COALESCE(' . $preferredNotice . ') as notice_heading'),
+                DB::raw('COALESCE(' . $preferredOffice . ') as office_name')
+            )
+            ->orderBy('n.published_date', 'desc')
+            ->distinct()
+            ->limit($limit)
+            ->get();
+
+        return ['offices' => $offices, 'notices' => $notices];
+    }
+
+
+
+    /**
+     * Suggest a close English spelling from indexed notice terms.
+     * Only single ASCII English words are considered.
+     */
+    public static function getNoticeSearchSpellingSuggestion($term)
+    {
+        $word = trim((string) $term);
+
+        // Nepali spelling suggestion: allow one Unicode-character edit.
+        if (preg_match('/^[\x{0900}-\x{097F}]{2,20}$/u', $word)) {
+            $languageId = 1;
+
+            if (DB::table('notice_search_terms')
+                ->where('language_id', $languageId)
+                ->where('term', $word)
+                ->exists()) {
+                return null;
+            }
+
+            $chars = preg_split('//u', $word, -1, PREG_SPLIT_NO_EMPTY);
+            $firstChar = $chars[0];
+            $length = count($chars);
+
+            $candidates = DB::table('notice_search_terms')
+                ->where('language_id', $languageId)
+                ->where('term', 'like', $firstChar . '%')
+                ->whereRaw('CHAR_LENGTH(term) BETWEEN ? AND ?', [
+                    max(2, $length - 1),
+                    $length + 1
+                ])
+                ->select('term')
+                ->distinct()
+                ->limit(2000)
+                ->pluck('term');
+
+            $distance = static function ($a, $b) {
+                $a = preg_split('//u', $a, -1, PREG_SPLIT_NO_EMPTY);
+                $b = preg_split('//u', $b, -1, PREG_SPLIT_NO_EMPTY);
+
+                $previous = range(0, count($b));
+
+                foreach ($a as $i => $charA) {
+                    $current = [$i + 1];
+
+                    foreach ($b as $j => $charB) {
+                        $cost = ($charA === $charB) ? 0 : 1;
+                        $current[$j + 1] = min(
+===== PUBLICATION VIEW JAVASCRIPT =====
+    function renderResults(items) {
+        box.replaceChildren();
+        results = Array.isArray(items) ? items : [];
+        activeIndex = -1;
+
+        if (!results.length) {
+            var empty = document.createElement('div');
+            empty.className = 'document-search-empty';
+            empty.textContent = @json($languageId == 1 ? 'कुनै नतिजा भेटिएन' : 'No results found');
+            box.appendChild(empty);
+            box.hidden = false;
+            return;
+        }
+
+        results.forEach(function (item, index) {
+            var option = document.createElement('button');
+            option.type = 'button';
+            option.className = 'document-search-option';
+            option.setAttribute('role', 'option');
+            option.setAttribute('aria-selected', 'false');
+            var kind = item.type === 'suggestion'
+                ? ''
+                : (item.type === 'category'
+                    ? @json($languageId == 1 ? 'फोल्डर: ' : 'Folder: ')
+                    : @json($languageId == 1 ? 'फाइल: ' : 'File: '));
+            option.textContent = kind + (item.label || item.value || '');
+            if (item.type === 'suggestion') {
+                option.classList.add('document-search-suggestion');
+            }
+            option.addEventListener('click', function () {
+                chooseResult(results[index]);
+            });
+            box.appendChild(option);
+        });
+        box.hidden = false;
+    }
+
+    function updateActiveOption() {
+        var options = box.querySelectorAll('.document-search-option');
+        options.forEach(function (option, index) {
+            var selected = index === activeIndex;
+            option.classList.toggle('is-active', selected);
+            option.setAttribute('aria-selected', selected ? 'true' : 'false');
+            if (selected) option.scrollIntoView({ block: 'nearest' });
+        });
+    }
+
+    if (input && box) {
+        input.addEventListener('input', function () {
+            var term = input.value.trim();
+            var currentRequest = ++requestId;
+            window.clearTimeout(timer);
+
+            if (!term) {
+                closeResults();
+                return;
+            }
+
+            timer = window.setTimeout(function () {
+                fetch(endpoint + '?term=' + encodeURIComponent(term), {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(function (response) {
+                    if (!response.ok) throw new Error('Search failed');
+                    return response.json();
+                })
+                .then(function (items) {
+                    if (currentRequest !== requestId) return;
+                    renderResults(items);
+                })
+                .catch(function () {
+                    if (currentRequest === requestId) closeResults();
+                });
+            }, 120);
+        });
+
+        input.addEventListener('keydown', function (event) {
+            var options = box.querySelectorAll('.document-search-option');
+            if (event.key === 'ArrowDown' && options.length) {
+                event.preventDefault();
+                activeIndex = Math.min(activeIndex + 1, options.length - 1);
+                updateActiveOption();
+            } else if (event.key === 'ArrowUp' && options.length) {
+                event.preventDefault();
+                activeIndex = Math.max(activeIndex - 1, 0);
+                updateActiveOption();
+            } else if (event.key === 'Enter' && activeIndex >= 0) {
+                event.preventDefault();
+                chooseResult(results[activeIndex]);
+            } else if (event.key === 'Escape') {
+                closeResults();
+            }
+        });
+
+        document.addEventListener('click', function (event) {
+            if (!event.target.closest('.document-search-control')) closeResults();
+        });
+    }
+})();
+</script>
+@endif
+
+@stop
+===== PUBLICATION SEARCH CONTROLLER: START =====
+        */
+
+    /**
+     * Search publication categories and documents from the Main Office homepage.
+     */
+    public function getPublicationSearch(Request $request, $subdomain)
+    {
+        $officeId = Office::getIdfromSubdomain($subdomain);
+
+        if ((int) $officeId !== 4) {
+            return Response::json([]);
+        }
+
+        $term = trim((string) $request->get('term', ''));
+
+        if (mb_strlen($term) < 1) {
+            return Response::json([]);
+        }
+
+        $like = '%' . $term . '%';
+        $normalizedTerm = str_replace(['-', '_'], ' ', $term);
+        $normalizedLike = '%' . $normalizedTerm . '%';
+        $neId = Language::getIdFromCode('ne');
+        $enId = Language::getIdFromCode('en');
+        $sessionLangId = Session::get('language_id') ?: $neId;
+
+        $preferred = (int) $sessionLangId === (int) $enId ? 'en' : 'ne';
+        $fallback = $preferred === 'en' ? 'ne' : 'en';
+
+        $categories = DB::table('publication_category as c')
+            ->join('office as o', 'o.id', '=', 'c.office_id')
+            ->where('c.office_id', $officeId)
+            ->leftJoin('publication_category_detail as cn', function ($join) use ($neId) {
+                $join->on('cn.category_id', '=', 'c.id')
+                    ->where('cn.language_id', '=', $neId);
+            })
+            ->leftJoin('publication_category_detail as ce', function ($join) use ($enId) {
+                $join->on('ce.category_id', '=', 'c.id')
+                    ->where('ce.language_id', '=', $enId);
+            })
+            ->where('c.is_active', '1')
+            ->where('c.is_deleted', '0')
+            ->where('o.is_active', '1')
+            ->where('o.is_deleted', '0')
+            ->where(function ($query) use ($like, $normalizedLike) {
+                $query->where('cn.category_heading', 'like', $like)
+                    ->orWhere('ce.category_heading', 'like', $like)
+                    ->orWhere('cn.category_page_title', 'like', $like)
+                    ->orWhere('ce.category_page_title', 'like', $like)
+                    ->orWhere('c.category_url', 'like', $like)
+                    ->orWhereRaw("REPLACE(REPLACE(pndc_c.category_url, '-', ' '), '_', ' ') LIKE ?", [$normalizedLike]);
+            })
+            ->select(
+                'c.category_url',
+                'o.office_subdomain',
+                'cn.category_heading as ne_heading',
+                'ce.category_heading as en_heading'
+            )
+            ->limit(10)
+            ->get();
+
+        $results = [];
+
+        foreach ($categories as $category) {
+            $heading = $preferred === 'en'
+                ? ($category->en_heading ?: $category->ne_heading)
+                : ($category->ne_heading ?: $category->en_heading);
+
+            if (!$heading) {
+                continue;
+            }
+
+            $results[] = [
+                'label' => $heading,
+                'value' => $heading,
+                'url' => '/' . $category->office_subdomain
+                    . '/publication/' . $category->category_url,
+                'type' => 'category',
+            ];
+        }
+
+        $publications = DB::table('publication as p')
+            ->join('publication_category as c', function ($join) {
+                $join->on('c.id', '=', 'p.category_id')
+                    ->on('c.office_id', '=', 'p.office_id');
+            })
+            ->join('office as o', 'o.id', '=', 'p.office_id')
+            ->where('p.office_id', $officeId)
+            ->leftJoin('publication_detail as pn', function ($join) use ($neId) {
+                $join->on('pn.publication_id', '=', 'p.id')
+                    ->where('pn.language_id', '=', $neId);
+            })
+            ->leftJoin('publication_detail as pe', function ($join) use ($enId) {
+                $join->on('pe.publication_id', '=', 'p.id')
+                    ->where('pe.language_id', '=', $enId);
+            })
+            ->leftJoin('publication_category_detail as cn', function ($join) use ($neId) {
+                $join->on('cn.category_id', '=', 'c.id')
+                    ->where('cn.language_id', '=', $neId);
+            })
+            ->leftJoin('publication_category_detail as ce', function ($join) use ($enId) {
+                $join->on('ce.category_id', '=', 'c.id')
+                    ->where('ce.language_id', '=', $enId);
+            })
+            ->where('p.is_active', '1')
+            ->where('p.is_deleted', '0')
+            ->where('c.is_active', '1')
+            ->where('c.is_deleted', '0')
+            ->where('o.is_active', '1')
+            ->where('o.is_deleted', '0')
+            ->where(function ($query) use ($like, $normalizedLike) {
+                $query->where('pn.publication_heading', 'like', $like)
+                    ->orWhere('pe.publication_heading', 'like', $like)
+                    ->orWhere('pn.publication_page_title', 'like', $like)
+                    ->orWhere('pe.publication_page_title', 'like', $like)
+                    ->orWhere('pn.publication_description', 'like', $like)
+                    ->orWhere('pe.publication_description', 'like', $like)
+                    ->orWhere('pn.publication_short_description', 'like', $like)
+                    ->orWhere('pe.publication_short_description', 'like', $like)
+                    ->orWhere('p.publication_attachment', 'like', $like)
+                    ->orWhere('p.publication_url', 'like', $like)
+                    ->orWhere('c.category_url', 'like', $like)
+                    ->orWhere('cn.category_heading', 'like', $like)
+                    ->orWhere('ce.category_heading', 'like', $like)
+                    ->orWhere('cn.category_page_title', 'like', $like)
+                    ->orWhere('ce.category_page_title', 'like', $like)
+===== PUBLICATION FORCE DOWNLOAD =====
+                    'type' => 'suggestion',
+                    'label' => $preferred === 'en'
+                        ? 'Did you mean: ' . $correctedTerm . '?'
+                        : 'के तपाईंले ' . $correctedTerm . ' खोज्नुभएको हो?',
+                    'value' => $correctedTerm,
+                ];
+            }
+        }
+
+        return Response::json($results);
+    }
+
+    public function getForceDownload($subdomain, $categoryUrl, $url)
+    {
+        // dd(public_path());
+        // dd($subdomain);
+        $officeId    = Office::getIdfromSubdomain($subdomain);
+        $languageId = Language::getIdFromCode();
+        $sessionLangId = (Session::get('language_id')) ? Session::get('language_id') : $languageId;
+        Session::put('language_id', $sessionLangId);
+
+        try {
+            $publicationData    = Publication::getPublicationDetail($officeId, $url, $sessionLangId);
+            if (!$publicationData) {
+                $officeId = 4;
+                $publicationData    = Publication::getPublicationDetail($officeId, $url, $sessionLangId);
+            }
+
+            if (
+                $publicationData &&
+                !empty($publicationData->publication_attachment) &&
+                basename($publicationData->publication_attachment) === $publicationData->publication_attachment &&
+                is_file(public_path() . '/uploads/publication/' . $publicationData->publication_attachment) &&
+                is_readable(public_path() . '/uploads/publication/' . $publicationData->publication_attachment)
+            ) {
+                $file = public_path() . '/uploads/publication/' . $publicationData->publication_attachment;
+                $ext = pathinfo($file, PATHINFO_EXTENSION);
+                $safeHeading = str_replace(array('/', '\\'), '-', $publicationData->publication_heading);
+                $fileName = trim($safeHeading) . '.' . $ext;
+
+                DB::table('publication')
+                    ->where('id', $publicationData->id)
+                    ->increment('download_count', 1);
+
+                $mimeType = mime_content_type($file) ?: 'application/octet-stream';
+                $inlineExtensions = array('pdf', 'jpg', 'jpeg', 'png', 'gif', 'webp');
+
+                if (in_array(strtolower($ext), $inlineExtensions, true)) {
+                    return Response::file($file, array(
+                        'Content-Type' => $mimeType,
+                    ));
+                }
+
+                return Response::download($file, $fileName, array(
+                    'Content-Type' => $mimeType,
+                ));
+            } else {
+                $seoDetail    = Seo::getSeoDetailsByPageNameAndLanguage('error', $sessionLangId);
+                return view(
+                    'home.404',
+                    array(
+                        'pageTitle' => $seoDetail->page_title,
+                        'metaDescription' => $seoDetail->meta_tags,
+                        'metaKeywords' => $seoDetail->meta_description,
+                        'abs_site_url' => $this->abs_site_url,
+                        'rel_site_url' => $this->rel_site_url,
+                        'site_name' => $this->site_name,
+                        'subdomain' => $subdomain
+                    )
+                );
+            }
+        } catch (Throwable $e) {
+            $seoDetail    = Seo::getSeoDetailsByPageNameAndLanguage('error', $sessionLangId);
+            return view(
+                'home.404',
+                array(
+                    'pageTitle' => $seoDetail->page_title,
+                    'metaDescription' => $seoDetail->meta_tags,
+                    'metaKeywords' => $seoDetail->meta_description,
+                    'abs_site_url' => $this->abs_site_url,
+                    'rel_site_url' => $this->rel_site_url,
+===== PUBLICATION MODEL: DETAIL QUERIES =====
+     * @return object
+     */
+    public static function getPublicationDetail($officeId, $url, $langId)
+    {
+        return DB::table('publication')
+            ->join('publication_detail', 'publication.id', '=', 'publication_detail.publication_id')
+            ->select(
+                'publication.id',
+                'publication.publication_url',
+                'publication.publication_meta_tags',
+                'publication.publication_meta_description',
+                'publication_attachment',
+                'publication_detail.publication_heading',
+                'publication_detail.publication_page_title',
+                'publication_detail.publication_description',
+                'published_date',
+                DB::raw('
+                                                                        date_format(published_date, "%d %b, %Y") as en_published_date
+                                                                ')
+            )
+            ->where('publication.office_id', $officeId)
+            ->where('publication.publication_url', $url)
+            ->where('publication_detail.language_id', $langId)
+            ->where('publication.is_active', '1')
+            ->where('publication.is_deleted', '0')
+            ->first();
+    }
+
+    /**
+     * get publication detail by id
+     * @param int $officeId
+     * @param int $id
+     * @param int $langId
+     * @return object
+     */
+    public static function getPublicationDetailById($officeId, $id, $langId)
+    {
+        return DB::table('publication')
+            ->join('publication_detail', 'publication.id', '=', 'publication_detail.publication_id')
+            ->select(
+                'publication.id',
+                'publication.publication_url',
+                'publication.publication_meta_tags',
+                'publication.publication_meta_description',
+                'publication_attachment',
+                'publication_detail.publication_heading',
+                'publication_detail.publication_page_title',
+                'publication_detail.publication_description',
+                'published_date',
+                DB::raw('
+                                                                        date_format(published_date, "%d %b, %Y") as en_published_date
+                                                                ')
+            )
+            ->where('publication.office_id', $officeId)
+            ->where('publication.id', $id)
+            ->where('publication_detail.language_id', $langId)
+            ->where('publication.is_active', '1')
+            ->where('publication.is_deleted', '0')
+            ->first();
+    }
 }
-
-class Parser(HTMLParser):
-    def __init__(self):
-        super().__init__()
-        self.links = []
-        self.title = ""
-        self.text = []
-        self.in_title = False
-
-    def handle_starttag(self, tag, attrs):
-        a = dict(attrs)
-        if tag == "title":
-            self.in_title = True
-        if tag == "a" and a.get("href"):
-            self.links.append(a["href"])
-
-    def handle_endtag(self, tag):
-        if tag == "title":
-            self.in_title = False
-
-    def handle_data(self, data):
-        self.text.append(data)
-        if self.in_title:
-            self.title += data
-
-def norm(url):
-    p = urlparse(url)
-    path = re.sub(r"/+", "/", p.path)
-    if path != "/":
-        path = path.rstrip("/")
-    return urlunparse((p.scheme, p.netloc, path, "", "", ""))
-
-def fetch(item):
-    root, url = item
-    try:
-        req = urllib.request.Request(
-            url, headers={"User-Agent": "DoR-Local-Audit/3.0"}
-        )
-        with urllib.request.urlopen(req, timeout=20) as r:
-            data = r.read()
-            status = r.status
-            final_url = r.geturl()
-            ctype = r.headers.get("Content-Type", "")
-
-PY  print(root, counts[root], "pages")y)shared))emaining[x]) for x in roots)) ""
-OFFICE ROOTS DISCOVERED: 134
-PROGRESS: 100 pages | Offices: 100 | Queue: 10319
-PROGRESS: 200 pages | Offices: 134 | Queue: 13650
-PROGRESS: 300 pages | Offices: 134 | Queue: 13622
-PROGRESS: 400 pages | Offices: 134 | Queue: 13604
-PROGRESS: 500 pages | Offices: 134 | Queue: 13600
-PROGRESS: 600 pages | Offices: 134 | Queue: 13578
-PROGRESS: 700 pages | Offices: 134 | Queue: 13570
-PROGRESS: 800 pages | Offices: 134 | Queue: 13553
-FAILED: bhaktapur http://127.0.0.1:8000/bhaktapur/download/Rigid pavement URL can't contain control characters. '/bhaktapur/download/Rigid pavement' (found at least ' ')
-PROGRESS: 900 pages | Offices: 134 | Queue: 13545
-PROGRESS: 1000 pages | Offices: 134 | Queue: 13540
-PROGRESS: 1100 pages | Offices: 134 | Queue: 13526
-PROGRESS: 1200 pages | Offices: 134 | Queue: 13512
-PROGRESS: 1300 pages | Offices: 134 | Queue: 13498
-PROGRESS: 1400 pages | Offices: 134 | Queue: 13498
-PROGRESS: 1500 pages | Offices: 134 | Queue: 13476
-PROGRESS: 1600 pages | Offices: 134 | Queue: 13475
-PROGRESS: 1700 pages | Offices: 134 | Queue: 13458
-PROGRESS: 1800 pages | Offices: 134 | Queue: 13442
-PROGRESS: 1900 pages | Offices: 134 | Queue: 13429
-PROGRESS: 2000 pages | Offices: 134 | Queue: 13417
-PROGRESS: 2100 pages | Offices: 134 | Queue: 13416
-PROGRESS: 2200 pages | Offices: 134 | Queue: 13387
-PROGRESS: 2300 pages | Offices: 134 | Queue: 13382
-PROGRESS: 2400 pages | Offices: 134 | Queue: 13367
-CHECK: damak 200 CHECK_404_CONTENT http://127.0.0.1:8000/damak/home/about-us
-PROGRESS: 2500 pages | Offices: 134 | Queue: 13369
-PROGRESS: 2600 pages | Offices: 134 | Queue: 13356
-PROGRESS: 2700 pages | Offices: 134 | Queue: 13352
-PROGRESS: 2800 pages | Offices: 134 | Queue: 13337
-PROGRESS: 2900 pages | Offices: 134 | Queue: 13331
-PROGRESS: 3000 pages | Offices: 134 | Queue: 13293
-PROGRESS: 3100 pages | Offices: 134 | Queue: 13289
-PROGRESS: 3200 pages | Offices: 134 | Queue: 13272
-PROGRESS: 3300 pages | Offices: 134 | Queue: 13271
-PROGRESS: 3400 pages | Offices: 134 | Queue: 13252
-PROGRESS: 3500 pages | Offices: 134 | Queue: 13236
-PROGRESS: 3600 pages | Offices: 134 | Queue: 13216
-PROGRESS: 3700 pages | Offices: 134 | Queue: 13207
-PROGRESS: 3800 pages | Offices: 134 | Queue: 13193
-PROGRESS: 3900 pages | Offices: 134 | Queue: 13182
-PROGRESS: 4000 pages | Offices: 134 | Queue: 13164
-PROGRESS: 4100 pages | Offices: 134 | Queue: 13156
-PROGRESS: 4200 pages | Offices: 134 | Queue: 13144
-PROGRESS: 4300 pages | Offices: 134 | Queue: 13108
-PROGRESS: 4400 pages | Offices: 134 | Queue: 13088
-PROGRESS: 4500 pages | Offices: 134 | Queue: 13073
-PROGRESS: 4600 pages | Offices: 134 | Queue: 13060
-PROGRESS: 4700 pages | Offices: 134 | Queue: 13046
-PROGRESS: 4800 pages | Offices: 134 | Queue: 13009
-PROGRESS: 4900 pages | Offices: 134 | Queue: 12996
-PROGRESS: 5000 pages | Offices: 134 | Queue: 12985
-PROGRESS: 5100 pages | Offices: 134 | Queue: 12961
-PROGRESS: 5200 pages | Offices: 134 | Queue: 12968
-PROGRESS: 5300 pages | Offices: 134 | Queue: 12934
-PROGRESS: 5400 pages | Offices: 134 | Queue: 12905
-PROGRESS: 5500 pages | Offices: 134 | Queue: 12901
-PROGRESS: 5600 pages | Offices: 134 | Queue: 12889
-PROGRESS: 5700 pages | Offices: 134 | Queue: 12869
-PROGRESS: 5800 pages | Offices: 134 | Queue: 12852
-PROGRESS: 5900 pages | Offices: 134 | Queue: 12835
-PROGRESS: 6000 pages | Offices: 134 | Queue: 12817
-PROGRESS: 6100 pages | Offices: 134 | Queue: 12798
-PROGRESS: 6200 pages | Offices: 134 | Queue: 12776
-PROGRESS: 6300 pages | Offices: 134 | Queue: 12766
-PROGRESS: 6400 pages | Offices: 134 | Queue: 12759
-PROGRESS: 6500 pages | Offices: 134 | Queue: 12749
-PROGRESS: 6600 pages | Offices: 134 | Queue: 12726
-PROGRESS: 6700 pages | Offices: 134 | Queue: 12709
-PROGRESS: 6800 pages | Offices: 134 | Queue: 12707
-PROGRESS: 6900 pages | Offices: 134 | Queue: 12693
-PROGRESS: 7000 pages | Offices: 134 | Queue: 12665
-PROGRESS: 7100 pages | Offices: 134 | Queue: 12653
-PROGRESS: 7200 pages | Offices: 134 | Queue: 12650
-PROGRESS: 7300 pages | Offices: 134 | Queue: 12641
-FAILED: mabhpd http://127.0.0.1:8000/mabhpd/news/madan-bhandari-highway-nh-09 HTTP Error 500: Internal Server Error
-PROGRESS: 7400 pages | Offices: 134 | Queue: 12629
-PROGRESS: 7500 pages | Offices: 134 | Queue: 12629
-PROGRESS: 7600 pages | Offices: 134 | Queue: 12597
-PROGRESS: 7700 pages | Offices: 134 | Queue: 12582
-PROGRESS: 7800 pages | Offices: 134 | Queue: 12564
-PROGRESS: 7900 pages | Offices: 134 | Queue: 12545
-CHECK: mbpom 200 CHECK_404_CONTENT http://127.0.0.1:8000/mbpom/home/about-us
-PROGRESS: 8000 pages | Offices: 134 | Queue: 12532
-PROGRESS: 8100 pages | Offices: 134 | Queue: 12515
-PROGRESS: 8200 pages | Offices: 134 | Queue: 12507
-PROGRESS: 8300 pages | Offices: 134 | Queue: 12509
-PROGRESS: 8400 pages | Offices: 134 | Queue: 12492
-PROGRESS: 8500 pages | Offices: 134 | Queue: 12478
-PROGRESS: 8600 pages | Offices: 134 | Queue: 12459
-PROGRESS: 8700 pages | Offices: 134 | Queue: 12446
-PROGRESS: 8800 pages | Offices: 134 | Queue: 12430
-PROGRESS: 8900 pages | Offices: 134 | Queue: 12414
-PROGRESS: 9000 pages | Offices: 134 | Queue: 12399
-PROGRESS: 9100 pages | Offices: 134 | Queue: 12389
-PROGRESS: 9200 pages | Offices: 134 | Queue: 12370
-PROGRESS: 9300 pages | Offices: 134 | Queue: 12355
-PROGRESS: 9400 pages | Offices: 134 | Queue: 12344
-CHECK: nmrp 200 CHECK_404_CONTENT http://127.0.0.1:8000/nmrp/home/about-us
-PROGRESS: 9500 pages | Offices: 134 | Queue: 12330
-PROGRESS: 9600 pages | Offices: 134 | Queue: 12318
-PROGRESS: 9700 pages | Offices: 134 | Queue: 12305
-PROGRESS: 9800 pages | Offices: 134 | Queue: 12291
-PROGRESS: 9900 pages | Offices: 134 | Queue: 12262
-PROGRESS: 10000 pages | Offices: 134 | Queue: 12250
-PROGRESS: 10100 pages | Offices: 134 | Queue: 12233
-PROGRESS: 10200 pages | Offices: 134 | Queue: 12222
-PROGRESS: 10300 pages | Offices: 134 | Queue: 12204
-FAILED: phpobirgunj http://127.0.0.1:8000/phpobirgunj/law/land-acquiring-act-2034 timed out
-PROGRESS: 10400 pages | Offices: 134 | Queue: 12189
-PROGRESS: 10500 pages | Offices: 134 | Queue: 12178
-PROGRESS: 10600 pages | Offices: 134 | Queue: 12158
-PROGRESS: 10700 pages | Offices: 134 | Queue: 12140
-PROGRESS: 10800 pages | Offices: 134 | Queue: 12127
-FAILED: phponpj http://127.0.0.1:8000/phponpj/guideline/eprirp-guidelines-july-2007-fa-viii-draft timed out
-FAILED: phponpj http://127.0.0.1:8000/phponpj/guideline/environmental-management-guidelines timed out
-FAILED: phponpj http://127.0.0.1:8000/phponpj/guideline/guideline-for-inspection-and-maintenance-of-bridge-volume-1 timed out
-FAILED: phponpj http://127.0.0.1:8000/phponpj/guideline/interim-guidelines-for-enhancing-poverty-reduction-impact-of-road-project timed out
-FAILED: phponpj http://127.0.0.1:8000/phponpj/guideline/guidelines-for-inspection-and-maintenance-of-bridges-vol-2-minor-repairs-recurrent-maintenance-reprint-2013 timed out
-PROGRESS: 10900 pages | Offices: 134 | Queue: 12120
-PROGRESS: 11000 pages | Offices: 134 | Queue: 12101
-PROGRESS: 11100 pages | Offices: 134 | Queue: 12086
-PROGRESS: 11200 pages | Offices: 134 | Queue: 12077
-PROGRESS: 11300 pages | Offices: 134 | Queue: 12058
-PROGRESS: 11400 pages | Offices: 134 | Queue: 12044
-PROGRESS: 11500 pages | Offices: 134 | Queue: 12028
-PROGRESS: 11600 pages | Offices: 134 | Queue: 12012
-FAILED: pokhara http://127.0.0.1:8000/pokhara/law/environment-protection-act-2076 timed out
-FAILED: pokhara http://127.0.0.1:8000/pokhara/law/enviroment-protection-rules-2054 timed out
-FAILED: pokhara http://127.0.0.1:8000/pokhara/law/environment-protection-rules-2077 timed out
-FAILED: pokhara http://127.0.0.1:8000/pokhara/law/amendment-on-the-environment-protection-regulations-2077 timed out
-PROGRESS: 11700 pages | Offices: 134 | Queue: 11980
-PROGRESS: 11800 pages | Offices: 134 | Queue: 11965
-FAILED: qrdc http://127.0.0.1:8000/qrdc/download/Lab Report Format_Spread Sheet Sample URL can't contain control characters. '/qrdc/download/Lab Report Format_Spread Sheet Sample' (found
-FAILED: qrdc http://127.0.0.1:8000/qrdc/download/Lab Report Format URL can't contain control characters. '/qrdc/download/Lab Report Format' (found at least ' ')
-PROGRESS: 11900 pages | Offices: 134 | Queue: 11964
-FAILED: raptihighway http://127.0.0.1:8000/raptihighway/guideline/electronic-procurement-guidelines-2074 timed out
-FAILED: raptihighway http://127.0.0.1:8000/raptihighway/guideline/interim-guidelines-for-enhancing-poverty-reduction-impact-of-road-project timed out
-PROGRESS: 12000 pages | Offices: 134 | Queue: 11941
-PROGRESS: 12100 pages | Offices: 134 | Queue: 11920
-PROGRESS: 12200 pages | Offices: 134 | Queue: 11909
-PROGRESS: 12300 pages | Offices: 134 | Queue: 11910
-PROGRESS: 12400 pages | Offices: 134 | Queue: 11878
-PROGRESS: 12500 pages | Offices: 134 | Queue: 11871
-PROGRESS: 12600 pages | Offices: 134 | Queue: 11848
-FAILED: sbtp http://127.0.0.1:8000/sbtp/guideline/ridms-software-manual timed out
-FAILED: sbtp http://127.0.0.1:8000/sbtp/download/https:/dor.gov.np HTTP Error 404: Not Found
-PROGRESS: 12700 pages | Offices: 134 | Queue: 11851
-PROGRESS: 12800 pages | Offices: 134 | Queue: 11816
-PROGRESS: 12900 pages | Offices: 134 | Queue: 11808
-PROGRESS: 13000 pages | Offices: 134 | Queue: 11789
-PROGRESS: 13100 pages | Offices: 134 | Queue: 11775
-PROGRESS: 13200 pages | Offices: 134 | Queue: 11753
-PROGRESS: 13300 pages | Offices: 134 | Queue: 11736
-PROGRESS: 13400 pages | Offices: 134 | Queue: 11724
-PROGRESS: 13500 pages | Offices: 134 | Queue: 11701
-PROGRESS: 13600 pages | Offices: 134 | Queue: 11687
-PROGRESS: 13700 pages | Offices: 134 | Queue: 11668
-PROGRESS: 13800 pages | Offices: 134 | Queue: 11657
-CHECK: Janakpur 200 CHECK_404_CONTENT http://127.0.0.1:8000/Janakpur/download/force/contract-id-no-rdjkr-33701138-083-84-15-related-bidding-document
-CHECK: Janakpur 200 CHECK_404_CONTENT http://127.0.0.1:8000/Janakpur/download/force/contract-id-no-rdjkr-33701130-083-84-22-related-bidding-document
-CHECK: Janakpur 200 CHECK_404_CONTENT http://127.0.0.1:8000/Janakpur/download/force/contract-id-no-rdjkr-33701138-083-84-20-related-bidding-document
-CHECK: Janakpur 200 CHECK_404_CONTENT http://127.0.0.1:8000/Janakpur/download/force/contract-id-no-rdjkr-33701138-083-84-18-related-bidding-document
-CHECK: Janakpur 200 CHECK_404_CONTENT http://127.0.0.1:8000/Janakpur/download/force/contract-id-no-rdjkr-33701122-083-84-25-related-bidding-document
-CHECK: Janakpur 200 CHECK_404_CONTENT http://127.0.0.1:8000/Janakpur/download/force/contract-id-no-rdjkr-33701138-083-84-16-related-bidding-document
-CHECK: Janakpur 200 CHECK_404_CONTENT http://127.0.0.1:8000/Janakpur/download/force/contract-id-no-rdjkr-33701138-083-84-23-related-bidding-document
-CHECK: Janakpur 200 CHECK_404_CONTENT http://127.0.0.1:8000/Janakpur/download/force/contract-id-no-rdjkr-33701138-083-84-14-related-bidding-document
-CHECK: Janakpur 200 CHECK_404_CONTENT http://127.0.0.1:8000/Janakpur/download/force/contract-id-no-rdjkr-33701136-083-84-21-related-bidding-document
-CHECK: Janakpur 200 CHECK_404_CONTENT http://127.0.0.1:8000/Janakpur/download/force/contract-id-no-rdjkr-33701138-083-84-19-related-bidding-document
-CHECK: Janakpur 200 CHECK_404_CONTENT http://127.0.0.1:8000/Janakpur/download/force/contract-id-no-rdjkr-337310113-083-84-26-related-bidding-document
-PROGRESS: 13900 pages | Offices: 134 | Queue: 11558
-CHECK: Janakpur 200 CHECK_404_CONTENT http://127.0.0.1:8000/Janakpur/download/force/contract-id-no-rdjkr-33701138-083-84-17-related-bidding-document
-CHECK: Janakpur 200 CHECK_404_CONTENT http://127.0.0.1:8000/Janakpur/download/force/contract-id-no-rdjkr-33701132-083-84-24-related-bidding-document
-PROGRESS: 14000 pages | Offices: 134 | Queue: 11458
-PROGRESS: 14100 pages | Offices: 134 | Queue: 11358
-PROGRESS: 14200 pages | Offices: 134 | Queue: 11258
-PROGRESS: 14300 pages | Offices: 134 | Queue: 11158
-PROGRESS: 14400 pages | Offices: 134 | Queue: 11062
-FAILED: bhaktapur http://127.0.0.1:8000/bhaktapur/download/force/Rigid pavement URL can't contain control characters. '/bhaktapur/download/force/Rigid pavement' (found at least ' '
-PROGRESS: 14500 pages | Offices: 134 | Queue: 10962
-PROGRESS: 14600 pages | Offices: 134 | Queue: 10862
-CHECK: biratnagar 200 CHECK_404_CONTENT http://127.0.0.1:8000/biratnagar/download/force/project-under-road-division-biratnagar-f-y-2081-82
-PROGRESS: 14700 pages | Offices: 134 | Queue: 10762
-PROGRESS: 14800 pages | Offices: 134 | Queue: 10662
-PROGRESS: 14900 pages | Offices: 134 | Queue: 10562
-PROGRESS: 15000 pages | Offices: 134 | Queue: 10462
-PROGRESS: 15100 pages | Offices: 134 | Queue: 10362
-PROGRESS: 15200 pages | Offices: 134 | Queue: 10262
-FAILED: bs-pokhara http://127.0.0.1:8000/bs-pokhara/project HTTP Error 404: Not Found
-PROGRESS: 15300 pages | Offices: 134 | Queue: 10162
-PROGRESS: 15400 pages | Offices: 134 | Queue: 10062
-PROGRESS: 15500 pages | Offices: 134 | Queue: 9962
-PROGRESS: 15600 pages | Offices: 134 | Queue: 9862
-PROGRESS: 15700 pages | Offices: 134 | Queue: 9762
-PROGRESS: 15800 pages | Offices: 134 | Queue: 9662
-PROGRESS: 15900 pages | Offices: 134 | Queue: 9562
-FAILED: damauli http://127.0.0.1:8000/damauli/law/force/land-acquiring-act-2034 timed out
-FAILED: damauli http://127.0.0.1:8000/damauli/law/force/environment-protection-act-2053 timed out
-FAILED: damauli http://127.0.0.1:8000/damauli/law/force/environment-protection-act-2076 timed out
-FAILED: damauli http://127.0.0.1:8000/damauli/law/force/environment-protection-rules-2077 timed out
-FAILED: damauli http://127.0.0.1:8000/damauli/law/force/amendment-on-the-environment-protection-regulations-2077 timed out
-PROGRESS: 16000 pages | Offices: 134 | Queue: 9462
-PROGRESS: 16100 pages | Offices: 134 | Queue: 9362
-PROGRESS: 16200 pages | Offices: 134 | Queue: 9262
-FAILED: dhankuta http://127.0.0.1:8000/dhankuta/guideline/force/pavement-design-guidelines-2014 timed out
-FAILED: dhankuta http://127.0.0.1:8000/dhankuta/guideline/force/revised-guideline-for-estimating-equipment-cost timed out
-FAILED: dhankuta http://127.0.0.1:8000/dhankuta/guideline/force/electronic-procurement-guidelines-2074 timed out
-FAILED: dhankuta http://127.0.0.1:8000/dhankuta/guideline/force/eprirp-guidelines-july-2007-fa-viii-draft timed out
-PROGRESS: 16300 pages | Offices: 134 | Queue: 9164
-PROGRESS: 16400 pages | Offices: 134 | Queue: 9064
-PROGRESS: 16500 pages | Offices: 134 | Queue: 8964
-PROGRESS: 16600 pages | Offices: 134 | Queue: 8864
-PROGRESS: 16700 pages | Offices: 134 | Queue: 8764
-PROGRESS: 16800 pages | Offices: 134 | Queue: 8664
-PROGRESS: 16900 pages | Offices: 134 | Queue: 8564
-PROGRESS: 17000 pages | Offices: 134 | Queue: 8466
-FAILED: gorkharoad http://127.0.0.1:8000/gorkharoad/notice/force/invitation-for-bids-t2-2082-83 timed out
-FAILED: gorkharoad http://127.0.0.1:8000/gorkharoad/notice/force/notice-of-intent-to-award-t6-2082-83-t7-2082-83 timed out
-FAILED: gorkharoad http://127.0.0.1:8000/gorkharoad/notice/force/invitation-for-quotations-t2-083-84-package-01-and-t2-083-84-package-02 timed out
-FAILED: gorkharoad http://127.0.0.1:8000/gorkharoad/notice/force/invitation-for-quotations-t2-083-84-package-01 timed out
-PROGRESS: 17100 pages | Offices: 134 | Queue: 8366
-PROGRESS: 17200 pages | Offices: 134 | Queue: 8266
-FAILED: harkapur http://127.0.0.1:8000/harkapur/project/projects-harkapur timed out
-FAILED: harkapur http://127.0.0.1:8000/harkapur/project/okhaldhunga-salleri-road-project timed out
-FAILED: harkapur http://127.0.0.1:8000/harkapur/project/leguwaghat-bhojpur-road-project-adb-srcp timed out
-FAILED: harkapur http://127.0.0.1:8000/harkapur/project/halesi-diktel-nunthala-road-project-adb-srcp timed out
-FAILED: harkapur http://127.0.0.1:8000/harkapur/photogallery/sunkoshi-bridge timed out
-FAILED: harkapur http://127.0.0.1:8000/harkapur/notice/force/bidding-documents-online timed out
-FAILED: harkapur http://127.0.0.1:8000/harkapur/notice/force/bidding-document-of-contract-no-rdhkr-33701136-2083-84-14 timed out
-FAILED: harkapur http://127.0.0.1:8000/harkapur/notice/force/bidding-document-of-contract-no-rdhkr-33701138-2083-84-07 timed out
-FAILED: harkapur http://127.0.0.1:8000/harkapur/notice/force/bidding-document-of-contract-no-rdhkr-33701138-2083-84-08 timed out
-FAILED: harkapur http://127.0.0.1:8000/harkapur/notice/force/bidding-document-of-contract-no-rdhkr-33701138-2083-84-09 timed out
-FAILED: harkapur http://127.0.0.1:8000/harkapur/notice/force/bidding-document-of-contract-no-rdhkr-33701193-2083-84-15 timed out
-FAILED: harkapur http://127.0.0.1:8000/harkapur/notice/force/bidding-document-of-contract-no-rdhkr-33701138-2083-84-10 timed out
-FAILED: harkapur http://127.0.0.1:8000/harkapur/notice/force/bidding-document-of-contract-no-rdhkr-33701138-2083-84-11 timed out
-FAILED: harkapur http://127.0.0.1:8000/harkapur/notice/force/bidding-document-of-contract-no-rdhkr-33701136-2083-84-13 timed out
-FAILED: harkapur http://127.0.0.1:8000/harkapur/notice/force/invitation-for-bids-notice-no-03-rdhkr-2083-84 timed out
-FAILED: harkapur http://127.0.0.1:8000/harkapur/notice/force/bidding-document-of-contract-no-rdhkr-33701181-2083-84-06 timed out
-FAILED: harkapur http://127.0.0.1:8000/harkapur/notice/force/boddirdhkr-33701189-2083-84-12 timed out
-PROGRESS: 17300 pages | Offices: 134 | Queue: 8166
-FAILED: hed-butwal http://127.0.0.1:8000/hed-butwal/publication/egp-phase-ii-egp-ii-manual timed out
-FAILED: hed-butwal http://127.0.0.1:8000/hed-butwal/publication/eia-of-sasec-roads-improvement-project timed out
-FAILED: hed-butwal http://127.0.0.1:8000/hed-butwal/publication/esmf-nepali timed out
-FAILED: hed-godawari http://127.0.0.1:8000/hed-godawari/photogallery HTTP Error 404: Not Found
-PROGRESS: 17400 pages | Offices: 134 | Queue: 8066
-PROGRESS: 17500 pages | Offices: 134 | Queue: 7968
-PROGRESS: 17600 pages | Offices: 134 | Queue: 7868
-FAILED: hed-itahari http://127.0.0.1:8000/hed-itahari/law/force/public-procurement-contengency-amount-expenditure-management-directives-2074 timed out
-FAILED: hed-itahari http://127.0.0.1:8000/hed-itahari/law/force/public-road-act-2031 timed out
-FAILED: hed-itahari http://127.0.0.1:8000/hed-itahari/download/force/citizen-charter-heavy-euipment-division-itahari timed out
-FAILED: hed-janakpur http://127.0.0.1:8000/hed-janakpur/notice/force/letter-of-intent timed out
-FAILED: hed-janakpur http://127.0.0.1:8000/hed-janakpur/notice/force/direct-purchase-of-lubricants-2082-083-03 timed out
-FAILED: hed-janakpur http://127.0.0.1:8000/hed-janakpur/notice/force/direct-purchase-of-tyre-and-tubes-2082-083-04 timed out
-PROGRESS: 17700 pages | Offices: 134 | Queue: 7768
-PROGRESS: 17800 pages | Offices: 134 | Queue: 7668
-PROGRESS: 17900 pages | Offices: 134 | Queue: 7568
-PROGRESS: 18000 pages | Offices: 134 | Queue: 7468
-CHECK: hed-pokhara 200 CHECK_404_CONTENT http://127.0.0.1:8000/hed-pokhara/download/force/-hedpkr-dp-080-081-06
-CHECK: hed-pokhara 200 CHECK_404_CONTENT http://127.0.0.1:8000/hed-pokhara/download/force/-hedpkr-dp-080-081-05
-PROGRESS: 18100 pages | Offices: 134 | Queue: 7368
-PROGRESS: 18200 pages | Offices: 134 | Queue: 7268
-CHECK: janakpur 200 CHECK_404_CONTENT http://127.0.0.1:8000/janakpur/download/force/contract-id-no-rdjkr-33701138-083-84-15-related-bidding-document
-CHECK: janakpur 200 CHECK_404_CONTENT http://127.0.0.1:8000/janakpur/download/force/contract-id-no-rdjkr-33701130-083-84-22-related-bidding-document
-CHECK: janakpur 200 CHECK_404_CONTENT http://127.0.0.1:8000/janakpur/download/force/contract-id-no-rdjkr-33701138-083-84-20-related-bidding-document
-CHECK: janakpur 200 CHECK_404_CONTENT http://127.0.0.1:8000/janakpur/download/force/contract-id-no-rdjkr-33701138-083-84-18-related-bidding-document
-CHECK: janakpur 200 CHECK_404_CONTENT http://127.0.0.1:8000/janakpur/download/force/contract-id-no-rdjkr-33701122-083-84-25-related-bidding-document
-CHECK: janakpur 200 CHECK_404_CONTENT http://127.0.0.1:8000/janakpur/download/force/contract-id-no-rdjkr-33701138-083-84-16-related-bidding-document
-CHECK: janakpur 200 CHECK_404_CONTENT http://127.0.0.1:8000/janakpur/download/force/contract-id-no-rdjkr-33701138-083-84-23-related-bidding-document
-CHECK: janakpur 200 CHECK_404_CONTENT http://127.0.0.1:8000/janakpur/download/force/contract-id-no-rdjkr-33701138-083-84-14-related-bidding-document
-CHECK: janakpur 200 CHECK_404_CONTENT http://127.0.0.1:8000/janakpur/download/force/contract-id-no-rdjkr-33701136-083-84-21-related-bidding-document
-CHECK: janakpur 200 CHECK_404_CONTENT http://127.0.0.1:8000/janakpur/download/force/contract-id-no-rdjkr-33701138-083-84-19-related-bidding-document
-CHECK: janakpur 200 CHECK_404_CONTENT http://127.0.0.1:8000/janakpur/download/force/contract-id-no-rdjkr-337310113-083-84-26-related-bidding-document
-CHECK: janakpur 200 CHECK_404_CONTENT http://127.0.0.1:8000/janakpur/download/force/contract-id-no-rdjkr-33701138-083-84-17-related-bidding-document
-CHECK: janakpur 200 CHECK_404_CONTENT http://127.0.0.1:8000/janakpur/download/force/contract-id-no-rdjkr-33701132-083-84-24-related-bidding-document
-PROGRESS: 18300 pages | Offices: 134 | Queue: 7168
-PROGRESS: 18400 pages | Offices: 134 | Queue: 7068
-FAILED: kathmandu http://127.0.0.1:8000/kathmandu/publication/bridges-improvement-and-maintenance-program timed out
-FAILED: kathmandu http://127.0.0.1:8000/kathmandu/publication/dor-dashboard-weekly-progress-updates timed out
-FAILED: kathmandu http://127.0.0.1:8000/kathmandu/publication/egp-phase-ii-egp-ii-manual timed out
-FAILED: kathmandu http://127.0.0.1:8000/kathmandu/publication/esmf-nepali timed out
-FAILED: kathmandu http://127.0.0.1:8000/kathmandu/publication/federal-road-supervision-and-monitoring-offices-related-publications timed out
-FAILED: kathmandu http://127.0.0.1:8000/kathmandu/guideline/force/grms-user-manual timed out
-FAILED: kathmandu http://127.0.0.1:8000/kathmandu/guideline/force/departmental-guideline-occupational-health-and-safety-guideline-for-road-infrastructure-development-and-management-2080 timed out
-FAILED: kathmandu http://127.0.0.1:8000/kathmandu/guideline/force/road-safety-audit-manual-april-1997 timed out
-FAILED: kathmandu http://127.0.0.1:8000/kathmandu/guideline/force/bio-geotechnical-engineering-diagnostic-tool-bdt-user-manual timed out
-FAILED: kathmandu http://127.0.0.1:8000/kathmandu/guideline/force/guide-to-road-slop-and-protection timed out
-FAILED: kathmandu http://127.0.0.1:8000/kathmandu/guideline/force/pavement-design-guidelines-2014 timed out
-FAILED: kathmandu http://127.0.0.1:8000/kathmandu/guideline/force/revised-guideline-for-estimating-equipment-cost timed out
-FAILED: kathmandu http://127.0.0.1:8000/kathmandu/guideline/force/eprirp-guidelines-july-2007-fa-viii-draft timed out
-FAILED: kathmandu http://127.0.0.1:8000/kathmandu/guideline/force/environmental-management-guidelines timed out
-FAILED: kathmandu http://127.0.0.1:8000/kathmandu/guideline/force/guideline-for-inspection-and-maintenance-of-bridge-volume-1 timed out
-FAILED: kathmandu http://127.0.0.1:8000/kathmandu/guideline/force/interim-guidelines-for-enhancing-poverty-reduction-impact-of-road-project timed out
-FAILED: kathmandu http://127.0.0.1:8000/kathmandu/guideline/force/guidelines-for-inspection-and-maintenance-of-bridges-vol-2-minor-repairs-recurrent-maintenance-reprint-2013 timed out
-FAILED: kathmandu http://127.0.0.1:8000/kathmandu/guideline/force/dms-admin-user-manual timed out
-FAILED: kathmandu http://127.0.0.1:8000/kathmandu/guideline/force/bms-user-manual timed out
-FAILED: kathmandu http://127.0.0.1:8000/kathmandu/guideline/force/manual-for-email-configuration-on-outlook timed out
-PROGRESS: 18500 pages | Offices: 134 | Queue: 6968
-PROGRESS: 18600 pages | Offices: 134 | Queue: 6868
-FAILED: kcrp-hs http://127.0.0.1:8000/kcrp-hs/guideline/force/eprirp-guidelines-july-2007-fa-viii-draft timed out
-FAILED: kcrp-hs http://127.0.0.1:8000/kcrp-hs/guideline/force/guideline-for-inspection-and-maintenance-of-bridge-volume-1 timed out
-PROGRESS: 18700 pages | Offices: 134 | Queue: 6768
-CHECK: kcrp-hs 200 CHECK_404_CONTENT http://127.0.0.1:8000/kcrp-hs/download/force/district-rate-of-humla-f-y-081-082
-PROGRESS: 18800 pages | Offices: 134 | Queue: 6668
-PROGRESS: 18900 pages | Offices: 134 | Queue: 6568
-PROGRESS: 19000 pages | Offices: 134 | Queue: 6468
-PROGRESS: 19100 pages | Offices: 134 | Queue: 6368
-FAILED: khurkot http://127.0.0.1:8000/khurkot/guideline/force/guidelines-for-preparation-of-evaluation-and-qualification-criteria-of-bidders-for-works-under-dor timed out
-FAILED: khutiyadipayal http://127.0.0.1:8000/khutiyadipayal/photogallery HTTP Error 404: Not Found
-PROGRESS: 19200 pages | Offices: 134 | Queue: 6268
-PROGRESS: 19300 pages | Offices: 134 | Queue: 6168
-PROGRESS: 19400 pages | Offices: 134 | Queue: 6068
-PROGRESS: 19500 pages | Offices: 134 | Queue: 5968
-PROGRESS: 19600 pages | Offices: 134 | Queue: 5872
-FAILED: lahan http://127.0.0.1:8000/lahan/notice/force/notice-for-invitation-of-bids-notice-no-3-083-84 timed out
-FAILED: lahan http://127.0.0.1:8000/lahan/notice/force/biding-document-of-contract-no-rdlhn3370113608384-23 timed out
-FAILED: lahan http://127.0.0.1:8000/lahan/publication/adb-reports timed out
-FAILED: lahan http://127.0.0.1:8000/lahan/publication/annual-progress-reports timed out
-PROGRESS: 19700 pages | Offices: 134 | Queue: 5772
-PROGRESS: 19800 pages | Offices: 134 | Queue: 5672
-PROGRESS: 19900 pages | Offices: 134 | Queue: 5572
-FAILED: mahendranagar http://127.0.0.1:8000/mahendranagar/photogallery HTTP Error 404: Not Found
-PROGRESS: 20000 pages | Offices: 134 | Queue: 5472
-FAILED: mbhpod http://127.0.0.1:8000/mbhpod/publication/egp-phase-ii-egp-ii-manual timed out
-FAILED: mbhpod http://127.0.0.1:8000/mbhpod/publication/federal-road-supervision-and-monitoring-offices-related-publications timed out
-FAILED: mbhpod http://127.0.0.1:8000/mbhpod/publication/general-documents timed out
-FAILED: mbhpod http://127.0.0.1:8000/mbhpod/publication/gesu-publication timed out
-PROGRESS: 20100 pages | Offices: 134 | Queue: 5372
-PROGRESS: 20200 pages | Offices: 134 | Queue: 5272
-PROGRESS: 20300 pages | Offices: 134 | Queue: 5172
-FAILED: mbhpohtd http://127.0.0.1:8000/mbhpohtd/law/force/vehicle-and-transportation-management-act-2049 timed out
-FAILED: mbhpohtd http://127.0.0.1:8000/mbhpohtd/law/force/vehicle-and-transportation-management-rules-2054 timed out
-FAILED: mbhpohtd http://127.0.0.1:8000/mbhpohtd/law/force/public-procurement-act-nepali-2063 timed out
+===== CURRENT CHANGES =====
+Refresh index: 100% (2919/2919), done.
+ M app/Console/Commands/DORNewUpdate2021.php
+ M app/Helpers/DorHelper.php
+ M app/Helpers/Helper.php
+ M app/Http/Controllers/Admin/AlbumController.php
+ M app/Http/Controllers/Admin/BannerController.php
+ M app/Http/Controllers/Admin/CircularController.php
+ M app/Http/Controllers/Admin/GalleryController.php
+ M app/Http/Controllers/Admin/HomeController.php
+ M app/Http/Controllers/Admin/LoginController.php
+ M app/Http/Controllers/Admin/NoticeController.php
+ M app/Http/Controllers/Admin/OfficeChiefController.php
+ M app/Http/Controllers/Admin/OfficeController.php
+ M app/Http/Controllers/Admin/PublicationController.php
+ M app/Http/Controllers/Admin/StaffController.php
+ M app/Http/Controllers/Admin/UserController.php
+ M app/Http/Controllers/CircularController.php
+ M app/Http/Controllers/ConfigurationController.php
+ M app/Http/Controllers/ContentController.php
+ M app/Http/Controllers/DownloadController.php
+ M app/Http/Controllers/GuidelineController.php
+ M app/Http/Controllers/HomeController.php
+ M app/Http/Controllers/LawController.php
+ M app/Http/Controllers/NewsController.php
+ M app/Http/Controllers/NoticeController.php
+ M app/Http/Controllers/PressController.php
+ M app/Http/Controllers/PublicationController.php
+ M app/Http/Controllers/TenderController.php
+ M app/Http/Kernel.php
+ M app/Models/AccessControlModel.php
+ M app/Models/Banner.php
+ M app/Models/Circular.php
+ M app/Models/Guideline.php
+ M app/Models/Home.php
+ M app/Models/Homedetail.php
+ M app/Models/News.php
+ M app/Models/Notice.php
+ M app/Models/Office.php
+ M app/Models/Publication.php
+ M app/Providers/AppServiceProvider.php
+ M composer.json
+ M composer.lock
+ M config/calender.php
+ M config/database.php
+ M config/lang.php
+ M config/mail.php
+ M config/session.php
+ M phpunit.xml
+ M public/.htaccess
+ M public/assets/admin/css/style_default.css
+ M public/assets/css_2021/responsive.css
+ M public/assets/css_2021/style.css
+ M public/assets/img_2021/dor-logo.png
+ D public/assets/index.html
+ M public/assets/js_2021/script.js
+ M public/uploads/banner/banner_1638016776.jpg
+ M resources/views/album/admin/album-edit.blade.php
+ M resources/views/album/admin/album-list.blade.php
+ M resources/views/album/admin/gallery-add.blade.php
+ M resources/views/album/admin/gallery-edit.blade.php
+ M resources/views/album/admin/gallery-list.blade.php
+ M resources/views/banner/admin/add.blade.php
+ M resources/views/banner/admin/edit.blade.php
+ M resources/views/circular/admin/add.blade.php
+ M resources/views/circular/admin/edit.blade.php
+ M resources/views/circular/admin/view.blade.php
+ M resources/views/content/content.blade.php
+ M resources/views/download/download-detail.blade.php
+ M resources/views/download/downloads.blade.php
+ M resources/views/guideline/guideline-detail.blade.php
+ M resources/views/guideline/guidelines.blade.php
+ M resources/views/helpers/attachment.blade.php
+ M resources/views/home.blade.php
+ M resources/views/home/admin/add.blade.php
+ M resources/views/home/admin/edit.blade.php
+ M resources/views/home/admin/extra_data.blade.php
+ D resources/views/home/admin/extra_data_details_facebook_twitter_feed.blade.php
+ M resources/views/home/admin/extra_data_details_live.blade.php
+ M resources/views/home/admin/list.blade.php
+ M resources/views/home/contact.blade.php
+ M resources/views/home/contact_officers.blade.php
+ M resources/views/home/feedback.blade.php
+ M resources/views/home/feedback_partial.blade.php
+ M resources/views/home/home-detail.blade.php
+ M resources/views/home/home.blade.php
+ M resources/views/home/home_2021.blade.php
+ M resources/views/home/home_page_tabs.blade.php
+ M resources/views/home/live.blade.php
+ M resources/views/home/otherhome.blade.php
+ M resources/views/home/otherhome_2021.blade.php
+ M resources/views/home/utility_tools.blade.php
+ M resources/views/laws/law-detail.blade.php
+ M resources/views/laws/laws.blade.php
+ M resources/views/layout/admin/header.blade.php
+ M resources/views/layout/admin/sidebar.blade.php
+ M resources/views/layout/client/container_2021.blade.php
+ M resources/views/layout/client/default_footer_col_3.blade.php
+ M resources/views/layout/client/foot_2021.blade.php
+ M resources/views/layout/client/footer.blade.php
+ M resources/views/layout/client/footer_2021.blade.php
+ M resources/views/layout/client/head.blade.php
+ M resources/views/layout/client/head_2021.blade.php
+ M resources/views/layout/client/header.blade.php
+ M resources/views/layout/client/header_2021.blade.php
+ M resources/views/layout/client/sidebar_2021.blade.php
+ M resources/views/news/news-detail.blade.php
+ M resources/views/news/news.blade.php
+ M resources/views/notice/admin/add.blade.php
+ M resources/views/notice/admin/edit.blade.php
+ M resources/views/notice/notice-detail.blade.php
+ M resources/views/notice/notices.blade.php
+ M resources/views/office_chief/admin/addstaff.blade.php
+ M resources/views/office_chief/admin/editstaff.blade.php
+ M resources/views/projects/project/edit.blade.php
+ M resources/views/projects/project/index.blade.php
+ M resources/views/publication/admin/publication-add.blade.php
+ M resources/views/publication/admin/publication-edit.blade.php
+ M resources/views/publication/categories.blade.php
+ M resources/views/publication/publication-detail.blade.php
+ M resources/views/publication/publications.blade.php
+ M resources/views/staff/staffs/addstaff.blade.php
+ M resources/views/staff/staffs/editstaff.blade.php
+ M resources/views/staff/staffs/staffs.blade.php
+ M resources/views/users/login.blade.php
+ M resources/views/users/offices/addoffice.blade.php
+ M resources/views/users/offices/editoffice.blade.php
+ M resources/views/users/users/adduser.blade.php
+ M resources/views/users/users/changepassword.blade.php
+ M resources/views/users/users/edituser.blade.php
+ M routes/web.php
+ M tests/Feature/ExampleTest.php
+?? -
+?? .env.bak
+?? .env.before-local-db
+?? .env.pre-absolute-session-20261117-070718
+?? .env.pre-session-fix-20261117-070512
+?? 1,
+?? 10,
+?? 2,
+?? 4
+?? "Chief Engineer,"
+?? "Director General"
+?? "DoR Test],"
+?? English,
+?? "Test Address,"
+?? "Test Office,"
+?? "This email address is already used by another account. Please use a different Office Profile email.,"
+?? absolute_site_path,
+?? app/Console/Commands/BuildNoticeSearchIndex.php
+?? app/Helpers/DorHelper.php.before-timezone-fix
+?? app/Helpers/Helper.php.bak-contact-bcc-20261117
+?? app/Helpers/Helper.php.bak-contact-cc-20261116-202627
+?? app/Helpers/Helper.php.bak-office-feedback-20261116-201725
+?? app/Helpers/Helper.php.before-laravel13-mailer
+?? app/Http/Controllers/Admin/AlbumController.php.before-album-fix
+?? app/Http/Controllers/Admin/BannerController.php.bak-auto-image-20261116-165242
+?? app/Http/Controllers/Admin/BannerController.php.bak-cleanup-20261116-165732
+?? app/Http/Controllers/Admin/BannerController.php.before-auto-banner-normalization
+?? app/Http/Controllers/Admin/BannerController.php.before-white-photo-background
+?? app/Http/Controllers/Admin/CircularAdminController.php
+?? app/Http/Controllers/Admin/CircularAdminController.php.bak-before-circular-email-otp-20261116-185939
+?? app/Http/Controllers/Admin/CircularAdminController.php.bak-email-login-20261116-182552
+?? app/Http/Controllers/Admin/CircularAdminController.php.bak-site-name-20261116-181835
+?? app/Http/Controllers/Admin/CircularController.php.bak-before-transaction
+?? app/Http/Controllers/Admin/ContactBccSettingController.php
+?? app/Http/Controllers/Admin/ContactBccSettingController.php.bak-grms-mass-assignment-20261117
+?? app/Http/Controllers/Admin/ContactBccSettingController.php.bak-grms-save-alert-20261117
+?? app/Http/Controllers/Admin/FlashBoxSettingController.php
+?? app/Http/Controllers/Admin/FlashBoxSettingController.php.bak-flash-control-20261117
+?? app/Http/Controllers/Admin/FlashBoxSettingController.php.bak-flash-save-message-20261117
+?? app/Http/Controllers/Admin/FlashBoxSettingController.php.pre-site-name-20261117-081014
+?? app/Http/Controllers/Admin/GalleryController.php.bak-auto-image-20261116-165242
+?? app/Http/Controllers/Admin/GalleryController.php.bak-cleanup-20261116-165732
+?? app/Http/Controllers/Admin/GalleryController.php.before-gallery-fix
+?? app/Http/Controllers/Admin/HomeController.php.bak-flash-control-20261117
+?? app/Http/Controllers/Admin/HomeController.php.bak-flash-list-filter-20261117
+?? app/Http/Controllers/Admin/HomeController.php.bak-flash-tabs-20261116-224537
+?? app/Http/Controllers/Admin/HomeController.php.bak-flash-validation-20261116-232152
+?? app/Http/Controllers/Admin/HomeController.php.bak-flash-validation2-20261116-232442
+?? app/Http/Controllers/Admin/HomeController.php.bak-live-add-20261116-231120
+?? app/Http/Controllers/Admin/HomeController.php.pre-data34-fix-20261117-065905
+?? app/Http/Controllers/Admin/LoginController.php.before-login-timestamp-fix
+?? app/Http/Controllers/Admin/LoginController.php.before-logout-fix
+?? app/Http/Controllers/Admin/LoginController.php.before-user-id-fix
+?? app/Http/Controllers/Admin/LoginController.php.before-validation-fix
+?? app/Http/Controllers/Admin/OfficeChiefController.php.before-auto-photo-normalization
+?? app/Http/Controllers/Admin/OfficeChiefController.php.before-white-photo-background
+?? app/Http/Controllers/Admin/PasswordResetOtpController.php
+?? app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-20261109-223939
+?? app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-20261109-224007
+?? app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-message-update
+?? app/Http/Controllers/Admin/PhotoStudioController.php
+?? app/Http/Controllers/Admin/PhotoStudioController.php.bak-download-20261116-150141
+?? app/Http/Controllers/Admin/PhotoStudioController.php.bak-face-20261116-152123
+?? app/Http/Controllers/Admin/PhotoStudioController.php.bak-framing-20261116-153536
+?? app/Http/Controllers/Admin/StaffController.php.before-auto-square-normalization
+?? app/Http/Controllers/Admin/StaffController.php.before-square-photo-validation
+?? app/Http/Controllers/Admin/StaffController.php.before-staff-photo-fix
+?? app/Http/Controllers/Admin/StaffController.php.before-white-photo-background
+?? app/Http/Controllers/Admin/UserController.php.bak-circular-profile-20261116-191017
+?? app/Http/Controllers/Admin/UserController.php.before-password-security
+?? app/Http/Controllers/Admin/WebsiteIdentitySettingController.php
+?? app/Http/Controllers/Admin/WebsiteThemeSettingController.php
+?? app/Http/Controllers/CalendarController.php
+?? app/Http/Controllers/CalendarController.php.before-calendar-namespace-fix
+?? app/Http/Controllers/CalendarController.php.before-language-fix
+?? app/Http/Controllers/CalendarController.php.before-layout-vars
+?? app/Http/Controllers/CalendarController.php.before-ns-calendar-20261117-154922
+?? app/Http/Controllers/CircularController.php.bak-before-buffer-check
+?? app/Http/Controllers/CircularController.php.bak-before-file-check
+?? app/Http/Controllers/ConfigurationController.php.bak-font-cycle-20261116-222819
+?? app/Http/Controllers/ContentController.php.bak-before-buffer-check
+?? app/Http/Controllers/ContentController.php.bak-before-content-download-safety
+?? app/Http/Controllers/DownloadController.php.bak-before-buffer-check
+?? app/Http/Controllers/DownloadController.php.bak-before-file-check
+?? app/Http/Controllers/GuidelineController.php.bak-before-buffer-check
+?? app/Http/Controllers/GuidelineController.php.bak-before-download-fix
+?? app/Http/Controllers/GuidelineController.php.bak-before-file-check
+?? app/Http/Controllers/HomeController.php.bak
+?? app/Http/Controllers/HomeController.php.bak-before-contact-email-logging
+?? app/Http/Controllers/HomeController.php.bak-contact-bcc-20261117
+?? app/Http/Controllers/HomeController.php.bak-contact-cc-20261116-202627
+?? app/Http/Controllers/HomeController.php.bak-contact-to-cc-routing-20261117
+?? app/Http/Controllers/HomeController.php.bak-grms-auto-bcc-20261117
+?? app/Http/Controllers/HomeController.php.bak-office-feedback-20261116-201725
+?? app/Http/Controllers/LawController.php.bak-before-buffer-check
+?? app/Http/Controllers/LawController.php.bak-before-download-fix
+?? app/Http/Controllers/LawController.php.bak-before-file-check
+?? app/Http/Controllers/NewsController.php.bak-before-buffer-check
+?? app/Http/Controllers/NewsController.php.bak-before-file-check
+?? app/Http/Controllers/NoticeController.php.bak-before-buffer-check
+?? app/Http/Controllers/NoticeController.php.bak-before-file-check
+?? app/Http/Controllers/NoticeController.php.before-office-scope-20261118-235405
+?? app/Http/Controllers/NoticeController.php.before-office-scope-20261118-235431
+?? app/Http/Controllers/NoticeController.php.before-search-api-20261118-134857.bak
+?? app/Http/Controllers/PressController.php.bak-before-buffer-check
+?? app/Http/Controllers/PressController.php.bak-before-file-check
+?? app/Http/Controllers/Project/
+?? app/Http/Controllers/PublicationController.php.bak-before-buffer-check
+?? app/Http/Controllers/PublicationController.php.bak-before-file-check
+?? app/Http/Controllers/PublicationController.php.before-combined-url-search-20261118-105555
+?? app/Http/Controllers/PublicationController.php.before-document-search-20261118-093902
+?? app/Http/Controllers/PublicationController.php.before-document-search-20261118-094635
+?? app/Http/Controllers/PublicationController.php.before-filename-search-20261118-104924
+?? app/Http/Controllers/PublicationController.php.before-office-filter-20261118-105057
+?? app/Http/Controllers/PublicationController.php.before-office-scope-20261118-235405
+?? app/Http/Controllers/PublicationController.php.before-office-scope-20261118-235431
+?? app/Http/Controllers/PublicationController.php.before-search-alias-fix-20261118-104137
+?? app/Http/Controllers/PublicationController.php.diag-backup
+?? app/Http/Controllers/PublicationController.php.filename-backup
+?? app/Http/Controllers/PublicationController.php.inline-backup
+?? app/Http/Controllers/TenderController.php.bak-before-buffer-check
+?? app/Http/Controllers/TenderController.php.bak-before-file-check
+?? app/Http/Kernel.php.before-laravel13-cors
+?? app/Http/Kernel.php.before-middlewareAliases
+?? app/Http/Middleware/RestrictAdminRoles.php
+?? app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816
+?? app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912
+?? app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718
+?? app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651
+?? app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512
+?? app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final
+?? app/Http/Middleware/RevalidateHtmlResponses.php
+?? app/Models/AccessControlModel.php.before-lists-fix
+?? app/Models/FlashBoxSetting.php
+?? app/Models/Guideline.php.before-content-height-20261118-084648
+?? app/Models/Home.php.bak-flash-tabs-20261116-224537
+?? app/Models/Home.php.before-lists-fix
+?? app/Models/News.php.before-final-office-tabs-20261117-230156
+?? app/Models/Notice.php.before-alias-fix-20261118-135418.bak
+?? app/Models/Notice.php.before-final-office-tabs-20261117-230156
+?? app/Models/Notice.php.before-join-alias-fix-20261118-140332.bak
+?? app/Models/Notice.php.before-language-import-20261118-134835.bak
+?? app/Models/Notice.php.before-notice-search-join
+?? app/Models/Notice.php.before-office-content-fix-20261117-225641
+?? app/Models/Notice.php.before-office-scope-20261118-235405
+?? app/Models/Notice.php.before-office-scope-20261118-235431
+?? app/Models/Notice.php.before-prefixed-alias-fix-20261118-135643.bak
+?? app/Models/Publication.php.before-final-office-tabs-20261117-230156
+?? app/Models/Publication.php.before-office-scope-20261118-235405
+?? app/Models/Publication.php.before-office-scope-20261118-235431
+?? app/Models/WebsiteIdentitySetting.php
+?? app/Models/WebsiteThemeSetting.php
+?? app/Services/
+?? banner_attachment
+?? composer-setup.php
+?? composer.json.before-laravel13
+?? composer.lock.before-laravel13
+?? config/app.php.before-timezone-test
+?? config/calender.php.bak
+?? config/calender.php.before-2083-date-fix
+?? config/mail.php.bak-20261109-gmail
+?? config/photo-studio.php
+?? created_by
+?? database/migrations/2026_11_08_163318_create_office_time_management_tables.php
+?? database/migrations/2026_11_08_172445_create_website_theme_settings_table.php
+?? database/migrations/2026_11_09_134945_create_website_identity_settings_table.php
+?? database/migrations/2026_11_09_134945_create_website_identity_settings_table.php.save
+?? database/migrations/2026_11_09_190000_add_alternative_email_and_facebook_to_offices.php
+?? database/migrations/2026_11_09_214005_create_password_reset_otps_table.php
+?? database/migrations/2026_11_13_120000_add_banner_description_to_banner_details.php
+?? database/migrations/2026_11_14_150000_add_instagram_page_to_offices.php
+?? database/migrations/2026_11_15_194501_add_officer_name_to_home_detail_table.php
+?? database/migrations/2026_11_16_185814_create_circular_admin_email_otps_table.php
+?? database/migrations/2026_11_17_073258_create_flash_box_settings_table.php
+?? database/migrations/2026_11_18_145223_create_notice_search_index_tables.php
+?? dor-server-inventory.txt
+?? dor-website-8-master/
+?? en,
+?? id
+?? id,
+?? id]
+?? is_active
+?? is_deleted
+?? language_code
+?? language_code]
+?? "n' '--- HTTP KERNEL ---' && "
+?? nbsp
+?? nullable|email|max:254,
+?? office_alternative_email
+?? office_email_address
+?? office_id
+?? old-office@example.test,
+?? order_position
+?? photo
+?? public/apple-touch-icon.png
+?? public/assets/admin/css/style_default.css.before-username-dropdown-style-20261117
+?? public/assets/admin/js/photo-studio.js
+?? public/assets/admin/js/photo-studio.js.bak-download-20261116-150306
+?? public/assets/css/website-theme.css
+?? public/assets/css_2021/style.css.bak-20261118-212802
+?? public/assets/css_2021/style.css.bak-font-cycle-20261116-222819
+?? public/assets/css_2021/style.css.bak-mobile-footer-20261116
+?? public/assets/css_2021/style.css.before-final-footer
+?? public/assets/css_2021/style.css.before-footer-layout
+?? public/assets/css_2021/style.css.before-footer-text-format
+?? public/assets/css_2021/style.css.before-office-head-round-photo
+?? public/assets/css_2021/style.css.before-ticker-20261117-1945
+?? public/assets/css_2021/website-theme.css
+?? public/assets/css_2021/website-theme.css.backup-20261118-220833
+?? public/assets/css_2021/website-theme.css.backup-20261118-221439
+?? public/assets/css_2021/website-theme.css.backup-calendar-dropdown-20261118-223954
+?? public/assets/css_2021/website-theme.css.backup-nav-final-20261118-221646
+?? public/assets/css_2021/website-theme.css.backup-ns-full-date-20261118-223112
+?? public/assets/css_2021/website-theme.css.backup-officer-count-20261118-222504
+?? public/assets/css_2021/website-theme.css.backup-other-nav-20261118-222126
+?? public/assets/css_2021/website-theme.css.bak-20261118-211844
+?? public/assets/css_2021/website-theme.css.bak-auto-image-display-20261116-170030
+?? public/assets/css_2021/website-theme.css.bak-contact-design-20261116
+?? public/assets/css_2021/website-theme.css.bak-contact-details-spacing-20261116
+?? public/assets/css_2021/website-theme.css.bak-quick-message-compact-20261117
+?? public/assets/css_2021/website-theme.css.before-3d-tools-shadow-20261117-224037
+?? public/assets/css_2021/website-theme.css.before-auto-center-size-20261117-213526
+?? public/assets/css_2021/website-theme.css.before-autocomplete-20261118-095302
+?? public/assets/css_2021/website-theme.css.before-bs-ad-ns-20261117-165907
+?? public/assets/css_2021/website-theme.css.before-bs-ad-ns-20261117-165926
+?? public/assets/css_2021/website-theme.css.before-calendar-colour-fix-20261117-1826
+?? public/assets/css_2021/website-theme.css.before-calendar-hover-20261117
+?? public/assets/css_2021/website-theme.css.before-calendar-hover-icon-size-20261117
+?? public/assets/css_2021/website-theme.css.before-calendar-language-match-20261117
+?? public/assets/css_2021/website-theme.css.before-calendar-links
+?? public/assets/css_2021/website-theme.css.before-category-search-20261118-102151
+?? public/assets/css_2021/website-theme.css.before-compact-calendar-20261117-1740
+?? public/assets/css_2021/website-theme.css.before-compact-show-20261117-214719
+?? public/assets/css_2021/website-theme.css.before-content-gap-fix-20261117-215140
+?? public/assets/css_2021/website-theme.css.before-desktop-banner-tools-spacing-20261117-223134
+?? public/assets/css_2021/website-theme.css.before-desktop-gap-fix-20261117-222225
+?? public/assets/css_2021/website-theme.css.before-desktop-header-gap-test-20261117-222829
+?? public/assets/css_2021/website-theme.css.before-diamond-redesign-20261117-213020
+?? public/assets/css_2021/website-theme.css.before-document-search-20261118-093902
+?? public/assets/css_2021/website-theme.css.before-document-search-20261118-094635
+?? public/assets/css_2021/website-theme.css.before-document-search-ui-20261118-094931
+?? public/assets/css_2021/website-theme.css.before-external-toggle-20261117-214337
+?? public/assets/css_2021/website-theme.css.before-final-calendar-dropdown-20261117-1730
+?? public/assets/css_2021/website-theme.css.before-final-office-tabs-20261117-230156
+?? public/assets/css_2021/website-theme.css.before-final-separator-fix-20261117-221932
+?? public/assets/css_2021/website-theme.css.before-font-fix-20261117
+?? public/assets/css_2021/website-theme.css.before-gov-emblem-20261117
+?? public/assets/css_2021/website-theme.css.before-head-office-spacing-20261117
+?? public/assets/css_2021/website-theme.css.before-header-contrast
+?? public/assets/css_2021/website-theme.css.before-home-scale
+?? public/assets/css_2021/website-theme.css.before-main-tabs-20261118-092949
+?? public/assets/css_2021/website-theme.css.before-mobile-banner-20261117_200638
+?? public/assets/css_2021/website-theme.css.before-modern-tools-20261117-211043
+?? public/assets/css_2021/website-theme.css.before-notice-documents-20261117-224702
+?? public/assets/css_2021/website-theme.css.before-office-content-fix-20261117-225641
+?? public/assets/css_2021/website-theme.css.before-office-quote-design
+?? public/assets/css_2021/website-theme.css.before-officer-layout-fix-20261117-203728
+?? public/assets/css_2021/website-theme.css.before-officer-panel-spacing-20261117
+?? public/assets/css_2021/website-theme.css.before-search-label-20261118-103649
+?? public/assets/css_2021/website-theme.css.before-search-style-fix-20261118-103419
+?? public/assets/css_2021/website-theme.css.before-separator-spacing-20261117-221644
+?? public/assets/css_2021/website-theme.css.before-software-diamond-refresh
+?? public/assets/css_2021/website-theme.css.before-ticker-cleanup-20261117-215636
+?? public/assets/css_2021/website-theme.css.before-ticker-dot-20261117-221010
+?? public/assets/css_2021/website-theme.css.before-ticker-final-20261117-220510
+?? public/assets/css_2021/website-theme.css.before-ticker-redesign-20261117-220142
+?? public/assets/css_2021/website-theme.css.before-ticker-speed-20261117-221212
+?? public/assets/css_2021/website-theme.css.before-tools-button-design-20261117-223820
+?? public/assets/css_2021/website-theme.css.before-utility-min-height-fix-20261117-223501
+?? public/assets/img_2021/icon-192-new.png
+?? public/assets/img_2021/icon-512-new.png
+?? public/assets/img_2021/test.png
+?? public/assets/index-old.html
+?? public/assets/js_2021/script.js.backup-20261117_082351
+?? public/assets/js_2021/script.js.before-ticker-20261117-1945
+?? public/assets/pwa/
+?? public/dor-office-chief-preview.jpg
+?? public/favicon.png
+?? public/info.php
+?? public/manifest.webmanifest
+?? public/ms28032663.txt
+?? public/service-worker.js
+?? public/uploads002
+?? public/uploads_20220429b4_existing_working
+?? public/uploads_tmp/
+?? publication_heading
+?? relative_site_path,
+?? required]
+?? required|image|mimes:jpg,jpeg,png|max:2048]
+?? resources/views/admin/
+?? resources/views/album/admin/album-edit.blade.php.before-album-fix
+?? resources/views/album/admin/album-list.blade.php.before-album-fix
+?? resources/views/album/admin/gallery-edit.blade.php.bak-change-image-20261116-175150
+?? resources/views/album/admin/gallery-edit.blade.php.before-gallery-view-fix
+?? resources/views/album/admin/gallery-list.blade.php.before-gallery-view-fix
+?? resources/views/banner/admin/add.blade.php.before-auto-banner-normalization
+?? resources/views/banner/admin/edit.blade.php.bak-change-image-20261116-175150
+?? resources/views/banner/admin/edit.blade.php.before-auto-banner-normalization
+?? resources/views/contact_bcc_settings/
+?? resources/views/download/download-detail.blade.php.before-relative-download-url
+?? resources/views/download/downloads.blade.php.before-relative-download-url
+?? resources/views/flash_box_settings/
+?? resources/views/guideline/guideline-detail.blade.php.before-relative-force-url
+?? resources/views/guideline/guidelines.blade.php.before-relative-force-url
+?? resources/views/helpers/attachment.blade.php.bak-change-image-20261116-175150
+?? resources/views/home/admin/add.blade.php.bak-flash-tabs-20261116-224537
+?? resources/views/home/admin/add.blade.php.bak-flash-validation-20261116-232152
+?? resources/views/home/admin/add.blade.php.bak-flash-validation2-20261116-232442
+?? resources/views/home/admin/add.blade.php.bak-live-add-20261116-231120
+?? resources/views/home/admin/edit.blade.php.bak-flash-validation2-20261116-232442
+?? resources/views/home/admin/extra_data.blade.php.bak-flash-tabs-20261116-224537
+?? resources/views/home/admin/extra_data.blade.php.bak-live-add-20261116-231120
+?? resources/views/home/admin/extra_data.blade.php.pre-blade-fix-20261117-081808
+?? resources/views/home/admin/extra_data_details_facebook_instagram_feed.blade.php
+?? resources/views/home/admin/extra_data_details_live.blade.php.bak-flash-validation-20261116-232152
+?? resources/views/home/admin/extra_data_details_live.blade.php.bak-flash-validation2-20261116-232442
+?? resources/views/home/admin/extra_data_details_live.blade.php.bak-live-add-20261116-231120
+?? resources/views/home/admin/list.blade.php.bak-flash-control-20261117
+?? resources/views/home/admin/list.blade.php.bak-flash-tabs-20261116-224537
+?? resources/views/home/banner-detail.blade.php
+?? resources/views/home/calendar.blade.php
+?? resources/views/home/calendar.blade.php.before-calendar-link-icons-20261117-163649
+?? resources/views/home/calendar.blade.php.before-compact-calendar-dropdown-20261117-160456
+?? resources/views/home/calendar.blade.php.before-compact-calendar-dropdown-20261117-160825
+?? resources/views/home/calendar.blade.php.before-compact-calendar-dropdown-20261117-160845
+?? resources/views/home/calendar.blade.php.before-compact-calendar-dropdown-20261117-163417
+?? resources/views/home/calendar.blade.php.before-date-display-20261117-171848
+?? resources/views/home/calendar.blade.php.before-ns-display-20261117-155024
+?? resources/views/home/calendar.blade.php.before-ns-empty-data-fix
+?? resources/views/home/calendar.blade.php.paste-backup
+?? resources/views/home/contact.blade.php.bak-before-contact-form-labels
+?? resources/views/home/contact.blade.php.bak-contact-alternative-email-20261116-200801
+?? resources/views/home/contact.blade.php.bak-contact-bcc-20261117
+?? resources/views/home/contact.blade.php.bak-equal-contact-layout-20261116-201047
+?? resources/views/home/contact.blade.php.bak-fax-empty-20261116
+?? resources/views/home/contact.blade.php.bak-grms-auto-bcc-20261117
+?? resources/views/home/contact.blade.php.bak-quick-message-compact-20261117
+?? resources/views/home/contact.blade.php.save
+?? resources/views/home/contact_officers.blade.php.bak-grms-auto-bcc-20261117
+?? resources/views/home/contact_officers.blade.php.before-head-office-spacing-20261117
+?? resources/views/home/feedback_partial.blade.php.bak-bcc-checkbox-20261117
+?? resources/views/home/feedback_partial.blade.php.bak-before-contact-form-labels
+?? resources/views/home/feedback_partial.blade.php.bak-contact-bcc-20261117
+?? resources/views/home/feedback_partial.blade.php.bak-contact-cc-20261116-202627
+?? resources/views/home/feedback_partial.blade.php.bak-grms-auto-bcc-20261117
+?? resources/views/home/feedback_partial.blade.php.bak-quick-message-compact-20261117
+?? resources/views/home/home.blade.php.backup-ssrn-20261117-091941
+?? resources/views/home/home.blade.php.backup-ssrn-national-20261117-092212
+?? resources/views/home/home_2021.blade.php.backup-20261117_082351
+?? resources/views/home/home_2021.blade.php.backup-flashbox-height
+?? resources/views/home/home_2021.blade.php.backup-flashbox-order-fix
+?? resources/views/home/home_2021.blade.php.bak-flash-tabs-20261116-224537
+?? resources/views/home/home_2021.blade.php.before-ticker-20261117-1945
+?? resources/views/home/home_2021.blade.php.before-ticker-cleanup-20261117-215636
+?? resources/views/home/home_2021.blade.php.before-ticker-container-fix-20261117-222556
+?? resources/views/home/home_2021.blade.php.before-ticker-redesign-20261117-220142
+?? resources/views/home/home_page_tabs.blade.php.bak-all-office-scroll-20261118-231543
+?? resources/views/home/home_page_tabs.blade.php.bak-flash-tabs-20261116-224537
+?? resources/views/home/home_page_tabs.blade.php.bak-mobile-scroll-20261118-231308
+?? resources/views/home/home_page_tabs.blade.php.bak-no-other-office-scroll-20261118-231828
+?? resources/views/home/home_page_tabs.blade.php.bak-office-local-search-20261118-233041
+?? resources/views/home/home_page_tabs.blade.php.bak-other-tabs-20261118-231000
+?? resources/views/home/home_page_tabs.blade.php.bak-publication-tab-20261118-133146
+?? resources/views/home/home_page_tabs.blade.php.before-autocomplete-20261118-095302
+?? resources/views/home/home_page_tabs.blade.php.before-category-search-20261118-102151
+?? resources/views/home/home_page_tabs.blade.php.before-content-height-20261118-084648
+?? resources/views/home/home_page_tabs.blade.php.before-document-search-20261118-093902
+?? resources/views/home/home_page_tabs.blade.php.before-document-search-20261118-094635
+?? resources/views/home/home_page_tabs.blade.php.before-document-search-ui-20261118-094931
+?? resources/views/home/home_page_tabs.blade.php.before-final-office-tabs-20261117-230156
+?? resources/views/home/home_page_tabs.blade.php.before-main-tabs-20261118-092949
+?? resources/views/home/home_page_tabs.blade.php.before-notice-15-20261118-083504
+?? resources/views/home/home_page_tabs.blade.php.before-notice-documents-20261117-224702
+?? resources/views/home/home_page_tabs.blade.php.before-office-content-fix-20261117-225641
+?? resources/views/home/home_page_tabs.blade.php.before-search-move-20261118-102015
+?? resources/views/home/home_page_tabs.blade.php.before-search-position-20261118-100126
+?? resources/views/home/home_page_tabs.blade.php.before-tab-height-fix-20261118-090538
+?? resources/views/home/live.blade.php.backup-20261117_082351
+?? resources/views/home/live.blade.php.bak-flash-tabs-20261116-224537
+?? resources/views/home/other_office_officers.blade.php
+?? resources/views/home/other_office_officers.blade.php.before-backslash-fix-20261117-204955
+?? resources/views/home/other_office_officers.blade.php.before-profile-link-fix-20261117-205734
+?? resources/views/home/other_office_officers.blade.php.before-variable-fix-20261117-204930
+?? resources/views/home/otherhome.blade.php.backup-ssrn-20261117-091941
+?? resources/views/home/otherhome.blade.php.backup-ssrn-national-20261117-092212
+?? resources/views/home/otherhome_2021.blade.php.backup-20261118-220833
+?? resources/views/home/otherhome_2021.blade.php.before-match-head-office-layout-20261117-205342
+?? resources/views/home/otherhome_2021.blade.php.before-officer-reposition-20261117-204617
+?? resources/views/home/utility_tools.blade.php.before-compact-show-20261117-214719
+?? resources/views/home/utility_tools.blade.php.before-diamond-redesign-20261117-213020
+?? resources/views/home/utility_tools.blade.php.before-external-toggle-20261117-214337
+?? resources/views/home/utility_tools.blade.php.before-modern-tools-20261117-211043
+?? resources/views/laws/law-detail.blade.php.before-relative-force-url
+?? resources/views/laws/laws.blade.php.before-relative-force-url
+?? resources/views/layout/admin/header.blade.php.bak-circular-header-20261116-190549
+?? resources/views/layout/admin/sidebar.blade.blade.php.before-role12-restore
+?? resources/views/layout/admin/sidebar.blade.php.bak-account-label-20261116-181835
+?? resources/views/layout/admin/sidebar.blade.php.bak-circular-admin-label-20261116-181250
+?? resources/views/layout/admin/sidebar.blade.php.bak-contact-bcc-20261117
+?? resources/views/layout/admin/sidebar.blade.php.bak-flash-acl-20261117
+?? resources/views/layout/admin/sidebar.blade.php.bak-flash-control-20261117
+?? resources/views/layout/admin/sidebar.blade.php.bak-flash-superadmin-only-20261117
+?? resources/views/layout/admin/sidebar.blade.php.bak-grms-menu-20261117
+?? resources/views/layout/admin/sidebar.blade.php.before-role12-restore-final
+?? resources/views/layout/admin/sidebar.blade.php.pre-flash-box-20261117-080338
+?? resources/views/layout/client/container_2021.blade.php.bak-font-cycle-20261116-222819
+?? resources/views/layout/client/container_2021.blade.php.before-chatbot-removal
+?? resources/views/layout/client/default_footer_col_3.blade.php.backup-ssrn-20261117-091941
+?? resources/views/layout/client/default_footer_col_3.blade.php.backup-ssrn-national-20261117-092212
+?? resources/views/layout/client/foot_2021.blade.php.backup-admin-select
+?? resources/views/layout/client/foot_2021.blade.php.bak-font-cycle-20261116-222819
+?? resources/views/layout/client/foot_2021.blade.php.before-revert-20261117-091338
+?? resources/views/layout/client/foot_2021.blade.php.before-revert-select-confirm-20261117
+?? resources/views/layout/client/foot_2021.blade.php.before-select-confirm-20261117
+?? resources/views/layout/client/foot_2021.blade.php.before-ticker-20261117-1945
+?? resources/views/layout/client/footer.blade.php.backup-ssrn-20261117-091941
+?? resources/views/layout/client/footer.blade.php.backup-ssrn-national-20261117-092212
+?? resources/views/layout/client/footer.blade.php.before-footer-quote
+?? resources/views/layout/client/footer_2021.blade.php.bak
+?? resources/views/layout/client/footer_2021.blade.php.bak-mobile-footer-20261116
+?? resources/views/layout/client/footer_2021.blade.php.before-final-footer
+?? resources/views/layout/client/footer_2021.blade.php.before-footer-layout
+?? resources/views/layout/client/footer_2021.blade.php.before-footer-quote
+?? resources/views/layout/client/footer_2021.blade.php.before-office-quote-design
+?? resources/views/layout/client/footer_2021.blade.php.before-statcounter-fix
+?? resources/views/layout/client/footer_2021.blade.php.before-visitors-label
+?? resources/views/layout/client/header_2021.blade.php.backup-admin-select
+?? resources/views/layout/client/header_2021.blade.php.backup-calendar-dropdown-20261118-223954
+?? resources/views/layout/client/header_2021.blade.php.bak-font-cycle-20261116-222819
+?? resources/views/layout/client/header_2021.blade.php.before-backslash-fix-20261117-1820
+?? resources/views/layout/client/header_2021.blade.php.before-bs-ad-ns-20261117-165907
+?? resources/views/layout/client/header_2021.blade.php.before-bs-ad-ns-20261117-165926
+?? resources/views/layout/client/header_2021.blade.php.before-calendar-icon-fix-20261117
+?? resources/views/layout/client/header_2021.blade.php.before-calendar-links
+?? resources/views/layout/client/header_2021.blade.php.before-calendar-navigation
+?? resources/views/layout/client/header_2021.blade.php.before-calendar-selector-20261117-170126
+?? resources/views/layout/client/header_2021.blade.php.before-carbon-syntax-fix-20261117
+?? resources/views/layout/client/header_2021.blade.php.before-compact-calendar-20261117-1740
+?? resources/views/layout/client/header_2021.blade.php.before-date-display-20261117-171848
+?? resources/views/layout/client/header_2021.blade.php.before-final-calendar-dropdown-20261117-1725
+?? resources/views/layout/client/header_2021.blade.php.before-gov-emblem-20261117
+?? resources/views/layout/client/header_2021.blade.php.before-revert-20261117-091338
+?? resources/views/layout/client/header_2021.blade.php.before-revert-select-confirm-20261117
+?? resources/views/layout/client/header_2021.blade.php.before-select-confirm-20261117
+?? resources/views/layout/client/sidebar_2021.blade.php.before-officer-reposition-20261117-204617
+?? resources/views/notice/notice-detail.blade.php.before-relative-force-url
+?? resources/views/notice/notices.blade.php.before-office-scope-20261118-235405
+?? resources/views/notice/notices.blade.php.before-office-scope-20261118-235431
+?? resources/views/notice/notices.blade.php.before-relative-force-url
+?? resources/views/office_chief/admin/addstaff.blade.php.before-auto-photo-normalization
+?? resources/views/office_chief/admin/editstaff.blade.php.bak-photo-studio-js-20261116-162905
+?? resources/views/office_chief/admin/editstaff.blade.php.before-auto-photo-normalization
+?? resources/views/publication/categories.blade.php.before-category-search-20261118-102151
+?? resources/views/publication/categories.blade.php.before-main-office-only-20261118-102438
+?? resources/views/publication/categories.blade.php.before-office-scope-20261118-235405
+?? resources/views/publication/categories.blade.php.before-office-scope-20261118-235431
+?? resources/views/publication/categories.blade.php.before-search-id-fix-20261118-103419
+?? resources/views/publication/categories.blade.php.before-search-label-20261118-103649
+?? resources/views/publication/categories.blade.php.before-search-move-20261118-102015
+?? resources/views/publication/publication-detail.blade.php.before-relative-force-url
+?? resources/views/publication/publications.blade.php.before-relative-force-url
+?? resources/views/pwa/
+?? resources/views/staff/staffs/addstaff.blade.php.before-square-photo-validation
+?? resources/views/staff/staffs/editstaff.blade.php.before-square-photo-validation
+?? resources/views/staff/staffs/staffs.blade.php.before-staff-ajax-json-fix
+?? resources/views/users/circular-admins/
+?? resources/views/users/forgot_password.blade.php
+?? resources/views/users/forgot_password.blade.php.bak-20261109-224007
+?? resources/views/users/login.blade.php.bak-login-feedback-20261116-184126
+?? resources/views/users/reset_password_otp.blade.php
+?? resources/views/users/users/changepassword.blade.php.bak-circular-profile-20261116-191017
+?? resources/views/website_theme/
+?? routes/web.php.bak-before-circular-email-otp-20261116-185939
+?? routes/web.php.bak-contact-bcc-20261117
+?? routes/web.php.bak-download-20261116-150141
+?? routes/web.php.bak-flash-control-20261117
+?? routes/web.php.bak-flash-tabs-20261116-224537
+?? routes/web.php.bak-grms-routes-20261117
+?? routes/web.php.before-album-fix
+?? routes/web.php.before-calendar-routes
+?? routes/web.php.before-document-search-20261118-093902
+?? routes/web.php.before-document-search-20261118-094635
+?? routes/web.php.before-login-rate-limit
+?? routes/web.php.pre-flash-box-settings-20261117-080141
+?? site_name,
+?? smtp.gmail.com
+?? smtp.nepal.gov.np
+?? ssl
+?? test-office,
+?? tests/Feature/CircularAdminManagementTest.php
+?? tests/Feature/ContactEmailRoutingTest.php
+?? tests/Feature/ContactEmailRoutingTest.php.bak-before-bcc-negative-tests
+?? tests/Feature/ContactEmailRoutingTest.php.bak-before-email-failure-tests
+?? tests/Feature/ContactEmailRoutingTest.php.bak-before-invalid-office-email-tests
+?? tests/Feature/ContactEmailRoutingTest.php.bak-before-real-routing-test
+?? tests/Feature/ContactEmailRoutingTest.php.bak-before-test-mode-test
+?? tests/Feature/OfficeProfileEmailSyncTest.php
+?? tests/Feature/PasswordResetOtpTest.php
+?? tests/Feature/UserAccountEmailTest.php
+?? tests/Unit/CircularAdminControllerAuthorizationTest.php
+?? tests/Unit/RestrictAdminRolesTest.php
+?? updated_by
+?? vendor.failed-20261108/
+doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$
