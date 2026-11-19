@@ -1,0 +1,251 @@
+===== CHATBOT KNOWLEDGE MODELS =====
+===== app/Models/ChatbotKnowledgeSource.php =====
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class ChatbotKnowledgeSource extends Model
+{
+    protected $table = 'chatbot_knowledge_sources';
+
+    protected $fillable = [
+        'office_id', 'source_type', 'name', 'source_url',
+        'storage_disk', 'storage_path', 'external_id',
+        'auth_config', 'language_code', 'status',
+        'is_enabled', 'is_public', 'last_checked_at',
+        'last_indexed_at', 'content_checksum', 'source_version',
+        'last_error', 'created_by', 'updated_by',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'auth_config' => 'encrypted:array',
+            'is_enabled' => 'boolean',
+            'is_public' => 'boolean',
+            'last_checked_at' => 'datetime',
+            'last_indexed_at' => 'datetime',
+        ];
+    }
+
+    public function documents(): HasMany
+    {
+        return $this->hasMany(ChatbotKnowledgeDocument::class, 'source_id');
+    }
+}
+===== app/Models/ChatbotKnowledgeDocument.php =====
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class ChatbotKnowledgeDocument extends Model
+{
+    protected $table = 'chatbot_knowledge_documents';
+
+    protected $fillable = [
+        'source_id', 'office_id', 'language_id', 'document_type',
+        'source_key', 'title', 'source_url', 'storage_disk',
+        'storage_path', 'mime_type', 'file_size', 'checksum',
+        'source_updated_at', 'extracted_text', 'extraction_method',
+        'parser_status', 'indexed_at', 'last_error', 'metadata',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'file_size' => 'integer',
+            'source_updated_at' => 'datetime',
+            'indexed_at' => 'datetime',
+            'metadata' => 'array',
+        ];
+    }
+
+    public function source(): BelongsTo
+    {
+        return $this->belongsTo(ChatbotKnowledgeSource::class, 'source_id');
+    }
+
+    public function chunks(): HasMany
+    {
+        return $this->hasMany(ChatbotKnowledgeChunk::class, 'document_id');
+    }
+}
+===== app/Models/ChatbotKnowledgeChunk.php =====
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class ChatbotKnowledgeChunk extends Model
+{
+    protected $table = 'chatbot_knowledge_chunks';
+
+    protected $fillable = [
+        'document_id', 'source_id', 'office_id', 'language_id',
+        'chunk_number', 'chunk_text', 'token_count',
+        'chunk_hash', 'status',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'chunk_number' => 'integer',
+            'token_count' => 'integer',
+        ];
+    }
+
+    public function document(): BelongsTo
+    {
+        return $this->belongsTo(ChatbotKnowledgeDocument::class, 'document_id');
+    }
+}
+===== KNOWLEDGE TABLE MIGRATIONS =====
+===== database/migrations/2026_11_19_143713_create_chatbot_knowledge_sources_table.php =====
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('chatbot_knowledge_sources', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('office_id')->nullable();
+            $table->string('source_type', 40);
+            $table->string('name', 200);
+            $table->text('source_url')->nullable();
+            $table->string('storage_disk', 50)->nullable();
+            $table->text('storage_path')->nullable();
+            $table->string('external_id', 191)->nullable();
+            $table->longText('auth_config')->nullable();
+            $table->string('language_code', 20)->default('both');
+            $table->string('status', 30)->default('pending');
+            $table->boolean('is_enabled')->default(true);
+            $table->boolean('is_public')->default(true);
+            $table->timestamp('last_checked_at')->nullable();
+            $table->timestamp('last_indexed_at')->nullable();
+            $table->char('content_checksum', 64)->nullable();
+            $table->string('source_version', 100)->nullable();
+            $table->text('last_error')->nullable();
+            $table->unsignedBigInteger('created_by')->nullable();
+            $table->unsignedBigInteger('updated_by')->nullable();
+            $table->timestamps();
+
+            $table->index(['office_id', 'is_enabled', 'status'], 'cb_sources_office_status_idx');
+            $table->index(['source_type', 'status']);
+            $table->index(['external_id']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('chatbot_knowledge_sources');
+    }
+};
+===== database/migrations/2026_11_19_143714_create_chatbot_knowledge_documents_table.php =====
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('chatbot_knowledge_documents', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('source_id')
+                ->nullable()
+                ->constrained('chatbot_knowledge_sources')
+                ->cascadeOnDelete();
+
+            $table->unsignedBigInteger('office_id')->nullable();
+            $table->unsignedBigInteger('language_id')->nullable();
+            $table->string('document_type', 40)->default('webpage');
+            $table->string('source_key', 191)->nullable();
+            $table->string('title', 500);
+            $table->text('source_url')->nullable();
+            $table->string('storage_disk', 50)->nullable();
+            $table->text('storage_path')->nullable();
+            $table->string('mime_type', 150)->nullable();
+            $table->unsignedBigInteger('file_size')->nullable();
+            $table->char('checksum', 64)->nullable();
+            $table->timestamp('source_updated_at')->nullable();
+            $table->longText('extracted_text')->nullable();
+            $table->string('extraction_method', 40)->nullable();
+            $table->string('parser_status', 30)->default('pending');
+            $table->timestamp('indexed_at')->nullable();
+            $table->text('last_error')->nullable();
+            $table->longText('metadata')->nullable();
+            $table->timestamps();
+
+            $table->index(['office_id', 'language_id', 'parser_status'], 'cb_docs_office_lang_status_idx');
+            $table->index(['source_id', 'parser_status']);
+            $table->index(['checksum']);
+            $table->index(['source_key']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('chatbot_knowledge_documents');
+    }
+};
+===== database/migrations/2026_11_19_143715_create_chatbot_knowledge_chunks_table.php =====
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('chatbot_knowledge_chunks', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('document_id')
+                ->constrained('chatbot_knowledge_documents')
+                ->cascadeOnDelete();
+
+            $table->unsignedBigInteger('source_id')->nullable();
+            $table->unsignedBigInteger('office_id')->nullable();
+            $table->unsignedBigInteger('language_id')->nullable();
+            $table->unsignedInteger('chunk_number');
+            $table->longText('chunk_text');
+            $table->unsignedInteger('token_count')->default(0);
+            $table->char('chunk_hash', 64);
+            $table->string('status', 20)->default('active');
+            $table->timestamps();
+
+            $table->unique(['document_id', 'chunk_number'], 'cb_chunks_document_number_unique');
+            $table->index(['office_id', 'language_id', 'status'], 'cb_chunks_office_lang_status_idx');
+            $table->index(['source_id']);
+            $table->index(['chunk_hash']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('chatbot_knowledge_chunks');
+    }
+};
+===== EXISTING KNOWLEDGE SOURCE REFERENCES =====
+app/Models/ChatbotKnowledgeDocument.php:33:        return $this->belongsTo(ChatbotKnowledgeSource::class, 'source_id');
+app/Models/ChatbotKnowledgeSource.php:8:class ChatbotKnowledgeSource extends Model
+app/Services/Chatbot/ChatbotKnowledgeIndexer.php:6:use App\Models\ChatbotKnowledgeSource;
+app/Services/Chatbot/ChatbotKnowledgeIndexer.php:12:class ChatbotKnowledgeIndexer
+app/Services/Chatbot/ChatbotKnowledgeIndexer.php:77:            $source = ChatbotKnowledgeSource::findOrFail($data['source_id']);
