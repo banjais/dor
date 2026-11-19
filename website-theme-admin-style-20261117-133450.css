@@ -1,0 +1,2227 @@
+/* DoR Global Website Theme - Modern Layout */
+:root {
+    --theme-page-bg: #F5F6F4;
+    --theme-card-bg: #FFFFFF;
+    --theme-header-bg: #142D4E;
+    --theme-nav-bg: #1769AA;
+    --theme-accent: #8B2635;
+    --theme-footer-bg: #263746;
+    --theme-text: #263238;
+    --theme-border: #E5E8E6;
+}
+
+body {
+    background-color: var(--theme-page-bg);
+    color: var(--theme-text);
+}
+
+.top-header {
+    background: var(--theme-header-bg);
+    color: #FFFFFF;
+}
+
+.top-header a,
+.logo-title a,
+.logo-title strong,
+.logo-title small,
+.logo-title span {
+    color: #FFFFFF;
+}
+
+.logo-title a:hover {
+    color: var(--theme-accent);
+}
+
+.nav-wrap {
+    background: var(--theme-nav-bg);
+}
+
+.nav-wrap .navbar-nav .dropdown-menu {
+    background: var(--theme-nav-bg);
+}
+
+.nav-wrap .navbar-expand-lg .navbar-nav .nav-link:hover,
+.nav-wrap .nav-link.dropdown-toggle.show {
+    background: var(--theme-header-bg);
+    color: #FFFFFF;
+}
+
+.nav-wrap .dropdown-item:focus,
+.nav-wrap .dropdown-item:hover,
+.nav-wrap .dropdown-item.active,
+.nav-wrap .dropdown-item:active,
+.nav-wrap .has-sub:hover > .dropdown-item {
+    background: var(--theme-accent);
+    color: #FFFFFF;
+}
+
+.shadowed-box,
+.media-card {
+    background-color: var(--theme-card-bg);
+    border-color: var(--theme-border);
+}
+
+.fig-caption p a:hover {
+    color: var(--theme-accent);
+}
+
+.top-footer,
+.mid-footer,
+.bottom-footer {
+    background: var(--theme-footer-bg);
+    color: #FFFFFF;
+}
+
+.mid-footer h4 {
+    color: #FFFFFF;
+}
+
+.footer-list ul li a:hover,
+.address-list li a:hover,
+.bottom-footer .divider-list ul li a:hover {
+    color: var(--theme-accent);
+}
+
+
+/* Office quote between main content and footer */
+.office-quote-section {
+    background: transparent;
+    color: #294761;
+    text-align: center;
+    padding: 18px 0 16px;
+}
+
+.office-quote-section p {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 14px 24px;
+    background: #EAF0F4;
+    border: 1px solid #DCE5EB;
+    border-radius: 6px;
+    color: #294761;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.6;
+}
+
+@media (max-width: 767px) {
+    .office-quote-section {
+        padding: 14px 0;
+    }
+
+    .office-quote-section p {
+        padding: 12px 16px;
+        font-size: 13px;
+    }
+}
+
+/* Header contrast: retain original layout and sizing */
+.top-header .top-inline-items ul li {
+    color: #FFFFFF;
+}
+
+.top-header .top-inline-items .form-check-label {
+    color: #FFFFFF;
+}
+
+.top-header .top-inline-items .divider-list ul li a {
+    color: #FFFFFF;
+}
+
+.top-header .top-inline-items .divider-list ul li {
+    border-right-color: rgba(255, 255, 255, 0.55);
+}
+
+.top-header .top-inline-items .divider-list ul li a:hover {
+    color: #FFFFFF;
+    opacity: 0.8;
+}
+
+.top-header .top-inline-items .font-size-btn {
+    color: #1769AA;
+}
+
+.top-header .top-inline-items .font-size-btn.active,
+.top-header .top-inline-items .font-size-btn:hover {
+    color: #142D4E;
+}
+
+.top-header .top-inline-items .white-round-btn {
+    color: #142D4E;
+}
+
+.top-header .top-inline-items i,
+.top-header .top-inline-items svg {
+    color: #FFFFFF;
+    fill: currentColor;
+}
+
+
+/* HOME PAGE SCALE REFINEMENT
+   Keep header and mobile layout unchanged. */
+@media (min-width: 992px) {
+    .banner-block .slider-fig {
+        height: 320px;
+    }
+
+    .utilities-block {
+        padding-top: 12px;
+        padding-bottom: 12px;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 991.98px) {
+    .banner-block .slider-fig {
+        height: 280px;
+    }
+
+    .utilities-block {
+        padding-top: 12px;
+        padding-bottom: 12px;
+    }
+}
+
+
+/* DoR responsive primary navigation: keep every dynamic tab visible at 100% zoom */
+@media (min-width: 992px) {
+    .nav-wrap .navbar-collapse {
+        display: flex !important;
+        flex-basis: 100%;
+        min-width: 0;
+    }
+
+    .nav-wrap .navbar-nav {
+        display: flex;
+        flex: 1 1 100%;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: stretch;
+        max-height: none;
+        overflow: visible;
+        width: 100%;
+        margin: 0 !important;
+    }
+
+    .nav-wrap .navbar-expand-lg .navbar-nav .nav-link,
+    .nav-wrap .navbar-nav > li > a {
+        display: block;
+        padding: 12px 7px;
+        font-size: 11px;
+        line-height: 1.35;
+        white-space: normal;
+    }
+
+    .nav-wrap .navbar-nav > li {
+        flex: 0 0 auto;
+        min-width: 0;
+    }
+
+    .nav-wrap .navbar-nav .dropdown-menu {
+        z-index: 2050;
+    }
+}
+
+@media (min-width: 992px) and (max-width: 1199.98px) {
+    .nav-wrap .navbar-expand-lg .navbar-nav .nav-link,
+    .nav-wrap .navbar-nav > li > a {
+        padding-right: 5px;
+        padding-left: 5px;
+        font-size: 10.5px;
+    }
+}
+
+/* Compact, accessible DoR header controls */
+.top-header .header-controls {
+    margin-bottom: 4px;
+}
+
+.top-header .header-controls > ul,
+.top-header .header-controls ul {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 7px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.top-header .header-controls ul li {
+    margin: 0;
+    color: #142D4E;
+    vertical-align: middle;
+}
+
+.top-header .header-icon-control {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 30px;
+    min-height: 30px;
+    padding: 4px 7px;
+    border: 1px solid rgba(20, 45, 78, .18);
+    border-radius: 5px;
+    background: #fff;
+    color: #142D4E;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.top-header .header-icon-control:hover,
+.top-header .header-icon-control:focus {
+    background: #e8f1f8;
+    color: #1769AA;
+}
+
+.top-header .header-icon-control i {
+    color: inherit;
+}
+
+.top-header .header-select-control select {
+    max-width: 145px;
+    min-height: 30px;
+    padding: 3px 22px 3px 7px;
+    border: 1px solid rgba(20, 45, 78, .25);
+    border-radius: 5px;
+    background-color: #fff;
+    color: #142D4E;
+    font-size: 12px;
+}
+
+
+/* Nepal Sambat date below the existing BS/AD date */
+.top-header .header-nepal-sambat {
+    display: block;
+    margin-top: 2px;
+    color: #263746;
+    font-size: 10px;
+    line-height: 1.35;
+    white-space: normal;
+}
+
+.top-header .header-nepal-sambat a {
+    color: #1769AA;
+    font-size: 9px;
+    text-decoration: none;
+}
+
+.top-header .header-nepal-sambat a:hover,
+.top-header .header-nepal-sambat a:focus {
+    color: #142D4E;
+    text-decoration: underline;
+}
+
+.top-header .header-clock {
+    white-space: nowrap;
+}
+
+.top-header .header-date-time {
+    color: #142D4E !important;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.top-header .header-control-dropdown {
+    position: relative;
+}
+
+.top-header .header-control-dropdown .dropdown-menu {
+    min-width: 90px;
+    padding: 4px;
+    z-index: 2100;
+}
+
+.top-header .header-control-dropdown .dropdown-item {
+    padding: 5px 10px;
+    color: #142D4E;
+}
+
+.top-header .header-control-dropdown .dropdown-item.active {
+    background: #e8f1f8;
+    color: #142D4E;
+}
+
+.top-header .header-login-btn {
+    display: inline-block;
+    padding: 6px 10px !important;
+    font-size: 11px !important;
+    line-height: 1.3;
+}
+
+.top-header .divider-list {
+    margin-top: 5px;
+}
+
+.top-header .divider-list ul li a,
+.top-header .top-inline-items .divider-list ul li a {
+    color: #142D4E;
+    font-size: 12px;
+}
+
+.top-header .divider-list ul li {
+    border-right-color: rgba(20, 45, 78, .25);
+}
+
+.top-header .header-sitemap-link a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    color: #142D4E;
+    border-radius: 4px;
+    text-decoration: none;
+}
+
+.top-header .header-sitemap-link a:hover,
+.top-header .header-sitemap-link a:focus {
+    background: #e8f1f8;
+    color: #1769AA;
+}
+
+@media (max-width: 991.98px) {
+    .top-header .header-controls > ul,
+    .top-header .header-controls ul {
+        justify-content: center;
+    }
+
+    .top-header .header-date-time {
+        white-space: normal;
+    }
+}
+
+/* DoR App footer entry and QR presentation */
+.bottom-footer .footer-install-app-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    transition: color .2s ease;
+}
+.bottom-footer .footer-install-app-trigger:hover,
+.bottom-footer .footer-install-app-trigger:focus-visible {
+    color: #1769AA;
+}
+.bottom-footer .footer-install-app-trigger:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 4px;
+}
+.dor-app-qr {
+    display: block;
+    width: 150px;
+    height: 150px;
+    max-width: 100%;
+    object-fit: contain;
+    margin: 0 auto;
+    padding: 6px;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    cursor: zoom-in;
+}
+.dor-app-qr-large {
+    display: block;
+    width: min(100%, 420px);
+    height: auto;
+    margin: 0 auto;
+    object-fit: contain;
+}
+#dorAppModal .modal-content,
+#dorQrModal .modal-content {
+    border-radius: 12px;
+}
+@media (max-width: 767.98px) {
+    .bottom-footer .footer-install-app-trigger {
+        min-height: 36px;
+    }
+    .dor-app-qr {
+        width: 135px;
+        height: 135px;
+    }
+}
+
+
+/* Refined compact header controls */
+.top-header .header-controls > ul,
+.top-header .header-controls ul {
+    gap: 3px;
+}
+
+.top-header .header-icon-control {
+    min-width: 0;
+    min-height: 0;
+    width: auto;
+    height: auto;
+    padding: 2px 5px;
+    border: 0;
+    border-radius: 3px;
+    background: transparent;
+    color: #142D4E;
+    box-shadow: none;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.top-header .header-icon-control i {
+    color: inherit;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.top-header .header-icon-control:hover,
+.top-header .header-icon-control:focus-visible {
+    background: transparent;
+    color: #1769AA;
+    outline: 1px solid rgba(23, 105, 170, .35);
+    outline-offset: 1px;
+}
+
+.top-header .header-settings-menu {
+    min-width: 205px;
+    padding: 10px;
+    border: 1px solid rgba(20, 45, 78, .12);
+    box-shadow: 0 5px 18px rgba(20, 45, 78, .12);
+}
+
+.top-header .header-settings-menu label {
+    display: block;
+    margin: 3px 0 4px;
+    color: #142D4E;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.top-header .header-settings-menu select {
+    width: 100%;
+    margin-bottom: 9px;
+    font-size: 12px;
+}
+
+.top-header .header-settings-menu select:last-child {
+    margin-bottom: 0;
+}
+
+.top-header .header-date-time {
+    margin-left: 3px;
+    font-size: 11px;
+}
+
+.top-header .header-sitemap-link a {
+    display: inline;
+    width: auto;
+    height: auto;
+    padding: 0;
+    background: transparent;
+    font-size: 12px;
+    text-decoration: none;
+}
+
+.top-header .header-sitemap-link a:hover,
+.top-header .header-sitemap-link a:focus {
+    background: transparent;
+    color: #1769AA;
+    text-decoration: underline;
+}
+
+.top-header .divider-list ul li {
+    margin-left: 3px;
+    padding-right: 7px;
+}
+
+/* Final header and footer menu interaction refinement */
+.top-header .top-inline-items ul li,
+.top-header .top-inline-items i,
+.top-header .top-inline-items svg {
+    color: #142D4E;
+    fill: currentColor;
+}
+
+.top-header .divider-list ul li a,
+.top-header .top-inline-items .divider-list ul li a,
+.bottom-footer a,
+.bottom-footer .footer-install-app-trigger {
+    transition: color .18s ease;
+}
+
+.top-header .divider-list ul li a:hover,
+.top-header .top-inline-items .divider-list ul li a:hover,
+.bottom-footer a:hover,
+.bottom-footer .footer-install-app-trigger:hover {
+    color: #1769AA;
+    background: transparent;
+    text-decoration: none;
+    opacity: 1;
+}
+
+.top-header .header-sitemap-link a:hover,
+.top-header .header-sitemap-link a:focus-visible,
+.top-header .header-icon-control:hover,
+.top-header .header-icon-control:focus-visible {
+    background: transparent;
+    color: #1769AA;
+    outline: none;
+    box-shadow: none;
+}
+
+.top-header .header-icon-control:focus-visible,
+.top-header .header-sitemap-link a:focus-visible,
+.bottom-footer a:focus-visible,
+.bottom-footer .footer-install-app-trigger:focus-visible {
+    outline: 1px solid rgba(23, 105, 170, .45);
+    outline-offset: 2px;
+}
+
+/* Consistent text-link appearance across header and footer */
+.top-header .divider-list ul li a,
+.top-header .header-sitemap-link a,
+.bottom-footer a,
+.bottom-footer .footer-install-app-trigger {
+    color: #1769AA;
+    text-decoration: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.top-header .divider-list ul li a:hover,
+.top-header .header-sitemap-link a:hover,
+.bottom-footer a:hover,
+.bottom-footer .footer-install-app-trigger:hover {
+    color: #142D4E;
+    text-decoration: none !important;
+    background: transparent !important;
+    opacity: 1;
+}
+
+/* Make DoR App match footer text links exactly */
+.bottom-footer .footer-install-app-trigger,
+.bottom-footer .footer-install-app-trigger:link,
+.bottom-footer .footer-install-app-trigger:visited {
+    color: #1769AA !important;
+    text-decoration: none !important;
+    background: none !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.bottom-footer .footer-install-app-trigger:hover,
+.bottom-footer .footer-install-app-trigger:focus,
+.bottom-footer .footer-install-app-trigger:active {
+    color: #142D4E !important;
+    text-decoration: none !important;
+    background: none !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.bottom-footer .footer-install-app-trigger::before,
+.bottom-footer .footer-install-app-trigger::after {
+    content: none !important;
+    display: none !important;
+}
+
+/* Make DoR App match footer text links exactly */
+.bottom-footer .footer-install-app-trigger,
+.bottom-footer .footer-install-app-trigger:link,
+.bottom-footer .footer-install-app-trigger:visited {
+    color: #1769AA !important;
+    text-decoration: none !important;
+    background: none !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.bottom-footer .footer-install-app-trigger:hover,
+.bottom-footer .footer-install-app-trigger:focus,
+.bottom-footer .footer-install-app-trigger:active {
+    color: #142D4E !important;
+    text-decoration: none !important;
+    background: none !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.bottom-footer .footer-install-app-trigger::before,
+.bottom-footer .footer-install-app-trigger::after {
+    content: none !important;
+    display: none !important;
+}
+
+/* Header and footer: text hover colour only */
+.top-header .divider-list a,
+.top-header .header-sitemap-link a,
+.bottom-footer a,
+.bottom-footer .footer-install-app-trigger {
+    text-decoration: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    transform: none !important;
+    transition: color .15s ease !important;
+}
+
+.top-header .divider-list a:hover,
+.top-header .header-sitemap-link a:hover,
+.bottom-footer a:hover,
+.bottom-footer .footer-install-app-trigger:hover {
+    color: #142D4E !important;
+    text-decoration: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+}
+
+.top-header .divider-list a::before,
+.top-header .divider-list a::after,
+.top-header .header-sitemap-link a::before,
+.top-header .header-sitemap-link a::after,
+.bottom-footer a::before,
+.bottom-footer a::after,
+.bottom-footer .footer-install-app-trigger::before,
+.bottom-footer .footer-install-app-trigger::after {
+    content: none !important;
+    display: none !important;
+}
+
+.top-header .header-icon-control:hover,
+.top-header .header-icon-control:focus {
+    background: transparent !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+/* Final high-specificity link colour override */
+.top-header .top-inline-items .divider-list ul li a,
+.top-header .top-inline-items .divider-list ul li a:link,
+.top-header .top-inline-items .divider-list ul li a:visited {
+    color: #1769AA !important;
+    text-decoration: none !important;
+    background: transparent !important;
+    opacity: 1 !important;
+}
+
+.top-header .top-inline-items .divider-list ul li a:hover,
+.top-header .top-inline-items .divider-list ul li a:focus {
+    color: #142D4E !important;
+    text-decoration: none !important;
+    background: transparent !important;
+    opacity: 1 !important;
+}
+
+.bottom-footer .divider-list ul li a,
+.bottom-footer .divider-list ul li a:hover,
+.bottom-footer .footer-install-app-trigger,
+.bottom-footer .footer-install-app-trigger:hover {
+    text-decoration: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.bottom-footer .footer-install-app-trigger {
+    color: #1769AA !important;
+}
+
+.bottom-footer .footer-install-app-trigger:hover {
+    color: #142D4E !important;
+}
+
+/* Match DoR App button with existing footer links */
+.bottom-footer .divider-list ul li .footer-install-app-trigger {
+    color: #00ADF7 !important;
+    font: inherit !important;
+    text-decoration: none !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    transform: none !important;
+    cursor: pointer;
+}
+
+.bottom-footer .divider-list ul li .footer-install-app-trigger:hover,
+.bottom-footer .divider-list ul li .footer-install-app-trigger:focus {
+    color: #142D4E !important;
+    text-decoration: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+/* Consistent footer link appearance for all five items */
+.bottom-footer .divider-list ul li a,
+.bottom-footer .divider-list ul li a:link,
+.bottom-footer .divider-list ul li a:visited,
+.bottom-footer .divider-list ul li .footer-install-app-trigger {
+    color: #00ADF7 !important;
+    text-decoration: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.bottom-footer .divider-list ul li a:hover,
+.bottom-footer .divider-list ul li a:focus,
+.bottom-footer .divider-list ul li a:active,
+.bottom-footer .divider-list ul li .footer-install-app-trigger:hover,
+.bottom-footer .divider-list ul li .footer-install-app-trigger:focus {
+    color: #142D4E !important;
+    text-decoration: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    transform: none !important;
+    outline-offset: 2px;
+}
+
+/* Final footer menu: color-only hover for all five items */
+.bottom-footer .divider-list ul li a,
+.bottom-footer .divider-list ul li a:link,
+.bottom-footer .divider-list ul li a:visited,
+.bottom-footer .divider-list ul li button.footer-install-app-trigger {
+    color: #00ADF7 !important;
+    text-decoration: none !important;
+    border: 0 !important;
+    border-bottom: 0 !important;
+    background: none !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    transform: none !important;
+    transition: color .2s ease !important;
+}
+
+.bottom-footer .divider-list ul li a:hover,
+.bottom-footer .divider-list ul li a:focus,
+.bottom-footer .divider-list ul li a:active,
+.bottom-footer .divider-list ul li button.footer-install-app-trigger:hover,
+.bottom-footer .divider-list ul li button.footer-install-app-trigger:focus {
+    color: #ffffff !important;
+    text-decoration: none !important;
+    border: 0 !important;
+    border-bottom: 0 !important;
+    background: none !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.bottom-footer .divider-list ul li a::before,
+.bottom-footer .divider-list ul li a::after,
+.bottom-footer .divider-list ul li button.footer-install-app-trigger::before,
+.bottom-footer .divider-list ul li button.footer-install-app-trigger::after {
+    content: none !important;
+    display: none !important;
+}
+
+/* Single-row adaptive DoR primary navigation */
+@media (min-width: 992px) {
+    .nav-wrap .container,
+    .nav-wrap .navbar,
+    .nav-wrap .navbar > .container-fluid,
+    .nav-wrap .navbar-collapse {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .nav-wrap .navbar-collapse {
+        display: flex !important;
+        flex: 1 1 100%;
+        flex-wrap: nowrap;
+        overflow: visible;
+    }
+
+    .nav-wrap .navbar-nav {
+        display: flex !important;
+        flex: 1 1 100%;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        min-width: 0;
+        margin: 0 !important;
+        padding: 0;
+        white-space: nowrap;
+    }
+
+    .nav-wrap .navbar-nav > li {
+        flex: 0 1 auto !important;
+        min-width: 0;
+        white-space: nowrap;
+    }
+
+    .nav-wrap .navbar-nav > li > a,
+    .nav-wrap .navbar-nav .nav-link {
+        display: block;
+        padding: 10px clamp(2px, .42vw, 7px) !important;
+        font-size: clamp(7px, .76vw, 11px) !important;
+        line-height: 1.2 !important;
+        letter-spacing: -.15px;
+        white-space: nowrap !important;
+        overflow: visible;
+    }
+
+    .nav-wrap .navbar-nav .dropdown-menu {
+        z-index: 2050;
+    }
+}
+
+
+/* Modern Contact page styling - intentionally scoped to this page only */
+.dor-contact-page {
+    padding-top: 28px;
+    padding-bottom: 36px;
+}
+
+.dor-contact-page > .container > .row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+}
+
+.dor-contact-page > .container > .row > [class*="col-"] {
+    display: flex;
+    float: none;
+    min-width: 0;
+}
+
+.dor-contact-page .contact-detail,
+.dor-contact-page .maps {
+    width: 100%;
+    height: 100%;
+    padding: 24px !important;
+    background: #fff !important;
+    border: 1px solid #e5eaf0;
+    border-radius: 12px;
+    box-shadow: 0 5px 22px rgba(20, 45, 78, .07);
+}
+
+.dor-contact-page .block-title {
+    margin-bottom: 18px;
+}
+
+.dor-contact-page .block-title h2 {
+    margin: 0 0 12px;
+    color: #142D4E;
+    font-size: 19px;
+    font-weight: 700;
+    line-height: 1.45;
+}
+
+.dor-contact-page .block-title .divider {
+    width: 48px;
+    height: 3px;
+    margin: 0;
+    border: 0;
+    border-radius: 3px;
+    background: #1769AA;
+}
+
+.dor-contact-page .address-box ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.dor-contact-page .address-box ul li {
+    position: relative;
+    padding: 0 0 7px 32px;
+    margin: 0 0 7px;
+    border-bottom: 1px solid #edf0f4;
+    color: #344255;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.dor-contact-page .address-box ul li:last-child {
+    margin-bottom: 0;
+}
+
+.dor-contact-page .address-box .icon-container {
+    position: absolute;
+    top: 2px;
+    left: 0;
+    width: 22px;
+    color: #1769AA;
+    text-align: center;
+}
+
+.dor-contact-page .address-box ul li p {
+    margin: 0 0 4px;
+}
+
+.dor-contact-page .address-box a,
+.dor-contact-page .social-shares a {
+    color: #1769AA;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+}
+
+.dor-contact-page .address-box a:hover,
+.dor-contact-page .social-shares a:hover {
+    color: #142D4E;
+    text-decoration: underline;
+}
+
+.dor-contact-page .social-shares > div {
+    margin: 0 0 10px;
+}
+
+.dor-contact-page .social-shares a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+}
+
+.dor-contact-page form > .row {
+    display: block;
+    margin-right: 0;
+    margin-left: 0;
+}
+
+.dor-contact-page form .form-group {
+    margin: 0 0 14px;
+}
+
+.dor-contact-page form .form-group p {
+    margin: 0 0 12px;
+}
+
+.dor-contact-page form .form-control {
+    width: 100%;
+    height: 45px;
+    padding: 10px 13px;
+    color: #263746;
+    background: #fff;
+    border: 1px solid #d8e0e9;
+    border-radius: 7px;
+    box-shadow: none;
+    font-size: 14px;
+    transition: border-color .18s ease, box-shadow .18s ease;
+}
+
+.dor-contact-page form textarea.form-control {
+    min-height: 125px;
+    height: auto;
+    resize: vertical;
+}
+
+.dor-contact-page form .form-control:focus {
+    border-color: #1769AA;
+    outline: 0;
+    box-shadow: 0 0 0 3px rgba(23, 105, 170, .12);
+}
+
+.dor-contact-page form .form-control::placeholder {
+    color: #8793a2;
+    opacity: 1;
+}
+
+.dor-contact-page #captcha-image {
+    margin: 8px 0 10px;
+}
+
+.dor-contact-page #captcha-image img {
+    max-width: 100%;
+    height: auto;
+    border: 1px solid #e5eaf0;
+    border-radius: 5px;
+}
+
+.dor-contact-page #reload-captcha {
+    color: #1769AA;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.dor-contact-page #reload-captcha:hover {
+    color: #142D4E;
+    text-decoration: underline;
+}
+
+.dor-contact-page .submit-btn {
+    min-height: 46px;
+    padding: 11px 18px;
+    color: #fff;
+    background: #142D4E;
+    border: 1px solid #142D4E;
+    border-radius: 7px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background .18s ease, border-color .18s ease;
+}
+
+.dor-contact-page .submit-btn:hover,
+.dor-contact-page .submit-btn:focus {
+    color: #fff;
+    background: #1769AA;
+    border-color: #1769AA;
+}
+
+.dor-contact-page .alert {
+    border-radius: 7px;
+    overflow-wrap: anywhere;
+}
+
+.dor-contact-page #gmap_canvas {
+    border-radius: 8px;
+    background: #f3f6f9;
+}
+
+@media (min-width: 992px) {
+    .dor-contact-page > .container > .row > [class*="col-lg-"] {
+        flex: 1 1 0;
+        width: 33.333333%;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .dor-contact-page > .container > .row > [class*="col-"] {
+        margin-bottom: 16px;
+    }
+
+    .dor-contact-page > .container > .row > [class*="col-"]:last-child {
+        margin-bottom: 0;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .dor-contact-page {
+        padding-top: 18px;
+        padding-bottom: 24px;
+    }
+
+    .dor-contact-page .contact-detail,
+    .dor-contact-page .maps {
+        padding: 18px !important;
+        border-radius: 10px;
+    }
+
+    .dor-contact-page .block-title h2 {
+        font-size: 18px;
+    }
+}
+
+/* DoR App QR popup and native share */
+.bottom-footer .footer-app-item {
+    position: relative;
+    overflow: visible;
+}
+
+.bottom-footer .footer-app-popover {
+    position: absolute;
+    left: 0;
+    bottom: 100%;
+    z-index: 2200;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: max-content;
+    padding: 9px;
+    background: #fff;
+    border: 1px solid rgba(20, 45, 78, .12);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(20, 45, 78, .18);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity .18s ease, visibility .18s ease;
+}
+
+.bottom-footer .footer-app-popover img {
+    display: block;
+    width: 140px !important;
+    min-width: 140px;
+    max-width: none !important;
+    height: 140px !important;
+    transition: width .2s ease, height .2s ease;
+}
+
+.bottom-footer .footer-app-item:hover .footer-app-popover,
+.bottom-footer .footer-app-item:focus-within .footer-app-popover,
+.bottom-footer .footer-app-item.is-open .footer-app-popover {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+/* Enlarge only while the pointer is directly over the QR image */
+.bottom-footer .footer-app-popover img:hover {
+    width: 182px !important;
+    min-width: 182px;
+    height: 182px !important;
+}
+
+.bottom-footer .footer-app-popover .footer-share-links {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 4px;
+}
+
+.bottom-footer button.footer-native-share {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 32px !important;
+    min-width: 32px;
+    height: 32px !important;
+    padding: 0 !important;
+    color: #00ADF7 !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    cursor: pointer;
+}
+
+.bottom-footer button.footer-native-share svg {
+    display: block !important;
+    width: 22px !important;
+    height: 22px !important;
+    min-width: 22px;
+    overflow: visible;
+    fill: none !important;
+    stroke: #00ADF7 !important;
+    stroke-width: 2;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.bottom-footer button.footer-native-share:hover,
+.bottom-footer button.footer-native-share:focus-visible {
+    color: #1769AA !important;
+}
+
+.bottom-footer button.footer-native-share:hover svg,
+.bottom-footer button.footer-native-share:focus-visible svg {
+    stroke: #1769AA !important;
+}
+
+
+/* Direct header language selector */
+.top-header .header-language-switch {
+    position: relative;
+}
+.top-header .header-language-switch select {
+    width: auto;
+    min-width: 62px;
+    height: 27px;
+    margin: 0;
+    padding: 2px 20px 2px 7px;
+    border: 1px solid rgba(20, 45, 78, .22);
+    border-radius: 4px;
+    background-color: #fff;
+    color: #142D4E;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+/* Compact transparent language selector in the header */
+.top-header .header-language-switch {
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+    margin: 0 2px;
+    white-space: nowrap;
+}
+
+.top-header .header-language-switch select,
+.top-header .header-language-switch select:focus {
+    width: 48px;
+    min-width: 48px;
+    height: 24px;
+    margin: 0;
+    padding: 1px 12px 1px 2px;
+    border: 0 !important;
+    border-radius: 0;
+    background-color: transparent !important;
+    color: #142D4E;
+    box-shadow: none !important;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.2;
+    cursor: pointer;
+}
+
+.top-header .header-language-switch select:focus {
+    outline: 1px solid rgba(23, 105, 170, .35);
+    outline-offset: 1px;
+}
+
+.top-header .header-controls > ul {
+    justify-content: flex-end;
+    align-items: center;
+}
+
+
+
+/* Clean two-line DoR header layout */
+@media (min-width: 992px) {
+    .top-header .header-controls {
+        margin-bottom: 2px;
+    }
+
+    .top-header .header-controls > ul {
+        display: flex;
+        flex-wrap: nowrap;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .top-header .header-date-time {
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        gap: 5px;
+        white-space: nowrap;
+        font-size: 11px;
+    }
+
+    .top-header .header-nepal-sambat {
+        display: inline;
+        margin: 0;
+        white-space: nowrap;
+        font-size: 10px;
+    }
+
+    .top-header .header-clock {
+        display: inline;
+        white-space: nowrap;
+    }
+
+    .top-header .top-inline-items:not(.header-controls) {
+        margin-top: 1px;
+    }
+
+    .top-header .top-inline-items:not(.header-controls) > ul,
+    .top-header .top-inline-items:not(.header-controls) .divider-list > ul {
+        display: flex;
+        flex-wrap: nowrap;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 0;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .top-header .top-inline-items:not(.header-controls) > ul > li,
+    .top-header .top-inline-items:not(.header-controls) .divider-list > ul > li {
+        margin: 0;
+        padding: 0 7px;
+        white-space: nowrap;
+    }
+
+    .top-header .top-inline-items:not(.header-controls) .divider-list {
+        margin: 0;
+    }
+
+    .top-header .top-inline-items:not(.header-controls) a,
+    .top-header .top-inline-items:not(.header-controls) a:link,
+    .top-header .top-inline-items:not(.header-controls) a:visited {
+        display: inline;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: #1769AA !important;
+        font-size: 12px;
+        font-weight: 400;
+        text-decoration: none !important;
+        box-shadow: none;
+    }
+
+    .top-header .top-inline-items:not(.header-controls) a:hover {
+        color: #142D4E !important;
+        background: transparent;
+        text-decoration: none !important;
+    }
+}
+
+
+/* Refined compact header icons and office identity typography */
+.top-header .header-icon-control {
+    min-width: 22px;
+    min-height: 22px;
+    padding: 0 2px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: #142D4E;
+    font-size: 15px;
+    line-height: 1;
+    box-shadow: none;
+}
+
+.top-header .header-icon-control:hover,
+.top-header .header-icon-control:focus {
+    border: 0;
+    background: transparent;
+    color: #1769AA;
+    box-shadow: none;
+}
+
+.top-header .header-icon-control i {
+    font-size: 15px;
+    line-height: 1;
+}
+
+.logo-title strong {
+    font-size: 18px;
+    line-height: 24px;
+}
+
+.logo-title small {
+    font-size: 12px;
+    line-height: 17px;
+}
+
+.logo-title span {
+    font-size: 15px;
+    line-height: 21px;
+}
+
+
+/* DoR header utility row alignment */
+.top-header .header-utility-row {
+    width: 100%;
+}
+
+.top-header .header-utility-row > ul {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.top-header .header-utility-row > ul > li {
+    margin: 0;
+    padding: 0 7px;
+    white-space: nowrap;
+}
+
+.top-header .header-admin-dropdown .dropdown-menu {
+    min-width: 145px;
+    padding: 4px 0;
+    border: 1px solid rgba(20, 45, 78, .12);
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(20, 45, 78, .12);
+}
+
+.top-header .header-admin-dropdown .dropdown-item {
+    padding: 7px 12px;
+    color: #1769AA;
+    font-size: 12px;
+}
+
+.top-header .header-admin-dropdown .dropdown-item:hover,
+.top-header .header-admin-dropdown .dropdown-item:focus {
+    background: #F0F4F8;
+    color: #142D4E;
+}
+
+@media (max-width: 991.98px) {
+    .top-header .header-utility-row {
+        display: flex;
+        justify-content: flex-end;
+        text-align: right;
+    }
+
+    .top-header .header-utility-row > ul {
+        justify-content: flex-end;
+        width: 100%;
+    }
+}
+
+/* DoR compact header text and utility link colours */
+.top-header .header-utility-row > ul > li > a,
+.top-header .header-utility-row > ul > li > a:link,
+.top-header .header-utility-row > ul > li > a:visited {
+    color: #142D4E !important;
+    font-size: 11px !important;
+    font-weight: 600;
+    text-decoration: none !important;
+}
+
+.top-header .header-utility-row > ul > li > a:hover,
+.top-header .header-utility-row > ul > li > a:focus {
+    color: #1769AA !important;
+}
+
+.top-header .header-admin-dropdown .dropdown-item {
+    font-size: 11px !important;
+}
+
+.top-header .header-icon-control i {
+    font-size: 16px;
+}
+
+.logo-title strong {
+    font-size: 16px;
+    line-height: 21px;
+}
+
+.logo-title small {
+    font-size: 11px;
+    line-height: 15px;
+}
+
+.logo-title span {
+    font-size: 13px;
+    line-height: 18px;
+}
+
+@media (max-width: 991.98px) {
+    .top-header .header-utility-row > ul > li {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+
+    .top-header .header-utility-row > ul > li > a {
+        font-size: 10px !important;
+    }
+
+    .logo-title strong {
+        font-size: 15px;
+    }
+
+    .logo-title small {
+        font-size: 10px;
+    }
+
+    .logo-title span {
+        font-size: 12px;
+    }
+}
+
+/* Keep Admin, Sitemap and Contact typography identical */
+.top-header .header-utility-row > ul > li > a,
+.top-header .header-utility-row > ul > li > a:link,
+.top-header .header-utility-row > ul > li > a:visited {
+    display: inline-block !important;
+    width: auto !important;
+    height: auto !important;
+    padding: 3px 0 !important;
+    border-radius: 0 !important;
+    font-family: inherit !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    line-height: 1.4 !important;
+    color: #142D4E !important;
+    vertical-align: middle;
+}
+
+.top-header .header-utility-row > ul > li > a:hover,
+.top-header .header-utility-row > ul > li > a:focus {
+    color: #1769AA !important;
+    background: transparent !important;
+}
+
+@media (max-width: 991.98px) {
+    .top-header .header-utility-row > ul > li > a,
+    .top-header .header-utility-row > ul > li > a:link,
+    .top-header .header-utility-row > ul > li > a:visited {
+        font-size: 10px !important;
+    }
+}
+
+/* Match Admin font weight with Sitemap and Contact */
+.top-header .header-admin-dropdown > #headerAdminDropdown {
+    font-weight: 600 !important;
+    font-family: inherit !important;
+}
+
+/* Force identical typography on all three header utility links */
+.top-header .header-utility-row > ul > li > a,
+.top-header .header-utility-row > ul > li > a.dropdown-toggle,
+.top-header .header-utility-row > ul > li > a:not(.dropdown-item) {
+    font-family: Arial, sans-serif !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    line-height: 1.4 !important;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
+}
+
+/* Compact date selector matching the header language selector */
+.top-header .header-calendar-select {
+    display: inline-block;
+    flex: 0 0 auto;
+    width: 48px;
+    min-width: 48px;
+    height: 24px;
+    margin: 0 2px;
+    padding: 1px 12px 1px 2px;
+    border: 0;
+    border-radius: 0;
+    background-color: transparent;
+    color: #142D4E;
+    box-shadow: none;
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.2;
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+.top-header .header-calendar-select:focus {
+    outline: 1px solid rgba(23, 105, 170, .35);
+    outline-offset: 1px;
+}
+
+.top-header #headerDateDisplay {
+    white-space: nowrap;
+}
+
+/* Header calendar date dropdown */
+.top-header .header-calendar-dropdown {
+    position: relative;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.top-header .header-calendar-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    max-width: 190px;
+    padding: 2px 3px;
+    border: 0;
+    background: transparent;
+    color: #142D4E;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.top-header .header-calendar-toggle span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.top-header .header-calendar-toggle i {
+    flex: 0 0 auto;
+    color: #142D4E;
+}
+
+.top-header .header-calendar-menu {
+    position: absolute;
+    top: calc(100% + 5px);
+    right: 0;
+    z-index: 2200;
+    width: max-content;
+    min-width: 230px;
+    max-width: min(320px, 90vw);
+    padding: 5px;
+    border: 1px solid #dce3e9;
+    border-radius: 5px;
+    background: #fff;
+    box-shadow: 0 5px 16px rgba(20, 45, 78, .16);
+}
+
+.top-header .header-calendar-menu[hidden] {
+    display: none !important;
+}
+
+.top-header .header-calendar-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 7px 8px;
+    border-bottom: 1px solid #edf0f3;
+}
+
+.top-header .header-calendar-option:last-child {
+    border-bottom: 0;
+}
+
+.top-header .header-calendar-date {
+    padding: 2px 0;
+    border: 0;
+    background: transparent;
+    color: #142D4E;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+}
+
+.top-header .header-calendar-source {
+    visibility: hidden;
+    color: #1769AA;
+    font-size: 10px;
+    white-space: nowrap;
+    text-decoration: none;
+}
+
+.top-header .header-calendar-option:hover .header-calendar-source,
+.top-header .header-calendar-option:focus-within .header-calendar-source {
+    visibility: visible;
+    text-decoration: underline;
+}
+
+@media (max-width: 575.98px) {
+    .top-header .header-calendar-toggle {
+        max-width: 145px;
+        font-size: 10px;
+    }
+
+    .top-header .header-calendar-menu {
+        right: 0;
+        min-width: 215px;
+    }
+}
+
+
+/* Other-office information frames: same frame dimensions, subtle visual distinction */
+.office-info-frame {
+    width: 100%;
+    height: 291px;
+    max-height: 291px;
+    box-sizing: border-box;
+    padding: 10px 12px !important;
+    overflow-x: hidden;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #eadfe0;
+    border-top: 3px solid #8B2635;
+    border-radius: 12px;
+    box-shadow: 0 5px 18px rgba(25, 65, 95, 0.09);
+}
+
+.office-info-frame .block-title {
+    margin-bottom: 8px !important;
+}
+
+.office-info-frame .block-list > * {
+    margin-bottom: 6px !important;
+}
+
+.office-info-frame .block-list > *:last-child {
+    margin-bottom: 0 !important;
+}
+
+
+/* Other Office: fixed-height contact officers frame */
+.other-office-officers-frame {
+    width: 100%;
+    height: 368px;
+    min-height: 368px;
+    max-height: 368px;
+    box-sizing: border-box;
+    padding: 9px 12px !important;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: visible;
+    background: #fff;
+    border: 1px solid #dce8f2;
+    border-top: 3px solid #1769aa;
+    border-radius: 12px;
+    box-shadow: 0 5px 18px rgba(25, 65, 95, .09);
+}
+
+.other-office-officers-frame .person-header {
+    flex: 0 0 auto;
+    background: #edf4f9;
+    color: #173e5b;
+    border-radius: 6px;
+    padding: 5px 10px;
+    margin-bottom: 5px;
+    font-size: 13px;
+}
+
+.other-office-officers-frame .person-header p {
+    margin: 0;
+    line-height: 19px;
+}
+
+.other-office-officers-frame .media-block {
+    flex: 1 1 0;
+    min-height: 0;
+    padding: 3px 0 3px 61px;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    position: relative;
+    border-bottom: 1px solid #edf1f5;
+}
+
+.other-office-officers-frame .media-block:last-child {
+    border-bottom: 0;
+}
+
+.other-office-officers-frame .rounded-fig-wrap {
+    width: 49px;
+    height: 49px;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 2px solid #e5eef5;
+    border-radius: 50%;
+}
+
+.other-office-officers-frame .rounded-fig-wrap img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+}
+
+.other-office-officers-frame .media-desc {
+    width: 100%;
+    min-width: 0;
+    position: static;
+}
+
+.other-office-officers-frame .media-desc h5 {
+    color: #155783;
+    font-size: 13px;
+    line-height: 17px;
+    margin: 0 0 2px;
+}
+
+.other-office-officers-frame .media-desc p {
+    color: #526575;
+    font-size: 10px;
+    line-height: 14px;
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.other-office-officers-frame .other-officer-short-description {
+    color: #526575;
+    font-size: 10px;
+    line-height: 14px;
+    overflow-wrap: anywhere;
+}
+
+.other-office-officers-frame .other-officer-description {
+    position: absolute;
+    z-index: 5;
+    left: 61px;
+    right: 0;
+    top: calc(100% - 2px);
+    padding: 2px 0;
+    background: #fff;
+    font-size: 10px;
+}
+
+.other-office-officers-frame .other-officer-description summary {
+    width: fit-content;
+    color: #1769aa;
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.other-office-officers-frame .other-officer-description[open] {
+    z-index: 30;
+    padding: 7px 9px;
+    border: 1px solid #dce8f2;
+    border-radius: 6px;
+    box-shadow: 0 5px 16px rgba(25, 65, 95, .16);
+}
+
+.other-office-officers-frame .other-officer-full-description {
+    padding-top: 6px;
+    color: #405464;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+@media (min-width: 768px) and (max-width: 991.98px) {
+    .other-office-officers-frame {
+        height: 328px;
+        min-height: 328px;
+        max-height: 328px;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .other-office-officers-frame {
+        height: 358px;
+        min-height: 358px;
+        max-height: 358px;
+    }
+}
+
+
+/* Other Office: officer-count based frame height */
+.other-office-officers-frame {
+    height: calc(52px + var(--officer-count, 4) * 79px);
+    min-height: calc(52px + var(--officer-count, 4) * 79px);
+    max-height: calc(52px + var(--officer-count, 4) * 79px);
+}
+
+.other-office-officers-frame .media-block {
+    flex: 0 0 79px;
+}
+
+@media (min-width: 768px) and (max-width: 991.98px) {
+    .other-office-officers-frame {
+        height: calc(52px + var(--officer-count, 4) * 69px);
+        min-height: calc(52px + var(--officer-count, 4) * 69px);
+        max-height: calc(52px + var(--officer-count, 4) * 69px);
+    }
+
+    .other-office-officers-frame .media-block {
+        flex-basis: 69px;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .other-office-officers-frame {
+        height: calc(52px + var(--officer-count, 4) * 76.5px);
+        min-height: calc(52px + var(--officer-count, 4) * 76.5px);
+        max-height: calc(52px + var(--officer-count, 4) * 76.5px);
+    }
+
+    .other-office-officers-frame .media-block {
+        flex-basis: 76.5px;
+    }
+}
+
+/* Other Office: consistent officer photo and comfortable spacing */
+.other-office-officers-frame .media-block {
+    box-sizing: border-box;
+    padding-top: 6px;
+    padding-bottom: 6px;
+}
+
+.other-office-officers-frame .rounded-fig-wrap {
+    display: block;
+    overflow: hidden;
+    background: #f0f4f7;
+}
+
+.other-office-officers-frame .rounded-fig-wrap a {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+}
+
+.other-office-officers-frame .other-officer-no-photo {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    color: #8a9baa;
+    font-size: 21px;
+}
+
+.other-office-officers-frame .media-desc {
+    line-height: 1.4;
+}
+
+.other-office-officers-frame .media-desc > a {
+    display: block;
+}
+
+.other-office-officers-frame .media-desc p {
+    margin: 0 0 3px;
+    line-height: 14px;
+}
+
+.other-office-officers-frame .other-officer-short-description p {
+    margin: 2px 0;
+    line-height: 14px;
+}
+
+.other-office-officers-frame .other-officer-short-description p:last-child {
+    margin-bottom: 0;
+}
+
+/* Other Office: prevent officer text overlap */
+.other-office-officers-frame {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+}
+
+.other-office-officers-frame .media-block {
+    flex: 0 0 auto !important;
+    height: auto !important;
+    min-height: 79px;
+    align-items: flex-start !important;
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+}
+
+.other-office-officers-frame .media-desc {
+    width: 100%;
+    min-width: 0;
+    line-height: 1.5 !important;
+}
+
+.other-office-officers-frame .media-desc > a {
+    display: block;
+    width: 100%;
+}
+
+.other-office-officers-frame .media-desc .other-officer-position {
+    margin: 0 0 5px !important;
+    line-height: 1.5 !important;
+}
+
+.other-office-officers-frame .media-desc h5 {
+    margin: 0 0 5px !important;
+    line-height: 1.5 !important;
+    overflow-wrap: anywhere;
+}
+
+.other-office-officers-frame .media-desc p {
+    margin: 0 0 4px !important;
+    line-height: 1.5 !important;
+    overflow-wrap: anywhere;
+}
+
+.other-office-officers-frame .media-desc p:last-child {
+    margin-bottom: 0 !important;
+}
+
+
+
+
+
+
+/* Automatic image display: preserve original aspect ratios */
+
+/* Main Office and Other Office banners */
+.slider-img-holder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: #f5f6f4;
+}
+
+.slider-img-holder img,
+.slider-fig img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+}
+
+/* Main Office and Other Office gallery */
+.fig-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: #f5f6f4;
+}
+
+.fig-wrap img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+}
+
+/* Contact form refinement - preserve existing fields and layout */
+.dor-contact-page .contact-detail form {
+    padding: 16px;
+    background: #f8fafc;
+    border: 1px solid #e8edf3;
+    border-radius: 10px;
+}
+
+.dor-contact-page .contact-detail form .form-control {
+    border-radius: 8px;
+    border-color: #d5dee9;
+    background-color: #fff;
+}
+
+.dor-contact-page .contact-detail form .form-control:hover {
+    border-color: #aebfd1;
+}
+
+.dor-contact-page .contact-detail form .form-control:focus {
+    border-color: #1769AA;
+    box-shadow: 0 0 0 3px rgba(23, 105, 170, .12);
+}
+
+.dor-contact-page .contact-detail form .submit-btn {
+    min-height: 48px;
+    border-radius: 8px;
+    letter-spacing: .2px;
+}
+
+@media (max-width: 575.98px) {
+    .dor-contact-page .contact-detail form {
+        padding: 12px;
+    }
+}
+
+
+/* Quick Message Panel - Compact Modern Design */
+.dor-contact-page .quick-message-panel {
+    padding: 18px !important;
+}
+
+.dor-contact-page .quick-message-panel .block-title {
+    margin-bottom: 12px;
+}
+
+.dor-contact-page .quick-message-panel > p {
+    margin: 0 0 10px;
+    color: #657386;
+    font-size: 12.5px;
+    line-height: 1.5;
+}
+
+.dor-contact-page .quick-message-panel form .form-group {
+    margin-bottom: 8px;
+}
+
+.dor-contact-page .quick-message-panel form .form-group p {
+    margin: 0 0 8px;
+}
+
+.dor-contact-page .quick-message-panel form .form-control {
+    height: 38px;
+    padding: 7px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+.dor-contact-page .quick-message-panel form textarea.form-control {
+    min-height: 88px;
+    height: 88px;
+    resize: vertical;
+}
+
+.dor-contact-page .quick-message-panel .form-check {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 22px;
+    margin: 2px 0;
+    padding-left: 0;
+}
+
+.dor-contact-page .quick-message-panel .form-check-input {
+    position: static;
+    float: none;
+    flex: 0 0 auto;
+    width: 15px;
+    height: 15px;
+    margin: 0;
+    cursor: pointer;
+    accent-color: #1769AA;
+}
+
+.dor-contact-page .quick-message-panel .form-check-label {
+    margin: 0;
+    color: #344255;
+    font-size: 12.5px;
+    cursor: pointer;
+}
+
+.dor-contact-page .quick-message-panel form .form-group:has(.form-check) {
+    padding: 7px 10px;
+    margin: 0 0 8px;
+    background: #f3f7fb;
+    border: 1px solid #e3ebf4;
+    border-radius: 6px;
+}
+
+.dor-contact-page .quick-message-panel form .form-group > label.d-block {
+    margin-bottom: 4px;
+    color: #142D4E;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.dor-contact-page .quick-message-panel #captcha-image {
+    margin: 5px 0;
+}
+
+.dor-contact-page .quick-message-panel #captcha-image img {
+    max-height: 48px;
+    width: auto;
+}
+
+.dor-contact-page .quick-message-panel #reload-captcha {
+    font-size: 12px;
+}
+
+.dor-contact-page .quick-message-panel .submit-btn {
+    min-height: 38px;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+.dor-contact-page .quick-message-panel form .form-control:focus {
+    box-shadow: 0 0 0 2px rgba(23, 105, 170, .10);
+}
+
+@media (max-width: 767.98px) {
+    .dor-contact-page .quick-message-panel {
+        padding: 16px !important;
+    }
+}
+
+
+/* Admin dropdown: icons, stacked items and language-selector-style interaction */
+.top-header .header-admin-dropdown .dropdown-menu > li {
+    display: block;
+    width: 100%;
+}
+
+.top-header .header-admin-dropdown .dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    white-space: nowrap;
+    text-align: left;
+}
+
+.top-header .header-admin-dropdown .dropdown-item i {
+    width: 15px;
+    min-width: 15px;
+    text-align: center;
+}
+
+.top-header .header-admin-dropdown > #headerAdminDropdown:hover,
+.top-header .header-admin-dropdown > #headerAdminDropdown:focus,
+.top-header .header-admin-dropdown > #headerAdminDropdown:active,
+.top-header .header-admin-dropdown.show > #headerAdminDropdown {
+    color: #1769AA !important;
+    outline: 1px solid rgba(23, 105, 170, .35);
+    outline-offset: 2px;
+}
+
+.top-header .header-admin-dropdown .dropdown-item:hover,
+.top-header .header-admin-dropdown .dropdown-item:focus,
+.top-header .header-admin-dropdown .dropdown-item:active,
+.top-header .header-admin-dropdown .dropdown-item.active {
+    background: #1769AA;
+    color: #FFFFFF;
+}
