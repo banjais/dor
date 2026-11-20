@@ -1,170 +1,152 @@
-PS C:\WINDOWS\system32> wsl.exe -d Ubuntu-22.04 --cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade --exec bash -lc "echo '--- PUBLICATION LIST VIEW ---'; grep -n -C 5 -E 'publication_attachment|publication_url|download|href' resources/views/publication/publications.blade.php; echo '--- PUBLICATION DETAIL VIEW ---'; grep -n -C 5 -E 'publication_attachment|publication_url|download|href' resources/views/publication/publication-detail.blade.php; echo '--- OLD PUBLICATION VIEWS ---'; grep -n -C 3 -E 'publication_attachment|publication_url|download' resources/views/publication/publications_old.blade.php resources/views/publication/publication-detail_old.blade.php"
---- PUBLICATION LIST VIEW ---
-7-    $home = $languageId == 1 ? 'गृह पृष्‍ठ  ' : 'Home';
-8-    $publicationheading = $languageId == 1 ? 'प्रकाशनहरु' : 'Publications';
-9-    $sn = $languageId == 1 ? 'क्र.स' : 'S N';
-10-    $title = $languageId == 1 ? 'शिर्षक' : 'Title';
-11-    $publishDate = $languageId == 1 ? 'प्रकाशित मिति' : 'Published Date';
-12:    $download = $languageId == 1 ? 'डाउनलोड गर्नुहोस्' : 'Download';
-13-
-14-    $fileNotfound = $languageId == 1 ? 'फाइल उपलब्ध छैन' : 'File Not found.';
-15-    $notAvailableMessage = $languageId == 1 ? 'प्रकाशनहरु उपलब्ध छैन ।' : 'Publications are not available.';
-16-
-17-    $heading = $languageId == 1 ? 'प्रकाशन' : 'Publications';
---
-21-            <div class="container">
-22-                <div class="breadcrumb-wrap">
-23-                    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
-24-                        <ol class="breadcrumb">
-25-                            <li class="breadcrumb-item"><a
-26:                                    href="{{ $abs_site_url . $subdomain }}">{{ \Helper::getNameOftext('homepage', $languageId) }}
-27-                                </a></li>
-28-                            <li class="breadcrumb-item"><a
-29:                                    href="{{ $abs_site_url . $subdomain . '/publications' }}"">{{ $heading }}</a>
-30-                            </li>
-31-                            <li class="breadcrumb-item">{{ $publicationCategory }}</li>
-32-                        </ol>
-33-                    </nav>
-34-                </div>
---
-48-                                <div class="table-responsive">
-49-                                    <table class="table table-striped table-condensed" id="normal_table">
-50-                                        <th>{{ $sn }}</th>
-51-                                        <th>{{ $title }}</th>
-52-                                        <th>{{ $publishDate }}</th>
-53:                                        <th>{{ $download }}</th>
-54-                                        <?php
-55-                                        foreach ($publications as $publication) {
-56-                                            $officeData_x = Office::getOfficeDetailsWithLanguages($publication->office_id, $languageId);
-57-                                            // dd($officeData_x[0]);
-58-
-59-                                            echo '<tr>';
-60-                                            echo '<td>' . $count++ . '</td>';
-61:                                            echo '<td><a href="/' . $officeData_x[0]->office_subdomain . '/publication/' . $category_url . '/' . $publication->publication_url . '">' . $publication->publication_heading . '</a>';
-62-                                            echo '<p>';
-63:                                            echo 'Office: <a href="' . $abs_site_url . $officeData_x[0]->office_subdomain. '">'. $officeData_x[0]->office_name . '</a>';
-64-                                            echo '</p>';
-65-                                            echo '</td>';
-66-                                            if ($languageId == 1) {
-67-                                                echo '<td><i class="far fa-calendar-alt"></i> ' . \Calendar::eng_to_nep_dor($publication->published_date) . '</td>';
-68-                                            } else {
-69-                                                echo '<td><i class="far fa-calendar-alt"></i> ' . $publication->en_published_date . '</td>';
-70-                                            }
-71-
-72-                                            echo '<td>';
-73:                                            if (file_exists('uploads/publication/' . $publication->publication_attachment) && $publication->publication_attachment != '') {
-74:                                                echo '<span><a href="' .
-75-                                                    '/' .
-76-                                                    $officeData_x[0]->office_subdomain .
-77-                                                    '/publication/' .
-78-                                                    $category_url .
-79-                                                    '/force/' .
-80:                                                    $publication->publication_url .
-81:                                                    '" target="_blank"><i class="fa fa-download"></i>' .
-82:                                                    $download .
-83-                                                    '</a>
-84-                                                                                                                                                                                                        </span>';
-85-                                            } else {
-86-                                                echo $fileNotfound;
-87-                                            }
---- PUBLICATION DETAIL VIEW ---
-4-    @php
-5-    $languageId = Session::get('language_id');
-6-    $home = $languageId == 1 ? 'गृह पृष्‍ठ  ' : 'Home';
-7-    $publicationheading = $languageId == 1 ? 'प्रकाशनहरु' : 'Publications';
-8-    $fileNotfound = $languageId == 1 ? 'फाइल उपलब्ध छैन' : 'File Not found.';
-9:    $download = $languageId == 1 ? 'डाउनलोड गर्नुहोस्' : 'Download';
-10-    $publishedDate = $languageId == 1 ? \Calendar::eng_to_nep_dor($publicationData->published_date) : $publicationData->en_published_date;
-11-
-12-    // dd($publicationData);
-13-
-14-    @endphp
---
-18-            <div class="container">
-19-                <div class="breadcrumb-wrap">
-20-                    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
-21-                        <ol class="breadcrumb">
-22-                            <li class="breadcrumb-item"><a
-23:                                    href="{{ $abs_site_url . $subdomain }}">{{ \Helper::getNameOftext('homepage', $languageId) }}
-24-                                </a></li>
-25-                            <li><a
-26:                                    href="{{ $abs_site_url . $subdomain . '/publications' }}">{{ $publicationheading }}</a>
-27-                            </li>
-28-                            <li><a
-29:                                    href="{{ $abs_site_url . $subdomain . '/publication/' . $categoryUrl }}">{{ $publicationCategory }}</a>
-30-                            </li>
-31-                            <li>{{ $publicationData->publication_heading }}</li>
-32-                        </ol>
-33-                    </nav>
-34-                </div>
---
-43-                                <p><i class="far fa-calendar-alt" aria-hidden="true"></i> {{ $publishedDate }}</p>
-44-                            </div>
-45-                            <div>{!! $publicationData->publication_description !!}</div>
-46-                            <br />
-47-
-48:                            @if (file_exists('uploads/publication/' . $publicationData->publication_attachment) && $publicationData->publication_attachment)
-49:                                <p><a href="/{{ $subdomain }}/publication/{{ $categoryUrl.'/force/'.$publicationData->publication_url }}" target="_blank"><i class="fa fa-download"></i> {{ $download }}</a></p>
-50-                            @endif
-51-                        </div>
-52-                    </div>
-53-                </div>
-54-            </div>
---- OLD PUBLICATION VIEWS ---
-resources/views/publication/publications_old.blade.php-8-    $sn = $languageId == 1 ? 'क्र.स' : 'S N';
-resources/views/publication/publications_old.blade.php-9-    $title = $languageId == 1 ? 'शिर्षक' : 'Title';
-resources/views/publication/publications_old.blade.php-10-    $publishDate = $languageId == 1 ? 'प्रकाशित मिति' : 'Published Date';
-resources/views/publication/publications_old.blade.php:11:    $download = $languageId == 1 ? 'डाउनलोड गर्नुहोस्' : 'Download';
-resources/views/publication/publications_old.blade.php-12-
-resources/views/publication/publications_old.blade.php-13-    $fileNotfound = $languageId == 1 ? 'फाइल उपलब्ध छैन' : 'File Not found.';
-resources/views/publication/publications_old.blade.php-14-    $notAvailableMessage = $languageId == 1 ? 'प्रकाशनहरु उपलब्ध छैन ।' : 'Publications are not available.';
---
-resources/views/publication/publications_old.blade.php-38-                        <th>{{ $sn }}</th>
-resources/views/publication/publications_old.blade.php-39-                        <th>{{ $title }}</th>
-resources/views/publication/publications_old.blade.php-40-                        <th>{{ $publishDate }}</th>
-resources/views/publication/publications_old.blade.php:41:                        <th>{{ $download }}</th>
-resources/views/publication/publications_old.blade.php-42-                        <?php
-resources/views/publication/publications_old.blade.php-43-                        foreach ($publications as $publication) {
-resources/views/publication/publications_old.blade.php-44-                            echo '<tr>';
-resources/views/publication/publications_old.blade.php-45-                            echo '<td>' . $count++ . '</td>';
-resources/views/publication/publications_old.blade.php:46:                            echo '<td><a href="' . $category_url . '/' . $publication->publication_url . '">' . $publication->publication_heading . '</a></td>';
-resources/views/publication/publications_old.blade.php-47-                            if ($languageId == 1) {
-resources/views/publication/publications_old.blade.php-48-                                echo '<td><i class="far fa-calendar-alt"></i>' . \Calendar::eng_to_nep_dor($publication->published_date) . '</td>';
-resources/views/publication/publications_old.blade.php-49-                            } else {
---
-resources/views/publication/publications_old.blade.php-51-                            }
-resources/views/publication/publications_old.blade.php-52-
-resources/views/publication/publications_old.blade.php-53-                            echo '<td>';
-resources/views/publication/publications_old.blade.php:54:                            if (file_exists('uploads/publication/' . $publication->publication_attachment) && $publication->publication_attachment != '') {
-resources/views/publication/publications_old.blade.php-55-                                echo '<span><a href="' .
-resources/views/publication/publications_old.blade.php-56-                                    $abs_site_url .
-resources/views/publication/publications_old.blade.php-57-                                    $subdomain .
-resources/views/publication/publications_old.blade.php-58-                                    '/publication/' .
-resources/views/publication/publications_old.blade.php-59-                                    $category_url .
-resources/views/publication/publications_old.blade.php-60-                                    '/force/' .
-resources/views/publication/publications_old.blade.php:61:                                    $publication->publication_url .
-resources/views/publication/publications_old.blade.php-62-                                    '" target="_blank">
-resources/views/publication/publications_old.blade.php:63:                                                          <i class="fa fa-download"></i>' .
-resources/views/publication/publications_old.blade.php:64:                                    $download .
-resources/views/publication/publications_old.blade.php-65-                                    '</a>
-resources/views/publication/publications_old.blade.php-66-                                                          </span>';
-resources/views/publication/publications_old.blade.php-67-                            } else {
---
-resources/views/publication/publication-detail_old.blade.php-6- $home = ($languageId == 1) ? 'गृह पृष्‍ठ  ': 'Home';
-resources/views/publication/publication-detail_old.blade.php-7- $publicationheading     = ($languageId == 1) ? 'प्रकाशनहरु': 'Publications';
-resources/views/publication/publication-detail_old.blade.php-8- $fileNotfound   = ($languageId == 1) ? 'फाइल उपलब्ध छैन': 'File Not found.';
-resources/views/publication/publication-detail_old.blade.php:9: $download       = ($languageId == 1) ? 'डाउनलोड गर्नुहोस्': 'Download';
-resources/views/publication/publication-detail_old.blade.php-10-        $publishedDate = ($languageId == 1) ? \Calendar::eng_to_nep_dor($publicationData->published_date): $publicationData->en_published_date;
-resources/views/publication/publication-detail_old.blade.php-11-
-resources/views/publication/publication-detail_old.blade.php-12-    // dd($publicationData);
---
-resources/views/publication/publication-detail_old.blade.php-35-
-resources/views/publication/publication-detail_old.blade.php-36-                        <br>
-resources/views/publication/publication-detail_old.blade.php-37-                                                <?php
-resources/views/publication/publication-detail_old.blade.php:38:                                                if(file_exists("uploads/publication/".$publicationData->publication_attachment) && $publicationData->publication_attachment!=''){
-resources/views/publication/publication-detail_old.blade.php-39-                                                ?>
-resources/views/publication/publication-detail_old.blade.php:40:                        <p>{{ $download }} <a href="{{ $abs_site_url.$subdomain }}/publication/{{ $categoryUrl.'/force/'.$publicationData->publication_url }}" target="_blank"><i class="glyphicon glyphicon-download mr6"></i></a></p>
-resources/views/publication/publication-detail_old.blade.php-41-                                                <?php } ?>
-resources/views/publication/publication-detail_old.blade.php-42-                    </div>
-resources/views/publication/publication-detail_old.blade.php-43-
+PS C:\WINDOWS\system32> wsl.exe -d Ubuntu-22.04 --cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade --exec bash -lc "echo '--- FORCE DOWNLOAD CONTROLLER ---'; grep -n -A 75 -B 8 'function getForceDownload' app/Http/Controllers/PublicationController.php; echo '--- PUBLICATION DETAIL MODEL QUERY ---'; sed -n '235,305p' app/Models/Publication.php"
+--- FORCE DOWNLOAD CONTROLLER ---
+589-                    'value' => $correctedTerm,
+590-                ];
+591-            }
+592-        }
+593-
+594-        return Response::json($results);
+595-    }
+596-
+597:    public function getForceDownload($subdomain, $categoryUrl, $url)
+598-    {
+599-        // dd(public_path());
+600-        // dd($subdomain);
+601-        $officeId    = Office::getIdfromSubdomain($subdomain);
+602-        $languageId = Language::getIdFromCode();
+603-        $sessionLangId = (Session::get('language_id')) ? Session::get('language_id') : $languageId;
+604-        Session::put('language_id', $sessionLangId);
+605-
+606-        try {
+607-            $publicationData = Publication::getPublicationDetail($officeId, $url, $sessionLangId);
+608-
+609-            if (
+610-                $publicationData &&
+611-                !empty($publicationData->publication_attachment) &&
+612-                basename($publicationData->publication_attachment) === $publicationData->publication_attachment &&
+613-                is_file(public_path() . '/uploads/publication/' . $publicationData->publication_attachment) &&
+614-                is_readable(public_path() . '/uploads/publication/' . $publicationData->publication_attachment)
+615-            ) {
+616-                $file = public_path() . '/uploads/publication/' . $publicationData->publication_attachment;
+617-                $ext = pathinfo($file, PATHINFO_EXTENSION);
+618-                $safeHeading = str_replace(array('/', '\\'), '-', $publicationData->publication_heading);
+619-                $fileName = trim($safeHeading) . '.' . $ext;
+620-
+621-                DB::table('publication')
+622-                    ->where('id', $publicationData->id)
+623-                    ->increment('download_count', 1);
+624-
+625-                $mimeType = mime_content_type($file) ?: 'application/octet-stream';
+626-                $inlineExtensions = array('pdf', 'jpg', 'jpeg', 'png', 'gif', 'webp');
+627-
+628-                if (in_array(strtolower($ext), $inlineExtensions, true)) {
+629-                    return Response::file($file, array(
+630-                        'Content-Type' => $mimeType,
+631-                    ));
+632-                }
+633-
+634-                return Response::download($file, $fileName, array(
+635-                    'Content-Type' => $mimeType,
+636-                ));
+637-            } else {
+638-                $seoDetail    = Seo::getSeoDetailsByPageNameAndLanguage('error', $sessionLangId);
+639-                return view(
+640-                    'home.404',
+641-                    array(
+642-                        'pageTitle' => $seoDetail->page_title,
+643-                        'metaDescription' => $seoDetail->meta_tags,
+644-                        'metaKeywords' => $seoDetail->meta_description,
+645-                        'abs_site_url' => $this->abs_site_url,
+646-                        'rel_site_url' => $this->rel_site_url,
+647-                        'site_name' => $this->site_name,
+648-                        'subdomain' => $subdomain
+649-                    )
+650-                );
+651-            }
+652-        } catch (Throwable $e) {
+653-            $seoDetail    = Seo::getSeoDetailsByPageNameAndLanguage('error', $sessionLangId);
+654-            return view(
+655-                'home.404',
+656-                array(
+657-                    'pageTitle' => $seoDetail->page_title,
+658-                    'metaDescription' => $seoDetail->meta_tags,
+659-                    'metaKeywords' => $seoDetail->meta_description,
+660-                    'abs_site_url' => $this->abs_site_url,
+661-                    'rel_site_url' => $this->rel_site_url,
+662-                    'site_name' => $this->site_name,
+663-                    'subdomain' => $subdomain
+664-                )
+665-            );
+666-        }
+667-    }
+668-}
+--- PUBLICATION DETAIL MODEL QUERY ---
+    }
+
+    /**
+     * get publication detail by url
+     * @param int $officeId
+     * @param string $url
+     * @param int $langId
+     * @return object
+     */
+    public static function getPublicationDetail($officeId, $url, $langId)
+    {
+        return DB::table('publication')
+            ->join('publication_detail', 'publication.id', '=', 'publication_detail.publication_id')
+            ->select(
+                'publication.id',
+                'publication.publication_url',
+                'publication.publication_meta_tags',
+                'publication.publication_meta_description',
+                'publication_attachment',
+                'publication_detail.publication_heading',
+                'publication_detail.publication_page_title',
+                'publication_detail.publication_description',
+                'published_date',
+                DB::raw('
+                                                                        date_format(published_date, "%d %b, %Y") as en_published_date
+                                                                ')
+            )
+            ->where('publication.office_id', $officeId)
+            ->where('publication.publication_url', $url)
+            ->where('publication_detail.language_id', $langId)
+            ->where('publication.is_active', '1')
+            ->where('publication.is_deleted', '0')
+            ->first();
+    }
+
+    /**
+     * get publication detail by id
+     * @param int $officeId
+     * @param int $id
+     * @param int $langId
+     * @return object
+     */
+    public static function getPublicationDetailById($officeId, $id, $langId)
+    {
+        return DB::table('publication')
+            ->join('publication_detail', 'publication.id', '=', 'publication_detail.publication_id')
+            ->select(
+                'publication.id',
+                'publication.publication_url',
+                'publication.publication_meta_tags',
+                'publication.publication_meta_description',
+                'publication_attachment',
+                'publication_detail.publication_heading',
+                'publication_detail.publication_page_title',
+                'publication_detail.publication_description',
+                'published_date',
+                DB::raw('
+                                                                        date_format(published_date, "%d %b, %Y") as en_published_date
+                                                                ')
+            )
+            ->where('publication.office_id', $officeId)
+            ->where('publication.id', $id)
+            ->where('publication_detail.language_id', $langId)
+            ->where('publication.is_active', '1')
+            ->where('publication.is_deleted', '0')
+            ->first();
+    }
+}
 PS C:\WINDOWS\system32>
