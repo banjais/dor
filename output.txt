@@ -1,19 +1,5 @@
-PS C:\WINDOWS\system32> wsl.exe -d Ubuntu-22.04 --cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade --exec bash -lc "echo '--- PUBLICATION ADMIN UPLOAD / UPDATE ---'; grep -n -B 8 -A 18 -E 'publication_attachment|storeAs|move\(|unlink\(|delete\(' app/Http/Controllers/Admin/PublicationController.php; echo '--- PUBLICATION MODEL REMAINING METHODS ---'; grep -n -B 5 -A 12 -E 'publication_attachment|publication_meta_tags|publication_meta_description' app/Models/Publication.php"
---- PUBLICATION ADMIN UPLOAD / UPDATE ---
-163-
-164-                    if ($imageFile) {
-165-                        $filename       = $imageFile->getClientOriginalName();
-166-                        $extension      = strrchr($filename, '.');
-167-                        $size           = $imageFile->getSize();
-168-                        $new_image_name = "publication" . "_" . time();
-169-
-170-                        if ($size <= $maximum_filesize && preg_match($rEFileTypes, $extension)) {
-171:                            $attachment = $imageFile->move($destinationPath, $new_image_name . $extension);
-172-                        } else if (preg_match($rEFileTypes, $extension) == false) {
-173-                            return Redirect::back()->withInput()
-174-                                ->with('attachment-error', 'Invalid file format. Please upload JPG, JPEG, PDF, PPT or PPTX only.');
-175-                        } else if ($size > $maximum_filesize) {
-176-                            return Redirect::back()->withInput()
+C:\WINDOWS\system32> wsl.exe -d Ubuntu-22.04 --cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade --exec bash -lc "echo '---- PUBLICATION ADMIN CONTROLLER: DELETE / UPLOAD / UPDATE ----'; grep -n -B 12 -A 25 -E 'function (store|update|destroy|delete)|publication_attachment|unlink\(|Storage::|File::delete|forceDelete' app/Http/Controllers/Admin/PublicationController.php"
+---- PUBLICATION ADMIN CONTROLLER: DELETE / UPLOAD / UPDATE ----
 177-                                ->with('attachment-error', 'Maximum attachment size is 130 MB.');
 178-                        }
 179-                    }
@@ -45,25 +31,14 @@ PS C:\WINDOWS\system32> wsl.exe -d Ubuntu-22.04 --cd /mnt/d/DoR-Website-Backup/L
 205-                                'updated_at'                    => date("Y-m-d H:i:s"),
 206-                            ];
 207-                        }
+208-                        DB::table('publication_detail')->insert($insertArray);
+209-                    }
+210-
+211-                    return Redirect::route('admin.publications')
+212-                        ->with('type', 'success')
+213-                        ->with('message', 'New publication is added successfully.');
+214-                }
 --
-320-
-321-                    if ($imageFile) {
-322-                        $filename       = $imageFile->getClientOriginalName();
-323-                        $extension      = strrchr($filename, '.');
-324-                        $size           = $imageFile->getSize();
-325-                        $new_image_name = "publication" . "_" . time();
-326-
-327-                        if ($size <= $maximum_filesize && preg_match($rEFileTypes, $extension)) {
-328:                            $attachment = $imageFile->move($destinationPath, $new_image_name . $extension);
-329-                        } else if (preg_match($rEFileTypes, $extension) == false) {
-330-                            return Redirect::back()->withInput()
-331-                                ->with('attachment-error', 'Invalid file format. Please upload JPG, JPEG, PDF, PPT or PPTX only.');
-332-                        } else if ($size > $maximum_filesize) {
-333-                            return Redirect::back()->withInput()
-334-                                ->with('attachment-error', 'Maximum attachment size is 130 MB.');
-335-                        }
-336-                    } else {
-337-                        $attachment_deleted = $request->get('attachment_deleted');
 338-                    }
 339-
 340-                    $logo = isset($attachment) ? $new_image_name . $extension : null;
@@ -109,84 +84,50 @@ PS C:\WINDOWS\system32> wsl.exe -d Ubuntu-22.04 --cd /mnt/d/DoR-Website-Backup/L
 380-                            } else {
 381-                                $insertArray[] = [
 382-                                    'publication_id'                => $objectPublication->id,
---- PUBLICATION MODEL REMAINING METHODS ---
-122-                'publication.office_id',
-123-                'publication.category_id',
-124-                'publication_url',
-125-                'category_url',
-126-                'publication_heading',
-127:                'publication_attachment',
-128-                'published_date',
-129-                'category_page_title',
-130-                'category_meta_tags',
-131-                'category_meta_description',
-132-                DB::raw('
-133-                                                                    date_format(published_date, "%d %b, %Y") as en_published_date
-134-                                                            ')
-135-            )
-136-            ->when((int) $officeId !== 4, function ($query) use ($officeId) {
-137-                $query->where('publication.office_id', $officeId)
-138-                    ->where('publication_category.office_id', $officeId);
-139-            })
+383-                                    'language_id'                   => $language->id,
+384-                                    'publication_heading'           => trim($request->get('publication_heading_' . $language->id)),
+385-                                    'publication_description'       => trim($request->get('publication_description_' . $language->id)),
+386-                                    'publication_page_title'        => trim($request->get('publication_page_title_' . $language->id)),
+387-                                    'created_at'                    => date("Y-m-d H:i:s"),
+388-                                    'updated_at'                    => date("Y-m-d H:i:s"),
+389-                                ];
 --
-159-                'publication.id',
-160-                'publication.category_id',
-161-                'publication_url',
-162-                'category_url',
-163-                'publication_heading',
-164:                'publication_attachment',
-165-                'published_date',
-166-                'category_page_title',
-167-                'category_meta_tags',
-168-                'category_meta_description',
-169-                DB::raw('
-170-                                                                    date_format(published_date, "%d %b, %Y") as en_published_date
-171-                                                            ')
-172-            )
-173-            ->where('publication.office_id', $officeId)
-174-            ->where('publication_detail.language_id', $langId)
-175-            ->where('publication_category_detail.language_id', $langId)
-176-            ->where('publication.is_active', '1')
---
-246-        return DB::table('publication')
-247-            ->join('publication_detail', 'publication.id', '=', 'publication_detail.publication_id')
-248-            ->select(
-249-                'publication.id',
-250-                'publication.publication_url',
-251:                'publication.publication_meta_tags',
-252:                'publication.publication_meta_description',
-253:                'publication_attachment',
-254-                'publication_detail.publication_heading',
-255-                'publication_detail.publication_page_title',
-256-                'publication_detail.publication_description',
-257-                'published_date',
-258-                DB::raw('
-259-                                                                    date_format(published_date, "%d %b, %Y") as en_published_date
-260-                                                            ')
-261-            )
-262-            ->where('publication.office_id', $officeId)
-263-            ->where('publication.publication_url', $url)
-264-            ->where('publication_detail.language_id', $langId)
-265-            ->where('publication.is_active', '1')
---
-279-        return DB::table('publication')
-280-            ->join('publication_detail', 'publication.id', '=', 'publication_detail.publication_id')
-281-            ->select(
-282-                'publication.id',
-283-                'publication.publication_url',
-284:                'publication.publication_meta_tags',
-285:                'publication.publication_meta_description',
-286:                'publication_attachment',
-287-                'publication_detail.publication_heading',
-288-                'publication_detail.publication_page_title',
-289-                'publication_detail.publication_description',
-290-                'published_date',
-291-                DB::raw('
-292-                                                                    date_format(published_date, "%d %b, %Y") as en_published_date
-293-                                                            ')
-294-            )
-295-            ->where('publication.office_id', $officeId)
-296-            ->where('publication.id', $id)
-297-            ->where('publication_detail.language_id', $langId)
-298-            ->where('publication.is_active', '1')
+402-        } catch (Throwable $e) {
+403-            report($e);
+404-            return Redirect::back()->withInput()
+405-                ->with('type', 'error')
+406-                ->with('message', 'Publication is not updated.');
+407-        }
+408-    }
+409-
+410-    /*
+411-     * publication delete action admin panel
+412-     * @return JSON
+413-     */
+414:    public function deletePublication(Request $request)
+415-    {
+416-        $publicationId                 = $request->get('id');
+417-        $objectPublication             = Publication::find($publicationId);
+418-        $objectPublication->is_active  = '0';
+419-        $objectPublication->is_deleted = '1';
+420-        $objectPublication->save();
+421-
+422-        if ($objectPublication->id) {
+423-            $data['type']    = "success";
+424-            $data['message'] = "Publication deleted Successfully.";
+425-            exit(json_encode($data));
+426-        } else {
+427-            $array['type']    = "error";
+428-            $array['message'] = "Server Error.";
+429-            exit(json_encode($array));
+430-        }
+431-    }
+432-
+433-    /*
+434-     * publication staus change action admin panel
+435-     * @return JSON
+436-     */
+437-    public function changeStatus(Request $request)
+438-    {
+439-        $publicationId     = $request->get('id');
 PS C:\WINDOWS\system32>
