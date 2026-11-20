@@ -1,133 +1,305 @@
-PS C:\WINDOWS\system32> wsl.exe -d Ubuntu-22.04 --cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade --exec bash -lc "sed -n '300,430p' app/Http/Controllers/Admin/PublicationController.php"
-                    return Redirect::back()->withInput()
-                        ->with('attachment-error', $validator->errors()->first('attachment'));
-                }
-
-                return Redirect::back()->withInput()->withErrors($validator);
-            } else {
-
-                $publicationUrl   = trim(preg_replace('/[^A-Za-z0-9\-]/', '-', strtolower(trim($request->get('publication_url')))), '-');
-                $publicationExist = Publication::checkExist($publicationUrl, $officeId);
-
-                if ($publicationExist && $publicationExist != $publicationId) {
-                    $message = 'Publication with url <b>' . $publicationUrl . '</b> is already exist';
-                    return Redirect::back()->withInput()
-                        ->with('type', 'error')
-                        ->with('message', $message);
-                } else {
-                    $imageFile        = $request->file('attachment');
-                    $destinationPath  = 'uploads/publication/';
-                    $rEFileTypes      = "/^\.(jpg|jpeg|pdf|ppt|pptx)$/i";
-                    $maximum_filesize = 130 * 1024 * 1024;
-
-                    if ($imageFile) {
-                        $filename       = $imageFile->getClientOriginalName();
-                        $extension      = strrchr($filename, '.');
-                        $size           = $imageFile->getSize();
-                        $new_image_name = "publication" . "_" . time();
-
-                        if ($size <= $maximum_filesize && preg_match($rEFileTypes, $extension)) {
-                            $attachment = $imageFile->move($destinationPath, $new_image_name . $extension);
-                        } else if (preg_match($rEFileTypes, $extension) == false) {
-                            return Redirect::back()->withInput()
-                                ->with('attachment-error', 'Invalid file format. Please upload JPG, JPEG, PDF, PPT or PPTX only.');
-                        } else if ($size > $maximum_filesize) {
-                            return Redirect::back()->withInput()
-                                ->with('attachment-error', 'Maximum attachment size is 130 MB.');
-                        }
-                    } else {
-                        $attachment_deleted = $request->get('attachment_deleted');
-                    }
-
-                    $logo = isset($attachment) ? $new_image_name . $extension : null;
-
-                    $objectPublication                               = Publication::find($publicationId);
-                    $objectPublication->publication_url              = $publicationUrl;
-                    $objectPublication->publication_meta_tags        = $request->get('publication_meta_tags');
-                    $objectPublication->publication_meta_description = $request->get('publication_meta_description');
-                    $objectPublication->category_id                  = $request->get('category_id');
-                    $objectPublication->published_date               = $request->get('published_date');
-                    $objectPublication->is_active                    = $request->get('is_active');
-
-                    $oldAttachment = $objectPublication->publication_attachment;
-
-                    if ($logo) {
-                        $objectPublication->publication_attachment = $logo;
-                    } else if (isset($attachment_deleted) && $attachment_deleted == '1') {
-                        $objectPublication->publication_attachment = null;
-                    }
-
-                    $objectPublication->updated_by = Auth::user()->id;
-                    $objectPublication->save();
-
-                    if (($logo || (isset($attachment_deleted) && $attachment_deleted == '1')) && $oldAttachment && $oldAttachment !== $objectPublication->publication_attachment) {
-                        $oldAttachmentPath = 'uploads/publication/' . $oldAttachment;
-                        if (is_file($oldAttachmentPath)) {
-                            unlink($oldAttachmentPath);
-                        }
-                    }
-
-                    if ($objectPublication->id) {
-                        $insertArray = array();
-                        foreach ($languages as $language) {
-                            $detailId = $request->get('detail_id_' . $language->id);
-
-                            $objectPublicationDetail = Publicationdetail::find($detailId);
-                            if ($objectPublicationDetail) {
-                                $objectPublicationDetail->publication_heading           = trim($request->get('publication_heading_' . $language->id));
-                                $objectPublicationDetail->publication_description       = trim($request->get('publication_description_' . $language->id));
-                                $objectPublicationDetail->publication_page_title        = trim($request->get('publication_page_title_' . $language->id));
-                                $objectPublicationDetail->save();
-                                continue;
-                            } else {
-                                $insertArray[] = [
-                                    'publication_id'                => $objectPublication->id,
-                                    'language_id'                   => $language->id,
-                                    'publication_heading'           => trim($request->get('publication_heading_' . $language->id)),
-                                    'publication_description'       => trim($request->get('publication_description_' . $language->id)),
-                                    'publication_page_title'        => trim($request->get('publication_page_title_' . $language->id)),
-                                    'created_at'                    => date("Y-m-d H:i:s"),
-                                    'updated_at'                    => date("Y-m-d H:i:s"),
-                                ];
-                            }
-                        }
-
-                        if (count($insertArray) > 0) {
-                            DB::table('publication_detail')->insert($insertArray);
-                        }
-                    }
-                    return Redirect::route('admin.publications')
-                        ->with('type', 'success')
-                        ->with('message', 'Publication is updated successfully.');
-                }
-            }
-        } catch (Throwable $e) {
-            report($e);
-            return Redirect::back()->withInput()
-                ->with('type', 'error')
-                ->with('message', 'Publication is not updated.');
-        }
-    }
-
-    /*
-     * publication delete action admin panel
-     * @return JSON
-     */
-    public function deletePublication(Request $request)
-    {
-        $publicationId                 = $request->get('id');
-        $objectPublication             = Publication::find($publicationId);
-        $objectPublication->is_active  = '0';
-        $objectPublication->is_deleted = '1';
-        $objectPublication->save();
-
-        if ($objectPublication->id) {
-            $data['type']    = "success";
-            $data['message'] = "Publication deleted Successfully.";
-            exit(json_encode($data));
-        } else {
-            $array['type']    = "error";
-            $array['message'] = "Server Error.";
-            exit(json_encode($array));
-        }
-PS C:\WINDOWS\system32>
+doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && echo "---- BUTLIKE CSS ----" && grep -n -B 8 -A 15 '\.butlike' public/assets/css_2021/*.css && echo "---- BACK BTN CSS ----" && grep -n -B 8 -A 15 '\.back-btn' public/assets/css_2021/*.css
+---- BUTLIKE CSS ----
+public/assets/css_2021/website-theme.css-2729-.other-office-officers-frame .media-desc p {
+public/assets/css_2021/website-theme.css-2730-    white-space: normal !important;
+public/assets/css_2021/website-theme.css-2731-    overflow-wrap: anywhere !important;
+public/assets/css_2021/website-theme.css-2732-    word-break: normal !important;
+public/assets/css_2021/website-theme.css-2733-    line-height: 1.35 !important;
+public/assets/css_2021/website-theme.css-2734-}
+public/assets/css_2021/website-theme.css-2735-
+public/assets/css_2021/website-theme.css-2736-/* Keep the switch link plates visually consistent */
+public/assets/css_2021/website-theme.css:2737:.butlike,
+public/assets/css_2021/website-theme.css-2738-.back-btn {
+public/assets/css_2021/website-theme.css-2739-    background: #eef2f5 !important;
+public/assets/css_2021/website-theme.css-2740-    border-radius: 4px;
+public/assets/css_2021/website-theme.css-2741-}
+public/assets/css_2021/website-theme.css-2742-
+public/assets/css_2021/website-theme.css:2743:.butlike {
+public/assets/css_2021/website-theme.css-2744-    display: inline-block;
+public/assets/css_2021/website-theme.css-2745-    padding: 10px;
+public/assets/css_2021/website-theme.css-2746-}
+public/assets/css_2021/website-theme.css-2747-
+public/assets/css_2021/website-theme.css:2748:.butlike:hover,
+public/assets/css_2021/website-theme.css-2749-.back-btn:hover {
+public/assets/css_2021/website-theme.css-2750-    background: #e5ebf0 !important;
+public/assets/css_2021/website-theme.css-2751-}
+public/assets/css_2021/website-theme.css-2752-
+public/assets/css_2021/website-theme.css-2753-/* Mobile: let content determine height to avoid clipping */
+public/assets/css_2021/website-theme.css-2754-@media (max-width: 767.98px) {
+public/assets/css_2021/website-theme.css-2755-    .home-officers-panel > .person-block,
+public/assets/css_2021/website-theme.css-2756-    .head-office-contact-officers,
+public/assets/css_2021/website-theme.css-2757-    .other-office-officers-frame {
+public/assets/css_2021/website-theme.css-2758-        height: auto !important;
+public/assets/css_2021/website-theme.css-2759-        min-height: 0 !important;
+public/assets/css_2021/website-theme.css-2760-        max-height: none !important;
+public/assets/css_2021/website-theme.css-2761-    }
+public/assets/css_2021/website-theme.css-2762-
+public/assets/css_2021/website-theme.css-2763-    .head-office-contact-officers > .media-block,
+--
+public/assets/css_2021/website-theme.css-4017-    .nav-wrap .navbar-nav .nav-link {
+public/assets/css_2021/website-theme.css-4018-        padding-top: 10px !important;
+public/assets/css_2021/website-theme.css-4019-        padding-bottom: 10px !important;
+public/assets/css_2021/website-theme.css-4020-        line-height: 1.2 !important;
+public/assets/css_2021/website-theme.css-4021-    }
+public/assets/css_2021/website-theme.css-4022-
+public/assets/css_2021/website-theme.css-4023-    /* Both Head Office switch plates */
+public/assets/css_2021/website-theme.css-4024-    #cssmenu > .back-btn,
+public/assets/css_2021/website-theme.css:4025:    #cssmenu > .butlike,
+public/assets/css_2021/website-theme.css-4026-    #cssmenu .back-btn,
+public/assets/css_2021/website-theme.css:4027:    #cssmenu .butlike {
+public/assets/css_2021/website-theme.css-4028-        display: inline-flex !important;
+public/assets/css_2021/website-theme.css-4029-        align-items: center !important;
+public/assets/css_2021/website-theme.css-4030-        justify-content: center !important;
+public/assets/css_2021/website-theme.css-4031-        box-sizing: border-box !important;
+public/assets/css_2021/website-theme.css-4032-        padding: 6px 11px !important;
+public/assets/css_2021/website-theme.css-4033-        margin: 0 0 0 8px !important;
+public/assets/css_2021/website-theme.css-4034-        min-height: 0 !important;
+public/assets/css_2021/website-theme.css-4035-        height: auto !important;
+public/assets/css_2021/website-theme.css-4036-        line-height: 1.2 !important;
+public/assets/css_2021/website-theme.css-4037-        background: #e3e9ef !important;
+public/assets/css_2021/website-theme.css-4038-        color: #29465f !important;
+public/assets/css_2021/website-theme.css-4039-        border: 1px solid #c5d0db !important;
+public/assets/css_2021/website-theme.css-4040-        border-radius: 4px !important;
+public/assets/css_2021/website-theme.css-4041-        text-decoration: none !important;
+public/assets/css_2021/website-theme.css-4042-    }
+public/assets/css_2021/website-theme.css-4043-
+public/assets/css_2021/website-theme.css-4044-    #cssmenu > .back-btn:hover,
+public/assets/css_2021/website-theme.css:4045:    #cssmenu > .butlike:hover,
+public/assets/css_2021/website-theme.css-4046-    #cssmenu .back-btn:hover,
+public/assets/css_2021/website-theme.css:4047:    #cssmenu .butlike:hover {
+public/assets/css_2021/website-theme.css-4048-        background: #d2dde7 !important;
+public/assets/css_2021/website-theme.css-4049-        color: #18364f !important;
+public/assets/css_2021/website-theme.css-4050-    }
+public/assets/css_2021/website-theme.css-4051-}
+public/assets/css_2021/website-theme.css-4052-
+public/assets/css_2021/website-theme.css-4053-/* Final desktop navigation sizing: Main and Other Offices */
+public/assets/css_2021/website-theme.css-4054-@media (min-width: 992px) {
+public/assets/css_2021/website-theme.css-4055-    /* Other Office - Bootstrap 5 navigation */
+public/assets/css_2021/website-theme.css-4056-    #navbarSupportedContent .navbar-nav > li > a,
+public/assets/css_2021/website-theme.css-4057-    #navbarSupportedContent .navbar-nav > li > .nav-link,
+public/assets/css_2021/website-theme.css-4058-    #navbarSupportedContent .navbar-nav .nav-link {
+public/assets/css_2021/website-theme.css-4059-        padding-top: 10px !important;
+public/assets/css_2021/website-theme.css-4060-        padding-bottom: 10px !important;
+public/assets/css_2021/website-theme.css-4061-        line-height: 1.2 !important;
+public/assets/css_2021/website-theme.css-4062-    }
+---- BACK BTN CSS ----
+public/assets/css_2021/responsive.css-79-         height: 536px !important;
+public/assets/css_2021/responsive.css-80-     }
+public/assets/css_2021/responsive.css-81-     .fig-wrap {
+public/assets/css_2021/responsive.css-82-         height: 200px;
+public/assets/css_2021/responsive.css-83-     }
+public/assets/css_2021/responsive.css-84-     .slider-fig {
+public/assets/css_2021/responsive.css-85-         height: 358px;
+public/assets/css_2021/responsive.css-86-     }
+public/assets/css_2021/responsive.css:87:     .back-btn{
+public/assets/css_2021/responsive.css-88-         margin: 0;
+public/assets/css_2021/responsive.css-89-     }
+public/assets/css_2021/responsive.css-90-     .main-header-wrap {
+public/assets/css_2021/responsive.css-91-        position: fixed;
+public/assets/css_2021/responsive.css-92-    }
+public/assets/css_2021/responsive.css-93-   .main-header-wrap.sticky-nav {
+public/assets/css_2021/responsive.css-94-        top: -133px;
+public/assets/css_2021/responsive.css-95-    }
+public/assets/css_2021/responsive.css-96-    .main-body {
+public/assets/css_2021/responsive.css-97-        padding-top: 181px;
+public/assets/css_2021/responsive.css-98-    }
+public/assets/css_2021/responsive.css-99- }
+public/assets/css_2021/responsive.css-100- /*Extra large devices (large desktops, 1200px and up)*/
+public/assets/css_2021/responsive.css-101-
+public/assets/css_2021/responsive.css-102- @media (min-width: 1200px) {
+--
+public/assets/css_2021/style.css-1503-    height: auto;
+public/assets/css_2021/style.css-1504-    color: #fff;
+public/assets/css_2021/style.css-1505-}
+public/assets/css_2021/style.css-1506-
+public/assets/css_2021/style.css-1507-.general-info p {
+public/assets/css_2021/style.css-1508-    text-align: justify;
+public/assets/css_2021/style.css-1509-    line-height: normal;
+public/assets/css_2021/style.css-1510-}
+public/assets/css_2021/style.css:1511:.back-btn {
+public/assets/css_2021/style.css-1512-    display: inline-block;
+public/assets/css_2021/style.css-1513-    padding: 10px 10px;
+public/assets/css_2021/style.css-1514-    background: #f1f3f5;
+public/assets/css_2021/style.css-1515-    color:#0099DA;
+public/assets/css_2021/style.css-1516-    margin-bottom: 10px;
+public/assets/css_2021/style.css-1517-    border-radius: 4px;
+public/assets/css_2021/style.css-1518-    -webkit-border-radius: 4px;
+public/assets/css_2021/style.css-1519-    -moz-border-radius: 4px;
+public/assets/css_2021/style.css-1520-    -ms-border-radius: 4px;
+public/assets/css_2021/style.css-1521-    -o-border-radius: 4px;
+public/assets/css_2021/style.css-1522-}
+public/assets/css_2021/style.css:1523:.back-btn:hover{
+public/assets/css_2021/style.css-1524-    background: #f0efef;
+public/assets/css_2021/style.css-1525-}
+public/assets/css_2021/style.css-1526-.dept-wrap {
+public/assets/css_2021/style.css-1527-    padding: 10px 10px;
+public/assets/css_2021/style.css-1528-}
+public/assets/css_2021/style.css-1529-.dept-wrap p {
+public/assets/css_2021/style.css-1530-    margin: 0;
+public/assets/css_2021/style.css-1531-    line-height: 22px;
+public/assets/css_2021/style.css-1532-}
+public/assets/css_2021/style.css-1533-.fig-holder {
+public/assets/css_2021/style.css-1534-    margin: 0 0 10px;
+public/assets/css_2021/style.css-1535-}
+public/assets/css_2021/style.css-1536-.dept-wrap h6 {
+public/assets/css_2021/style.css-1537-    margin: 0;
+public/assets/css_2021/style.css-1538-    line-height: 22px;
+--
+public/assets/css_2021/website-theme.css-2730-    white-space: normal !important;
+public/assets/css_2021/website-theme.css-2731-    overflow-wrap: anywhere !important;
+public/assets/css_2021/website-theme.css-2732-    word-break: normal !important;
+public/assets/css_2021/website-theme.css-2733-    line-height: 1.35 !important;
+public/assets/css_2021/website-theme.css-2734-}
+public/assets/css_2021/website-theme.css-2735-
+public/assets/css_2021/website-theme.css-2736-/* Keep the switch link plates visually consistent */
+public/assets/css_2021/website-theme.css-2737-.butlike,
+public/assets/css_2021/website-theme.css:2738:.back-btn {
+public/assets/css_2021/website-theme.css-2739-    background: #eef2f5 !important;
+public/assets/css_2021/website-theme.css-2740-    border-radius: 4px;
+public/assets/css_2021/website-theme.css-2741-}
+public/assets/css_2021/website-theme.css-2742-
+public/assets/css_2021/website-theme.css-2743-.butlike {
+public/assets/css_2021/website-theme.css-2744-    display: inline-block;
+public/assets/css_2021/website-theme.css-2745-    padding: 10px;
+public/assets/css_2021/website-theme.css-2746-}
+public/assets/css_2021/website-theme.css-2747-
+public/assets/css_2021/website-theme.css-2748-.butlike:hover,
+public/assets/css_2021/website-theme.css:2749:.back-btn:hover {
+public/assets/css_2021/website-theme.css-2750-    background: #e5ebf0 !important;
+public/assets/css_2021/website-theme.css-2751-}
+public/assets/css_2021/website-theme.css-2752-
+public/assets/css_2021/website-theme.css-2753-/* Mobile: let content determine height to avoid clipping */
+public/assets/css_2021/website-theme.css-2754-@media (max-width: 767.98px) {
+public/assets/css_2021/website-theme.css-2755-    .home-officers-panel > .person-block,
+public/assets/css_2021/website-theme.css-2756-    .head-office-contact-officers,
+public/assets/css_2021/website-theme.css-2757-    .other-office-officers-frame {
+public/assets/css_2021/website-theme.css-2758-        height: auto !important;
+public/assets/css_2021/website-theme.css-2759-        min-height: 0 !important;
+public/assets/css_2021/website-theme.css-2760-        max-height: none !important;
+public/assets/css_2021/website-theme.css-2761-    }
+public/assets/css_2021/website-theme.css-2762-
+public/assets/css_2021/website-theme.css-2763-    .head-office-contact-officers > .media-block,
+public/assets/css_2021/website-theme.css-2764-    .other-office-officers-frame > .media-block {
+--
+public/assets/css_2021/website-theme.css-3975-    .nav-wrap .navbar-nav > li > a,
+public/assets/css_2021/website-theme.css-3976-    .nav-wrap .navbar-nav .nav-link {
+public/assets/css_2021/website-theme.css-3977-        padding-top: 10px !important;
+public/assets/css_2021/website-theme.css-3978-        padding-bottom: 10px !important;
+public/assets/css_2021/website-theme.css-3979-        line-height: 1.2 !important;
+public/assets/css_2021/website-theme.css-3980-    }
+public/assets/css_2021/website-theme.css-3981-
+public/assets/css_2021/website-theme.css-3982-    /* Switch to Head Office plate */
+public/assets/css_2021/website-theme.css:3983:    .nav-wrap .navbar-collapse .back-btn,
+public/assets/css_2021/website-theme.css:3984:    .navbar-collapse .back-btn {
+public/assets/css_2021/website-theme.css-3985-        display: inline-flex !important;
+public/assets/css_2021/website-theme.css-3986-        align-items: center !important;
+public/assets/css_2021/website-theme.css-3987-        justify-content: center !important;
+public/assets/css_2021/website-theme.css-3988-        padding: 7px 10px !important;
+public/assets/css_2021/website-theme.css-3989-        margin-top: 0 !important;
+public/assets/css_2021/website-theme.css-3990-        margin-bottom: 0 !important;
+public/assets/css_2021/website-theme.css-3991-        min-height: 0 !important;
+public/assets/css_2021/website-theme.css-3992-        height: auto !important;
+public/assets/css_2021/website-theme.css-3993-        line-height: 1.2 !important;
+public/assets/css_2021/website-theme.css-3994-        background-color: #e3e9ef !important;
+public/assets/css_2021/website-theme.css-3995-        color: #29465f !important;
+public/assets/css_2021/website-theme.css-3996-        border: 1px solid #c5d0db !important;
+public/assets/css_2021/website-theme.css-3997-        border-radius: 4px !important;
+public/assets/css_2021/website-theme.css-3998-    }
+public/assets/css_2021/website-theme.css-3999-
+public/assets/css_2021/website-theme.css:4000:    .nav-wrap .navbar-collapse .back-btn:hover,
+public/assets/css_2021/website-theme.css:4001:    .navbar-collapse .back-btn:hover {
+public/assets/css_2021/website-theme.css-4002-        background-color: #d2dde7 !important;
+public/assets/css_2021/website-theme.css-4003-        color: #18364f !important;
+public/assets/css_2021/website-theme.css-4004-    }
+public/assets/css_2021/website-theme.css-4005-}
+public/assets/css_2021/website-theme.css-4006-
+public/assets/css_2021/website-theme.css-4007-/* Final compact navigation for Main Office and Other Offices */
+public/assets/css_2021/website-theme.css-4008-@media (min-width: 992px) {
+public/assets/css_2021/website-theme.css-4009-    #cssmenu > .nav,
+public/assets/css_2021/website-theme.css-4010-    #cssmenu > .navbar-nav {
+public/assets/css_2021/website-theme.css-4011-        align-items: center !important;
+public/assets/css_2021/website-theme.css-4012-    }
+public/assets/css_2021/website-theme.css-4013-
+public/assets/css_2021/website-theme.css-4014-    #cssmenu .navbar-nav > li > a,
+public/assets/css_2021/website-theme.css-4015-    #cssmenu .navbar-nav .nav-link,
+public/assets/css_2021/website-theme.css-4016-    .nav-wrap .navbar-nav > li > a,
+public/assets/css_2021/website-theme.css-4017-    .nav-wrap .navbar-nav .nav-link {
+public/assets/css_2021/website-theme.css-4018-        padding-top: 10px !important;
+public/assets/css_2021/website-theme.css-4019-        padding-bottom: 10px !important;
+public/assets/css_2021/website-theme.css-4020-        line-height: 1.2 !important;
+public/assets/css_2021/website-theme.css-4021-    }
+public/assets/css_2021/website-theme.css-4022-
+public/assets/css_2021/website-theme.css-4023-    /* Both Head Office switch plates */
+public/assets/css_2021/website-theme.css:4024:    #cssmenu > .back-btn,
+public/assets/css_2021/website-theme.css-4025-    #cssmenu > .butlike,
+public/assets/css_2021/website-theme.css:4026:    #cssmenu .back-btn,
+public/assets/css_2021/website-theme.css-4027-    #cssmenu .butlike {
+public/assets/css_2021/website-theme.css-4028-        display: inline-flex !important;
+public/assets/css_2021/website-theme.css-4029-        align-items: center !important;
+public/assets/css_2021/website-theme.css-4030-        justify-content: center !important;
+public/assets/css_2021/website-theme.css-4031-        box-sizing: border-box !important;
+public/assets/css_2021/website-theme.css-4032-        padding: 6px 11px !important;
+public/assets/css_2021/website-theme.css-4033-        margin: 0 0 0 8px !important;
+public/assets/css_2021/website-theme.css-4034-        min-height: 0 !important;
+public/assets/css_2021/website-theme.css-4035-        height: auto !important;
+public/assets/css_2021/website-theme.css-4036-        line-height: 1.2 !important;
+public/assets/css_2021/website-theme.css-4037-        background: #e3e9ef !important;
+public/assets/css_2021/website-theme.css-4038-        color: #29465f !important;
+public/assets/css_2021/website-theme.css-4039-        border: 1px solid #c5d0db !important;
+public/assets/css_2021/website-theme.css-4040-        border-radius: 4px !important;
+public/assets/css_2021/website-theme.css-4041-        text-decoration: none !important;
+public/assets/css_2021/website-theme.css-4042-    }
+public/assets/css_2021/website-theme.css-4043-
+public/assets/css_2021/website-theme.css:4044:    #cssmenu > .back-btn:hover,
+public/assets/css_2021/website-theme.css-4045-    #cssmenu > .butlike:hover,
+public/assets/css_2021/website-theme.css:4046:    #cssmenu .back-btn:hover,
+public/assets/css_2021/website-theme.css-4047-    #cssmenu .butlike:hover {
+public/assets/css_2021/website-theme.css-4048-        background: #d2dde7 !important;
+public/assets/css_2021/website-theme.css-4049-        color: #18364f !important;
+public/assets/css_2021/website-theme.css-4050-    }
+public/assets/css_2021/website-theme.css-4051-}
+public/assets/css_2021/website-theme.css-4052-
+public/assets/css_2021/website-theme.css-4053-/* Final desktop navigation sizing: Main and Other Offices */
+public/assets/css_2021/website-theme.css-4054-@media (min-width: 992px) {
+public/assets/css_2021/website-theme.css-4055-    /* Other Office - Bootstrap 5 navigation */
+public/assets/css_2021/website-theme.css-4056-    #navbarSupportedContent .navbar-nav > li > a,
+public/assets/css_2021/website-theme.css-4057-    #navbarSupportedContent .navbar-nav > li > .nav-link,
+public/assets/css_2021/website-theme.css-4058-    #navbarSupportedContent .navbar-nav .nav-link {
+public/assets/css_2021/website-theme.css-4059-        padding-top: 10px !important;
+public/assets/css_2021/website-theme.css-4060-        padding-bottom: 10px !important;
+public/assets/css_2021/website-theme.css-4061-        line-height: 1.2 !important;
+public/assets/css_2021/website-theme.css-4062-    }
+public/assets/css_2021/website-theme.css-4063-
+public/assets/css_2021/website-theme.css-4064-    /* Other Office switch plate */
+public/assets/css_2021/website-theme.css:4065:    #navbarSupportedContent .back-btn {
+public/assets/css_2021/website-theme.css-4066-        display: inline-flex !important;
+public/assets/css_2021/website-theme.css-4067-        align-items: center !important;
+public/assets/css_2021/website-theme.css-4068-        justify-content: center !important;
+public/assets/css_2021/website-theme.css-4069-        box-sizing: border-box !important;
+public/assets/css_2021/website-theme.css-4070-        padding: 6px 11px !important;
+public/assets/css_2021/website-theme.css-4071-        margin: 0 0 0 8px !important;
+public/assets/css_2021/website-theme.css-4072-        background-color: #c2ccd6 !important;
+public/assets/css_2021/website-theme.css-4073-        color: #18364f !important;
+public/assets/css_2021/website-theme.css-4074-        border: 1px solid #9eacba !important;
+public/assets/css_2021/website-theme.css-4075-        border-radius: 4px !important;
+public/assets/css_2021/website-theme.css-4076-        line-height: 1.2 !important;
+public/assets/css_2021/website-theme.css-4077-        text-decoration: none !important;
+public/assets/css_2021/website-theme.css-4078-    }
+public/assets/css_2021/website-theme.css-4079-
+public/assets/css_2021/website-theme.css:4080:    #navbarSupportedContent .back-btn:hover {
+public/assets/css_2021/website-theme.css-4081-        background-color: #aebbc9 !important;
+public/assets/css_2021/website-theme.css-4082-        color: #102b43 !important;
+public/assets/css_2021/website-theme.css-4083-    }
+public/assets/css_2021/website-theme.css-4084-}
+public/assets/css_2021/website-theme.css-4085-
+public/assets/css_2021/website-theme.css-4086-/* Final: Other Office officer panel height follows actual officer count */
+public/assets/css_2021/website-theme.css-4087-@media (min-width: 992px) {
+public/assets/css_2021/website-theme.css-4088-    .home-officers-panel > .person-block.other-office-officers-frame {
+public/assets/css_2021/website-theme.css-4089-        height: calc(52px + var(--officer-count, 4) * 79px) !important;
+public/assets/css_2021/website-theme.css-4090-        min-height: calc(52px + var(--officer-count, 4) * 79px) !important;
+public/assets/css_2021/website-theme.css-4091-        max-height: calc(52px + var(--officer-count, 4) * 79px) !important;
+public/assets/css_2021/website-theme.css-4092-        flex: 0 0 auto !important;
+public/assets/css_2021/website-theme.css-4093-        box-sizing: border-box !important;
+public/assets/css_2021/website-theme.css-4094-    }
+public/assets/css_2021/website-theme.css-4095-
+doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$
