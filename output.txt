@@ -1,86 +1,196 @@
-PS C:\WINDOWS\system32> wsl.exe -d Ubuntu-22.04 --cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade --exec bash -lc "echo '--- FORCE DOWNLOAD CONTROLLER ---'; grep -n -A 75 -B 8 'function getForceDownload' app/Http/Controllers/PublicationController.php; echo '--- PUBLICATION DETAIL MODEL QUERY ---'; sed -n '235,305p' app/Models/Publication.php"
---- FORCE DOWNLOAD CONTROLLER ---
-589-                    'value' => $correctedTerm,
-590-                ];
-591-            }
-592-        }
-593-
-594-        return Response::json($results);
-595-    }
-596-
-597:    public function getForceDownload($subdomain, $categoryUrl, $url)
-598-    {
-599-        // dd(public_path());
-600-        // dd($subdomain);
-601-        $officeId    = Office::getIdfromSubdomain($subdomain);
-602-        $languageId = Language::getIdFromCode();
-603-        $sessionLangId = (Session::get('language_id')) ? Session::get('language_id') : $languageId;
-604-        Session::put('language_id', $sessionLangId);
-605-
-606-        try {
-607-            $publicationData = Publication::getPublicationDetail($officeId, $url, $sessionLangId);
-608-
-609-            if (
-610-                $publicationData &&
-611-                !empty($publicationData->publication_attachment) &&
-612-                basename($publicationData->publication_attachment) === $publicationData->publication_attachment &&
-613-                is_file(public_path() . '/uploads/publication/' . $publicationData->publication_attachment) &&
-614-                is_readable(public_path() . '/uploads/publication/' . $publicationData->publication_attachment)
-615-            ) {
-616-                $file = public_path() . '/uploads/publication/' . $publicationData->publication_attachment;
-617-                $ext = pathinfo($file, PATHINFO_EXTENSION);
-618-                $safeHeading = str_replace(array('/', '\\'), '-', $publicationData->publication_heading);
-619-                $fileName = trim($safeHeading) . '.' . $ext;
-620-
-621-                DB::table('publication')
-622-                    ->where('id', $publicationData->id)
-623-                    ->increment('download_count', 1);
-624-
-625-                $mimeType = mime_content_type($file) ?: 'application/octet-stream';
-626-                $inlineExtensions = array('pdf', 'jpg', 'jpeg', 'png', 'gif', 'webp');
-627-
-628-                if (in_array(strtolower($ext), $inlineExtensions, true)) {
-629-                    return Response::file($file, array(
-630-                        'Content-Type' => $mimeType,
-631-                    ));
-632-                }
-633-
-634-                return Response::download($file, $fileName, array(
-635-                    'Content-Type' => $mimeType,
-636-                ));
-637-            } else {
-638-                $seoDetail    = Seo::getSeoDetailsByPageNameAndLanguage('error', $sessionLangId);
-639-                return view(
-640-                    'home.404',
-641-                    array(
-642-                        'pageTitle' => $seoDetail->page_title,
-643-                        'metaDescription' => $seoDetail->meta_tags,
-644-                        'metaKeywords' => $seoDetail->meta_description,
-645-                        'abs_site_url' => $this->abs_site_url,
-646-                        'rel_site_url' => $this->rel_site_url,
-647-                        'site_name' => $this->site_name,
-648-                        'subdomain' => $subdomain
-649-                    )
-650-                );
-651-            }
-652-        } catch (Throwable $e) {
-653-            $seoDetail    = Seo::getSeoDetailsByPageNameAndLanguage('error', $sessionLangId);
-654-            return view(
-655-                'home.404',
-656-                array(
-657-                    'pageTitle' => $seoDetail->page_title,
-658-                    'metaDescription' => $seoDetail->meta_tags,
-659-                    'metaKeywords' => $seoDetail->meta_description,
-660-                    'abs_site_url' => $this->abs_site_url,
-661-                    'rel_site_url' => $this->rel_site_url,
-662-                    'site_name' => $this->site_name,
-663-                    'subdomain' => $subdomain
-664-                )
-665-            );
-666-        }
-667-    }
-668-}
---- PUBLICATION DETAIL MODEL QUERY ---
+ C:\WINDOWS\system32> wsl.exe -d Ubuntu-22.04 --cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade --exec bash -lc "echo '--- PUBLICATION MODEL ---'; sed -n '1,190p' app/Models/Publication.php; echo '--- PUBLICATION DETAIL MODEL ---'; sed -n '235,305p' app/Models/Publication.php; echo '--- PUBLICATION SCHEMA ---'; php8.5 artisan db:table pndc_publication"
+--- PUBLICATION MODEL ---
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+
+class Publication extends Model
+{
+    public $languageId;
+
+    /**
+     * The database table used by the model.
+     *
+     * @var string
+     */
+
+    protected $fillable = array('is_active', 'is_deleted', 'created_by', 'updated_by');
+
+    protected $table = 'publication';
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class, 'category_id');
+    }
+
+    public function details()
+    {
+        return $this->hasMany(Publicationdetail::class, 'publication_id');
+    }
+
+    /**
+     * get all undeleted publications
+     * @return object
+     */
+    public static function getUndeletedPublications()
+    {
+        $languageId = Language::getIdFromCode('en');
+        $query      = "Select t1.id,t1.publication_url,date_format( t1.updated_at, '%d %b, %Y' ) AS updated_on,
+                                                t1.is_active,t2.publication_heading
+                                                from pndc_publication t1
+                                                join pndc_publication_detail t2 on t1.id=t2.publication_id
+                                                where t1.is_deleted='0' and t2.language_id = '$languageId' ";
+
+        return DB::select($query);
+    }
+
+    /**
+     * get all undeleted publications office wise
+     * @param int $officeId
+     * @return object
+     */
+    public static function getUndeletedPublicationsByOffice($officeId)
+    {
+        $languageId = Language::getIdFromCode('en');
+        $query      = "Select t1.id,t1.publication_url,date_format( t1.updated_at, '%d %b, %Y' ) AS updated_on,
+                                                t1.is_active,t2.publication_heading
+                                                from pndc_publication t1
+                                                join pndc_publication_detail t2 on t1.id=t2.publication_id
+                                                where t1.is_deleted='0' and t2.language_id = '$languageId' and t1.office_id='$officeId' ";
+
+        return DB::select($query);
+    }
+
+    /**
+     * check whether url exist or not for individual office
+     * @param  string $url
+     * @param  int $officeId
+     * @return int
+     */
+    public static function checkExist($url, $officeId)
+    {
+        return $publications = DB::table('publication')
+            ->where('is_deleted', '0')
+            ->where('publication_url', $url)
+            ->where('office_id', $officeId)
+            ->pluck('id')
+            ->first();
+    }
+
+    /**
+     * get publication detail with languages
+     * @param  int $id
+     * @return object
+     */
+    public static function getPublicationDetailsWithLanguages($id)
+    {
+        $query = "select t1.id as language_id,t1.language_name,
+                                        (select t2.id from pndc_publication t2 where t2.id='$id') as publication_id,
+                                        (select publication_heading from pndc_publication t2 join pndc_publication_detail t3
+                                                        on t2.id=t3.publication_id where t3.language_id=t1.id and t2.id='$id') as publication_heading,
+                                        (select publication_description from pndc_publication t2 join pndc_publication_detail t3
+                                                        on t2.id=t3.publication_id where t3.language_id=t1.id and t2.id='$id') as publication_description,
+                                        (select publication_page_title from pndc_publication t2 join pndc_publication_detail t3
+                                                        on t2.id=t3.publication_id where t3.language_id=t1.id and t2.id='$id') as publication_page_title,
+                                        (select t3.id from pndc_publication t2 join pndc_publication_detail t3
+                                                        on t2.id=t3.publication_id where t3.language_id=t1.id and t2.id='$id') as publication_detail_id
+                                        from pndc_language t1
+                                        where t1.is_active = '1'";
+
+        return DB::select($query);
+    }
+
+    /*----------------------------------------------------*/
+
+    /**
+     * get all active publications
+     * @param int $officeId
+     * @param int $langId
+     * @return object
+     */
+    public static function getActivePublications($officeId, $langId, $catId, $paginate = null)
+    {
+        if (!$paginate)
+            $paginate = Configuration::getValueFromName('per_page_notices');
+        return DB::table('publication_category')
+            ->leftjoin('publication_category_detail', 'publication_category.id', '=', 'publication_category_detail.category_id')
+            ->join('publication', 'publication_category.id', '=', 'publication.category_id')
+            ->join('publication_detail', 'publication.id', '=', 'publication_detail.publication_id')
+            ->select(
+                'publication.id',
+                'publication.office_id',
+                'publication.category_id',
+                'publication_url',
+                'category_url',
+                'publication_heading',
+                'publication_attachment',
+                'published_date',
+                'category_page_title',
+                'category_meta_tags',
+                'category_meta_description',
+                DB::raw('
+                                                                        date_format(published_date, "%d %b, %Y") as en_published_date
+                                                                ')
+            )
+            ->when((int) $officeId !== 4, function ($query) use ($officeId) {
+                $query->where('publication.office_id', $officeId)
+                    ->where('publication_category.office_id', $officeId);
+            })
+            ->where('publication_detail.language_id', $langId)
+            ->where('publication_category_detail.language_id', $langId)
+            ->where('publication.category_id', $catId)
+            ->where('publication.is_active', '1')
+            ->where('publication.is_deleted', '0')
+            // ->orderBy('publication_detail.publication_heading', 'asc')
+            ->orderBy('publication.created_at','desc')
+            ->paginate($paginate);
+    }
+
+    public static function getLatestActivePublications($officeId, $langId, $paginate = null)
+    {
+        if (!$paginate)
+            $paginate = Configuration::getValueFromName('per_page_notices');
+        return DB::table('publication_category')
+            ->leftjoin('publication_category_detail', 'publication_category.id', '=', 'publication_category_detail.category_id')
+            ->join('publication', 'publication_category.id', '=', 'publication.category_id')
+            ->join('publication_detail', 'publication.id', '=', 'publication_detail.publication_id')
+            ->select(
+                'publication.id',
+                'publication.category_id',
+                'publication_url',
+                'category_url',
+                'publication_heading',
+                'publication_attachment',
+                'published_date',
+                'category_page_title',
+                'category_meta_tags',
+                'category_meta_description',
+                DB::raw('
+                                                                        date_format(published_date, "%d %b, %Y") as en_published_date
+                                                                ')
+            )
+            ->where('publication.office_id', $officeId)
+            ->where('publication_detail.language_id', $langId)
+            ->where('publication_category_detail.language_id', $langId)
+            ->where('publication.is_active', '1')
+            ->where('publication.is_deleted', '0')
+            ->orderBy('publication_detail.publication_heading', 'asc')
+            ->paginate($paginate);
+    }
+
+    /**
+     * get all active publications
+     * @param int $officeId
+     * @param int $langId
+     * @return object
+     */
+    /**
+     * Count active, undeleted publications belonging to one office.
+     */
+--- PUBLICATION DETAIL MODEL ---
     }
 
     /**
@@ -149,4 +259,32 @@ PS C:\WINDOWS\system32> wsl.exe -d Ubuntu-22.04 --cd /mnt/d/DoR-Website-Backup/L
             ->first();
     }
 }
+--- PUBLICATION SCHEMA ---
+
+  dor_upgrade.pndc_publication ....................................................................................
+  Columns ...................................................................................................... 15
+  Size .................................................................................................. 208.00 KB
+  Engine ................................................................................................... InnoDB
+  Collation .................................................................................... utf8mb3_general_ci
+
+  Column ..................................................................................................... Type
+  id int, autoincrement ................................................................................... int(11)
+  category_id int ......................................................................................... int(11)
+  publication_url varchar, nullable, utf8mb3_general_ci ......................................... NULL varchar(300)
+  publication_attachment varchar, nullable, utf8mb3_general_ci .................................. NULL varchar(300)
+  publication_meta_tags varchar, nullable, utf8mb3_general_ci ................................... NULL varchar(255)
+  publication_meta_description varchar, nullable, utf8mb3_general_ci ............................ NULL varchar(255)
+  office_id int, nullable ............................................................................ NULL int(11)
+  download_count int ...................................................................................... int(10)
+  published_date date ........................................................................................ date
+  created_by int, nullable ........................................................................... NULL int(11)
+  updated_by int, nullable ........................................................................... NULL int(11)
+  is_active enum, nullable, utf8mb3_general_ci .................................................. '0' enum('0','1')
+  is_deleted enum, nullable, utf8mb3_general_ci ................................................. '0' enum('0','1')
+  created_at datetime, nullable ..................................................................... NULL datetime
+  updated_at datetime, nullable ..................................................................... NULL datetime
+
+  Index ...........................................................................................................
+  primary id ....................................................................................... btree, primary
+
 PS C:\WINDOWS\system32>
