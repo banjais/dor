@@ -1,914 +1,214 @@
-PS C:\WINDOWS\system32> wsl.exe -d Ubuntu-22.04 --cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade --exec php8.5 artisan tinker --execute="DB::connection()->setTablePrefix(''); dump(DB::table('pndc_tender')->whereIn('tender_attachment', array_map('basename', file('e-only-uploads-manifest.txt', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES)))->get(['id','tender_url','tender_attachment','office_id','published_date','expiry_date','is_active','is_deleted'])->toArray());"
-array:91 [
-  0 => {#6873
-    +"id": 1
-    +"tender_url": "financial-opening-mahakali-bridge-bridge-branch"
-    +"tender_attachment": "tender_1435639937_4_2.pdf"
-    +"office_id": 4
-    +"published_date": "2016-01-24"
-    +"expiry_date": "2015-07-23"
-    +"is_active": "0"
-    +"is_deleted": "1"
-  }
-  1 => {#6870
-    +"id": 2
-    +"tender_url": "letterletter-of-intention-to-award-for-cn--dormis-3370123-071-72-08"
-    +"tender_attachment": "tender_1436697355_4_2.pdf"
-    +"office_id": 4
-    +"published_date": "0000-00-00"
-    +"expiry_date": "2015-07-16"
-    +"is_active": "0"
-    +"is_deleted": "1"
-  }
-  2 => {#6874
-    +"id": 8
-    +"tender_url": "t1"
-    +"tender_attachment": "tender_1461434142_88_68.pdf"
-    +"office_id": 88
-    +"published_date": "2016-04-15"
-    +"expiry_date": "2016-04-29"
-    +"is_active": "0"
-    +"is_deleted": "1"
-  }
-  3 => {#6868
-    +"id": 42
-    +"tender_url": "test-tender"
-    +"tender_attachment": "tender_1476686117_4_60.pdf"
-    +"office_id": 4
-    +"published_date": "2016-10-17"
-    +"expiry_date": "2016-10-31"
-    +"is_active": "0"
-    +"is_deleted": "1"
-  }
-  4 => {#6867
-    +"id": 43
-    +"tender_url": "test"
-    +"tender_attachment": "tender_1477307412_4_60.pdf"
-    +"office_id": 4
-    +"published_date": "2016-10-23"
-    +"expiry_date": "2016-11-30"
-    +"is_active": "0"
-    +"is_deleted": "1"
-  }
-  5 => {#6866
-    +"id": 45
-    +"tender_url": "https---bolpatra-gov-np-egp"
-    +"tender_attachment": "tender_1507340272_90_24.jpg"
-    +"office_id": 90
-    +"published_date": "2017-09-25"
-    +"expiry_date": "2017-10-25"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  6 => {#6865
-    +"id": 46
-    +"tender_url": "tender-notice-2-074-075-ilam"
-    +"tender_attachment": "tender_1512466508_74_8.jpg"
-    +"office_id": 74
-    +"published_date": "2017-12-01"
-    +"expiry_date": "2017-12-31"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  7 => {#6864
-    +"id": 47
-    +"tender_url": "notice-no-03-074-75-ilam"
-    +"tender_attachment": "tender_1513784145_74_8.pdf"
-    +"office_id": 74
-    +"published_date": "2017-12-14"
-    +"expiry_date": "2018-01-14"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  8 => {#6863
-    +"id": 48
-    +"tender_url": "notice-no-04-074-075"
-    +"tender_attachment": "tender_1518868791_90_24.jpg"
-    +"office_id": 90
-    +"published_date": "2018-02-18"
-    +"expiry_date": "2018-03-20"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  9 => {#6862
-    +"id": 49
-    +"tender_url": "tender-notice-notice-no-05-074-75"
-    +"tender_attachment": "tender_1522748940_90_24.pdf"
-    +"office_id": 90
-    +"published_date": "2018-04-03"
-    +"expiry_date": "2018-05-03"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  10 => {#6861
-    +"id": 50
-    +"tender_url": "invitation-for-bids"
-    +"tender_attachment": "tender_1522762012_106_40.JPG"
-    +"office_id": 106
-    +"published_date": "2018-04-03"
-    +"expiry_date": "2018-05-03"
-    +"is_active": "0"
-    +"is_deleted": "0"
-  }
-  11 => {#6860
-    +"id": 51
-    +"tender_url": "tender-notice-notice-no-06-074-75"
-    +"tender_attachment": "tender_1536916872_90_24.pdf"
-    +"office_id": 90
-    +"published_date": "2018-04-10"
-    +"expiry_date": "2018-05-10"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  12 => {#6859
-    +"id": 52
-    +"tender_url": "notice-no-04-074-75-ilam"
-    +"tender_attachment": "tender_1523946280_74_8.pdf"
-    +"office_id": 74
-    +"published_date": "2018-02-05"
-    +"expiry_date": "2018-03-07"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  13 => {#6858
-    +"id": 53
-    +"tender_url": "notice-no-05-074-75-ilam"
-    +"tender_attachment": "tender_1523946477_74_8.pdf"
-    +"office_id": 74
-    +"published_date": "2018-03-05"
-    +"expiry_date": "2018-04-04"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  14 => {#6857
-    +"id": 54
-    +"tender_url": "road-board-tender-notice-1"
-    +"tender_attachment": "tender_1533894835_92_26.pdf"
-    +"office_id": 92
-    +"published_date": "2018-08-10"
-    +"expiry_date": "2018-08-26"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  15 => {#6856
-    +"id": 55
-    +"tender_url": "notice-no-01-075-76-division-road-office-nuwakot"
-    +"tender_attachment": "tender_1537861931_90_24.pdf"
-    +"office_id": 90
-    +"published_date": "2018-09-25"
-    +"expiry_date": "2018-10-25"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  16 => {#6855
-    +"id": 56
-    +"tender_url": "notice-no-01-075-76-ilam"
-    +"tender_attachment": "tender_1542364107_74_8.pdf"
-    +"office_id": 74
-    +"published_date": "2018-09-11"
-    +"expiry_date": "2018-10-12"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  17 => {#6854
-    +"id": 57
-    +"tender_url": "tender-notice-number-ifb02-2075-76"
-    +"tender_attachment": "tender_1543222527_82_16.pdf"
-    +"office_id": 82
-    +"published_date": "2018-11-15"
-    +"expiry_date": "2018-12-02"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  18 => {#6853
-    +"id": 58
-    +"tender_url": "tender-notice-6-2075-076"
-    +"tender_attachment": "tender_1549172782_92_26.pdf"
-    +"office_id": 92
-    +"published_date": "2019-01-24"
-    +"expiry_date": "2019-02-24"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  19 => {#6852
-    +"id": 59
-    +"tender_url": "invitation-for-bid-no-rddng-075-76-07"
-    +"tender_attachment": "tender_1550324749_98_32.pdf"
-    +"office_id": 98
-    +"published_date": "2019-02-17"
-    +"expiry_date": "2019-03-18"
-    +"is_active": "0"
-    +"is_deleted": "1"
-  }
-  20 => {#6851
-    +"id": 60
-    +"tender_url": "uploads-ckfiles-files-tender-20notice-07-2075-076-dro-20pokhara-pdf"
-    +"tender_attachment": "tender_1551262107_92_26.pdf"
-    +"office_id": 92
-    +"published_date": "2019-02-26"
-    +"expiry_date": "2019-03-28"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  21 => {#6850
-    +"id": 61
-    +"tender_url": "bid-notice-no-1-2075-76"
-    +"tender_attachment": "tender_1562323946_75_9.pdf"
-    +"office_id": 75
-    +"published_date": "2018-09-18"
-    +"expiry_date": "2018-10-26"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  22 => {#6849
-    +"id": 62
-    +"tender_url": "bid-notice-no-10-2075-76"
-    +"tender_attachment": "tender_1562324158_75_9.pdf"
-    +"office_id": 75
-    +"published_date": "2019-05-13"
-    +"expiry_date": "2019-06-12"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  23 => {#6848
-    +"id": 63
-    +"tender_url": "bid-notice-no-8-2075-76"
-    +"tender_attachment": "tender_1562324301_75_9.pdf"
-    +"office_id": 75
-    +"published_date": "2019-05-03"
-    +"expiry_date": "2019-06-02"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  24 => {#6847
-    +"id": 64
-    +"tender_url": "bid-notice-no-2-2075-76"
-    +"tender_attachment": "tender_1562335116_75_9.jpg"
-    +"office_id": 75
-    +"published_date": "2018-12-09"
-    +"expiry_date": "2019-01-08"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  25 => {#6846
-    +"id": 65
-    +"tender_url": "bid-notice-no-5-2075-76"
-    +"tender_attachment": "tender_1562335208_75_9.jpg"
-    +"office_id": 75
-    +"published_date": "2019-04-05"
-    +"expiry_date": "2019-05-06"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  26 => {#6845
-    +"id": 66
-    +"tender_url": "tender-notice-no-01-076-77"
-    +"tender_attachment": "tender_1564654581_92_26.pdf"
-    +"office_id": 92
-    +"published_date": "2019-08-01"
-    +"expiry_date": "2019-08-16"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  27 => {#6844
-    +"id": 67
-    +"tender_url": "bid-notice-no-1-2076-77"
-    +"tender_attachment": "tender_1564663287_75_9.jpg"
-    +"office_id": 75
-    +"published_date": "2019-08-01"
-    +"expiry_date": "2019-08-16"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  28 => {#6843
-    +"id": 68
-    +"tender_url": "bid-notice-no-2-2076-77"
-    +"tender_attachment": "tender_1566022571_75_9.jpg"
-    +"office_id": 75
-    +"published_date": "2019-08-16"
-    +"expiry_date": "2019-09-15"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  29 => {#6842
-    +"id": 69
-    +"tender_url": "bid-notice-no-3-2076-77"
-    +"tender_attachment": "tender_1568181954_75_9.jpg"
-    +"office_id": 75
-    +"published_date": "2019-09-11"
-    +"expiry_date": "2019-10-17"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  30 => {#6841
-    +"id": 70
-    +"tender_url": "notice-regarding-invitation-for-bids-notice-no-002-76-77"
-    +"tender_attachment": "tender_1568383273_84_18.pdf"
-    +"office_id": 84
-    +"published_date": "2019-09-13"
-    +"expiry_date": "2019-10-14"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  31 => {#6840
-    +"id": 71
-    +"tender_url": "bid-notice-no-4-2076-77"
-    +"tender_attachment": "tender_1568533330_75_9.jpg"
-    +"office_id": 75
-    +"published_date": "2019-09-15"
-    +"expiry_date": "2019-10-15"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  32 => {#6839
-    +"id": 72
-    +"tender_url": "https---bolpatra-gov-np-egp"
-    +"tender_attachment": "tender_1578364494_92_26.pdf"
-    +"office_id": 92
-    +"published_date": "2020-01-07"
-    +"expiry_date": "2020-02-06"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  33 => {#6838
-    +"id": 73
-    +"tender_url": "bid-notice-no-5-2076-77"
-    +"tender_attachment": "tender_1585297554_75_9.jpg"
-    +"office_id": 75
-    +"published_date": "2019-10-02"
-    +"expiry_date": "2019-11-01"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  34 => {#6837
-    +"id": 74
-    +"tender_url": "bid-notice-no-6-2076-77"
-    +"tender_attachment": "tender_1585297798_75_9.jpg"
-    +"office_id": 75
-    +"published_date": "2019-11-15"
-    +"expiry_date": "2019-12-15"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  35 => {#6836
-    +"id": 75
-    +"tender_url": "bid-notice-no-7-2076-77"
-    +"tender_attachment": "tender_1585367385_75_9.jpg"
-    +"office_id": 75
-    +"published_date": "2019-12-12"
-    +"expiry_date": "2019-12-26"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  36 => {#6835
-    +"id": 76
-    +"tender_url": "bid-notice-no-8-2076-77"
-    +"tender_attachment": "tender_1585367555_75_9.pdf"
-    +"office_id": 75
-    +"published_date": "2020-01-12"
-    +"expiry_date": "2020-01-27"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  37 => {#6834
-    +"id": 77
-    +"tender_url": "bid-notice-no-9-2076-77"
-    +"tender_attachment": "tender_1585368440_75_9.pdf"
-    +"office_id": 75
-    +"published_date": "2020-01-19"
-    +"expiry_date": "2020-02-19"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  38 => {#6833
-    +"id": 78
-    +"tender_url": "bid-notice-no-10-2076-77"
-    +"tender_attachment": "tender_1585369236_75_9.pdf"
-    +"office_id": 75
-    +"published_date": "2020-01-20"
-    +"expiry_date": "2020-02-19"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  39 => {#6832
-    +"id": 79
-    +"tender_url": "bid-notice-no-11-2076-77"
-    +"tender_attachment": "tender_1585369410_75_9.pdf"
-    +"office_id": 75
-    +"published_date": "2020-02-23"
-    +"expiry_date": "2020-03-25"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  40 => {#6831
-    +"id": 80
-    +"tender_url": "bid-notice-no-12-2076-77"
-    +"tender_attachment": "tender_1585369548_75_9.pdf"
-    +"office_id": 75
-    +"published_date": "2020-03-01"
-    +"expiry_date": "2020-03-31"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  41 => {#6830
-    +"id": 81
-    +"tender_url": "ifb-01-2076-77"
-    +"tender_attachment": "tender_1592286045_81_15.jpg"
-    +"office_id": 81
-    +"published_date": "2019-07-28"
-    +"expiry_date": "2019-08-27"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  42 => {#6829
-    +"id": 82
-    +"tender_url": "ifb-02-2076-77"
-    +"tender_attachment": "tender_1592287679_81_15.jpg"
-    +"office_id": 81
-    +"published_date": "2019-09-13"
-    +"expiry_date": "2019-10-14"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  43 => {#6828
-    +"id": 83
-    +"tender_url": "ifb-03-2076-77"
-    +"tender_attachment": "tender_1592288764_81_15.jpg"
-    +"office_id": 81
-    +"published_date": "2019-09-13"
-    +"expiry_date": "2019-10-14"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  44 => {#6827
-    +"id": 84
-    +"tender_url": "ifb-04-2076-77"
-    +"tender_attachment": "tender_1592372888_81_15.pdf"
-    +"office_id": 81
-    +"published_date": "2019-09-19"
-    +"expiry_date": "2019-10-20"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  45 => {#6826
-    +"id": 85
-    +"tender_url": "ifb-05-2076-77"
-    +"tender_attachment": "tender_1592304471_81_15.pdf"
-    +"office_id": 81
-    +"published_date": "2019-10-23"
-    +"expiry_date": "2019-11-22"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  46 => {#6825
-    +"id": 86
-    +"tender_url": "ifb-06-2076-77"
-    +"tender_attachment": "tender_1592370212_81_15.jpg"
-    +"office_id": 81
-    +"published_date": "2019-11-29"
-    +"expiry_date": "2019-12-30"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  47 => {#6883
-    +"id": 87
-    +"tender_url": "ifb-07-2076-77"
-    +"tender_attachment": "tender_1592370369_81_15.pdf"
-    +"office_id": 81
-    +"published_date": "2019-12-27"
-    +"expiry_date": "2020-01-12"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  48 => {#6749
-    +"id": 88
-    +"tender_url": "ifb-08-2076-77"
-    +"tender_attachment": "tender_1592370770_81_15.pdf"
-    +"office_id": 81
-    +"published_date": "2020-02-13"
-    +"expiry_date": "2020-03-15"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  49 => {#6886
-    +"id": 89
-    +"tender_url": "ifb-09-2076-77"
-    +"tender_attachment": "tender_1592370946_81_15.pdf"
-    +"office_id": 81
-    +"published_date": "2020-04-08"
-    +"expiry_date": "2020-05-08"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  50 => {#6885
-    +"id": 91
-    +"tender_url": "ifb-01-2077-78"
-    +"tender_attachment": "tender_1595412575_81_15.jpg"
-    +"office_id": 81
-    +"published_date": "2020-07-21"
-    +"expiry_date": "2020-08-23"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  51 => {#6884
-    +"id": 92
-    +"tender_url": "ifb-02-2077-78"
-    +"tender_attachment": "tender_1599373546_81_15.pdf"
-    +"office_id": 81
-    +"published_date": "2020-09-03"
-    +"expiry_date": "2020-10-05"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  52 => {#6887
-    +"id": 93
-    +"tender_url": "www-bolpatra-gov-np-egp"
-    +"tender_attachment": "tender_1599985900_104_38.jpg"
-    +"office_id": 104
-    +"published_date": "2020-09-13"
-    +"expiry_date": "2020-10-12"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  53 => {#6888
-    +"id": 94
-    +"tender_url": "highway-improvement-and-rehabilitation-program"
-    +"tender_attachment": "tender_1599991401_104_38.jpg"
-    +"office_id": 104
-    +"published_date": "2020-09-06"
-    +"expiry_date": "2020-10-06"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  54 => {#6889
-    +"id": 95
-    +"tender_url": "ifb-03-2077-78"
-    +"tender_attachment": "tender_1599992371_81_15.jpg"
-    +"office_id": 81
-    +"published_date": "2020-09-08"
-    +"expiry_date": "2020-10-09"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  55 => {#6890
-    +"id": 96
-    +"tender_url": "tender-notice-no-04-077-78"
-    +"tender_attachment": "tender_1603357626_81_15.pdf"
-    +"office_id": 81
-    +"published_date": "2020-10-18"
-    +"expiry_date": "2020-11-18"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  56 => {#6891
-    +"id": 97
-    +"tender_url": "loi-of-notice-no-02-and-03"
-    +"tender_attachment": "tender_1604665911_104_38.pdf"
-    +"office_id": 104
-    +"published_date": "2020-11-06"
-    +"expiry_date": "2020-11-14"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  57 => {#6892
-    +"id": 98
-    +"tender_url": "rddng-077-78-02"
-    +"tender_attachment": "tender_1604899925_98_32.pdf"
-    +"office_id": 98
-    +"published_date": "2077-07-12"
-    +"expiry_date": "2077-08-12"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  58 => {#6893
-    +"id": 99
-    +"tender_url": "invitation-for-bid"
-    +"tender_attachment": "tender_1604988507_98_32.pdf"
-    +"office_id": 98
-    +"published_date": "2077-07-19"
-    +"expiry_date": "2077-08-19"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  59 => {#6894
-    +"id": 100
-    +"tender_url": "ammendment-notice-no-2-077-78"
-    +"tender_attachment": "tender_1604988454_98_32.pdf"
-    +"office_id": 98
-    +"published_date": "2077-07-25"
-    +"expiry_date": "2077-08-14"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  60 => {#6895
-    +"id": 101
-    +"tender_url": "notice-no-04"
-    +"tender_attachment": "tender_1604989507_104_38.pdf"
-    +"office_id": 104
-    +"published_date": "2020-11-08"
-    +"expiry_date": "2020-12-08"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  61 => {#6896
-    +"id": 102
-    +"tender_url": "notice-no-0"
-    +"tender_attachment": "tender_1604989681_104_38.jpg"
-    +"office_id": 104
-    +"published_date": "2020-11-09"
-    +"expiry_date": "2020-12-09"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  62 => {#6897
-    +"id": 103
-    +"tender_url": "ammendment-notice-1-for-notice-no-03-077-78"
-    +"tender_attachment": "tender_1606200498_98_32.pdf"
-    +"office_id": 98
-    +"published_date": "2077-08-08"
-    +"expiry_date": "2077-08-19"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  63 => {#6898
-    +"id": 104
-    +"tender_url": "invitation-for-bid-no-rddng-077-78-04"
-    +"tender_attachment": "tender_1606288248_98_32.pdf"
-    +"office_id": 98
-    +"published_date": "2077-07-23"
-    +"expiry_date": "2077-08-08"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  64 => {#6899
-    +"id": 105
-    +"tender_url": "invitation-for-bid-no-rddng-077-78-05"
-    +"tender_attachment": "tender_1606288432_98_32.pdf"
-    +"office_id": 98
-    +"published_date": "2077-08-10"
-    +"expiry_date": "2077-08-25"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  65 => {#6900
-    +"id": 108
-    +"tender_url": "highway-improvement-and-rehabilitation-program-06"
-    +"tender_attachment": "tender_1606889609_104_38.jpg"
-    +"office_id": 104
-    +"published_date": "2020-12-02"
-    +"expiry_date": "2021-01-01"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  66 => {#6901
-    +"id": 109
-    +"tender_url": "tender-notice-no-05-2077-78"
-    +"tender_attachment": "tender_1609234667_81_15.jpg"
-    +"office_id": 81
-    +"published_date": "2020-12-29"
-    +"expiry_date": "2021-01-28"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  67 => {#6902
-    +"id": 110
-    +"tender_url": "tender-notice-08-2077-78"
-    +"tender_attachment": "tender_1610002899_78_12.pdf"
-    +"office_id": 78
-    +"published_date": "2021-01-05"
-    +"expiry_date": "2021-02-05"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  68 => {#6903
-    +"id": 112
-    +"tender_url": "notice-no-07"
-    +"tender_attachment": "tender_1610024798_104_38.pdf"
-    +"office_id": 104
-    +"published_date": "2021-01-04"
-    +"expiry_date": "2021-02-02"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  69 => {#6904
-    +"id": 113
-    +"tender_url": "notice-no-04-05-loi"
-    +"tender_attachment": "tender_1610025046_104_38.jpg"
-    +"office_id": 104
-    +"published_date": "2020-12-21"
-    +"expiry_date": "2020-12-28"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  70 => {#6905
-    +"id": 114
-    +"tender_url": "loi-of-notice-no-06"
-    +"tender_attachment": "tender_1610085126_104_38.jpg"
-    +"office_id": 104
-    +"published_date": "2021-01-08"
-    +"expiry_date": "2021-01-15"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  71 => {#6906
-    +"id": 115
-    +"tender_url": "tender-notice-number-05-077-78"
-    +"tender_attachment": "tender_1610336565_82_16.pdf"
-    +"office_id": 82
-    +"published_date": "2021-01-11"
-    +"expiry_date": "2021-02-10"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  72 => {#6907
-    +"id": 116
-    +"tender_url": "tender-notice-09-2077-78"
-    +"tender_attachment": "tender_1610345657_78_12.pdf"
-    +"office_id": 78
-    +"published_date": "2021-01-11"
-    +"expiry_date": "2021-02-10"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  73 => {#6908
-    +"id": 117
-    +"tender_url": "notice-no-05-technical-loi"
-    +"tender_attachment": "tender_1612256388_104_38.jpg"
-    +"office_id": 104
-    +"published_date": "2021-01-18"
-    +"expiry_date": "2021-01-25"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  74 => {#6909
-    +"id": 118
-    +"tender_url": "notice-no-05-notice-of-intention-to-award-contract"
-    +"tender_attachment": "tender_1612256553_104_38.jpg"
-    +"office_id": 104
-    +"published_date": "2021-01-26"
-    +"expiry_date": "2021-02-02"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  75 => {#6910
-    +"id": 119
-    +"tender_url": "ifb-06-2077-78"
-    +"tender_attachment": "tender_1612941517_81_15.jpg"
-    +"office_id": 81
-    +"published_date": "2021-02-07"
-    +"expiry_date": "2021-03-09"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  76 => {#6911
-    +"id": 120
-    +"tender_url": "tender-notice-10-2077-78"
-    +"tender_attachment": "tender_1613471386_78_12.pdf"
-    +"office_id": 78
-    +"published_date": "2021-02-15"
-    +"expiry_date": "2021-03-18"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  77 => {#6912
-    +"id": 121
-    +"tender_url": "highway-improvement-and-rehabilitation-program-08"
-    +"tender_attachment": "tender_1613548827_104_38.pdf"
-    +"office_id": 104
-    +"published_date": "2021-02-17"
-    +"expiry_date": "2021-03-19"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  78 => {#6913
-    +"id": 122
-    +"tender_url": "loi-of-notice-no-07"
-    +"tender_attachment": "tender_1613893644_104_38.jpg"
-    +"office_id": 104
-    +"published_date": "2021-02-21"
-    +"expiry_date": "2021-02-28"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  79 => {#6914
-    +"id": 123
-    +"tender_url": "tender-notice-no-07-2077-78"
-    +"tender_attachment": "tender_1614057169_81_15.pdf"
-    +"office_id": 81
-    +"published_date": "2021-02-22"
-    +"expiry_date": "2021-03-25"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  80 => {#6915
-    +"id": 124
-    +"tender_url": "sealed-quotation-for-procurement-of-security-guard-services"
-    +"tender_attachment": "tender_1615309087_130_58.pdf"
-    +"office_id": 130
-    +"published_date": "2021-03-10"
-    +"expiry_date": "2021-03-25"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  81 => {#6916
-    +"id": 125
-    +"tender_url": "tender-notice-no-08-2077-78"
-    +"tender_attachment": "tender_1618124356_81_15.pdf"
-    +"office_id": 81
-    +"published_date": "2021-04-11"
-    +"expiry_date": "2021-05-11"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  82 => {#6917
-    +"id": 126
-    +"tender_url": "https---dor-gov-np-admin-tender"
-    +"tender_attachment": "tender_1618465927_82_16.pdf"
-    +"office_id": 82
-    +"published_date": "2021-04-15"
-    +"expiry_date": "2021-05-16"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  83 => {#6918
-    +"id": 127
-    +"tender_url": "tender-notice-no-09-2077-78"
-    +"tender_attachment": "tender_1620285614_81_15.pdf"
-    +"office_id": 81
-    +"published_date": "2021-04-16"
-    +"expiry_date": "2021-05-17"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  84 => {#6919
-    +"id": 128
-    +"tender_url": "tender-notice-no-10-2077-78"
-    +"tender_attachment": "tender_1620285774_81_15.pdf"
-    +"office_id": 81
-    +"published_date": "2021-05-05"
-    +"expiry_date": "2021-06-04"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  85 => {#6920
-    +"id": 129
-    +"tender_url": "invitation-for-bid"
-    +"tender_attachment": "tender_1621171214_181_169.jpg"
-    +"office_id": 181
-    +"published_date": "2021-05-16"
-    +"expiry_date": "2021-06-15"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  86 => {#6921
-    +"id": 130
-    +"tender_url": "tender-notice-no-11-2077-78"
-    +"tender_attachment": "tender_1621509282_81_15.pdf"
-    +"office_id": 81
-    +"published_date": "2021-05-14"
-    +"expiry_date": "2021-06-14"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  87 => {#6922
-    +"id": 131
-    +"tender_url": "tender-notice-01-2078-79"
-    +"tender_attachment": "tender_1627281370_78_12.jpg"
-    +"office_id": 78
-    +"published_date": "2021-07-26"
-    +"expiry_date": "2021-08-10"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  88 => {#6923
-    +"id": 132
-    +"tender_url": "tender-notice-number-01-078-79"
-    +"tender_attachment": "tender_1628790136_82_16.jpg"
-    +"office_id": 82
-    +"published_date": "2021-08-11"
-    +"expiry_date": "2021-09-10"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  89 => {#6924
-    +"id": 133
-    +"tender_url": "tender-notice-number-02-078-79"
-    +"tender_attachment": "tender_1632819235_82_16.pdf"
-    +"office_id": 82
-    +"published_date": "2021-09-28"
-    +"expiry_date": "2021-10-28"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-  90 => {#6925
-    +"id": 134
-    +"tender_url": "https---bolpatra-gov-np-egp-searchopportunity"
-    +"tender_attachment": "tender_1633283942_80_14.JPG"
-    +"office_id": 80
-    +"published_date": "2021-09-01"
-    +"expiry_date": "2023-02-28"
-    +"is_active": "1"
-    +"is_deleted": "0"
-  }
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:2
+PS C:\WINDOWS\system32> wsl.exe -d Ubuntu-22.04 --cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade --exec bash -lc "echo '--- PUBLICATION CONTROLLER ---'; grep -n -B 7 -A 12 -E 'getActivePublications|publication_attachment|uploads/publication' app/Http/Controllers/PublicationController.php; echo '--- PUBLICATION MODEL ---'; grep -n -B 5 -A 12 -E 'getActivePublications|getUndeletedPublications|publication_attachment' app/Models/Publication.php; echo '--- PUBLICATION VIEWS ---'; grep -RniE 'publication_attachment|getActivePublications' resources/views --include='*.blade.php' | head -35"
+--- PUBLICATION CONTROLLER ---
+81-    }
+82-
+83-    /*
+84-     * get publication page according to office
+85-     * @param string $subdomain
+86-     * @return Illuminate\View\View
+87-     */
+88:    public function getActivePublications($subdomain, $url)
+89-    {
+90-        // dd($url);
+91-        $officeId    = Office::getIdfromSubdomain($subdomain);
+92-        $languageId = Language::getIdFromCode();
+93-        $sessionLangId = (Session::get('language_id')) ? Session::get('language_id') : $languageId;
+94-        Session::put('language_id', $sessionLangId);
+95-        $categoryId = Category::getIdfromUrl($officeId, $url);
+96-        // dd($officeId);
+97-
+98-        if ($officeId > 0 && $categoryId > 0) {
+99:            $publications    = Publication::getActivePublications($officeId, $sessionLangId, $categoryId);
+100-            // dd($publications);
+101-            //echo Helper::get_last_query(); die();
+102-            $publicationCategory = Category::getCategoryName($officeId, $sessionLangId, $url);
+103-
+104-            $seoDetail    = Seo::getSeoDetailsByPageNameAndLanguage('publications', $sessionLangId);
+105-            return view(
+106-                'publication.publications',
+107-                array(
+108-                    'pageTitle' => $seoDetail->page_title,
+109-                    'metaDescription' => $seoDetail->meta_tags,
+110-                    'metaKeywords' => $seoDetail->meta_description,
+111-                    'abs_site_url' => $this->abs_site_url,
+--
+382-                    ->orWhere('pe.publication_heading', 'like', $like)
+383-                    ->orWhere('pn.publication_page_title', 'like', $like)
+384-                    ->orWhere('pe.publication_page_title', 'like', $like)
+385-                    ->orWhere('pn.publication_description', 'like', $like)
+386-                    ->orWhere('pe.publication_description', 'like', $like)
+387-                    ->orWhere('pn.publication_short_description', 'like', $like)
+388-                    ->orWhere('pe.publication_short_description', 'like', $like)
+389:                    ->orWhere('p.publication_attachment', 'like', $like)
+390-                    ->orWhere('p.publication_url', 'like', $like)
+391-                    ->orWhere('c.category_url', 'like', $like)
+392-                    ->orWhere('cn.category_heading', 'like', $like)
+393-                    ->orWhere('ce.category_heading', 'like', $like)
+394-                    ->orWhere('cn.category_page_title', 'like', $like)
+395-                    ->orWhere('ce.category_page_title', 'like', $like)
+396-                    ->orWhereRaw("CONCAT(pndc_c.category_url, '/', pndc_p.publication_url) LIKE ?", [$like])
+397-                    ->orWhereRaw("REPLACE(REPLACE(pndc_p.publication_url, '-', ' '), '_', ' ') LIKE ?", [$normalizedLike])
+398-                    ->orWhereRaw("REPLACE(REPLACE(pndc_c.category_url, '-', ' '), '_', ' ') LIKE ?", [$normalizedLike]);
+399-            })
+400-            ->select(
+401-                'p.publication_url',
+--
+604-        Session::put('language_id', $sessionLangId);
+605-
+606-        try {
+607-            $publicationData = Publication::getPublicationDetail($officeId, $url, $sessionLangId);
+608-
+609-            if (
+610-                $publicationData &&
+611:                !empty($publicationData->publication_attachment) &&
+612:                basename($publicationData->publication_attachment) === $publicationData->publication_attachment &&
+613:                is_file(public_path() . '/uploads/publication/' . $publicationData->publication_attachment) &&
+614:                is_readable(public_path() . '/uploads/publication/' . $publicationData->publication_attachment)
+615-            ) {
+616:                $file = public_path() . '/uploads/publication/' . $publicationData->publication_attachment;
+617-                $ext = pathinfo($file, PATHINFO_EXTENSION);
+618-                $safeHeading = str_replace(array('/', '\\'), '-', $publicationData->publication_heading);
+619-                $fileName = trim($safeHeading) . '.' . $ext;
+620-
+621-                DB::table('publication')
+622-                    ->where('id', $publicationData->id)
+623-                    ->increment('download_count', 1);
+624-
+625-                $mimeType = mime_content_type($file) ?: 'application/octet-stream';
+626-                $inlineExtensions = array('pdf', 'jpg', 'jpeg', 'png', 'gif', 'webp');
+627-
+628-                if (in_array(strtolower($ext), $inlineExtensions, true)) {
+--- PUBLICATION MODEL ---
+31-
+32-    /**
+33-     * get all undeleted publications
+34-     * @return object
+35-     */
+36:    public static function getUndeletedPublications()
+37-    {
+38-        $languageId = Language::getIdFromCode('en');
+39-        $query      = "Select t1.id,t1.publication_url,date_format( t1.updated_at, '%d %b, %Y' ) AS updated_on,
+40-                                             t1.is_active,t2.publication_heading
+41-                                             from pndc_publication t1
+42-                                             join pndc_publication_detail t2 on t1.id=t2.publication_id
+43-                                             where t1.is_deleted='0' and t2.language_id = '$languageId' ";
+44-
+45-        return DB::select($query);
+46-    }
+47-
+48-    /**
+49-     * get all undeleted publications office wise
+50-     * @param int $officeId
+51-     * @return object
+52-     */
+53:    public static function getUndeletedPublicationsByOffice($officeId)
+54-    {
+55-        $languageId = Language::getIdFromCode('en');
+56-        $query      = "Select t1.id,t1.publication_url,date_format( t1.updated_at, '%d %b, %Y' ) AS updated_on,
+57-                                             t1.is_active,t2.publication_heading
+58-                                             from pndc_publication t1
+59-                                             join pndc_publication_detail t2 on t1.id=t2.publication_id
+60-                                             where t1.is_deleted='0' and t2.language_id = '$languageId' and t1.office_id='$officeId' ";
+61-
+62-        return DB::select($query);
+63-    }
+64-
+65-    /**
+--
+107-     * get all active publications
+108-     * @param int $officeId
+109-     * @param int $langId
+110-     * @return object
+111-     */
+112:    public static function getActivePublications($officeId, $langId, $catId, $paginate = null)
+113-    {
+114-        if (!$paginate)
+115-            $paginate = Configuration::getValueFromName('per_page_notices');
+116-        return DB::table('publication_category')
+117-            ->leftjoin('publication_category_detail', 'publication_category.id', '=', 'publication_category_detail.category_id')
+118-            ->join('publication', 'publication_category.id', '=', 'publication.category_id')
+119-            ->join('publication_detail', 'publication.id', '=', 'publication_detail.publication_id')
+120-            ->select(
+121-                'publication.id',
+122-                'publication.office_id',
+123-                'publication.category_id',
+124-                'publication_url',
+125-                'category_url',
+126-                'publication_heading',
+127:                'publication_attachment',
+128-                'published_date',
+129-                'category_page_title',
+130-                'category_meta_tags',
+131-                'category_meta_description',
+132-                DB::raw('
+133-                                                                    date_format(published_date, "%d %b, %Y") as en_published_date
+134-                                                            ')
+135-            )
+136-            ->when((int) $officeId !== 4, function ($query) use ($officeId) {
+137-                $query->where('publication.office_id', $officeId)
+138-                    ->where('publication_category.office_id', $officeId);
+139-            })
+--
+159-                'publication.id',
+160-                'publication.category_id',
+161-                'publication_url',
+162-                'category_url',
+163-                'publication_heading',
+164:                'publication_attachment',
+165-                'published_date',
+166-                'category_page_title',
+167-                'category_meta_tags',
+168-                'category_meta_description',
+169-                DB::raw('
+170-                                                                    date_format(published_date, "%d %b, %Y") as en_published_date
+171-                                                            ')
+172-            )
+173-            ->where('publication.office_id', $officeId)
+174-            ->where('publication_detail.language_id', $langId)
+175-            ->where('publication_category_detail.language_id', $langId)
+176-            ->where('publication.is_active', '1')
+--
+248-            ->select(
+249-                'publication.id',
+250-                'publication.publication_url',
+251-                'publication.publication_meta_tags',
+252-                'publication.publication_meta_description',
+253:                'publication_attachment',
+254-                'publication_detail.publication_heading',
+255-                'publication_detail.publication_page_title',
+256-                'publication_detail.publication_description',
+257-                'published_date',
+258-                DB::raw('
+259-                                                                    date_format(published_date, "%d %b, %Y") as en_published_date
+260-                                                            ')
+261-            )
+262-            ->where('publication.office_id', $officeId)
+263-            ->where('publication.publication_url', $url)
+264-            ->where('publication_detail.language_id', $langId)
+265-            ->where('publication.is_active', '1')
+--
+281-            ->select(
+282-                'publication.id',
+283-                'publication.publication_url',
+284-                'publication.publication_meta_tags',
+285-                'publication.publication_meta_description',
+286:                'publication_attachment',
+287-                'publication_detail.publication_heading',
+288-                'publication_detail.publication_page_title',
+289-                'publication_detail.publication_description',
+290-                'published_date',
+291-                DB::raw('
+292-                                                                    date_format(published_date, "%d %b, %Y") as en_published_date
+293-                                                            ')
+294-            )
+295-            ->where('publication.office_id', $officeId)
+296-            ->where('publication.id', $id)
+297-            ->where('publication_detail.language_id', $langId)
+298-            ->where('publication.is_active', '1')
+--- PUBLICATION VIEWS ---
+resources/views/publication/admin/publication-edit.blade.php:143:                                                       @include('helpers.attachment', ['src'=>$publicationData->publication_attachment,'folder'=>'publication'])
+resources/views/publication/publication-detail.blade.php:48:                            @if (file_exists('uploads/publication/' . $publicationData->publication_attachment) && $publicationData->publication_attachment)
+resources/views/publication/publication-detail_old.blade.php:38:                                                if(file_exists("uploads/publication/".$publicationData->publication_attachment) && $publicationData->publication_attachment!=''){
+resources/views/publication/publications.blade.php:73:                                            if (file_exists('uploads/publication/' . $publication->publication_attachment) && $publication->publication_attachment != '') {
+resources/views/publication/publications_old.blade.php:54:                            if (file_exists('uploads/publication/' . $publication->publication_attachment) && $publication->publication_attachment != '') {
 PS C:\WINDOWS\system32>
