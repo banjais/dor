@@ -1,347 +1,725 @@
-doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && echo "---- LOGIN CONTROLLER ----" && sed -n '1,220p' app/Http/Controllers/Admin/LoginController.php && echo "---- PROJECT AUTH CONTROLLER ----" && sed -n '1,130p' app/Http/Controllers/Project/ProjectController.php
----- LOGIN CONTROLLER ----
+doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && echo "---- KNOWLEDGE INDEXER ----" && sed -n '1,360p' app/Services/Chatbot/ChatbotKnowledgeIndexer.php && echo "---- KNOWLEDGE ADMIN CONTROLLER ----" && sed -n '1,380p' app/Http/Controllers/Admin/ChatbotKnowledgeController.php && echo "---- KNOWLEDGE SOURCE MODEL ----" && sed -n '1,260p' app/Models/ChatbotKnowledgeSource.php && echo "---- DOCUMENT MODEL ----" && sed -n '1,240p' app/Models/ChatbotKnowledgeDocument.php
+---- KNOWLEDGE INDEXER ----
 <?php
 
-/**
- * Project Name: Department of Road(DOR)
- * @author    Veshraj Joshi
- * @copytop 2015 Peace Nepal DOT Com
- */
+namespace App\Services\Chatbot;
+
+use App\Models\ChatbotKnowledgeDocument;
+use App\Models\ChatbotKnowledgeSource;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use InvalidArgumentException;
+use RuntimeException;
+
+class ChatbotKnowledgeIndexer
+{
+    private const CHUNK_SIZE = 1200;
+    private const CHUNK_OVERLAP = 150;
+
+    public function __construct(
+        private readonly ChatbotDocumentExtractor $extractor
+    ) {
+    }
+
+    /**
+     * Extract and index a local document.
+     *
+     * Required: title, storage_disk, storage_path.
+     * Optional: source_id, office_id, language_id, document_type,
+     * source_key, source_url, mime_type, source_updated_at, metadata.
+     */
+    public function indexDocument(array $data): array
+    {
+        foreach (['title', 'storage_disk', 'storage_path'] as $field) {
+            if (!isset($data[$field]) || trim((string) $data[$field]) === '') {
+                throw new InvalidArgumentException("Missing required field: {$field}");
+            }
+        }
+
+        // A source is the authority for its office and must be enabled.
+        // Never allow caller-supplied office_id to move source content.
+        $source = null;
+
+        if (!empty($data['source_id'])) {
+            $source = ChatbotKnowledgeSource::findOrFail($data['source_id']);
+
+            if (!$source->is_enabled) {
+                throw new InvalidArgumentException('Knowledge source is disabled.');
+            }
+
+            if (array_key_exists('office_id', $data)
+                && $data['office_id'] !== null
+                && (int) $data['office_id'] !== (int) $source->office_id) {
+                throw new InvalidArgumentException(
+                    'Document office_id does not match its knowledge source.'
+                );
+            }
+        }
+
+        $disk = (string) $data['storage_disk'];
+        $path = (string) $data['storage_path'];
+
+        if (!in_array($disk, ['local', 'public'], true)) {
+            throw new InvalidArgumentException('Unapproved storage disk.');
+        }
+
+        $extraction = $this->extractor->extract($disk, $path);
+
+        // Never replace an existing successful index after extraction failure.
+        if (($extraction['status'] ?? null) !== 'extracted'
+            || trim((string) ($extraction['text'] ?? '')) === '') {
+            return [
+                'status' => 'failed',
+                'error' => $extraction['error'] ?? 'No extractable text found.',
+                'document' => null,
+                'chunks' => 0,
+            ];
+        }
+
+        $absolutePath = Storage::disk($disk)->path($path);
+
+        if (!is_file($absolutePath) || !is_readable($absolutePath)) {
+            return [
+                'status' => 'failed',
+                'error' => 'Document is not available for indexing.',
+                'document' => null,
+                'chunks' => 0,
+            ];
+        }
+
+        $checksum = hash_file('sha256', $absolutePath);
+
+        if ($checksum === false) {
+            throw new RuntimeException('Unable to calculate document checksum.');
+        }
+
+        $source = null;
+
+        if (!empty($data['source_id'])) {
+            $source = ChatbotKnowledgeSource::findOrFail($data['source_id']);
+        }
+
+        $officeId = $data['office_id'] ?? $source?->office_id;
+        $languageId = $data['language_id'] ?? null;
+        $sourceId = $source?->id;
+
+        $documentQuery = ChatbotKnowledgeDocument::query();
+
+        if ($sourceId !== null) {
+            $documentQuery->where('source_id', $sourceId);
+        } else {
+            $documentQuery->whereNull('source_id');
+        }
+
+        if (!empty($data['source_key'])) {
+            $documentQuery->where('source_key', $data['source_key']);
+        } else {
+            $documentQuery
+                ->where('storage_disk', $disk)
+                ->where('storage_path', $path);
+        }
+
+        $existing = $documentQuery->first();
+
+        // Identical content with existing chunks needs no re-indexing.
+        if ($existing
+            && $existing->checksum === $checksum
+            && $existing->parser_status === 'indexed'
+            && $existing->chunks()->exists()) {
+            return [
+                'status' => 'unchanged',
+                'document' => $existing,
+                'chunks' => $existing->chunks()->count(),
+                'checksum' => $checksum,
+            ];
+        }
+
+        $chunks = $this->splitText((string) $extraction['text']);
+
+        if ($chunks === []) {
+            return [
+                'status' => 'failed',
+                'error' => 'Document did not produce usable text chunks.',
+                'document' => null,
+                'chunks' => 0,
+            ];
+        }
+
+        // All document changes and chunk replacement are atomic.
+        $document = DB::transaction(function () use (
+            $existing,
+            $data,
+            $source,
+            $sourceId,
+            $officeId,
+            $languageId,
+            $disk,
+            $path,
+            $checksum,
+            $extraction,
+            $chunks
+        ) {
+            $document = $existing
+                ? ChatbotKnowledgeDocument::query()
+                    ->whereKey($existing->id)
+                    ->lockForUpdate()
+                    ->firstOrFail()
+                : new ChatbotKnowledgeDocument();
+
+            $document->fill([
+                'source_id' => $sourceId,
+                'office_id' => $officeId,
+                'language_id' => $languageId,
+                'document_type' => $data['document_type'] ?? 'document',
+                'source_key' => $data['source_key'] ?? null,
+                'title' => $data['title'],
+                'source_url' => $data['source_url'] ?? null,
+                'storage_disk' => $disk,
+                'storage_path' => $path,
+                'mime_type' => $data['mime_type'] ?? null,
+                'file_size' => filesize(Storage::disk($disk)->path($path)),
+                'checksum' => $checksum,
+                'source_updated_at' => $data['source_updated_at'] ?? null,
+                'extracted_text' => $extraction['text'],
+                'extraction_method' => $extraction['method'] ?? null,
+                'parser_status' => 'indexed',
+                'indexed_at' => now(),
+                'last_error' => null,
+                'metadata' => $data['metadata'] ?? null,
+            ]);
+
+            $document->save();
+
+            // Old chunks are removed only inside the successful transaction.
+            $document->chunks()->delete();
+
+            foreach ($chunks as $number => $chunkText) {
+                $document->chunks()->create([
+                    'source_id' => $sourceId,
+                    'office_id' => $officeId,
+                    'language_id' => $languageId,
+                    'chunk_number' => $number + 1,
+                    'chunk_text' => $chunkText,
+                    'token_count' => max(
+                        1,
+                        (int) ceil(mb_strlen($chunkText, 'UTF-8') / 4)
+                    ),
+                    'chunk_hash' => hash('sha256', $chunkText),
+                    'status' => 'active',
+                ]);
+            }
+
+            if ($source) {
+                $source->forceFill([
+                    'last_indexed_at' => now(),
+                    'content_checksum' => $checksum,
+                    'last_error' => null,
+                ])->save();
+            }
+
+            return $document->fresh();
+        });
+
+        return [
+            'status' => 'indexed',
+            'document' => $document,
+            'chunks' => count($chunks),
+            'checksum' => $checksum,
+            'method' => $extraction['method'] ?? null,
+        ];
+    }
+
+    /**
+     * Split Unicode text without cutting Nepali characters.
+     */
+    public function splitText(string $text): array
+    {
+        $text = trim(str_replace("\0", '', $text));
+
+        if ($text === '') {
+            return [];
+        }
+
+        $result = [];
+        $length = mb_strlen($text, 'UTF-8');
+        $start = 0;
+
+        while ($start < $length) {
+            $remaining = $length - $start;
+            $take = min(self::CHUNK_SIZE, $remaining);
+            $piece = mb_substr($text, $start, $take, 'UTF-8');
+
+            if ($remaining > self::CHUNK_SIZE) {
+                $newline = mb_strrpos($piece, "\n", 0, 'UTF-8');
+                $space = mb_strrpos($piece, ' ', 0, 'UTF-8');
+                $boundary = max(
+                    $newline === false ? -1 : $newline,
+                    $space === false ? -1 : $space
+                );
+
+                // Avoid producing very small chunks at an early boundary.
+                if ($boundary >= (int) (self::CHUNK_SIZE * 0.60)) {
+                    $take = $boundary + 1;
+                    $piece = mb_substr($text, $start, $take, 'UTF-8');
+                }
+            }
+
+            $piece = trim($piece);
+
+            if ($piece !== '') {
+                $result[] = $piece;
+            }
+
+            if ($start + $take >= $length) {
+                break;
+            }
+
+            $nextStart = $start + $take - self::CHUNK_OVERLAP;
+
+            // Guarantee forward progress.
+            $start = max($start + 1, $nextStart);
+        }
+
+        return $result;
+    }
+}
+---- KNOWLEDGE ADMIN CONTROLLER ----
+<?php
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\ConfigurationController;
-use App\Models\Circular;
-use App\Models\Content;
-use App\Models\IpMapping;
-use App\Models\Notice;
-use App\Models\Project;
-use App\Models\Staff;
-use App\Models\User;
+use App\Http\Controllers\Controller;
+use App\Models\ChatbotKnowledgeSource;
+use App\Models\Office;
+use App\Services\Chatbot\ChatbotKnowledgeIndexer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Validator;
-
-class LoginController extends ConfigurationController
-{
-    public $rel_site_url;
-    public $abs_site_url;
-    public $site_name;
-
-    public function __construct()
-    {
-        $this->abs_site_url = ConfigurationController::abs_site_url();
-        $this->rel_site_url = ConfigurationController::rel_site_url();
-        $this->site_name    = ConfigurationController::site_name();
-    }
-
-    public function getLogin()
-    {
-        $log_id = Session::get('log_id');
-        if ($log_id) {
-            return Redirect::to('/admin/home');
-        }
-        return view('users.login')->with('rel_site_url', $this->rel_site_url)
-            ->with('abs_site_url', $this->abs_site_url)
-            ->with('site_name', $this->site_name)
-            ->with('error_message', '');
-    }
-
-    public function postLogin(Request $request)
-    {
-        $rules = array(
-            'username' => 'Required',
-            'password' => 'Required');
-
-        $v = Validator::make($request->all(), $rules);
-        if (!$v->fails()) {
-            $auth = Auth::attempt(array(
-                'username'   => $request->get('username'),
-                'password'   => $request->get('password'),
-                'is_active'  => '1'));
-            // print_r($request->all());
-
-            if ($auth) {
-                $authUser = Auth::User();
-
-                $data = array(
-                    'user_id'      => $authUser->id,
-                    'user_type_id' => $authUser->user_type_id,
-                    'office_id'    => $authUser->office_id,
-                    'username'     => $authUser->username,
-                    'ip_address'   => $_SERVER['REMOTE_ADDR'],
-                    'login_ts'     => date('Y-m-d H:i:s'),
-                    'agent'        => $_SERVER['HTTP_USER_AGENT'],
-                );
-                $user       = IpMapping::create($data);
-                $insertedId = $user->id;
-                Session::put('log_id', $insertedId);
-
-                if($authUser->user_type_id == 3){
-                    return Redirect::route('project.admin.dashboard');
-                } else{
-                   return Redirect::route('dashboard');
-                }
-            } else {
-
-                return view('users.login')->with('error_message', 'Invalid username or password')
-                    ->with('rel_site_url', $this->rel_site_url)
-                    ->with('abs_site_url', $this->abs_site_url)
-                    ->with('site_name', $this->site_name);
-            }
-        } else {
-            return view('users.login')->with('error_message', 'Either username or password is empty.')
-                ->with('rel_site_url', $this->rel_site_url)
-                ->with('abs_site_url', $this->abs_site_url)
-                ->with('site_name', $this->site_name);
-        }
-    }
-    public function logoutUser()
-    {
-        $log_id = Session::get('log_id');
-
-        if ($log_id) {
-            $user = IpMapping::find($log_id);
-
-            if ($user) {
-                $user->logout_ts = date('Y-m-d H:i:s');
-                $user->save();
-            }
-        }
-
-        Auth::logout();
-        Session::flush();
-
-        return Redirect::route('admin.login');
-    }
-//==================================================================================================================================
-    public function getChangePasswordOwn()
-    {
-        return view('users.changepassword')->with('abs_site_url', $this->abs_site_url)
-            ->with('rel_site_url', $this->rel_site_url)
-            ->with('site_name', $this->site_name);
-
-    }
-//==================================================================================================================================
-    public function changePasswordOwn(Request $request)
-    {
-        $rule = array('newpassword' => 'required|min:6',
-            'conpassword'               => 'required|same:newpassword');
-        $v = Validator::make($request->all(), $rule);
-        if ($v->fails()) {
-            $feedback['type']    = 'validationerror';
-            $feedback['message'] = $v->getMessageBag();
-            exit(json_encode($feedback));
-        }
-        $user           = User::find(Auth::User()->id);
-        $user->password = Hash::make($request->get('newpassword'));
-        $user->save();
-        $feedback['type']    = 'success';
-        $feedback['message'] = 'Your password has been changed successfully';
-        exit(json_encode($feedback));
-
-    }
-//==================================================================================================================================
-    public function getChangePasswordByAdmin()
-    {
-        return view('users.changepasswordadmin')->with('abs_site_url', $this->abs_site_url)
-            ->with('rel_site_url', $this->rel_site_url)
-            ->with('site_name', $this->site_name);
-    }
-//==================================================================================================================================
-    public function changePasswordByAdmin(Request $request)
-    {
-        $rule = array('username' => 'required',
-            'newpassword'            => 'required|min:6',
-            'conpassword'            => 'required');
-        $v = Validator::make($request->all(), $rule);
-        if ($v->fails()) {
-            $feedback['type']    = 'validationerror';
-            $feedback['message'] = $v->getMessageBag();
-            exit(json_encode($feedback));
-        }
-        $rec = DB::table('users')->where('username', $request->get('username'))->update(array('password' => Hash::make($request->get('newpassword'))));
-        if ($rec) {
-            $feedback['type']    = 'success';
-            $feedback['message'] = 'Update Successfully.';
-            exit(json_encode($feedback));
-        }
-        $feedback['type']    = 'error';
-        $feedback['message'] = 'Such username doesnot exist in the database.';
-        exit(json_encode($feedback));
-
-    }
-
-    public function getHome()
-    {
-        $user     = Auth::User();
-        if($user->user_type_id == 3){
-            $projectId = $user->project_id;
-            $project = Project::with('detailEng')
-                        ->find($projectId);
-
-            return view('project_home')
-                ->with('abs_site_url', $this->abs_site_url)
-                ->with('rel_site_url', $this->rel_site_url)
-                ->with('site_name', $this->site_name)
-                ->with('project', $project);
-        }
-        $officeId = $user->office_id;
-
-        $staff_count = Staff::where('office_id', $officeId)
-            ->where('is_deleted', '0')->count();
-        $project_count = Project::where('office_id', $officeId)
-            ->where('is_deleted', '0')->count();
-        $content_count = Content::where('office_id', $officeId)
-            ->where('is_deleted', '0')->count();
-        $notice_count = Notice::where('office_id', $officeId)
-            ->where('is_deleted', '0')->count();
-        $circular_count = Circular::where(['is_deleted'=> '0','is_active'=>'1'])->count();
-
-        return view('home')
-            ->with('abs_site_url', $this->abs_site_url)
-            ->with('rel_site_url', $this->rel_site_url)
-            ->with('staff_count', $staff_count)
-            ->with('project_count', $project_count)
-            ->with('content_count', $content_count)
-            ->with('notice_count', $notice_count)
-            ->with('circular_count', $circular_count)
-            ->with('site_name', $this->site_name);
-    }
-}
----- PROJECT AUTH CONTROLLER ----
-<?php
-
-namespace App\Http\Controllers\Project;
-
-use App\Http\Controllers\ConfigurationController;
-use App\Models\Language;
-use App\Models\Project as ProjectModel;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Throwable;
 
-class ProjectController extends ConfigurationController
+class ChatbotKnowledgeController extends Controller
 {
-    public $abs_site_url;
-    public $rel_site_url;
-    public $site_name;
-
-    public function __construct()
+    private function ensureSuperAdmin(): void
     {
-        $this->abs_site_url = ConfigurationController::abs_site_url();
-        $this->rel_site_url = ConfigurationController::rel_site_url();
-        $this->site_name = ConfigurationController::site_name();
+        abort_unless(
+            Auth::check() && (int) Auth::user()->user_type_id === 2,
+            403
+        );
     }
 
-    private function errorView()
+    public function index()
     {
-        return view('error')
-            ->with('abs_site_url', $this->abs_site_url)
-            ->with('rel_site_url', $this->rel_site_url)
-            ->with('site_name', $this->site_name);
+        $this->ensureSuperAdmin();
+
+        $sources = ChatbotKnowledgeSource::where('source_type', '!=', 'appsheet')
+            ->withCount('documents')
+            ->orderByDesc('id')
+            ->paginate(20);
+
+        $offices = Office::getPublishedOffices();
+
+        return view('chatbot_settings.admin.knowledge', compact(
+            'sources',
+            'offices'
+        ));
     }
 
-    private function projectUser()
+    public function upload(Request $request, ChatbotKnowledgeIndexer $indexer)
     {
-        $user = Auth::user();
+        $this->ensureSuperAdmin();
 
-        if (!$user || (int) $user->user_type_id !== 3 || empty($user->project_id)) {
-            abort(403);
+        $uploadErrors = $_FILES['files']['error'] ?? [];
+        if (!is_array($uploadErrors)) {
+            $uploadErrors = [$uploadErrors];
         }
 
-        return $user;
+        foreach ($uploadErrors as $uploadError) {
+            if (in_array((int) $uploadError, [
+                UPLOAD_ERR_INI_SIZE,
+                UPLOAD_ERR_FORM_SIZE,
+            ], true)) {
+                return back()->with('error', 'File is too large (maximum 300 MB).');
+            }
+        }
+
+        $data = $request->validate([
+            'office_id' => ['nullable', 'integer'],
+            'files' => [
+                'required',
+                'array',
+                'min:1',
+                function ($attribute, $files, $fail) {
+                    $totalBytes = 0;
+
+                    foreach ((array) $files as $file) {
+                        if ($file instanceof \Illuminate\Http\UploadedFile && $file->isValid()) {
+                            $totalBytes += (int) $file->getSize();
+                        }
+                    }
+
+                    if ($totalBytes > 300 * 1024 * 1024) {
+                        $fail('Combined document size must not exceed 300 MB per upload.');
+                    }
+                },
+            ],
+            'files.*' => [
+                'required',
+                'file',
+                'max:307200',
+                'mimes:pdf,docx,xlsx,pptx',
+            ],
+            'is_public' => ['nullable', 'boolean'],
+        ], [
+            'office_id.integer' => 'Please select a valid office.',
+            'files.required' => 'Please add at least one document.',
+            'files.min' => 'Please add at least one document.',
+            'files.*.file' => 'A selected file could not be uploaded.',
+            'files.*.max' => 'A document is too large (maximum 300 MB).',
+            'files.*.mimes' => 'Use PDF, DOCX, XLSX or PPTX documents.',
+        ]);
+
+        $officeId = isset($data['office_id']) && $data['office_id'] !== ''
+            ? (int) $data['office_id']
+            : null;
+
+        if ($officeId !== null) {
+            $officeExists = collect(Office::getPublishedOffices())
+                ->contains(fn ($office) => (int) $office->id === $officeId);
+
+            if (!$officeExists) {
+                return back()->with('error', 'Please select a valid active office.');
+            }
+        }
+
+        $indexed = 0;
+        $failed = 0;
+
+        foreach ($data['files'] as $file) {
+            $source = null;
+            $path = null;
+
+            try {
+                $source = ChatbotKnowledgeSource::create([
+                    'office_id' => $officeId,
+                    'source_type' => 'file',
+                    'name' => $file->getClientOriginalName(),
+                    'storage_disk' => 'local',
+                    'storage_path' => null,
+                    'language_code' => 'both',
+                    'status' => 'pending',
+                    'is_enabled' => true,
+                    'is_public' => $request->boolean('is_public'),
+                    'created_by' => Auth::id(),
+                    'updated_by' => Auth::id(),
+                ]);
+
+                $folder = 'chatbot-knowledge/' . ($officeId ?? 'general');
+                $path = $file->store($folder, 'local');
+
+                if (!$path) {
+                    $source->update([
+                        'status' => 'failed',
+                        'last_error' => 'Upload failed. Please try again.',
+                    ]);
+                    $failed++;
+                    continue;
+                }
+
+                $source->update(['storage_path' => $path]);
+            } catch (Throwable $e) {
+                report($e);
+
+                if ($source) {
+                    $source->update([
+                        'status' => 'failed',
+                        'last_error' => 'Upload failed. Please try again.',
+                    ]);
+                }
+
+                if ($path) {
+                    Storage::disk('local')->delete($path);
+                }
+
+                $failed++;
+                continue;
+            }
+
+            try {
+                $result = $indexer->indexDocument([
+                    'source_id' => $source->id,
+                    'title' => $source->name,
+                    'storage_disk' => 'local',
+                    'storage_path' => $path,
+                    'document_type' => 'document',
+                    'mime_type' => $file->getMimeType(),
+                    'source_key' => 'upload-' . $source->id,
+                    'metadata' => [
+                        'original_name' => $file->getClientOriginalName(),
+                    ],
+                ]);
+
+                $success = in_array(
+                    $result['status'] ?? '',
+                    ['indexed', 'unchanged'],
+                    true
+                );
+
+                $source->update([
+                    'status' => $success ? 'indexed' : 'failed',
+                    'last_error' => $success
+                        ? null
+                        : mb_substr(
+                            (string) ($result['error'] ?? 'Indexing failed.'),
+                            0,
+                            500
+                        ),
+                    'updated_by' => Auth::id(),
+                ]);
+
+                $success ? $indexed++ : $failed++;
+            } catch (Throwable $e) {
+                report($e);
+
+                $source->update([
+                    'status' => 'failed',
+                    'last_error' => 'Indexing failed. Please retry.',
+                    'updated_by' => Auth::id(),
+                ]);
+
+                $failed++;
+            }
+        }
+
+        return back();
     }
 
-    /**
-     * Project User Dashboard
-     */
-    public function getIndex()
+    public function registerUrl(Request $request)
     {
+        $this->ensureSuperAdmin();
+
+        $data = $request->validate([
+            'office_id' => ['nullable', 'integer'],
+            'is_public' => ['nullable', 'boolean'],
+            'urls' => ['required', 'array', 'min:1'],
+            'urls.*.type' => ['required', 'in:website,google_sheets'],
+            'urls.*.name' => ['required', 'string', 'max:200'],
+            'urls.*.source_url' => ['required', 'url', 'max:2000'],
+        ], [
+            'office_id.integer' => 'Please select a valid office.',
+            'urls.required' => 'Please add at least one URL.',
+            'urls.*.name.required' => 'Please enter a source name.',
+            'urls.*.source_url.required' => 'Please enter a URL.',
+            'urls.*.source_url.url' => 'Please enter a valid URL.',
+        ]);
+
+        $officeId = isset($data['office_id']) && $data['office_id'] !== ''
+            ? (int) $data['office_id']
+            : null;
+
+        if ($officeId !== null) {
+            $officeExists = collect(Office::getPublishedOffices())
+                ->contains(fn ($office) => (int) $office->id === $officeId);
+
+            if (!$officeExists) {
+                return back()->withErrors([
+                    'office_id' => 'Please select a valid active office.',
+                ]);
+            }
+        }
+
+        foreach ($data['urls'] as $index => $item) {
+            $parts = parse_url($item['source_url']);
+
+            if (
+                !is_array($parts)
+                || strtolower($parts['scheme'] ?? '') !== 'https'
+                || empty($parts['host'])
+                || isset($parts['user'])
+                || isset($parts['pass'])
+            ) {
+                return back()->withErrors([
+                    'urls' => 'Only HTTPS URLs without embedded credentials are accepted.',
+                ]);
+            }
+
+        }
+
+        foreach ($data['urls'] as $item) {
+
+            ChatbotKnowledgeSource::create([
+                'office_id' => $officeId,
+                'source_type' => $item['type'],
+                'name' => $item['name'],
+                'source_url' => $item['source_url'],
+                'language_code' => 'both',
+                'status' => 'pending',
+                'is_enabled' => true,
+                'is_public' => $request->boolean('is_public'),
+                'created_by' => Auth::id(),
+                'updated_by' => Auth::id(),
+            ]);
+        }
+
+        return back();
+    }
+
+    public function reindex(
+        ChatbotKnowledgeSource $source,
+        ChatbotKnowledgeIndexer $indexer
+    ) {
+        $this->ensureSuperAdmin();
+
+        abort_unless($source->source_type === 'file', 422);
+
+        if (!$source->is_enabled) {
+            return back()->with('error', 'Enable this source before indexing.');
+        }
+
+        if (
+            !$source->storage_path
+            || !Storage::disk('local')->exists($source->storage_path)
+        ) {
+            return back()->with('error', 'The private source file is missing.');
+        }
+
         try {
-            $user = $this->projectUser();
+            $result = $indexer->indexDocument([
+                'source_id' => $source->id,
+                'title' => $source->name,
+                'storage_disk' => 'local',
+                'storage_path' => $source->storage_path,
+                'document_type' => 'document',
+                'source_key' => 'upload-' . $source->id,
+            ]);
 
-            $project = ProjectModel::with(['detailEng', 'detailNep'])
-                ->where('id', $user->project_id)
-                ->where('is_deleted', '0')
-                ->first();
+            $success = in_array($result['status'] ?? '', ['indexed', 'unchanged'], true);
 
-            if (!$project) {
-                return $this->errorView();
-            }
+            $source->update([
+                'status' => $success ? 'indexed' : 'failed',
+                'last_error' => $success
+                    ? null
+                    : mb_substr((string) ($result['error'] ?? 'Indexing failed.'), 0, 2000),
+                'updated_by' => Auth::id(),
+            ]);
 
-            return view('projects.project.index')
-                ->with('project', $project)
-                ->with('abs_site_url', $this->abs_site_url)
-                ->with('rel_site_url', $this->rel_site_url)
-                ->with('site_name', $this->site_name);
+            return back()->with(
+                $success ? 'success' : 'error',
+                $success ? 'Source indexed successfully.' : 'Indexing failed.'
+            );
         } catch (Throwable $e) {
-            if ($e instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface) {
-                throw $e;
-            }
-
             report($e);
-            return $this->errorView();
+
+            $source->update([
+                'status' => 'failed',
+                'last_error' => 'Indexing failed. Check application logs.',
+            ]);
+
+            return back()->with('error', 'Indexing failed. Check application logs.');
         }
     }
 
-    /**
-     * Project User Edit Form
-     */
-    public function getEditProject($id)
+    public function toggle(ChatbotKnowledgeSource $source)
     {
-        try {
-            $user = $this->projectUser();
+        $this->ensureSuperAdmin();
 
-            // A Project User can edit only their own assigned project.
-            if ((int) $id !== (int) $user->project_id) {
-                abort(403);
-            }
+        $source->update([
+            'is_enabled' => !$source->is_enabled,
+            'updated_by' => Auth::id(),
+        ]);
 
-            $projectData = ProjectModel::where('id', $user->project_id)
-                ->where('is_deleted', '0')
-                ->first();
+        return back()->with('success', 'Source status updated.');
+    }
 
-            if (!$projectData) {
-                return $this->errorView();
-            }
+    public function destroy(ChatbotKnowledgeSource $source)
+    {
+        $this->ensureSuperAdmin();
 
-            $languages = Language::getActiveLanguages();
+        if ($source->storage_disk === 'local' && $source->storage_path) {
+            Storage::disk('local')->delete($source->storage_path);
+        }
 
-            // Include every active language, even if its detail row is missing.
-            $projects = DB::table('language')
-                ->leftJoin('project_detail', function ($join) use ($id) {
-                    $join->on('project_detail.language_id', '=', 'language.id')
-                        ->where('project_detail.project_id', '=', $id);
-                })
-                ->where('language.is_active', '1')
-                ->where('language.is_deleted', '0')
-                ->select(
-                    'language.id as language_id',
-                    'language.language_name',
-                    DB::raw((int) $id . ' as project_id'),
-                    'project_detail.id as project_detail_id',
-                    'project_detail.project_heading',
-                    'project_detail.project_description',
-                    'project_detail.project_page_title'
-                )
-                ->orderBy('language.id')
-                ->get();
+        $source->delete();
 
-            return view('projects.project.edit')
-                ->with('projects', $projects)
-                ->with('projectData', $projectData)
-                ->with('languages', $languages)
-                ->with('abs_site_url', $this->abs_site_url)
-                ->with('rel_site_url', $this->rel_site_url)
-                ->with('site_name', $this->site_name);
-        } catch (Throwable $e) {
-            if ($e instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface) {
+        return back()->with('success', 'Knowledge source and its indexed documents deleted.');
+    }
+}
+---- KNOWLEDGE SOURCE MODEL ----
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class ChatbotKnowledgeSource extends Model
+{
+    protected $table = 'chatbot_knowledge_sources';
+
+    protected $fillable = [
+        'office_id', 'source_type', 'name', 'source_url',
+        'storage_disk', 'storage_path', 'external_id',
+        'auth_config', 'language_code', 'status',
+        'is_enabled', 'is_public', 'last_checked_at',
+        'last_indexed_at', 'content_checksum', 'source_version',
+        'last_error', 'created_by', 'updated_by',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'auth_config' => 'encrypted:array',
+            'is_enabled' => 'boolean',
+            'is_public' => 'boolean',
+            'last_checked_at' => 'datetime',
+            'last_indexed_at' => 'datetime',
+        ];
+    }
+
+    public function documents(): HasMany
+    {
+        return $this->hasMany(ChatbotKnowledgeDocument::class, 'source_id');
+    }
+}
+---- DOCUMENT MODEL ----
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class ChatbotKnowledgeDocument extends Model
+{
+    protected $table = 'chatbot_knowledge_documents';
+
+    protected $fillable = [
+        'source_id', 'office_id', 'language_id', 'document_type',
+        'source_key', 'title', 'source_url', 'storage_disk',
+        'storage_path', 'mime_type', 'file_size', 'checksum',
+        'source_updated_at', 'extracted_text', 'extraction_method',
+        'parser_status', 'indexed_at', 'last_error', 'metadata',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'file_size' => 'integer',
+            'source_updated_at' => 'datetime',
+            'indexed_at' => 'datetime',
+            'metadata' => 'array',
+        ];
+    }
+
+    public function source(): BelongsTo
+    {
+        return $this->belongsTo(ChatbotKnowledgeSource::class, 'source_id');
+    }
+
+    public function chunks(): HasMany
+    {
+        return $this->hasMany(ChatbotKnowledgeChunk::class, 'document_id');
+    }
+}
 doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$
