@@ -1,949 +1,509 @@
-doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && /usr/bin/php8.5 artisan tinker --execute="dump(DB::table('office')->leftJoin('office_detail','office.id','=','office_detail.office_id')->where('office_detail.language_id',2)->where('office.is_deleted','0')->select('office.id','office.office_subdomain','office.office_type','office_detail.office_name')->orderBy('office.id')->get());"
-Illuminate\Support\Collection^ {#6844
-  #items: array:157 [
-    0 => {#6841
-      +"id": 4
-      +"office_subdomain": "home"
-      +"office_type": "2,3"
-      +"office_name": "Department of Roads"
-    }
-    1 => {#6843
-      +"id": 71
-      +"office_subdomain": "frsmo-itahari"
-      +"office_type": "2,3"
-      +"office_name": "Federal Road Supervision and Monitoring Office, Damak"
-    }
-    2 => {#6840
-      +"id": 72
-      +"office_subdomain": "frsmo-surkhet"
-      +"office_type": "2"
-      +"office_name": "Federal Road Supervision and Monitoring Office, Surkhet"
-    }
-    3 => {#6837
-      +"id": 74
-      +"office_subdomain": "ilam"
-      +"office_type": "3"
-      +"office_name": "Road Division, Ilam"
-    }
-    4 => {#6839
-      +"id": 75
-      +"office_subdomain": "damak"
-      +"office_type": "3"
-      +"office_name": "Road Division, Damak"
-    }
-    5 => {#6836
-      +"id": 76
-      +"office_subdomain": "biratnagar"
-      +"office_type": "3"
-      +"office_name": "Road Division, Biratnagar"
-    }
-    6 => {#6835
-      +"id": 77
-      +"office_subdomain": "dhankuta"
-      +"office_type": "3"
-      +"office_name": "Road Division, Dhankuta"
-    }
-    7 => {#6834
-      +"id": 78
-      +"office_subdomain": "lahan"
-      +"office_type": "3"
-      +"office_name": "Road Division, Lahan"
-    }
-    8 => {#6833
-      +"id": 79
-      +"office_subdomain": "tumlingtar"
-      +"office_type": "3"
-      +"office_name": "Road Division, Tumlingtar"
-    }
-    9 => {#6832
-      +"id": 80
-      +"office_subdomain": "Janakpur"
-      +"office_type": "3"
-      +"office_name": "Road Division, Janakpur"
-    }
-    10 => {#6831
-      +"id": 81
-      +"office_subdomain": "chandranigahapur"
-      +"office_type": "3"
-      +"office_name": "Road Division Chandranigahapur"
-    }
-    11 => {#6830
-      +"id": 83
-      +"office_subdomain": "bharatpur"
-      +"office_type": "3"
-      +"office_name": "Road Division, Bharatpur"
-    }
-    12 => {#6829
-      +"id": 84
-      +"office_subdomain": "charikot"
-      +"office_type": "3"
-      +"office_name": "Road Division, Charikot"
-    }
-    13 => {#6828
-      +"id": 85
-      +"office_subdomain": "khurkot"
-      +"office_type": "3"
-      +"office_name": "Road Division, Khalte"
-    }
-    14 => {#6827
-      +"id": 86
-      +"office_subdomain": "kathmandu"
-      +"office_type": "3"
-      +"office_name": "Road Division, Kathmandu"
-    }
-    15 => {#6826
-      +"id": 88
-      +"office_subdomain": "lalitpur"
-      +"office_type": "3"
-      +"office_name": "Road Division, Lalitpur"
-    }
-    16 => {#6825
-      +"id": 89
-      +"office_subdomain": "bhaktapur"
-      +"office_type": "3"
-      +"office_name": "Road Division, Bhaktapur"
-    }
-    17 => {#6824
-      +"id": 90
-      +"office_subdomain": "nuwakot"
-      +"office_type": "3"
-      +"office_name": "Road Division, Nuwakot"
-    }
-    18 => {#6823
-      +"id": 91
-      +"office_subdomain": "damauli"
-      +"office_type": "3"
-      +"office_name": "Road Division, Damauli"
-    }
-    19 => {#6822
-      +"id": 92
-      +"office_subdomain": "pokhara"
-      +"office_type": "3"
-      +"office_name": "Road Division, Pokhara"
-    }
-    20 => {#6821
-      +"id": 93
-      +"office_subdomain": "baglung"
-      +"office_type": "3"
-      +"office_name": "Road Division, Baglung"
-    }
-    21 => {#6820
-      +"id": 94
-      +"office_subdomain": "palpa"
-      +"office_type": "3"
-      +"office_name": "Road Division, Palpa"
-    }
-    22 => {#6819
-      +"id": 95
-      +"office_subdomain": "butwal"
-      +"office_type": "3"
-      +"office_name": "Road Division, Butwal"
-    }
-    23 => {#6818
-      +"id": 96
-      +"office_subdomain": "shivapur"
-      +"office_type": "3"
-      +"office_name": "Road Division, Shivapur"
-    }
-    24 => {#6817
-      +"id": 97
-      +"office_subdomain": "pyuthan"
-      +"office_type": "3"
-      +"office_name": "Road Division, Pyuthan"
-    }
-    25 => {#6816
-      +"id": 98
-      +"office_subdomain": "dang"
-      +"office_type": "3"
-      +"office_name": "Road Division, Dang"
-    }
-    26 => {#6815
-      +"id": 99
-      +"office_subdomain": "nepalgunj"
-      +"office_type": "3"
-      +"office_name": "Road Division, Nepalgunj"
-    }
-    27 => {#6814
-      +"id": 100
-      +"office_subdomain": "surkhet"
-      +"office_type": "3"
-      +"office_name": "Road Division, Surkhet"
-    }
-    28 => {#6813
-      +"id": 101
-      +"office_subdomain": "jumla"
-      +"office_type": "3"
-      +"office_name": "Road Division Jumla"
-    }
-    29 => {#6812
-      +"id": 102
-      +"office_subdomain": "chaurjahari"
-      +"office_type": "3"
-      +"office_name": "Road Division, Chaurjahari"
-    }
-    30 => {#6811
-      +"id": 103
-      +"office_subdomain": "mahendranagar"
-      +"office_type": "3"
-      +"office_name": "Road Division, Mahendranagar"
-    }
-    31 => {#6810
-      +"id": 104
-      +"office_subdomain": "doti"
-      +"office_type": "3"
-      +"office_name": "Road Division, Doti"
-    }
-    32 => {#6809
-      +"id": 105
-      +"office_subdomain": "sanphebagar"
-      +"office_type": "3"
-      +"office_name": "Road Division, Sanphebagar"
-    }
-    33 => {#6855
-      +"id": 106
-      +"office_subdomain": "baitadi"
-      +"office_type": "3"
-      +"office_name": "Road Division, Baitadi"
-    }
-    34 => {#6856
-      +"id": 113
-      +"office_subdomain": "hed-itahari"
-      +"office_type": "4"
-      +"office_name": "Heavy Equipment Division, Itahari"
-    }
-    35 => {#6749
-      +"id": 114
-      +"office_subdomain": "hed-hetauda"
-      +"office_type": "4"
-      +"office_name": "Heavy Equipment Division, Hetauda"
-    }
-    36 => {#6857
-      +"id": 115
-      +"office_subdomain": "hed-kathmandu"
-      +"office_type": "4"
-      +"office_name": "Heavy Equipment Division, Kathmandu"
-    }
-    37 => {#6858
-      +"id": 116
-      +"office_subdomain": "hed-pokhara"
-      +"office_type": "4"
-      +"office_name": "Heavy Equipment Division, Pokhara"
-    }
-    38 => {#6859
-      +"id": 117
-      +"office_subdomain": "hed-butwal"
-      +"office_type": "4"
-      +"office_name": "Heavy Equipment Division, Butwal"
-    }
-    39 => {#6860
-      +"id": 118
-      +"office_subdomain": "hed-nepalgunj"
-      +"office_type": "4"
-      +"office_name": "Heavy Equipment Division, Nepalgunj"
-    }
-    40 => {#6861
-      +"id": 119
-      +"office_subdomain": "hed-godawari"
-      +"office_type": "4"
-      +"office_name": "Heavy Equipment Division, Godawari"
-    }
-    41 => {#6862
-      +"id": 120
-      +"office_subdomain": "mo-phidim"
-      +"office_type": "5"
-      +"office_name": "Mechanical Office, Phidim"
-    }
-    42 => {#6863
-      +"id": 121
-      +"office_subdomain": "mo-Birtamod"
-      +"office_type": "5"
-      +"office_name": "Mechanical Office, Birtamod"
-    }
-    43 => {#6864
-      +"id": 122
-      +"office_subdomain": "mo-lahan"
-      +"office_type": "5"
-      +"office_name": "Mechanical Office, Lahan"
-    }
-    44 => {#6865
-      +"id": 123
-      +"office_subdomain": "mo-Janakpur"
-      +"office_type": "5"
-      +"office_name": "Mechanical Office, Janakpur"
-    }
-    45 => {#6866
-      +"id": 124
-      +"office_subdomain": "mo-Bharatpur"
-      +"office_type": "5"
-      +"office_name": "Mechanical Office, Bharatpur"
-    }
-    46 => {#6867
-      +"id": 125
-      +"office_subdomain": "mo-nuwakot"
-      +"office_type": "5"
-      +"office_name": "Mechanical Office, Nuwakot"
-    }
-    47 => {#6868
-      +"id": 126
-      +"office_subdomain": "mo-dumre"
-      +"office_type": "5"
-      +"office_name": "Mechanical Office, Dumre"
-    }
-    48 => {#6869
-      +"id": 127
-      +"office_subdomain": "mo-dang"
-      +"office_type": "5"
-      +"office_name": "Mechanical Office, Dang"
-    }
-    49 => {#6870
-      +"id": 128
-      +"office_subdomain": "mo-Surkhet"
-      +"office_type": "5"
-      +"office_name": "Mechanical Office, Surkhet"
-    }
-    50 => {#6871
-      +"id": 129
-      +"office_subdomain": "mtc"
-      +"office_type": "5"
-      +"office_name": "Mechanical Training Center, Lalitpur"
-    }
-    51 => {#6872
-      +"id": 130
-      +"office_subdomain": "mo-budar"
-      +"office_type": "5"
-      +"office_name": "Mechanical Office, Budar"
-    }
-    52 => {#6873
-      +"id": 131
-      +"office_subdomain": "harkapur"
-      +"office_type": "3"
-      +"office_name": "Road Division Harkapur"
-    }
-    53 => {#6874
-      +"id": 134
-      +"office_subdomain": "nshpd"
-      +"office_type": "6,7"
-      +"office_name": "North-South/Trade Route Improvement Project Directorate"
-    }
-    54 => {#6875
-      +"id": 136
-      +"office_subdomain": "pdadb"
-      +"office_type": "6"
-      +"office_name": "Project Directorate (ADB)"
-    }
-    55 => {#6876
-      +"id": 137
-      +"office_subdomain": "ppp"
-      +"office_type": "2,6"
-      +"office_name": "Puspalal (Mid-Hill)Highway Eastern Section"
-    }
-    56 => {#6877
-      +"id": 138
-      +"office_subdomain": "pmhpd"
-      +"office_type": "2,6"
-      +"office_name": "Pushpalal (Mid-Hill ) Highway Project Directorate"
-    }
-    57 => {#6878
-      +"id": 139
-      +"office_subdomain": "phpd"
-      +"office_type": "6"
-      +"office_name": "Postal Higway Directorate"
-    }
-    58 => {#6879
-      +"id": 140
-      +"office_subdomain": "dtrp"
-      +"office_type": "3"
-      +"office_name": "Mahakali Corridor Road  (Brahmadev-Jhulaghat-Darchula-Tinkar)Road Project"
-    }
-    59 => {#6880
-      +"id": 142
-      +"office_subdomain": "nmrp"
-      +"office_type": "6"
-      +"office_name": "Nagdhunga-Muglin Road Project (Western Section)"
-    }
-    60 => {#6881
-      +"id": 145
-      +"office_subdomain": "bs-dang"
-      +"office_type": "2,6"
-      +"office_name": "Bridge Sector, Nepalgunj"
-    }
-    61 => {#6882
-      +"id": 147
-      +"office_subdomain": "qrdc"
-      +"office_type": "2,6"
-      +"office_name": "Quality Research & Development Centre"
-    }
-    62 => {#6883
-      +"id": 151
-      +"office_subdomain": "pmhpp"
-      +"office_type": "2"
-      +"office_name": "Pushpalal (Mid-Hill) Highway Project Office, Panchthar"
-    }
-    63 => {#6884
-      +"id": 152
-      +"office_subdomain": "krrp"
-      +"office_type": "2"
-      +"office_name": "Kathmandu Ring Road Improvement Project"
-    }
-    64 => {#6885
-      +"id": 154
-      +"office_subdomain": "rbidroadp"
-      +"office_type": "6"
-      +"office_name": "Rani Biratnagar Itahari Dharan Road Project"
-    }
-    65 => {#6886
-      +"id": 156
-      +"office_subdomain": "admin"
-      +"office_type": ""
-      +"office_name": "Department of Roads Contents 1"
-    }
-    66 => {#6887
-      +"id": 159
-      +"office_subdomain": "pmeu1"
-      +"office_type": "2"
-      +"office_name": "Planning, Monitoring & Evaluation Unit (PMEU), DOR"
-    }
-    67 => {#6888
-      +"id": 163
-      +"office_subdomain": "TRIPD"
-      +"office_type": "6"
-      +"office_name": "Trade Route Improvements Project Directorate"
-    }
-    68 => {#6889
-      +"id": 164
-      +"office_subdomain": "ridpd"
-      +"office_type": "6"
-      +"office_name": "Road Improvement and Development Project Directorate"
-    }
-    69 => {#6890
-      +"id": 165
-      +"office_subdomain": "mabhpd"
-      +"office_type": "6"
-      +"office_name": "Madan Bhandari Highway Project Directorate"
-    }
-    70 => {#6891
-      +"id": 170
-      +"office_subdomain": "dorfcb"
-      +"office_type": "3"
-      +"office_name": "Development Cooperation Implementation Division"
-    }
-    71 => {#6892
-      +"id": 173
-      +"office_subdomain": "mbhpod"
-      +"office_type": "2"
-      +"office_name": "Madan Bhandari Highway Project Office, Damak"
-    }
-    72 => {#6893
-      +"id": 174
-      +"office_subdomain": "pmhpod"
-      +"office_type": "2"
-      +"office_name": "Pushpalal (Mid-Hill) Highway Project Office, Dailekh"
-    }
-    73 => {#6894
-      +"id": 175
-      +"office_subdomain": "pmhpr"
-      +"office_type": "2"
-      +"office_name": "Pushpalal (Mid-Hill) Highway Project Office, Ramechhap"
-    }
-    74 => {#6895
-      +"id": 176
-      +"office_subdomain": "phpobirgunj"
-      +"office_type": "2"
-      +"office_name": "Postal Highway Directorate, Project Office, Birgunj"
-    }
-    75 => {#6896
-      +"id": 177
-      +"office_subdomain": "mprpwestern"
-      +"office_type": "2"
-      +"office_name": "Muglin-Pokhara Road Project (Western Section)"
-    }
-    76 => {#6897
-      +"id": 178
-      +"office_subdomain": "bs-kathmandu"
-      +"office_type": "2"
-      +"office_name": "Bridge Sector Kathmandu"
-    }
-    77 => {#6898
-      +"id": 179
-      +"office_subdomain": "pmhp-gorkha"
-      +"office_type": "2"
-      +"office_name": "Pushpalal (Mid-Hill) Highway Project Office, Gorkha"
-    }
-    78 => {#6899
-      +"id": 180
-      +"office_subdomain": "smrp-rolpa"
-      +"office_type": "2"
-      +"office_name": "Shahidmarga Road Project Office, Liwang, Rolpa"
-    }
-    79 => {#6900
-      +"id": 181
-      +"office_subdomain": "khutiyadipayal"
-      +"office_type": "2"
-      +"office_name": "Dhangadhi-Khutiya-Dipayal-Uraibhanjyang Road Project"
-    }
-    80 => {#6901
-      +"id": 182
-      +"office_subdomain": "mbhpogulmi"
-      +"office_type": "7"
-      +"office_name": "Madan Bhandari Highway Project Office Tamghas"
-    }
-    81 => {#6902
-      +"id": 183
-      +"office_subdomain": "phpokapilvastu"
-      +"office_type": "6"
-      +"office_name": "Postal Highway Directorate, Project Office, Kapilvastu"
-    }
-    82 => {#6903
-      +"id": 185
-      +"office_subdomain": "mbpom"
-      +"office_type": ""
-      +"office_name": "Mahakali Bridge Project"
-    }
-    83 => {#6904
-      +"id": 187
-      +"office_subdomain": "raptihighway"
-      +"office_type": "2"
-      +"office_name": "Rapti Highway Road Project"
-    }
-    84 => {#6905
-      +"id": 188
-      +"office_subdomain": "pkhsrp"
-      +"office_type": "2"
-      +"office_name": "Panthdihi-Katahare-Harmi-Sahiltar Road Project, Gorkha"
-    }
-    85 => {#6906
-      +"id": 190
-      +"office_subdomain": "bs-pokhara"
-      +"office_type": "2"
-      +"office_name": "Bridge Sector, Pokhara"
-    }
-    86 => {#6907
-      +"id": 191
-      +"office_subdomain": "nsrp"
-      +"office_type": "2"
-      +"office_name": "North-South (Mulghat-Dobhan-Olangchunggola) Road Project Office, Taplejung"
-    }
-    87 => {#6908
-      +"id": 192
-      +"office_subdomain": "mbhpoga"
-      +"office_type": "2"
-      +"office_name": "Madan Bhandari Highway Project Office, Gaighat"
-    }
-    88 => {#6909
-      +"id": 193
-      +"office_subdomain": "hed-janakpur"
-      +"office_type": "4"
-      +"office_name": "Heavy Equipment Division, Janakpur"
-    }
-    89 => {#6910
-      +"id": 194
-      +"office_subdomain": "nbrp-east"
-      +"office_type": ""
-      +"office_name": "Narayanghat-Butwal Road Project (Eastern-Section)"
-    }
-    90 => {#6911
-      +"id": 195
-      +"office_subdomain": "gdrp"
-      +"office_type": "2"
-      +"office_name": "Sagarmatha Lokmarg (Gaighat Diktel) Road Project"
-    }
-    91 => {#6912
-      +"id": 196
-      +"office_subdomain": "gtmsrrp"
-      +"office_type": "2"
-      +"office_name": "Galchhi Trishuli Mailung Syaphrubesshi Rasuwagadhi Road Project"
-    }
-    92 => {#6913
-      +"id": 197
-      +"office_subdomain": "srrps"
-      +"office_type": "2"
-      +"office_name": "Seti Highway (South Section) Tikapur-Lode-Chainpur Road Project"
-    }
-    93 => {#6914
-      +"id": 224
-      +"office_subdomain": "bimp"
-      +"office_type": "2"
-      +"office_name": "Bridge Improvement and Maintenance Project Office, Lalitpur"
-    }
-    94 => {#6915
-      +"id": 226
-      +"office_subdomain": "bs-surkhet"
-      +"office_type": "2"
-      +"office_name": "Bridge Sector, Surkhet"
-    }
-    95 => {#6916
-      +"id": 227
-      +"office_subdomain": "sdsbrp"
-      +"office_type": ""
-      +"office_name": "Suryabinayak-Dhulikhel Road Project"
-    }
-    96 => {#6917
-      +"id": 229
-      +"office_subdomain": "mkgrp"
-      +"office_type": "6"
-      +"office_name": "Mirchaiya-Katari-Ghurmi Road Project"
-    }
-    97 => {#6918
-      +"id": 232
-      +"office_subdomain": "gorkharoad"
-      +"office_type": "6"
-      +"office_name": "Gorkha Road Project, Gorkha"
-    }
-    98 => {#6919
-      +"id": 233
-      +"office_subdomain": "srrpn"
-      +"office_type": "2"
-      +"office_name": "Seti Highway (North Section) Chainpur-Taklakot Road Project"
-    }
-    99 => {#6920
-      +"id": 234
-      +"office_subdomain": "maintb"
-      +"office_type": ""
-      +"office_name": "Maintenance Branch, Department of Roads"
-    }
-    100 => {#6921
-      +"id": 235
-      +"office_subdomain": "nmrp-east"
-      +"office_type": ""
-      +"office_name": "Nagdhunga-Mugling Road Project (Eastern Section)"
-    }
-    101 => {#6922
-      +"id": 237
-      +"office_subdomain": "dgrp"
-      +"office_type": ""
-      +"office_name": "Dhading-Gorkha Road Project"
-    }
-    102 => {#6923
-      +"id": 238
-      +"office_subdomain": "kdprp"
-      +"office_type": ""
-      +"office_name": "Kamala-Dhalkebar-Pathalaiya Road Project (Eastern Section)"
-    }
-    103 => {#6924
-      +"id": 242
-      +"office_subdomain": "phpodhangadhi"
-      +"office_type": ""
-      +"office_name": "Postal Highway Directorate, Project Office, Dhangadhi"
-    }
-    104 => {#6925
-      +"id": 243
-      +"office_subdomain": "phpojanakpur"
-      +"office_type": "2"
-      +"office_name": "Postal Highway Directorate, Project Office, Janakpur"
-    }
-    105 => {#6926
-      +"id": 244
-      +"office_subdomain": "bridgebranch"
-      +"office_type": ""
-      +"office_name": "Bridge Branch, Department of Roads"
-    }
-    106 => {#6927
-      +"id": 245
-      +"office_subdomain": "bps1"
-      +"office_type": "2"
-      +"office_name": "Bridge Sector, Dharan"
-    }
-    107 => {#6928
-      +"id": 246
-      +"office_subdomain": "mechb"
-      +"office_type": "2"
-      +"office_name": "Mechanical Branch"
-    }
-    108 => {#6929
-      +"id": 247
-      +"office_subdomain": "mo-mulkot"
-      +"office_type": "5"
-      +"office_name": "Mechanical Office, Mulkot"
-    }
-    109 => {#6930
-      +"id": 248
-      +"office_subdomain": "mo-jumla"
-      +"office_type": "5"
-      +"office_name": "Mechanical Office, Jumla"
-    }
-    110 => {#6931
-      +"id": 249
-      +"office_subdomain": "frsmo-kathmandu"
-      +"office_type": "2"
-      +"office_name": "Federal Road Supervision and Monitoring Office, Kathmandu"
-    }
-    111 => {#6932
-      +"id": 250
-      +"office_subdomain": "frsmo-pokhara"
-      +"office_type": ""
-      +"office_name": "Federal Road Supervision and Monitoring Office, Pokhara"
-    }
-    112 => {#6933
-      +"id": 251
-      +"office_subdomain": "hetauda"
-      +"office_type": ""
-      +"office_name": "Road Division, Hetauda"
-    }
-    113 => {#6934
-      +"id": 252
-      +"office_subdomain": "mbhpohtd"
-      +"office_type": ""
-      +"office_name": "Madan Bhandari Highway Project Office, Hetauda"
-    }
-    114 => {#6935
-      +"id": 253
-      +"office_subdomain": "rtrep"
-      +"office_type": ""
-      +"office_name": "Regional Trade Route Expansion Project"
-    }
-    115 => {#6936
-      +"id": 254
-      +"office_subdomain": "ntcp"
-      +"office_type": ""
-      +"office_name": "Nagdhunga Tunnel Construction Project"
-    }
-    116 => {#6937
-      +"id": 255
-      +"office_subdomain": "gcrp"
-      +"office_type": ""
-      +"office_name": "Gaur-Chandrapur Road Project"
-    }
-    117 => {#6938
-      +"id": 256
-      +"office_subdomain": "ridp-ltj"
-      +"office_type": ""
-      +"office_name": "Road Improvement and Development Project Office, Ramechhap"
-    }
-    118 => {#6939
-      +"id": 257
-      +"office_subdomain": "bnsbt"
-      +"office_type": ""
-      +"office_name": "Road Improvement and Development Project Office, Kathmandu"
-    }
-    119 => {#6940
-      +"id": 258
-      +"office_subdomain": "brrp"
-      +"office_type": ""
-      +"office_name": "Road Improvement and Development Project Office, Panchthar"
-    }
-    120 => {#6941
-      +"id": 259
-      +"office_subdomain": "gandak"
-      +"office_type": ""
-      +"office_name": "Road Improvement and Development Project Office, Bara"
-    }
-    121 => {#6942
-      +"id": 260
-      +"office_subdomain": "bbbcklgt"
-      +"office_type": ""
-      +"office_name": "Road Improvement and Development Project Office, Dang"
-    }
-    122 => {#6943
-      +"id": 261
-      +"office_subdomain": "sbdp"
-      +"office_type": "6,7"
-      +"office_name": "Road Improvement and Development Project Office, Kailali"
-    }
-    123 => {#6944
-      +"id": 262
-      +"office_subdomain": "phpoitahari"
-      +"office_type": ""
-      +"office_name": "Postal Highway Directorate, Project Office, Itahari"
-    }
-    124 => {#6945
-      +"id": 263
-      +"office_subdomain": "nbrp-west"
-      +"office_type": ""
-      +"office_name": "Narayanghat-ButwalRoad Project (Western-Section)"
-    }
-    125 => {#6946
-      +"id": 264
-      +"office_subdomain": "kkrp-east"
-      +"office_type": "7"
-      +"office_name": "Kanchanpur-Kamala Road Project (Eastern Section)"
-    }
-    126 => {#6947
-      +"id": 265
-      +"office_subdomain": "kkrp-west"
-      +"office_type": ""
-      +"office_name": "Kanchanpur-Kamala Road Project (Western Section)"
-    }
-    127 => {#6948
-      +"id": 267
-      +"office_subdomain": "mprpeastern"
-      +"office_type": ""
-      +"office_name": "Muglin-Pokhara Road Project (Eastern Section)"
-    }
-    128 => {#6949
-      +"id": 268
-      +"office_subdomain": "mbhpos"
-      +"office_type": "6"
-      +"office_name": "Madan Bhandari Highway Project Office, Surkhet"
-    }
-    129 => {#6950
-      +"id": 269
-      +"office_subdomain": "pmhpop"
-      +"office_type": ""
-      +"office_name": "Pushpalal (Mid-Hill ) Highway Project Office, Parbat"
-    }
-    130 => {#6951
-      +"id": 270
-      +"office_subdomain": "tamorcorridor"
-      +"office_type": ""
-      +"office_name": "Tamor Corridor (Chatara-Mulghat-Subhangkhola) RP"
-    }
-    131 => {#6952
-      +"id": 271
-      +"office_subdomain": "tcrp-sdo"
-      +"office_type": ""
-      +"office_name": "Tamor Corridor (Subhangkhola-Dobhan-Olangchunggola) Road Project"
-    }
-    132 => {#6953
-      +"id": 272
-      +"office_subdomain": "snkrp"
-      +"office_type": "6"
-      +"office_name": "North-South (Koshi) Road Project"
-    }
-    133 => {#6954
-      +"id": 273
-      +"office_subdomain": "kcrp-bjk"
-      +"office_type": ""
-      +"office_name": "Kaligandaki Corridor (Beni-Jomsom-Korala) Road Project"
-    }
-    134 => {#6955
-      +"id": 274
-      +"office_subdomain": "kgcrp"
-      +"office_type": ""
-      +"office_name": "Kaligandaki Corridor (Gaindakot-Ramdi-Maldhunga) RP"
-    }
-    135 => {#6956
-      +"id": 275
-      +"office_subdomain": "bcrp"
-      +"office_type": ""
-      +"office_name": "Bheri Corridor (Jajarkot-Dunai-Marim-Tinje Dho) Road Project"
-    }
-    136 => {#6957
-      +"id": 276
-      +"office_subdomain": "kcrp-hs"
-      +"office_type": ""
-      +"office_name": "Karnali Corridor North Section (Hilsa-Simikot Road Project)"
-    }
-    137 => {#6958
-      +"id": 277
-      +"office_subdomain": "birgunj6lane"
-      +"office_type": ""
-      +"office_name": "Birgunj-Pathalaiya Road Expansion Project"
-    }
-    138 => {#6959
-      +"id": 278
-      +"office_subdomain": "bgcrp"
-      +"office_type": ""
-      +"office_name": "Butwal-Gorusinge-Chandrauta Road Project"
-    }
-    139 => {#6960
-      +"id": 279
-      +"office_subdomain": "smrp"
-      +"office_type": ""
-      +"office_name": "Shahid Marg (Ghorahi-Nuwagaun-Tila-Ghartigaun-Thawang-Maikot) Road Project"
-    }
-    140 => {#6961
-      +"id": 280
-      +"office_subdomain": "ssdrp"
-      +"office_type": ""
-      +"office_name": "Saljhandi-Sandhikharka-Dhorpatan Road Project"
-    }
-    141 => {#6962
-      +"id": 281
-      +"office_subdomain": "klrp"
-      +"office_type": "6"
-      +"office_name": "Kanti Highway Road Project"
-    }
-    142 => {#6963
-      +"id": 282
-      +"office_subdomain": "gnrp"
-      +"office_type": ""
-      +"office_name": "Nagma-Gamgadhi-Nakchalagna Road Project"
-    }
-    143 => {#6964
-      +"id": 283
-      +"office_subdomain": "dbcrp"
-      +"office_type": ""
-      +"office_name": "Dumre-Besishahar-Chame Road Project"
-    }
-    144 => {#6965
-      +"id": 284
-      +"office_subdomain": "tcrp.ktm"
-      +"office_type": ""
-      +"office_name": "Ganeshman Sing Marg (Thankot-Chitlang Road) Project"
-    }
-    145 => {#6966
-      +"id": 285
-      +"office_subdomain": "hmis-ict"
-      +"office_type": ""
-      +"office_name": "HMIS-ICT Unit, Planning & Monitoring Branch, DOR"
-    }
-    146 => {#6967
-      +"id": 286
-      +"office_subdomain": "kvlrp"
-      +"office_type": ""
-      +"office_name": "Kankadbhitta-Laukahi Road Project"
-    }
-    147 => {#6968
-      +"id": 287
-      +"office_subdomain": "kcrp-south"
-      +"office_type": ""
-      +"office_name": "Karnali Corridor South Sector (Khulalu-Sallisalla) Road Project"
-    }
-    148 => {#6969
-      +"id": 288
-      +"office_subdomain": "sbtp"
-      +"office_type": "6"
-      +"office_name": "Siddababa Tunnel Project"
-    }
-    149 => {#6970
-      +"id": 289
-      +"office_subdomain": "kblrp-east"
-      +"office_type": ""
-      +"office_name": "Kakarbhitta-Laukahi Road Project (Eastern Section)"
-    }
-    150 => {#6971
-      +"id": 290
-      +"office_subdomain": "klrp-west"
-      +"office_type": ""
-      +"office_name": "Kakarbhitta-Laukahi Road Project (Western Section)"
-    }
-    151 => {#6972
-      +"id": 291
-      +"office_subdomain": "phponpj"
-      +"office_type": "2"
-      +"office_name": "Postal Highway Directorate, Project Office, Nepalgunj"
-    }
-    152 => {#6973
-      +"id": 292
-      +"office_subdomain": "pmb"
-      +"office_type": "3"
-      +"office_name": "Planning and Monitoring Branch, Department of Roads"
-    }
-    153 => {#6974
-      +"id": 293
-      +"office_subdomain": "bs-dhi"
-      +"office_type": "2"
-      +"office_name": "Bridge Sector, Dhangadhi"
-    }
-    154 => {#6975
-      +"id": 295
-      +"office_subdomain": "kdpwest"
-      +"office_type": "2"
-      +"office_name": "Kamala-Dhalkebar-Pathalaiya Road Project (Western Section)"
-    }
-    155 => {#6976
-      +"id": 296
-      +"office_subdomain": "Jaspur Pyuthan"
-      +"office_type": "3"
-      +"office_name": "Road Division, Pyuthan"
-    }
-    156 => {#6977
-      +"id": 297
-      +"office_subdomain": "kiip"
-      +"office_type": ""
-      +"office_name": "Koteshwor Intersection Improvement Project"
-    }
-  ]
-  #escapeWhenCastingToString: false
-} // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:1
+doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && echo "---- USER CONTROLLER ----" && sed -n '1,280p' app/Http/Controllers/Admin/UserController.php && echo "---- USER ROUTES ----" && grep -RniE 'UserController|admin/users|user-management' routes
+---- USER CONTROLLER ----
+<?php
+
+/**
+ * Project Name: Department of Road(DOR)
+ * @author Veshraj Joshi | Sunil Adhikari
+ * @copytop 2015 Peace Nepal DOT Com
+ */
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\ConfigurationController;
+use App\Models\Configuration;
+use App\Models\Language;
+use App\Models\Office;
+use App\Models\Project;
+use App\Models\User;
+use App\Models\UserAccessControlModel;
+use App\Models\UserTypeModel;
+use Helper;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Validator;
+
+class UserController extends ConfigurationController
+{
+    public $abs_site_url;
+    public $rel_site_url;
+    public $site_name;
+
+    public function __construct()
+    {
+        $this->abs_site_url = ConfigurationController::abs_site_url();
+        $this->rel_site_url = ConfigurationController::rel_site_url();
+        $this->site_name    = ConfigurationController::site_name();
+    }
+    /**
+     * This method is used to get the list of undeleted users(both active and deactive)
+     *
+     * @param array $array - no paramenter
+     * @param string $blah - none
+     * @return view(users::users..users)
+     */
+    public function getIndex()
+    {
+        $officeId = Auth::user()->office_id;
+        $authUserId = Auth::user()->id;
+        $users = User::with(['office.details' => function ($query) {
+            $query->where('language_id', 2);
+        }, 'usertype'])->get();
+
+        $addAccess     = UserAccessControlModel::getAccessAddByModuleAndUserMapId(5, $authUserId);
+        $editAccess    = UserAccessControlModel::getAccessUpdateByModuleAndUserMapId(5, $authUserId);
+        $publishAccess = UserAccessControlModel::getAccessPublishByModuleAndUserMapId(5, $authUserId);
+        $deleteAccess  = UserAccessControlModel::getAccessDeleteByModuleAndUserMapId(5, $authUserId);
+
+        return view('users.users.users')
+            ->with('users', $users)
+            ->with('addAccess', $addAccess)
+            ->with('editAccess', $editAccess)
+            ->with('publishAccess', $publishAccess)
+            ->with('deleteAccess', $deleteAccess)
+            ->with('site_name', $this->site_name)
+            ->with('abs_site_url', $this->abs_site_url);
+    }
+    /**
+     * This method is used to get the view part of the add user
+     *
+     * @param array $array - no paramenter
+     * @param string
+     * @return view(users::users..adduser)
+     */
+    public function getAddUser()
+    {
+        $officeId = Auth::user()->office_id;
+
+        return view('users.users.adduser')
+            ->with('abs_site_url', $this->abs_site_url)
+            ->with('rel_site_url', $this->rel_site_url)
+            ->with('site_name', $this->site_name)
+            ->with('usertypelist', $this->getUserTypeList())
+            ->with('officelist', $this->getOfficeList())
+            ->with('projectlist', $this->getProjectList())
+            ->with('officeId', $officeId)
+            ->with('languages', Language::getActiveLanguages());
+    }
+
+    /**
+     * This method is used add  the user
+     *
+     * @param array $array - no paramenter
+     * @param string  - none
+     * @return json_message_string_array
+     */
+    public function addUser(Request $request)
+    {
+        $rules = [
+            'usertype' => 'required',
+            'username' => 'required|email|unique:users,username',
+            'email_address' => 'required|email|max:254|unique:users,email_address',
+            'password' => 'required',
+            'confirm_password' => 'required|same:password',
+            'office_id' => 'required_unless:usertype,3',
+            'project_id' => 'required_if:usertype,3',
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            return Redirect::back()->withInput()->withErrors($validator);
+        }
+
+        $user = new User();
+        $user->username = trim($request->get('username'));
+        $user->email_address = mb_strtolower(trim($request->get('email_address')));
+        $user->password = Hash::make($request->get('password'));
+        $user->office_id = $request->get('office_id');
+        $user->project_id = $request->get('project_id');
+        $user->user_type_id = $request->get('usertype');
+        $user->is_active = $request->get('is_active');
+        $user->created_by = Auth::user()->id;
+        $user->save();
+
+        return Redirect::route('admin.users')
+            ->with('message', "User added successfully.");
+    }
+    /**
+     * This method is used add  the user
+     *
+     * @param int - $id
+     * @return Illuminate\View\View
+     */
+    public function getEditUser($id)
+    {
+        $user       = User::find($id);
+        $authUserId = Auth::user()->id;
+        $offices    = Office::getPublishedOffices();
+        $projects   = Project::getPublishedProjects();
+        $usertypes  = UserTypeModel::getPublishedUserTypes();
+        $addAccess  = UserAccessControlModel::getAccessAddByModuleAndUserMapId(5, $authUserId);
+
+        return view('users.users.edituser')
+            ->with('user', $user)
+            ->with('usertypes', $usertypes)
+            ->with('offices', $offices)
+            ->with('projects', $projects)
+            ->with('abs_site_url', $this->abs_site_url)
+            ->with('rel_site_url', $this->rel_site_url)
+            ->with('site_name', $this->site_name)
+            ->with('addAccess', $addAccess);
+    }
+    /**
+     * This method is used edit  the user
+     *
+     * @param int $id
+     * @return json_message_string_array
+     */
+    public function editUser($id, Request $request)
+    {
+
+        $rules = [
+            'office_id' => 'required_unless:usertype,3',
+            'project_id' => 'required_if:usertype,3',
+            'username' => 'required|email|unique:users,username,' . $id,
+            'email_address' => 'required|email|max:254|unique:users,email_address,' . $id,
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            return Redirect::back()->withInput()->withErrors($validator);
+        }
+
+        $user = User::find($id);
+        $user->username = trim($request->get('username'));
+        $user->email_address = mb_strtolower(trim($request->get('email_address')));
+        $user->office_id = $request->get('office_id');
+        $user->project_id = $request->get('project_id');
+        $user->user_type_id = $request->get('usertype');
+        $user->is_active = $request->get('is_active');
+        $user->updated_by = Auth::user()->id;
+        $user->save();
+
+        return Redirect::route('admin.users')
+            ->with('message', "User is updated successfully.");
+    }
+
+    /**
+     * This method is used delete  the user
+     *
+
+     * @author $author- Veshraj Joshi
+
+     * @param array $array - no paramenter
+
+     * @param string  - none
+
+     * @return json_message_string_array
+
+     */
+    public function deleteUser(Request $request)
+    {
+        $id               = $request->get('id');
+        $user             = User::find($id);
+        $user->is_active  = '0';
+        $user->delete();
+        $data['type']    = "success";
+        $data['message'] = "Deleted Successfully";
+        echo json_encode($data);
+    }
+
+    /**
+     * This method is used add  the user
+     *
+
+     * @author $author- Veshraj Joshi
+
+     * @param array $array - no paramenter
+
+     * @param string  - none
+
+     * @return json_message_string_array
+
+     */
+    public function changeStatus(Request $request)
+    {
+        $id   = $request->get('id');
+        $user = User::find($id);
+        if ($user->is_active == '0') {
+            $user->is_active = '1';
+            $user->save();
+            $feedback['type']    = 'success';
+            $feedback['message'] = 'The user has been activate successfully';
+            $feedback['icon']    = '<i class="icon-check"></i>';
+            exit(json_encode($feedback));
+        }
+        $user->is_active = '0';
+        $user->save();
+        $feedback['type']    = 'success';
+        $feedback['message'] = 'The user has been deactivate successfully';
+        $feedback['icon']    = '<i class="icon-check-empty"></i>';
+        exit(json_encode($feedback));
+    }
+
+    /**
+     * This method is used get user details dynamically to the front end
+     *
+
+     * @author $author- Veshraj Joshi
+
+     * @param array $array - no paramenter
+
+     * @param string  - none
+
+     * @return json_message_string_array
+
+     */
+    public function getUserDetails(Request $request)
+    {
+        $id      = $request->get('id');
+        $user    = User::find($id);
+        $details = User::getUserDetailsByIdForUpdate($id);
+
+        $feedback['type'] = 'success';
+        $feedback['id']   = $id;
+
+        $feedback['email']      = $user->user_email_address;
+        $feedback['status']     = $user->is_active;
+        $feedback['attachment'] = (is_null($user->user_attachment)) ? $this->rel_site_url . "assets/admin/img/no-image.png" : $this->rel_site_url . "uploads/users/" . $user->user_attachment;
+        $feedback['gender']     = $user->user_gender;
+        foreach ($details as $detail) {
+            $feedback['full_name_' . $detail->language_code]         = $detail->user_full_name;
+            $feedback['permanent_address_' . $detail->language_code] = $detail->user_permanent_address;
+            $feedback['temporary_address_' . $detail->language_code] = $detail->user_temporary_address;
+            $feedback['staff_id_' . $detail->language_code]          = $detail->user_staff_id;
+            $feedback['mobile_number_' . $detail->language_code]     = $detail->user_mobile_number;
+            $feedback['contact_number_' . $detail->language_code]    = $detail->user_contact_number;
+            $feedback['join_date' . $detail->language_code]          = $detail->user_office_join_date;
+            $feedback['id_' . $detail->language_code]                = $detail->detail_id;
+        }
+---- USER ROUTES ----
+routes/web.php:159:    Route::get('users',  array('as' => 'admin.users', 'uses' => 'Admin\UserController@getIndex'));
+routes/web.php:160:    Route::get('user/add',  array('as' => 'admin.users.add', 'uses' => 'Admin\UserController@getAddUser'));
+routes/web.php:161:    Route::post('user/add',  array('as' => 'admin.users.store', 'uses' => 'Admin\UserController@addUser'));
+routes/web.php:162:    Route::get('user/edit/{id}',  array('as' => 'admin.users.edit', 'uses' => 'Admin\UserController@getEditUser'));
+routes/web.php:163:    Route::post('user/edit/{id}',  array('as' => 'admin.users.update', 'uses' => 'Admin\UserController@editUser'));
+routes/web.php:164:    Route::post('user/delete', array('as' => 'admin.user.delete', 'uses' => 'Admin\UserController@deleteUser'));
+routes/web.php:165:    Route::post('user/change-status', array('as' => 'admin.user.change.status', 'uses' => 'Admin\UserController@changeStatus'));
+routes/web.php:167:    Route::get('own/change-password', array('as' => 'admin.change.password', 'uses' => 'Admin\UserController@getChangePassword'));
+routes/web.php:168:    Route::post('own/change-password', array('as' => 'admin.change.password.post', 'uses' => 'AdminUserController@changeOwnPassword'));
+routes/web.php:169:    Route::get('user/change-password/{id}', array('as' => 'admin.user.change.password', 'as' => 'admin.users.change.password', 'uses' => 'Admin\UserController@getChangePasswordByAdmin'));
+routes/web.php:170:    Route::post('user/change-password/{id}', array('as' => 'admin.user.change.password.update', 'uses' => 'Admin\UserController@changePassword'));
+routes/web.php:172:    // Route::post('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
+routes/web.php:173:    // Route::get('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
+routes/web.php:223:    Route::get('own/change-password', array('as' => 'project.admin.change.password', 'uses' => 'Admin\Project\UserController@changePassword'));
+routes/web.php:224:    Route::post('own/change-password', array('as' => 'project.admin.update.password', 'uses' => 'Admin\Project\UserController@updatePassword'));
+routes/web.php.backup-appsheet:159:    Route::get('users',  array('as' => 'admin.users', 'uses' => 'Admin\UserController@getIndex'));
+routes/web.php.backup-appsheet:160:    Route::get('user/add',  array('as' => 'admin.users.add', 'uses' => 'Admin\UserController@getAddUser'));
+routes/web.php.backup-appsheet:161:    Route::post('user/add',  array('as' => 'admin.users.store', 'uses' => 'Admin\UserController@addUser'));
+routes/web.php.backup-appsheet:162:    Route::get('user/edit/{id}',  array('as' => 'admin.users.edit', 'uses' => 'Admin\UserController@getEditUser'));
+routes/web.php.backup-appsheet:163:    Route::post('user/edit/{id}',  array('as' => 'admin.users.update', 'uses' => 'Admin\UserController@editUser'));
+routes/web.php.backup-appsheet:164:    Route::post('user/delete', array('as' => 'admin.user.delete', 'uses' => 'Admin\UserController@deleteUser'));
+routes/web.php.backup-appsheet:165:    Route::post('user/change-status', array('as' => 'admin.user.change.status', 'uses' => 'Admin\UserController@changeStatus'));
+routes/web.php.backup-appsheet:167:    Route::get('own/change-password', array('as' => 'admin.change.password', 'uses' => 'Admin\UserController@getChangePassword'));
+routes/web.php.backup-appsheet:168:    Route::post('own/change-password', array('as' => 'admin.change.password.post', 'uses' => 'Admin\UserController@changeOwnPassword'));
+routes/web.php.backup-appsheet:169:    Route::get('user/change-password/{id}', array('as' => 'admin.user.change.password', 'as' => 'admin.users.change.password', 'uses' => 'Admin\UserController@getChangePasswordByAdmin'));
+routes/web.php.backup-appsheet:170:    Route::post('user/change-password/{id}', array('as' => 'admin.user.change.password.update', 'uses' => 'Admin\UserController@changePassword'));
+routes/web.php.backup-appsheet:172:    // Route::post('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
+routes/web.php.backup-appsheet:173:    // Route::get('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
+routes/web.php.backup-appsheet:223:    Route::get('own/change-password', array('as' => 'project.admin.change.password', 'uses' => 'Admin\Project\UserController@changePassword'));
+routes/web.php.backup-appsheet:224:    Route::post('own/change-password', array('as' => 'project.admin.update.password', 'uses' => 'Admin\Project\UserController@updatePassword'));
+routes/web.php.backup-remove-appsheet:164:    Route::get('users',  array('as' => 'admin.users', 'uses' => 'Admin\UserController@getIndex'));
+routes/web.php.backup-remove-appsheet:165:    Route::get('user/add',  array('as' => 'admin.users.add', 'uses' => 'Admin\UserController@getAddUser'));
+routes/web.php.backup-remove-appsheet:166:    Route::post('user/add',  array('as' => 'admin.users.store', 'uses' => 'Admin\UserController@addUser'));
+routes/web.php.backup-remove-appsheet:167:    Route::get('user/edit/{id}',  array('as' => 'admin.users.edit', 'uses' => 'Admin\UserController@getEditUser'));
+routes/web.php.backup-remove-appsheet:168:    Route::post('user/edit/{id}',  array('as' => 'admin.users.update', 'uses' => 'Admin\UserController@editUser'));
+routes/web.php.backup-remove-appsheet:169:    Route::post('user/delete', array('as' => 'admin.user.delete', 'uses' => 'Admin\UserController@deleteUser'));
+routes/web.php.backup-remove-appsheet:170:    Route::post('user/change-status', array('as' => 'admin.user.change.status', 'uses' => 'Admin\UserController@changeStatus'));
+routes/web.php.backup-remove-appsheet:172:    Route::get('own/change-password', array('as' => 'admin.change.password', 'uses' => 'Admin\UserController@getChangePassword'));
+routes/web.php.backup-remove-appsheet:173:    Route::post('own/change-password', array('as' => 'admin.change.password.post', 'uses' => 'Admin\UserController@changeOwnPassword'));
+routes/web.php.backup-remove-appsheet:174:    Route::get('user/change-password/{id}', array('as' => 'admin.user.change.password', 'as' => 'admin.users.change.password', 'uses' => 'Admin\UserController@getChangePasswordByAdmin'));
+routes/web.php.backup-remove-appsheet:175:    Route::post('user/change-password/{id}', array('as' => 'admin.user.change.password.update', 'uses' => 'Admin\UserController@changePassword'));
+routes/web.php.backup-remove-appsheet:177:    // Route::post('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
+routes/web.php.backup-remove-appsheet:178:    // Route::get('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
+routes/web.php.backup-remove-appsheet:228:    Route::get('own/change-password', array('as' => 'project.admin.change.password', 'uses' => 'Admin\Project\UserController@changePassword'));
+routes/web.php.backup-remove-appsheet:229:    Route::post('own/change-password', array('as' => 'project.admin.update.password', 'uses' => 'Admin\Project\UserController@updatePassword'));
+routes/web.php.bak-before-circular-email-otp-20261116-185939:46:    Route::get('users',  array('as' => 'admin.users', 'uses' => 'Admin\UserController@getIndex'));
+routes/web.php.bak-before-circular-email-otp-20261116-185939:47:    Route::get('user/add',  array('as' => 'admin.users.add', 'uses' => 'Admin\UserController@getAddUser'));
+routes/web.php.bak-before-circular-email-otp-20261116-185939:48:    Route::post('user/add',  array('as' => 'admin.users.store', 'uses' => 'Admin\UserController@addUser'));
+routes/web.php.bak-before-circular-email-otp-20261116-185939:49:    Route::get('user/edit/{id}',  array('as' => 'admin.users.edit', 'uses' => 'Admin\UserController@getEditUser'));
+routes/web.php.bak-before-circular-email-otp-20261116-185939:50:    Route::post('user/edit/{id}',  array('as' => 'admin.users.update', 'uses' => 'Admin\UserController@editUser'));
+routes/web.php.bak-before-circular-email-otp-20261116-185939:51:    Route::post('user/delete', array('as' => 'admin.user.delete', 'uses' => 'Admin\UserController@deleteUser'));
+routes/web.php.bak-before-circular-email-otp-20261116-185939:52:    Route::post('user/change-status', array('as' => 'admin.user.change.status', 'uses' => 'Admin\UserController@changeStatus'));
+routes/web.php.bak-before-circular-email-otp-20261116-185939:54:    Route::get('own/change-password', array('as' => 'admin.change.password', 'uses' => 'Admin\UserController@getChangePassword'));
+routes/web.php.bak-before-circular-email-otp-20261116-185939:55:    Route::post('own/change-password', array('as' => 'admin.change.password.post', 'uses' => 'Admin\UserController@changeOwnPassword'));
+routes/web.php.bak-before-circular-email-otp-20261116-185939:56:    Route::get('user/change-password/{id}', array('as' => 'admin.user.change.password', 'as' => 'admin.users.change.password', 'uses' => 'Admin\UserController@getChangePasswordByAdmin'));
+routes/web.php.bak-before-circular-email-otp-20261116-185939:57:    Route::post('user/change-password/{id}', array('as' => 'admin.user.change.password.update', 'uses' => 'Admin\UserController@changePassword'));
+routes/web.php.bak-before-circular-email-otp-20261116-185939:59:    // Route::post('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
+routes/web.php.bak-before-circular-email-otp-20261116-185939:60:    // Route::get('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
+routes/web.php.bak-before-circular-email-otp-20261116-185939:110:    Route::get('own/change-password', array('as' => 'project.admin.change.password', 'uses' => 'Admin\Project\UserController@changePassword'));
+routes/web.php.bak-before-circular-email-otp-20261116-185939:111:    Route::post('own/change-password', array('as' => 'project.admin.update.password', 'uses' => 'Admin\Project\UserController@updatePassword'));
+routes/web.php.bak-contact-bcc-20261117:56:    Route::get('users',  array('as' => 'admin.users', 'uses' => 'Admin\UserController@getIndex'));
+routes/web.php.bak-contact-bcc-20261117:57:    Route::get('user/add',  array('as' => 'admin.users.add', 'uses' => 'Admin\UserController@getAddUser'));
+routes/web.php.bak-contact-bcc-20261117:58:    Route::post('user/add',  array('as' => 'admin.users.store', 'uses' => 'Admin\UserController@addUser'));
+routes/web.php.bak-contact-bcc-20261117:59:    Route::get('user/edit/{id}',  array('as' => 'admin.users.edit', 'uses' => 'Admin\UserController@getEditUser'));
+routes/web.php.bak-contact-bcc-20261117:60:    Route::post('user/edit/{id}',  array('as' => 'admin.users.update', 'uses' => 'Admin\UserController@editUser'));
+routes/web.php.bak-contact-bcc-20261117:61:    Route::post('user/delete', array('as' => 'admin.user.delete', 'uses' => 'Admin\UserController@deleteUser'));
+routes/web.php.bak-contact-bcc-20261117:62:    Route::post('user/change-status', array('as' => 'admin.user.change.status', 'uses' => 'Admin\UserController@changeStatus'));
+routes/web.php.bak-contact-bcc-20261117:64:    Route::get('own/change-password', array('as' => 'admin.change.password', 'uses' => 'Admin\UserController@getChangePassword'));
+routes/web.php.bak-contact-bcc-20261117:65:    Route::post('own/change-password', array('as' => 'admin.change.password.post', 'uses' => 'Admin\UserController@changeOwnPassword'));
+routes/web.php.bak-contact-bcc-20261117:66:    Route::get('user/change-password/{id}', array('as' => 'admin.user.change.password', 'as' => 'admin.users.change.password', 'uses' => 'Admin\UserController@getChangePasswordByAdmin'));
+routes/web.php.bak-contact-bcc-20261117:67:    Route::post('user/change-password/{id}', array('as' => 'admin.user.change.password.update', 'uses' => 'Admin\UserController@changePassword'));
+routes/web.php.bak-contact-bcc-20261117:69:    // Route::post('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
+routes/web.php.bak-contact-bcc-20261117:70:    // Route::get('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
+routes/web.php.bak-contact-bcc-20261117:120:    Route::get('own/change-password', array('as' => 'project.admin.change.password', 'uses' => 'Admin\Project\UserController@changePassword'));
+routes/web.php.bak-contact-bcc-20261117:121:    Route::post('own/change-password', array('as' => 'project.admin.update.password', 'uses' => 'Admin\Project\UserController@updatePassword'));
+routes/web.php.bak-download-20261116-150141:46:    Route::get('users',  array('as' => 'admin.users', 'uses' => 'Admin\UserController@getIndex'));
+routes/web.php.bak-download-20261116-150141:47:    Route::get('user/add',  array('as' => 'admin.users.add', 'uses' => 'Admin\UserController@getAddUser'));
+routes/web.php.bak-download-20261116-150141:48:    Route::post('user/add',  array('as' => 'admin.users.store', 'uses' => 'Admin\UserController@addUser'));
+routes/web.php.bak-download-20261116-150141:49:    Route::get('user/edit/{id}',  array('as' => 'admin.users.edit', 'uses' => 'Admin\UserController@getEditUser'));
+routes/web.php.bak-download-20261116-150141:50:    Route::post('user/edit/{id}',  array('as' => 'admin.users.update', 'uses' => 'Admin\UserController@editUser'));
+routes/web.php.bak-download-20261116-150141:51:    Route::post('user/delete', array('as' => 'admin.user.delete', 'uses' => 'Admin\UserController@deleteUser'));
+routes/web.php.bak-download-20261116-150141:52:    Route::post('user/change-status', array('as' => 'admin.user.change.status', 'uses' => 'Admin\UserController@changeStatus'));
+routes/web.php.bak-download-20261116-150141:54:    Route::get('own/change-password', array('as' => 'admin.change.password', 'uses' => 'Admin\UserController@getChangePassword'));
+routes/web.php.bak-download-20261116-150141:55:    Route::post('own/change-password', array('as' => 'admin.change.password.post', 'uses' => 'Admin\UserController@changeOwnPassword'));
+routes/web.php.bak-download-20261116-150141:56:    Route::get('user/change-password/{id}', array('as' => 'admin.user.change.password', 'as' => 'admin.users.change.password', 'uses' => 'Admin\UserController@getChangePasswordByAdmin'));
+routes/web.php.bak-download-20261116-150141:57:    Route::post('user/change-password/{id}', array('as' => 'admin.user.change.password.update', 'uses' => 'Admin\UserController@changePassword'));
+routes/web.php.bak-download-20261116-150141:59:    // Route::post('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
+routes/web.php.bak-download-20261116-150141:60:    // Route::get('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
+routes/web.php.bak-download-20261116-150141:110:    Route::get('own/change-password', array('as' => 'project.admin.change.password', 'uses' => 'Admin\Project\UserController@changePassword'));
+routes/web.php.bak-download-20261116-150141:111:    Route::post('own/change-password', array('as' => 'project.admin.update.password', 'uses' => 'Admin\Project\UserController@updatePassword'));
+routes/web.php.bak-flash-control-20261117:66:    Route::get('users',  array('as' => 'admin.users', 'uses' => 'Admin\UserController@getIndex'));
+routes/web.php.bak-flash-control-20261117:67:    Route::get('user/add',  array('as' => 'admin.users.add', 'uses' => 'Admin\UserController@getAddUser'));
+routes/web.php.bak-flash-control-20261117:68:    Route::post('user/add',  array('as' => 'admin.users.store', 'uses' => 'Admin\UserController@addUser'));
+routes/web.php.bak-flash-control-20261117:69:    Route::get('user/edit/{id}',  array('as' => 'admin.users.edit', 'uses' => 'Admin\UserController@getEditUser'));
+routes/web.php.bak-flash-control-20261117:70:    Route::post('user/edit/{id}',  array('as' => 'admin.users.update', 'uses' => 'Admin\UserController@editUser'));
+routes/web.php.bak-flash-control-20261117:71:    Route::post('user/delete', array('as' => 'admin.user.delete', 'uses' => 'Admin\UserController@deleteUser'));
+routes/web.php.bak-flash-control-20261117:72:    Route::post('user/change-status', array('as' => 'admin.user.change.status', 'uses' => 'Admin\UserController@changeStatus'));
+routes/web.php.bak-flash-control-20261117:74:    Route::get('own/change-password', array('as' => 'admin.change.password', 'uses' => 'Admin\UserController@getChangePassword'));
+routes/web.php.bak-flash-control-20261117:75:    Route::post('own/change-password', array('as' => 'admin.change.password.post', 'uses' => 'Admin\UserController@changeOwnPassword'));
+routes/web.php.bak-flash-control-20261117:76:    Route::get('user/change-password/{id}', array('as' => 'admin.user.change.password', 'as' => 'admin.users.change.password', 'uses' => 'Admin\UserController@getChangePasswordByAdmin'));
+routes/web.php.bak-flash-control-20261117:77:    Route::post('user/change-password/{id}', array('as' => 'admin.user.change.password.update', 'uses' => 'Admin\UserController@changePassword'));
+routes/web.php.bak-flash-control-20261117:79:    // Route::post('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
+routes/web.php.bak-flash-control-20261117:80:    // Route::get('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
+routes/web.php.bak-flash-control-20261117:130:    Route::get('own/change-password', array('as' => 'project.admin.change.password', 'uses' => 'Admin\Project\UserController@changePassword'));
+routes/web.php.bak-flash-control-20261117:131:    Route::post('own/change-password', array('as' => 'project.admin.update.password', 'uses' => 'Admin\Project\UserController@updatePassword'));
+routes/web.php.bak-flash-tabs-20261116-224537:46:    Route::get('users',  array('as' => 'admin.users', 'uses' => 'Admin\UserController@getIndex'));
+routes/web.php.bak-flash-tabs-20261116-224537:47:    Route::get('user/add',  array('as' => 'admin.users.add', 'uses' => 'Admin\UserController@getAddUser'));
+routes/web.php.bak-flash-tabs-20261116-224537:48:    Route::post('user/add',  array('as' => 'admin.users.store', 'uses' => 'Admin\UserController@addUser'));
+routes/web.php.bak-flash-tabs-20261116-224537:49:    Route::get('user/edit/{id}',  array('as' => 'admin.users.edit', 'uses' => 'Admin\UserController@getEditUser'));
+routes/web.php.bak-flash-tabs-20261116-224537:50:    Route::post('user/edit/{id}',  array('as' => 'admin.users.update', 'uses' => 'Admin\UserController@editUser'));
+routes/web.php.bak-flash-tabs-20261116-224537:51:    Route::post('user/delete', array('as' => 'admin.user.delete', 'uses' => 'Admin\UserController@deleteUser'));
+routes/web.php.bak-flash-tabs-20261116-224537:52:    Route::post('user/change-status', array('as' => 'admin.user.change.status', 'uses' => 'Admin\UserController@changeStatus'));
+routes/web.php.bak-flash-tabs-20261116-224537:54:    Route::get('own/change-password', array('as' => 'admin.change.password', 'uses' => 'Admin\UserController@getChangePassword'));
+routes/web.php.bak-flash-tabs-20261116-224537:55:    Route::post('own/change-password', array('as' => 'admin.change.password.post', 'uses' => 'Admin\UserController@changeOwnPassword'));
+routes/web.php.bak-flash-tabs-20261116-224537:56:    Route::get('user/change-password/{id}', array('as' => 'admin.user.change.password', 'as' => 'admin.users.change.password', 'uses' => 'Admin\UserController@getChangePasswordByAdmin'));
+routes/web.php.bak-flash-tabs-20261116-224537:57:    Route::post('user/change-password/{id}', array('as' => 'admin.user.change.password.update', 'uses' => 'Admin\UserController@changePassword'));
+routes/web.php.bak-flash-tabs-20261116-224537:59:    // Route::post('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
+routes/web.php.bak-flash-tabs-20261116-224537:60:    // Route::get('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
+routes/web.php.bak-flash-tabs-20261116-224537:110:    Route::get('own/change-password', array('as' => 'project.admin.change.password', 'uses' => 'Admin\Project\UserController@changePassword'));
+routes/web.php.bak-flash-tabs-20261116-224537:111:    Route::post('own/change-password', array('as' => 'project.admin.update.password', 'uses' => 'Admin\Project\UserController@updatePassword'));
+routes/web.php.bak-grms-routes-20261117:56:    Route::get('users',  array('as' => 'admin.users', 'uses' => 'Admin\UserController@getIndex'));
+routes/web.php.bak-grms-routes-20261117:57:    Route::get('user/add',  array('as' => 'admin.users.add', 'uses' => 'Admin\UserController@getAddUser'));
+routes/web.php.bak-grms-routes-20261117:58:    Route::post('user/add',  array('as' => 'admin.users.store', 'uses' => 'Admin\UserController@addUser'));
+routes/web.php.bak-grms-routes-20261117:59:    Route::get('user/edit/{id}',  array('as' => 'admin.users.edit', 'uses' => 'Admin\UserController@getEditUser'));
+routes/web.php.bak-grms-routes-20261117:60:    Route::post('user/edit/{id}',  array('as' => 'admin.users.update', 'uses' => 'Admin\UserController@editUser'));
+routes/web.php.bak-grms-routes-20261117:61:    Route::post('user/delete', array('as' => 'admin.user.delete', 'uses' => 'Admin\UserController@deleteUser'));
+routes/web.php.bak-grms-routes-20261117:62:    Route::post('user/change-status', array('as' => 'admin.user.change.status', 'uses' => 'Admin\UserController@changeStatus'));
+routes/web.php.bak-grms-routes-20261117:64:    Route::get('own/change-password', array('as' => 'admin.change.password', 'uses' => 'Admin\UserController@getChangePassword'));
+routes/web.php.bak-grms-routes-20261117:65:    Route::post('own/change-password', array('as' => 'admin.change.password.post', 'uses' => 'Admin\UserController@changeOwnPassword'));
+routes/web.php.bak-grms-routes-20261117:66:    Route::get('user/change-password/{id}', array('as' => 'admin.user.change.password', 'as' => 'admin.users.change.password', 'uses' => 'Admin\UserController@getChangePasswordByAdmin'));
+routes/web.php.bak-grms-routes-20261117:67:    Route::post('user/change-password/{id}', array('as' => 'admin.user.change.password.update', 'uses' => 'Admin\UserController@changePassword'));
+routes/web.php.bak-grms-routes-20261117:69:    // Route::post('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
+routes/web.php.bak-grms-routes-20261117:70:    // Route::get('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
+routes/web.php.bak-grms-routes-20261117:120:    Route::get('own/change-password', array('as' => 'project.admin.change.password', 'uses' => 'Admin\Project\UserController@changePassword'));
+routes/web.php.bak-grms-routes-20261117:121:    Route::post('own/change-password', array('as' => 'project.admin.update.password', 'uses' => 'Admin\Project\UserController@updatePassword'));
+routes/web.php.before-album-fix:40:    Route::get('users',  array('as' => 'admin.users', 'uses' => 'Admin\UserController@getIndex'));
+routes/web.php.before-album-fix:41:    Route::get('user/add',  array('as' => 'admin.users.add', 'uses' => 'Admin\UserController@getAddUser'));
+routes/web.php.before-album-fix:42:    Route::post('user/add',  array('as' => 'admin.users.store', 'uses' => 'Admin\UserController@addUser'));
+routes/web.php.before-album-fix:43:    Route::get('user/edit/{id}',  array('as' => 'admin.users.edit', 'uses' => 'Admin\UserController@getEditUser'));
+routes/web.php.before-album-fix:44:    Route::post('user/edit/{id}',  array('as' => 'admin.users.update', 'uses' => 'Admin\UserController@editUser'));
+routes/web.php.before-album-fix:45:    Route::post('user/delete', array('as' => 'admin.user.delete', 'uses' => 'Admin\UserController@deleteUser'));
+routes/web.php.before-album-fix:46:    Route::post('user/change-status', array('as' => 'admin.user.change.status', 'uses' => 'Admin\UserController@changeStatus'));
+routes/web.php.before-album-fix:48:    Route::get('own/change-password', array('as' => 'admin.change.password', 'uses' => 'Admin\UserController@getChangePassword'));
+routes/web.php.before-album-fix:49:    Route::post('own/change-password', array('as' => 'admin.change.password.post', 'uses' => 'Admin\UserController@changeOwnPassword'));
+routes/web.php.before-album-fix:50:    Route::get('user/change-password/{id}', array('as' => 'admin.user.change.password', 'as' => 'admin.users.change.password', 'uses' => 'Admin\UserController@getChangePasswordByAdmin'));
+routes/web.php.before-album-fix:51:    Route::post('user/change-password/{id}', array('as' => 'admin.user.change.password.update', 'uses' => 'Admin\UserController@changePassword'));
+routes/web.php.before-album-fix:53:    // Route::post('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
+routes/web.php.before-album-fix:54:    // Route::get('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
+routes/web.php.before-album-fix:96:    Route::get('own/change-password', array('as' => 'project.admin.change.password', 'uses' => 'Admin\Project\UserController@changePassword'));
+routes/web.php.before-album-fix:97:    Route::post('own/change-password', array('as' => 'project.admin.update.password', 'uses' => 'Admin\Project\UserController@updatePassword'));
+routes/web.php.before-calendar-routes:72:    Route::get('users',  array('as' => 'admin.users', 'uses' => 'Admin\UserController@getIndex'));
+routes/web.php.before-calendar-routes:73:    Route::get('user/add',  array('as' => 'admin.users.add', 'uses' => 'AdminUserController@getAddUser'));
+routes/web.php.before-calendar-routes:74:    Route::post('user/add',  array('as' => 'admin.users.store', 'uses' => 'Admin\UserController@addUser'));
+routes/web.php.before-calendar-routes:75:    Route::get('user/edit/{id}',  array('as' => 'admin.users.edit', 'uses' => 'Admin\UserController@getEditUser'));
+routes/web.php.before-calendar-routes:76:    Route::post('user/edit/{id}',  array('as' => 'admin.users.update', 'uses' => 'Admin\UserController@editUser'));
+routes/web.php.before-calendar-routes:77:    Route::post('user/delete', array('as' => 'admin.user.delete', 'uses' => 'Admin\UserController@deleteUser'));
+routes/web.php.before-calendar-routes:78:    Route::post('user/change-status', array('as' => 'admin.user.change.status', 'uses' => 'Admin\UserController@changeStatus'));
+routes/web.php.before-calendar-routes:80:    Route::get('own/change-password', array('as' => 'admin.change.password', 'uses' => 'Admin\UserController@getChangePassword'));
+routes/web.php.before-calendar-routes:81:    Route::post('own/change-password', array('as' => 'admin.change.password.post', 'uses' => 'Admin\UserController@changeOwnPassword'));
+routes/web.php.before-calendar-routes:82:    Route::get('user/change-password/{id}', array('as' => 'admin.user.change.password', 'as' => 'admin.users.change.password', 'uses' => 'Admin\UserController@getChangePasswordByAdmin'));
+routes/web.php.before-calendar-routes:83:    Route::post('user/change-password/{id}', array('as' => 'admin.user.change.password.update', 'uses' => 'Admin\UserController@changePassword'));
+routes/web.php.before-calendar-routes:85:    // Route::post('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
+routes/web.php.before-calendar-routes:86:    // Route::get('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
+routes/web.php.before-calendar-routes:136:    Route::get('own/change-password', array('as' => 'project.admin.change.password', 'uses' => 'Admin\Project\UserController@changePassword'));
+routes/web.php.before-calendar-routes:137:    Route::post('own/change-password', array('as' => 'project.admin.update.password', 'uses' => 'Admin\Project\UserController@updatePassword'));
+routes/web.php.before-document-search-20261118-093902:72:    Route::get('users',  array('as' => 'admin.users', 'uses' => 'Admin\UserController@getIndex'));
+routes/web.php.before-document-search-20261118-093902:73:    Route::get('user/add',  array('as' => 'admin.users.add', 'uses' => 'Admin\UserController@getAddUser'));
+routes/web.php.before-document-search-20261118-093902:74:    Route::post('user/add',  array('as' => 'admin.users.store', 'uses' => 'Admin\UserController@addUser'));
+routes/web.php.before-document-search-20261118-093902:75:    Route::get('user/edit/{id}',  array('as' => 'admin.users.edit', 'uses' => 'Admin\UserController@getEditUser'));
+routes/web.php.before-document-search-20261118-093902:76:    Route::post('user/edit/{id}',  array('as' => 'admin.users.update', 'uses' => 'Admin\UserController@editUser'));
+routes/web.php.before-document-search-20261118-093902:77:    Route::post('user/delete', array('as' => 'admin.user.delete', 'uses' => 'Admin\UserController@deleteUser'));
+routes/web.php.before-document-search-20261118-093902:78:    Route::post('user/change-status', array('as' => 'admin.user.change.status', 'uses' => 'Admin\UserController@changeStatus'));
+routes/web.php.before-document-search-20261118-093902:80:    Route::get('own/change-password', array('as' => 'admin.change.password', 'uses' => 'Admin\UserController@getChangePassword'));
+routes/web.php.before-document-search-20261118-093902:81:    Route::post('own/change-password', array('as' => 'admin.change.password.post', 'uses' => 'Admin\UserController@changeOwnPassword'));
+routes/web.php.before-document-search-20261118-093902:82:    Route::get('user/change-password/{id}', array('as' => 'admin.user.change.password', 'as' => 'admin.users.change.password', 'uses' => 'Admin\UserController@getChangePasswordByAdmin'));
+routes/web.php.before-document-search-20261118-093902:83:    Route::post('user/change-password/{id}', array('as' => 'admin.user.change.password.update', 'uses' => 'Admin\UserController@changePassword'));
+routes/web.php.before-document-search-20261118-093902:85:    // Route::post('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
+routes/web.php.before-document-search-20261118-093902:86:    // Route::get('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
+routes/web.php.before-document-search-20261118-093902:136:    Route::get('own/change-password', array('as' => 'project.admin.change.password', 'uses' => 'Admin\Project\UserController@changePassword'));
+routes/web.php.before-document-search-20261118-093902:137:    Route::post('own/change-password', array('as' => 'project.admin.update.password', 'uses' => 'Admin\Project\UserController@updatePassword'));
+routes/web.php.before-document-search-20261118-094635:72:    Route::get('users',  array('as' => 'admin.users', 'uses' => 'Admin\UserController@getIndex'));
+routes/web.php.before-document-search-20261118-094635:73:    Route::get('user/add',  array('as' => 'admin.users.add', 'uses' => 'Admin\UserController@getAddUser'));
+routes/web.php.before-document-search-20261118-094635:74:    Route::post('user/add',  array('as' => 'admin.users.store', 'uses' => 'Admin\UserController@addUser'));
+routes/web.php.before-document-search-20261118-094635:75:    Route::get('user/edit/{id}',  array('as' => 'admin.users.edit', 'uses' => 'Admin\UserController@getEditUser'));
+routes/web.php.before-document-search-20261118-094635:76:    Route::post('user/edit/{id}',  array('as' => 'admin.users.update', 'uses' => 'Admin\UserController@editUser'));
+routes/web.php.before-document-search-20261118-094635:77:    Route::post('user/delete', array('as' => 'admin.user.delete', 'uses' => 'Admin\UserController@deleteUser'));
+routes/web.php.before-document-search-20261118-094635:78:    Route::post('user/change-status', array('as' => 'admin.user.change.status', 'uses' => 'Admin\UserController@changeStatus'));
+routes/web.php.before-document-search-20261118-094635:80:    Route::get('own/change-password', array('as' => 'admin.change.password', 'uses' => 'Admin\UserController@getChangePassword'));
+routes/web.php.before-document-search-20261118-094635:81:    Route::post('own/change-password', array('as' => 'admin.change.password.post', 'uses' => 'Admin\UserController@changeOwnPassword'));
+routes/web.php.before-document-search-20261118-094635:82:    Route::get('user/change-password/{id}', array('as' => 'admin.user.change.password', 'as' => 'admin.users.change.password', 'uses' => 'Admin\UserController@getChangePasswordByAdmin'));
+routes/web.php.before-document-search-20261118-094635:83:    Route::post('user/change-password/{id}', array('as' => 'admin.user.change.password.update', 'uses' => 'Admin\UserController@changePassword'));
+routes/web.php.before-document-search-20261118-094635:85:    // Route::post('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
+routes/web.php.before-document-search-20261118-094635:86:    // Route::get('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
+routes/web.php.before-document-search-20261118-094635:136:    Route::get('own/change-password', array('as' => 'project.admin.change.password', 'uses' => 'Admin\Project\UserController@changePassword'));
+routes/web.php.before-document-search-20261118-094635:137:    Route::post('own/change-password', array('as' => 'project.admin.update.password', 'uses' => 'Admin\Project\UserController@updatePassword'));
+routes/web.php.before-login-rate-limit:40:    Route::get('users',  array('as' => 'admin.users', 'uses' => 'Admin\UserController@getIndex'));
+routes/web.php.before-login-rate-limit:41:    Route::get('user/add',  array('as' => 'admin.users.add', 'uses' => 'Admin\UserController@getAddUser'));
+routes/web.php.before-login-rate-limit:42:    Route::post('user/add',  array('as' => 'admin.users.store', 'uses' => 'Admin\UserController@addUser'));
+routes/web.php.before-login-rate-limit:43:    Route::get('user/edit/{id}',  array('as' => 'admin.users.edit', 'uses' => 'Admin\UserController@getEditUser'));
+routes/web.php.before-login-rate-limit:44:    Route::post('user/edit/{id}',  array('as' => 'admin.users.update', 'uses' => 'Admin\UserController@editUser'));
+routes/web.php.before-login-rate-limit:45:    Route::post('user/delete', array('as' => 'admin.user.delete', 'uses' => 'Admin\UserController@deleteUser'));
+routes/web.php.before-login-rate-limit:46:    Route::post('user/change-status', array('as' => 'admin.user.change.status', 'uses' => 'Admin\UserController@changeStatus'));
+routes/web.php.before-login-rate-limit:48:    Route::get('own/change-password', array('as' => 'admin.change.password', 'uses' => 'Admin\UserController@getChangePassword'));
+routes/web.php.before-login-rate-limit:49:    Route::post('own/change-password', array('as' => 'admin.change.password.post', 'uses' => 'Admin\UserController@changeOwnPassword'));
+routes/web.php.before-login-rate-limit:50:    Route::get('user/change-password/{id}', array('as' => 'admin.user.change.password', 'as' => 'admin.users.change.password', 'uses' => 'Admin\UserController@getChangePasswordByAdmin'));
+routes/web.php.before-login-rate-limit:51:    Route::post('user/change-password/{id}', array('as' => 'admin.user.change.password.update', 'uses' => 'Admin\UserController@changePassword'));
+routes/web.php.before-login-rate-limit:53:    // Route::post('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
+routes/web.php.before-login-rate-limit:54:    // Route::get('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
+routes/web.php.before-login-rate-limit:96:    Route::get('own/change-password', array('as' => 'project.admin.change.password', 'uses' => 'Admin\Project\UserController@changePassword'));
+routes/web.php.before-login-rate-limit:97:    Route::post('own/change-password', array('as' => 'project.admin.update.password', 'uses' => 'Admin\Project\UserController@updatePassword'));
+routes/web.php.pre-flash-box-settings-20261117-080141:46:    Route::get('users',  array('as' => 'admin.users', 'uses' => 'Admin\UserController@getIndex'));
+routes/web.php.pre-flash-box-settings-20261117-080141:47:    Route::get('user/add',  array('as' => 'admin.users.add', 'uses' => 'Admin\UserController@getAddUser'));
+routes/web.php.pre-flash-box-settings-20261117-080141:48:    Route::post('user/add',  array('as' => 'admin.users.store', 'uses' => 'Admin\UserController@addUser'));
+routes/web.php.pre-flash-box-settings-20261117-080141:49:    Route::get('user/edit/{id}',  array('as' => 'admin.users.edit', 'uses' => 'Admin\UserController@getEditUser'));
+routes/web.php.pre-flash-box-settings-20261117-080141:50:    Route::post('user/edit/{id}',  array('as' => 'admin.users.update', 'uses' => 'Admin\UserController@editUser'));
+routes/web.php.pre-flash-box-settings-20261117-080141:51:    Route::post('user/delete', array('as' => 'admin.user.delete', 'uses' => 'Admin\UserController@deleteUser'));
+routes/web.php.pre-flash-box-settings-20261117-080141:52:    Route::post('user/change-status', array('as' => 'admin.user.change.status', 'uses' => 'Admin\UserController@changeStatus'));
+routes/web.php.pre-flash-box-settings-20261117-080141:54:    Route::get('own/change-password', array('as' => 'admin.change.password', 'uses' => 'Admin\UserController@getChangePassword'));
+routes/web.php.pre-flash-box-settings-20261117-080141:55:    Route::post('own/change-password', array('as' => 'admin.change.password.post', 'uses' => 'Admin\UserController@changeOwnPassword'));
+routes/web.php.pre-flash-box-settings-20261117-080141:56:    Route::get('user/change-password/{id}', array('as' => 'admin.user.change.password', 'as' => 'admin.users.change.password', 'uses' => 'Admin\UserController@getChangePasswordByAdmin'));
+routes/web.php.pre-flash-box-settings-20261117-080141:57:    Route::post('user/change-password/{id}', array('as' => 'admin.user.change.password.update', 'uses' => 'Admin\UserController@changePassword'));
+routes/web.php.pre-flash-box-settings-20261117-080141:59:    // Route::post('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
+routes/web.php.pre-flash-box-settings-20261117-080141:60:    // Route::get('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
+routes/web.php.pre-flash-box-settings-20261117-080141:110:    Route::get('own/change-password', array('as' => 'project.admin.change.password', 'uses' => 'Admin\Project\UserController@changePassword'));
+routes/web.php.pre-flash-box-settings-20261117-080141:111:    Route::post('own/change-password', array('as' => 'project.admin.update.password', 'uses' => 'Admin\Project\UserController@updatePassword'));
 doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$
