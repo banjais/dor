@@ -1,501 +1,5 @@
-doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && echo "===== CONTENT RELATED MODELS =====" && find app/Models -maxdepth 1 -type f | grep -Ei '/(Content|Home|Office|Language)' | sort && echo "===== CONTENT / HOME MODEL DEFINITIONS =====" && for f in app/Models/Content.php app/Models/ContentDetail.php app/Models/Home.php app/Models/HomeDetail.php app/Models/Office.php app/Models/OfficeDetail.php app/Models/Language.php; do if [ -f "$f" ]; then echo "----- $f -----"; sed -n '1,240p' "$f"; fi; done
-===== CONTENT RELATED MODELS =====
-app/Models/Content.php
-app/Models/ContentDetail.php
-app/Models/Home.php
-app/Models/Home.php.bak-flash-tabs-20261116-224537
-app/Models/Home.php.before-lists-fix
-app/Models/Homedetail.php
-app/Models/Language.php
-app/Models/Office.php
-app/Models/Office.php.backup-footer-20261119-094902
-app/Models/Office.php.backup-footer-20261119-095300
-app/Models/OfficeChief.php
-app/Models/OfficeChiefDetail.php
-app/Models/OfficeDetail.php
-===== CONTENT / HOME MODEL DEFINITIONS =====
------ app/Models/Content.php -----
-<?php
-
-namespace App\Models;
-
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
-
-class Content extends Model
-{
-    public $languageId;
-
-    /**
-     * The database table used by the model.
-     *
-     * @var string
-     */
-
-    protected $fillable = array('is_active', 'is_deleted', 'created_by', 'updated_by');
-
-    protected $table = 'content';
-
-    public function details()
-    {
-        return $this->hasMany(ContentDetail::class, 'content_id');
-    }
-
-    /**
-     * get all undeleted contents
-     * @return object
-     */
-    public static function getUndeletedContents()
-    {
-        $languageId = Language::getIdFromCode('en');
-        $query      = "Select t1.id,t1.content_url,date_format( t1.updated_at, '%d %b, %Y' ) AS updated_on,
-                                                t1.is_active,t2.content_heading
-                                                from pndc_content t1
-                                                join pndc_content_detail t2 on t1.id=t2.content_id
-                                                where t1.is_deleted='0' and t2.language_id = '$languageId' ";
-
-        return DB::select($query);
-    }
-
-    /**
-     * get all undeleted contents office wise
-     * @param int $officeId
-     * @return object
-     */
-    public static function getUndeletedContentsByOffice($officeId)
-    {
-        $languageId = Language::getIdFromCode('en');
-        $query      = "Select t1.id,t1.content_url,date_format( t1.updated_at, '%d %b, %Y' ) AS updated_on,
-                                                t1.is_active,t2.content_heading
-                                                from pndc_content t1
-                                                join pndc_content_detail t2 on t1.id=t2.content_id
-                                                where t1.is_deleted='0' and t2.language_id = '$languageId' and t1.office_id='$officeId' ";
-
-        return DB::select($query);
-    }
-
-    /**
-     * check whether url exist or not for individual office
-     * @param  string $url
-     * @param  int $officeId
-     * @return int
-     */
-    public static function checkExist($url, $officeId)
-    {
-        return Content::where('is_deleted', '0')
-            ->where('content_url', $url)
-            ->where('office_id', $officeId)
-            ->pluck('id')
-            ->first();
-    }
-
-    /**
-     * get content detail with languages
-     * @param  int $id
-     * @return object
-     */
-    public static function getContentDetailsWithLanguages($id)
-    {
-        $query = "select t1.id as language_id,t1.language_name,
-                                        (select t2.id from pndc_content t2 where t2.id='$id') as content_id,
-                                        (select t2.parent_id from pndc_content t2 where t2.id='$id') as parent_id,
-                                        (select content_url from pndc_content t2 where t2.id='$id') as content_url,
-                                        (select show_in from pndc_content t2 where t2.id='$id') as show_in,
-                                        (select order_menu from pndc_content t2 where t2.id='$id') as order_menu,
-                                        (select content_meta_tags from pndc_content t2 where t2.id='$id') as content_meta_tags,
-                                        (select content_meta_description from pndc_content t2 where t2.id='$id') as content_meta_description,
-                                        (select content_attachment from pndc_content t2 where t2.id='$id') as content_attachment,
-                                        (select is_active from pndc_content t2 where t2.id='$id') as is_active,
-                                        (select content_heading from pndc_content t2 join pndc_content_detail t3
-                                                        on t2.id=t3.content_id where t3.language_id=t1.id and t2.id='$id') as content_heading,
-                                        (select content_description from pndc_content t2 join pndc_content_detail t3
-                                                        on t2.id=t3.content_id where t3.language_id=t1.id and t2.id='$id') as content_description,
-                                        (select content_page_title from pndc_content t2 join pndc_content_detail t3
-                                                        on t2.id=t3.content_id where t3.language_id=t1.id and t2.id='$id') as content_page_title,
-                                        (select t3.id from pndc_content t2 join pndc_content_detail t3
-                                                        on t2.id=t3.content_id where t3.language_id=t1.id and t2.id='$id') as content_detail_id
-                                        from pndc_language t1
-                                        where t1.is_active = '1' ";
-
-        return DB::select($query);
-    }
-
-    /**
-     * get content list hierarchy wise
-     * @param  int $parentId
-     * @param  int $level
-     * @param  int $selected
-     * @return string
-     */
-    public static function content_list_for_contentEntry($officeId, $parentId, $level, $selected)
-    {
-        $languageId = Language::getIdFromCode('en');
-        $contents   = Content::join('content_detail', 'content.id', '=', 'content_detail.content_id')
-            ->select(
-                'content.id',
-                'content.parent_id',
-                'content_detail.content_heading'
-            )
-            ->where('content.office_id', $officeId)
-            ->where('content.parent_id', $parentId)
-            ->where('content.is_active', '1')
-            ->where('content_detail.language_id', $languageId)
-            ->orderby('content.id', 'asc')
-            ->get();
-
-        $returnList = '<select class="m-wrap span6" name="parent_id" id="parent_id">';
-        $returnList .= '<option value="0" selected>Parent Itself</option>';
-        foreach ($contents as $content) {
-            if ($selected > 0 && $selected == $content->id) {
-                $selected_option = 'selected="selected"';
-            } else {
-                $selected_option = "";
-            }
-
-            $returnList .= '<option value="' . $content->id . '" ' . $selected_option . '>' .
-                str_repeat('&nbsp;--|- &nbsp;', $level) . $content->content_heading . '</option>';
-            $returnList .= self::subcontent_list_for_contentEntry($officeId, $content->id, $level + 1, $selected);
-        }
-        $returnList .= '</select>';
-
-        return $returnList;
-    }
-
-    /**
-     * get sub content list hierarchy wise
-     * @param  int $parentId
-     * @param  int $level
-     * @param  int $selected
-     * @return string
-     */
-    public static function subcontent_list_for_contentEntry($officeId, $parentId, $level, $selected = 0)
-    {
-        $languageId  = Language::getIdFromCode('en');
-        $subcontents = Content::join('content_detail', 'content.id', '=', 'content_detail.content_id')
-            ->select(
-                'content.id',
-                'content.parent_id',
-                'content_detail.content_heading'
-            )
-            ->where('content.office_id', $officeId)
-            ->where('content.parent_id', $parentId)
-            ->where('content.is_active', '1')
-            ->where('content_detail.language_id', $languageId)
-            ->orderby('content.id', 'asc')
-            ->get();
-
-        $returnList = '';
-        foreach ($subcontents as $subcontent) {
-            if ($selected > 0 && $selected == $subcontent->id) {
-                $selected_option = 'selected="selected"';
-            } else {
-                $selected_option = "";
-            }
-            $returnList .= '<option value="' . $subcontent->id . '" ' . $selected_option . '>' .
-                str_repeat('&nbsp;--|- &nbsp;', $level) . $subcontent->content_heading . '</option>';
-            $returnList .= self::subcontent_list_for_contentEntry($officeId, $subcontent->id, $level + 1, $selected);
-        }
-        return $returnList;
-    }
-
-    /*------------------------------------------------------*/
-    /**
-     * get content detail
-     * @param int $officeId
-     * @param string $url
-     * @param int $langId
-     * @return object
-     */
-    public static function getContentDetail($officeId, $url, $langId)
-    {
-        $result = Content::join('content_detail', 'content.id', '=', 'content_detail.content_id')
-            ->select(
-                'content.id',
-                'content.parent_id',
-                'content.content_url',
-                'content.content_meta_tags',
-                'content.content_meta_description',
-                'content_attachment',
-                'content_detail.content_heading',
-                'content_detail.content_page_title',
-                'content_detail.content_description',
-                'content.office_id'
-            )
-            ->where('content.office_id', $officeId)
-            ->where('content.content_url', $url)
-            ->where('content_detail.language_id', $langId)
-            ->where('content.is_active', '1')
-            ->where('content.is_deleted', '0')
-            ->first();
-        return $result;
-    }
-
-    /**
-     * get content detail
-     * @param int $officeId
-     * @param int $id
-     * @param int $langId
-     * @return object
-     */
-    public static function getContentDetailById($officeId, $id, $langId)
-    {
-        $result = Content::join('content_detail', 'content.id', '=', 'content_detail.content_id')
-            ->select(
-                'content.id',
-                'content.parent_id',
-                'content.content_url',
-                'content.content_meta_tags',
-                'content.content_meta_description',
-                'content_attachment',
-                'content_detail.content_heading',
-                'content_detail.content_page_title',
-                'content_detail.content_description'
-            )
-            ->where('content.office_id', $officeId)
-            ->where('content.id', $id)
-            ->where('content_detail.language_id', $langId)
-            ->where('content.is_active', '1')
------ app/Models/ContentDetail.php -----
-<?php
-
-namespace App\Models;
-
-use Illuminate\Database\Eloquent\Model;
-
-class ContentDetail extends Model
-{
-    public $languageId;
-
-    /**
-     * The database table used by the model.
-     *
-     * @var string
-     */
-
-    protected $fillable = array('content_heading', 'content_description', 'content_page_title');
-
-    protected $table = 'content_detail';
-}
------ app/Models/Home.php -----
-<?php
-
-namespace App\Models;
-
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
-
-class Home extends Model
-{
-    public $languageId;
-
-    /**
-     * The database table used by the model.
-     *
-     * @var string
-     */
-
-    protected $fillable = array('is_active', 'is_deleted', 'created_by', 'updated_by', 'office_id', 'home_url', 'show_in', 'home_identity_name','data_2_title');
-
-    protected $table = 'home';
-
-    public function details()
-    {
-        return $this->hasMany(Homedetail::class);
-    }
-
-    public static function getAllTicker()
-    {
-        $languageId = Language::getIdFromCode('en');
-        $query    = "Select t1.id,date_format( t1.updated_at, '%d %b, %Y' ) AS updated_at,
-                                                t1.is_active,t2.ticker_des,t2.ticker_title
-                                                from pndc_ticker t1
-                                                join pndc_ticker_detail t2 on t1.id=t2.ticker_id
-                                                where t1.is_delete='0' and t2.language_id = '$languageId'
-                                                order by t1.created_at desc
-                                                ";
-
-        return DB::select($query);
-    }
-
-    public static function findTickerById($id)
-    {
-        $languageId = Language::getIdFromCode('en');
-
-
-
-        $query    = "SELECT * FROM pndc_ticker WHERE  is_delete='0'  and id='$id'  LIMIT 1";
-
-        return DB::select($query);
-    }
-
-    public static function getTickerDetailsWithLanguages($id)
-    {
-        $query    = "select t1.id as language_id,t1.language_name,
-                                        (select t2.id from pndc_ticker t2 where t2.id='$id') as ticker_id,
-
-
-
-                                        (select is_active from pndc_ticker t2 where t2.id='$id') as is_active,
-
-
-                                        (select t3.ticker_des from pndc_ticker t2 join pndc_ticker_detail t3
-                                                        on t2.id=t3.ticker_id where t3.language_id=t1.id and t2.id='$id') as ticker_description,
-                                        (select t3.ticker_title from pndc_ticker t2 join pndc_ticker_detail t3
-                                                        on t2.id=t3.ticker_id where t3.language_id=t1.id and t2.id='$id') as ticker_title,
-                                        (select t3.id from pndc_ticker t2 join pndc_ticker_detail t3
-                                                        on t2.id=t3.ticker_id where t3.language_id=t1.id and t2.id='$id') as ticker_detail_id
-                                        from pndc_language t1
-                                        where t1.is_active = '1'";
-
-        return DB::select($query);
-    }
-
-
-
-    /**
-     * get all undeleted homes
-     * @return object
-     */
-    public static function getUndeletedHomes()
-    {
-        $languageId = Language::getIdFromCode('en');
-        $query    = "Select t1.id,t1.home_url,date_format( t1.updated_at, '%d %b, %Y' ) AS updated_on,
-                                                t1.is_active,t2.home_heading
-                                                from pndc_home t1
-                                                join pndc_home_detail t2 on t1.id=t2.home_id
-                                                where t1.is_deleted='0' and t2.language_id = '$languageId' ";
-
-        return DB::select($query);
-    }
-
-    /**
-     * get all undeleted homes office wise
-     * @param int $officeId
-     * @return object
-     */
-    public static function getUndeletedHomesByOffice($officeId)
-    {
-        $languageId = Language::getIdFromCode('en');
-        $query    = "select t1.*, date_format( t1.updated_at, '%d %b, %Y' ) AS updated_on,t2.home_heading
-                                        from pndc_home t1 left join pndc_home_detail t2 on t1.id=t2.home_id
-                                        where t1.office_id = '$officeId'and t2.language_id = '$languageId'";
-        return DB::select($query);
-    }
-
-    /**
-     * check whether url exist or not for individual office
-     * @param  string $url
-     * @param  int $officeId
-     * @return int
-     */
-    public static function checkExist($url, $officeId)
-    {
-        return Home::where('is_deleted', '0')
-            ->where('home_url', $url)
-            ->where('office_id', $officeId)
-            ->pluck('id')->first();
-    }
-
-    /**
-     * get show in of undeleted home contents
-     * @return array
-     */
-    public static function getShowInOfUndeleted()
-    {
-        $homeOffice = Office::where('office_subdomain', 'home')->first();
-        return Home::where('is_deleted', '0')
-            ->where('office_id', '<>', $homeOffice->id)
-            ->groupby('show_in')
-            ->orderby('id')
-            ->pluck('show_in', 'home_url');
-    }
-
-    /**
-     * get home detail with languages
-     * @param  int $id
-     * @return object
-     */
-    public static function getHomeDetailsWithLanguages($id)
-    {
-        $query    = "select t1.id as language_id,t1.language_name,
-                                        (select t2.id from pndc_home t2 where t2.id='$id') as home_id,
-                                        (select t2.show_in from pndc_home t2 where t2.id='$id') as show_in,
-                                        (select home_url from pndc_home t2 where t2.id='$id') as home_url,
-                                        (select home_meta_tags from pndc_home t2 where t2.id='$id') as home_meta_tags,
-                                        (select home_meta_description from pndc_home t2 where t2.id='$id') as home_meta_description,
-                                        (select home_attachment from pndc_home t2 where t2.id='$id') as home_attachment,
-                                        (select is_active from pndc_home t2 where t2.id='$id') as is_active,
-                                        (select home_heading from pndc_home t2 join pndc_home_detail t3
-                                                        on t2.id=t3.home_id where t3.language_id=t1.id and t2.id='$id') as home_heading,
-                                        (select officer_name from pndc_home t2 join pndc_home_detail t3
-                                                        on t2.id=t3.home_id where t3.language_id=t1.id and t2.id='$id') as officer_name,
-                                        (select home_description from pndc_home t2 join pndc_home_detail t3
-                                                        on t2.id=t3.home_id where t3.language_id=t1.id and t2.id='$id') as home_description,
-                                        (select home_page_title from pndc_home t2 join pndc_home_detail t3
-                                                        on t2.id=t3.home_id where t3.language_id=t1.id and t2.id='$id') as home_page_title,
-                                        (select t3.id from pndc_home t2 join pndc_home_detail t3
-                                                        on t2.id=t3.home_id where t3.language_id=t1.id and t2.id='$id') as home_detail_id
-                                        from pndc_language t1
-                                        where t1.is_active = '1'";
-
-        return DB::select($query);
-    }
-
-    /*------------------------------------------------------*/
-    /**
-     * get home detail
-     * @param int $officeId
-     * @param string $url
-     * @param int $langId
-     * @return object
-     */
-    public static function getHomeDetail($officeId, $url, $langId)
-    {
-        // dd($officeId);
-        $result = Home::join('home_detail', 'home.id', '=', 'home_detail.home_id')
-            ->select(
-                'home.id',
-                'home.home_url',
-                'home.home_meta_tags',
-                'home.home_meta_description',
-                'home_attachment',
-                'home_detail.home_heading',
-                'home_detail.home_page_title',
-                'home_detail.home_description'
-            )
-            ->where('home.office_id', $officeId)
-            ->where('home.home_url', $url)
-            ->where('home_detail.language_id', $langId)
-            ->where('home.is_active', '1')
-            ->where('home.is_deleted', '0')
-            ->first();
-        return $result;
-    }
-
-    /**
-     * get home page setions data
-     * @param int $showIn
-     * @param int $officeId
-     * @param int $langId
-     * @return object
-     */
-    public static function getHomePageData($showIn, $officeId, $langId)
-    {
-        $result = Home::join('home_detail', 'home.id', '=', 'home_detail.home_id')
-            ->select(
-                'home.id',
-                'home.office_id',
-                'home.home_url',
-                'home.home_attachment',
-                'home_detail.home_heading',
-                'home_detail.home_description',
-                'home_detail.home_page_title',
-                'home.home_meta_tags',
-                'home.home_meta_description',
-                'home.data_1',
-                'home.data_2',
-                'home.data_3',
-                'home.data_4'
+doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && echo "===== HOME MODEL REMAINING METHODS =====" && sed -n '220,620p' app/Models/Home.php && echo "===== HOME DETAIL TABLE REFERENCES =====" && grep -Rni --include='*.php' -E "home_description|officer_name|data_[1-7]|show_in" app/Http/Controllers app/Models | head -180
+===== HOME MODEL REMAINING METHODS =====
             )
             ->where('home.office_id', $officeId)
             ->where('home.show_in', $showIn)
@@ -517,322 +21,401 @@ class Home extends Model
         $result = Home::join('home_detail', 'home.id', '=', 'home_detail.home_id')
             ->select(
                 'home.id',
------ app/Models/HomeDetail.php -----
-<?php
-
-namespace App\Models;
-
-use Illuminate\Database\Eloquent\Model;
-
-class Homedetail extends Model
-{
-    public $languageId;
+                'home.office_id',
+                'home.home_url',
+                'home.home_attachment',
+                'home_detail.home_heading',
+                'home_detail.home_description',
+                'home_detail.home_page_title',
+                'home.home_meta_tags',
+                'home.home_meta_description',
+                'home.data_1',
+                'home.data_2',
+                'home.data_3',
+                'home.data_4'
+            )
+            ->where('home.office_id', $officeId)
+            ->where('home.show_in', $showIn)
+            ->where('home_detail.language_id', $langId)
+            ->where('home.home_url', 'dor-spoke-person')
+            ->where('home.is_active', '1')
+            ->where('home.is_deleted', '0')
+            ->first();
+        // dd($result);
+        return $result;
+    }
 
     /**
-     * The database table used by the model.
-     *
-     * @var string
+     * get home page setions data
+     * @param int $showIn
+     * @param int $officeId
+     * @param int $langId
+     * @return object
      */
+    public static function getHomePageInformationOfficer($showIn, $officeId, $langId)
+    {
+        $result = Home::join('home_detail', 'home.id', '=', 'home_detail.home_id')
+            ->select(
+                'home.id',
+                'home.office_id',
+                'home.home_url',
+                'home.home_attachment',
+                'home_detail.home_heading',
+                'home_detail.home_description',
+                'home_detail.home_page_title',
+                'home.home_meta_tags',
+                'home.home_meta_description',
+                'home.data_1',
+                'home.data_2',
+                'home.data_3',
+                'home.data_4'
+            )
+            ->where('home.office_id', $officeId)
+            ->where('home.show_in', $showIn)
+            ->where('home_detail.language_id', $langId)
+            ->where('home.home_url', 'information-officer')
+            ->where('home.is_active', '1')
+            ->where('home.is_deleted', '0')
+            ->first();
+        // dd($result);
+        return $result;
+    }
 
-    protected $fillable = array('home_heading', 'officer_name', 'home_description', 'home_page_title');
+    public static function getHomePageDirectorGeneral($showIn, $officeId, $langId)
+    {
+        $result = Home::join('home_detail', 'home.id', '=', 'home_detail.home_id')
+            ->select(
+                'home.id',
+                'home.office_id',
+                'home.home_url',
+                'home.home_attachment',
+                'home_detail.home_heading',
+                'home_detail.home_description',
+                'home_detail.home_page_title',
+                'home.home_meta_tags',
+                'home.home_meta_description',
+                'home.data_1',
+                'home.data_2',
+                'home.data_3',
+                'home.data_4'
+            )
+            ->where('home.office_id', $officeId)
+            // ->where('home.show_in', $showIn)
+            ->where('home_detail.language_id', $langId)
+            ->where('home.home_url', 'message-from-director-general')
+            ->where('home.is_active', '1')
+            ->where('home.is_deleted', '0')
+            ->first();
+        // dd($result);
+        return $result;
+    }
 
-    protected $table = 'home_detail';
-}
------ app/Models/Office.php -----
-<?php
-
-namespace App\Models;
-
-use Illuminate\Database\Eloquent\Model;
-use Helper;
-
-use Illuminate\Support\Facades\DB;
-
-class Office extends Model
-{
     /**
-     * The database table used by the model.
-     *
-     * @var string
+     * get home page setions data
+     * @param int $showIn
+     * @param int $officeId
+     * @param int $langId
+     * @return object
      */
-
-    protected $fillable = array('is_active', 'is_deleted', 'created_by', 'updated_by', 'office_email_address', 'office_alternative_email');
-
-    protected $table = 'office';
-
-    public function details()
+    public static function getHomePageGrievanceOfficer($showIn, $officeId, $langId)
     {
-        return $this->hasMany(OfficeDetail::class, 'office_id');
+        return Home::join('home_detail', 'home.id', '=', 'home_detail.home_id')
+            ->select(
+                'home.id',
+                'home.office_id',
+                'home.home_url',
+                'home.home_attachment',
+                'home_detail.home_heading',
+                'home_detail.home_description',
+                'home_detail.home_page_title',
+                'home.home_meta_tags',
+                'home.home_meta_description',
+                'home.data_1',
+                'home.data_2',
+                'home.data_3',
+                'home.data_4'
+            )
+            ->where('home.office_id', $officeId)
+            ->where('home.show_in', $showIn)
+            ->where('home_detail.language_id', $langId)
+            ->where('home.home_url', 'grievance-hearing-officer')
+            ->where('home.is_active', '1')
+            ->where('home.is_deleted', '0')
+            ->first();
     }
 
-    public function detail($langId = 2)
+    public static function getHomePageWorkingarea($showIn, $officeId, $langId)
     {
-        return $this->details()->where('language_id', $langId);
+        $result = Home::join('home_detail', 'home.id', '=', 'home_detail.home_id')
+            ->select(
+                'home.id',
+                'home.office_id',
+                'home.home_url',
+                'home.home_attachment',
+                'home_detail.home_heading',
+                'home_detail.home_description'
+            )
+            ->where('home.office_id', $officeId)
+            ->where('home.show_in', $showIn)
+            ->where('home_detail.language_id', $langId)
+            ->where('home.home_url', 'working-area')
+            ->where('home.is_active', '1')
+            ->where('home.is_deleted', '0')
+            ->first();
+        return $result;
+    }
+    /**
+     * get home page setions data
+     * @param int $showIn
+     * @param int $officeId
+     * @param int $langId
+     * @return object
+     */
+    public static function getHomePageGeneralInfo($showIn, $officeId, $langId)
+    {
+        $result = Home::join('home_detail', 'home.id', '=', 'home_detail.home_id')
+            ->select(
+                'home.id',
+                'home.office_id',
+                'home.home_url',
+                'home.home_attachment',
+                'home_detail.home_heading',
+                'home_detail.home_description'
+            )
+            ->where('home.office_id', $officeId)
+            ->where('home.show_in', $showIn)
+            ->where('home_detail.language_id', $langId)
+            ->where('home.home_url', 'general-info')
+            ->where('home.is_active', '1')
+            ->where('home.is_deleted', '0')
+            ->first();
+        return $result;
     }
 
-    public static function getUndeletedOffices()
+    /**
+     * get home page setions data
+     * @param int $showIn
+     * @param int $officeId
+     * @param int $langId
+     * @return object
+     */
+    public static function getHomePageGeneralAbout($showIn, $officeId, $langId)
     {
-        $languageId = Language::getIdFromCode('en');
-        $query = "Select office.id as id,office.is_active as is_active,office_email_address, office_alternative_email, office_name, office_address, office_phone_number1, office_type, order_menu from pndc_office as office join pndc_office_detail detail on office.id=detail.office_id where office.is_deleted='0' and detail.language_id=" . $languageId . " order by `order_menu`";
-        return DB::select($query);
+        $result = Home::join('home_detail', 'home.id', '=', 'home_detail.home_id')
+            ->select(
+                'home.id',
+                'home.office_id',
+                'home.home_url',
+                'home.home_attachment',
+                'home_detail.home_heading',
+                'home_detail.home_description'
+            )
+            ->where('home.office_id', $officeId)
+            ->where('home.show_in', $showIn)
+            ->where('home_detail.language_id', $langId)
+            ->where('home.home_url', 'about-us')
+            ->where('home.is_active', '1')
+            ->where('home.is_deleted', '0')
+            ->first();
+        return $result;
     }
 
-    public static function getPublishedOffices()
+    /**
+     * get home page setions data
+     * @param int $showIn
+     * @param int $officeId
+     * @param int $langId
+     * @return object
+     */
+    public static function getHomePageAdmin($slug, $officeId)
     {
-        $languageId = Language::getIdFromCode('en');
-        $query = "Select office.id as id,office.is_active as is_active,office_email_address, office_alternative_email, office_name, office_address, office_phone_number1 from pndc_office as office join pndc_office_detail detail on office.id=detail.office_id where office.is_deleted='0' and office.is_active='1' and detail.language_id=" . $languageId;
-        return DB::select($query);
+        $result = Home::where('home.office_id', $officeId)
+            ->where('home.home_url', $slug)
+            ->where('home.is_active', '1')
+            ->where('home.is_deleted', '0')
+            ->first();
+        return $result;
     }
 
-    public static function getPublishedOfficesbyID($id)
+    /**
+     * get home page setions data
+     * @param int $showIn
+     * @param int $officeId
+     * @param int $langId
+     * @return object
+     */
+    public static function getHomeDataFrontend($slug, $officeId, $languageId = 1)
     {
-        $query = "Select office.id as id, office.is_active as is_active, office.office_email_address, office.office_alternative_email, detail.office_name, detail.office_address, detail.office_phone_number1 from pndc_office as office join pndc_office_detail detail on office.id=detail.office_id where office.is_deleted='0' and office.is_active='1' and detail.language_id=2 and office.id=" . $id;
-        return DB::select($query);
+        $result = Home::join('home_detail', 'home.id', '=', 'home_detail.home_id')
+            ->where('home.office_id', $officeId)
+            ->where('home.home_url', $slug)
+            ->where('home_detail.language_id', $languageId)
+            ->where('home.is_active', '1')
+            ->where('home.is_deleted', '0')
+            ->first();
+        return $result;
     }
 
-    public static function getOfficeDetailsWithLanguages($id, $language_id = null)
+    /**
+     * fetch contentlist at header
+     */
+    public static function headerContentAllList($parentId = 0, $singleMenu = 0, $singleMenuId = '')
     {
-        if ($language_id) {
-            $query = "Select lang.id, language_name, language_code,
-            (select id from pndc_office_detail where lang.id=language_id and office_id=$id) as detailid,
-            (select office_subdomain from pndc_office where  id=$id) as office_subdomain,
-            (select office_name from pndc_office_detail where lang.id=language_id and office_id=$id) as office_name,
-            (select office_address from pndc_office_detail where lang.id=language_id and office_id=$id) as office_address,
-            (select office_phone_number1 from pndc_office_detail where lang.id=language_id and office_id=$id) as office_phone_number1,
-            (select office_phone_number2 from pndc_office_detail where lang.id=language_id and office_id=$id) as office_phone_number2
-            from pndc_language lang where lang.is_active='1' and lang.is_deleted='0' and lang.id=$language_id";
-        } else {
-            $query = "Select lang.id, language_name, language_code,
-            (select id from pndc_office_detail where lang.id=language_id and office_id=$id) as detailid,
-            (select office_subdomain from pndc_office where  id=$id) as office_subdomain,
-            (select office_name from pndc_office_detail where lang.id=language_id and office_id=$id) as office_name,
-            (select office_address from pndc_office_detail where lang.id=language_id and office_id=$id) as office_address,
-            (select office_phone_number1 from pndc_office_detail where lang.id=language_id and office_id=$id) as office_phone_number1,
-            (select office_phone_number2 from pndc_office_detail where lang.id=language_id and office_id=$id) as office_phone_number2
-            from pndc_language lang where lang.is_active='1' and lang.is_deleted='0'";
+        $contents = Content::join('content_detail', 'content.id', '=', 'content_detail.content_id')
+            ->select(
+                'content.id',
+                'content.content_url',
+                'content.content_attachment',
+                'content.parent_id',
+                'content_detail.content_heading'
+            )
+            ->where('content.parent_id', $parentId)
+            ->where('content.is_active', '1');
+
+        $result = $contents->get();
+        return $result;
+    }
+    /**
+     * fetch contentlist at header
+     */
+    public static function headerContentMenus($parentId = 0, $singleMenu = 0, $singleMenuId = '')
+    {
+        $contents = Content::join('content_detail', 'content.id', '=', 'content_detail.content_id')
+            ->select(
+                'content.id',
+                'content.content_url',
+                'content.parent_id',
+                'content_detail.content_heading'
+            )
+            ->where('content.parent_id', $parentId)
+            ->where('content.show_in', 'LIKE', '%1%')
+            ->where('content.is_active', '1');
+        if ($singleMenu && $singleMenuId) {
+            $contents->where('id', $singleMenuId);
         }
-
-        // print_r($query);exit;
-        return DB::select($query);
-    }
-
-    /*
-        * get active offices ids
-        * @return array
-        */
-    public static function getActiveOfficesIds()
-    {
-
-        return Office::where('is_active', '1')
-            ->where('is_deleted', '0')
-            ->select('id')->get();
-    }
-
-    /*
-        * get office id from office subdomain
-        * @param string $subdomain
-        * @return int
-        */
-    public static function getIdfromSubdomain($subdomain)
-    {
-        // dd($subdomain);
-        return Office::where('office_subdomain', $subdomain)
-            ->where('is_deleted', '0')
-            ->where('is_active', '1')
-            ->pluck('id')
-            ->first();
-    }
-
-    /*
-        * get office name from office subdomain
-        * @param string $subdomain
-        * @param int $langId
-        * @return string
-        */
-    public static function getNamefromSubdomain($subdomain, $langId)
-    {
-        return Office::join('office_detail', 'office.id', '=', 'office_detail.office_id')
-            ->where('office.is_active', '1')
-            ->where('office.is_deleted', '0')
-            ->where('office.office_subdomain', $subdomain)
-            ->where('language_id', $langId)
-            ->pluck('office_name');
-    }
-
-    /*
-        * get office subdomain from office id
-        * @param int $id
-        * @return string
-        */
-    public static function getSubdomainfromId($id)
-    {
-        return Office::where('id', $id)
-            ->where('is_deleted', '0')
-            ->where('is_active', '1')
-            ->pluck('office_subdomain');
-    }
-
-    /*
-        * get detail of office
-        * @param int $officeId
-        * @param int $langId
-        * @return object
-        */
-    public static function getOfficeDetailFromId($officeId, $langId)
-    {
-        return Office::join('office_detail', 'office.id', '=', 'office_detail.office_id')
-            ->select(
-                'office.id',
-                'office.office_subdomain',
-                'office.office_email_address',
-                'office.office_latitude',
-                'office.office_longitude',
-                'office.office_attachment',
-                'office_detail.office_name',
-                'office_detail.office_address',
-                'office_detail.office_phone_number1',
-                'office_detail.office_phone_number2'
-            )
-            ->where('office.is_active', '1')
-            ->where('office.is_deleted', '0')
-            ->where('office.id', $officeId)
-            ->where('language_id', $langId)
-            ->first();
-    }
-
-    /*
-        * get detail of office
-        * @param string $subdomain
-        * @param int $langId
-        * @return object
-        */
-    public static function getOfficeDetailFromSubdomain($subdomain, $langId)
-    {
-        // print_r($subdomain);exit;
-        // DB::enableQueryLog();
-        $data = Office::join('office_detail', 'office.id', '=', 'office_detail.office_id')
-
-            ->where('office.is_active', '1')
-            ->where('office.is_deleted', '0')
-            ->where('office.office_subdomain', $subdomain)
-            ->where('language_id', $langId)
-            ->select(
-                'office.id',
-                'office_subdomain',
-                'office_email_address',
-                'office_alternative_email',
-                'office_facebook_page',
-                'office_instagram_page',
-                'office_latitude',
-                'office_longitude',
-                'google_map_embed',
-                'office_type',
-                'office_attachment',
-                'office_detail.office_name',
-                'office_detail.office_address',
-                'office_detail.office_phone_number1',
-                'office_detail.office_phone_number2'
-            )
-            ->first();
-
-        // dd(Helper::get_last_query());
-        return $data;
-    }
-
-    /*
-        * get office list
-        * @param int $langId
-        * @param string $subdomain
-        * @param int $limit
-        * @return object
-        */
-    public static function getActiveRegionalOffices($langId, $subdomain, $limit = 10)
-    {
-        return Office::join('office_detail', 'office.id', '=', 'office_detail.office_id')
-            ->select(
-                'office.id',
-                'office.office_subdomain',
-                'office_detail.office_name'
-            )
-            ->where('office.is_active', '1')
-            ->where('office.is_deleted', '0')
-            ->where('office_detail.language_id', $langId)
-            ->where('office.office_type', 'like', '%2%')
-            ->orderby('office.order_menu', 'ASC')
-            ->take($limit)
-            ->get();
-    }
-
-    /*
-        * get office list
-        * @param int $langId
-        * @param string $subdomain
-        * @param int $limit
-        * @return object
-        */
-    public static function getActiveHEDivisionsOffices($langId, $zoneId, $subdomain, $limit = 10)
-    {
-        return Office::join('office_detail', 'office.id', '=', 'office_detail.office_id')
-            ->select(
-                'office.id',
-                'office.office_subdomain',
-                'office_detail.office_name'
-            )
-            ->where('office.is_active', '1')
------ app/Models/OfficeDetail.php -----
-<?php
-
-namespace App\Models;
-
-use Illuminate\Database\Eloquent\Model;
-
-class OfficeDetail extends Model
-{
-    protected $fillable = array('office_name', 'office_address', 'office_phone_number1', 'office_phone_number2', 'language_id', 'office_id');
-    protected $table = 'office_detail';
-}
------ app/Models/Language.php -----
-<?php
-
-namespace App\Models;
-
-use Illuminate\Database\Eloquent\Model;
-
-class Language extends Model
-{
-    protected $table = 'language';
-
-    /*
-        | get language name from code
-        | @param $name - string
-        | @return string
-        */
-    public static function getNameFromCode($code = 'ne')
-    {
-        return $result = Language::where('language_code', $code)
-            ->pluck('language_name');
-    }
-
-    /*
-        | get language id (or primary key) of default language
-        | @param $name - string
-        | @return int
-        */
-    public static function getIdFromCode($code = 'ne')
-    {
-        return $result = Language::where('language_code', $code)
-            ->pluck('id')->first();
-    }
-
-    /*
-        | get active languages
-        | @return array
-        */
-    public static function getActiveLanguages()
-    {
-        return $result = Language::where('is_active', '1')
-            ->where('is_deleted', '0')
-            ->get();
+        $contents->take(10);
+        $result = $contents->get();
+        return $result;
     }
 }
+===== HOME DETAIL TABLE REFERENCES =====
+app/Http/Controllers/Admin/ContentController.php:195:                    if ($request->get('show_in') != '') {
+app/Http/Controllers/Admin/ContentController.php:196:                        $objectContent->show_in = join(',', $request->get('show_in'));
+app/Http/Controllers/Admin/ContentController.php:392:                    if ($request->get('show_in') != '') {
+app/Http/Controllers/Admin/ContentController.php:393:                        $objectContent->show_in = join(',', $request->get('show_in'));
+app/Http/Controllers/Admin/ContentController.php:395:                        $objectContent->show_in = '';
+app/Http/Controllers/Admin/HomeController.php:156:        $the_home->data_1_title = 'Browse Cover Photo';
+app/Http/Controllers/Admin/HomeController.php:157:        $the_home->data_2_title = 'Choose Icon Color';
+app/Http/Controllers/Admin/HomeController.php:158:        $the_home->data_3_title = 'Update Name in Nepali';
+app/Http/Controllers/Admin/HomeController.php:159:        $the_home->data_4_title = 'Update Name in English';
+app/Http/Controllers/Admin/HomeController.php:160:        $the_home->data_5_title = 'Browse Pdf File';
+app/Http/Controllers/Admin/HomeController.php:161:        $the_home->data_6_title = 'Browse Video File';
+app/Http/Controllers/Admin/HomeController.php:162:        $the_home->data_7_title = 'Other Link';
+app/Http/Controllers/Admin/HomeController.php:220:                $rules['home_description_' . $language->id] = 'required';
+app/Http/Controllers/Admin/HomeController.php:246:                    $flashBoxValidator->validateCover($request->input('data_1'));
+app/Http/Controllers/Admin/HomeController.php:247:                    $flashBoxValidator->validatePdf($request->input('data_5_txt'));
+app/Http/Controllers/Admin/HomeController.php:248:                    $flashBoxValidator->validateVideo($request->input('data_6_txt'));
+app/Http/Controllers/Admin/HomeController.php:311:                        $objectHome->show_in = 4;
+app/Http/Controllers/Admin/HomeController.php:313:                        $objectHome->data_1_title = 'Browse Cover Photo';
+app/Http/Controllers/Admin/HomeController.php:314:                        $objectHome->data_2_title = 'Choose Icon Color';
+app/Http/Controllers/Admin/HomeController.php:315:                        $objectHome->data_3_title = 'Update Name in Nepali';
+app/Http/Controllers/Admin/HomeController.php:316:                        $objectHome->data_4_title = 'Update Name in English';
+app/Http/Controllers/Admin/HomeController.php:317:                        $objectHome->data_5_title = 'Browse Pdf File';
+app/Http/Controllers/Admin/HomeController.php:318:                        $objectHome->data_6_title = 'Browse Video File';
+app/Http/Controllers/Admin/HomeController.php:319:                        $objectHome->data_7_title = 'Other Link';
+app/Http/Controllers/Admin/HomeController.php:321:                        $objectHome->data_1 = trim((string) $request->input('data_1'));
+app/Http/Controllers/Admin/HomeController.php:322:                        $objectHome->data_2 = trim((string) $request->input('data_2'));
+app/Http/Controllers/Admin/HomeController.php:323:                        $objectHome->data_3 = trim((string) $request->input('data_3'));
+app/Http/Controllers/Admin/HomeController.php:324:                        $objectHome->data_4 = trim((string) $request->input('data_4'));
+app/Http/Controllers/Admin/HomeController.php:325:                        $objectHome->data_5 = trim((string) $request->input('data_5_txt'));
+app/Http/Controllers/Admin/HomeController.php:326:                        $objectHome->data_6 = trim((string) $request->input('data_6_txt'));
+app/Http/Controllers/Admin/HomeController.php:327:                        $objectHome->data_7 = trim((string) $request->input('data_7'));
+app/Http/Controllers/Admin/HomeController.php:330:                        $objectHome->show_in = in_array($homeUrl, ['grievance-hearing-officer', 'additional-officer'], true) ? 4 : 1;
+app/Http/Controllers/Admin/HomeController.php:334:                        $objectHome->data_1_title = 'Name in Nepali';
+app/Http/Controllers/Admin/HomeController.php:335:                        $objectHome->data_2_title = 'Name in English';
+app/Http/Controllers/Admin/HomeController.php:336:                        $objectHome->data_3_title = 'Phone Number';
+app/Http/Controllers/Admin/HomeController.php:337:                        $objectHome->data_4_title = 'Email Address';
+app/Http/Controllers/Admin/HomeController.php:341:                        $objectHome->data_1 = trim($request->get('data_1'));
+app/Http/Controllers/Admin/HomeController.php:342:                        $objectHome->data_2 = trim($request->get('data_2'));
+app/Http/Controllers/Admin/HomeController.php:343:                        $objectHome->data_3 = trim($request->get('data_3'));
+app/Http/Controllers/Admin/HomeController.php:344:                        $objectHome->data_4 = trim($request->get('data_4'));
+app/Http/Controllers/Admin/HomeController.php:358:                                'officer_name'            => trim($request->get('officer_name_' . $language->id)),
+app/Http/Controllers/Admin/HomeController.php:359:                                'home_description'       => $request->get('home_description_' . $language->id),
+app/Http/Controllers/Admin/HomeController.php:598:                $rules['home_description_' . $language->id] = 'required';
+app/Http/Controllers/Admin/HomeController.php:606:                    $newCover = trim((string) $request->input('data_1', ''));
+app/Http/Controllers/Admin/HomeController.php:607:                    $newPdf = trim((string) $request->input('data_5_txt', ''));
+app/Http/Controllers/Admin/HomeController.php:608:                    $newVideo = trim((string) $request->input('data_6_txt', ''));
+app/Http/Controllers/Admin/HomeController.php:609:                    if ($newCover !== trim((string) $objectHome->data_1)) {
+app/Http/Controllers/Admin/HomeController.php:612:                    if ($newPdf !== trim((string) $objectHome->data_5)) {
+app/Http/Controllers/Admin/HomeController.php:615:                    if ($newVideo !== trim((string) $objectHome->data_6)) {
+app/Http/Controllers/Admin/HomeController.php:672:                    //                    $objectHome->show_in               = $request->get('show_in');
+app/Http/Controllers/Admin/HomeController.php:679:                    $objectHome->data_1 = trim($request->get('data_1'));
+app/Http/Controllers/Admin/HomeController.php:680:                    $objectHome->data_2 = trim($request->get('data_2'));
+app/Http/Controllers/Admin/HomeController.php:682:                        $objectHome->data_3 = trim($request->get('data_3'));
+app/Http/Controllers/Admin/HomeController.php:683:                        $objectHome->data_4 = trim($request->get('data_4'));
+app/Http/Controllers/Admin/HomeController.php:685:                    $objectHome->data_5 = trim($request->get('data_5_txt'));
+app/Http/Controllers/Admin/HomeController.php:686:                    $objectHome->data_6 = trim($request->get('data_6_txt'));
+app/Http/Controllers/Admin/HomeController.php:687:                    $objectHome->data_7 = trim($request->get('data_7'));
+app/Http/Controllers/Admin/HomeController.php:709:                                $objectHomeDetail->officer_name            = trim($request->get('officer_name_' . $language->id));
+app/Http/Controllers/Admin/HomeController.php:710:                                $objectHomeDetail->home_description       = trim($request->get('home_description_' . $language->id));
+app/Http/Controllers/Admin/HomeController.php:721:                                    'officer_name'            => trim($request->get('officer_name_' . $language->id)),
+app/Http/Controllers/Admin/HomeController.php:722:                                    'home_description'       => trim($request->get('home_description_' . $language->id)),
+app/Http/Controllers/Admin/OfficeController.php:221:                //             'show_in'    => $value,
+app/Http/Controllers/Admin/OfficeController.php:246:                            'show_in' => $objectOffice->id,
+app/Http/Controllers/Admin/OfficeController.php:253:                            'data_2_title' => $url === 'facebook-feed' ? 'Paste Facebook page link' : 'Instagram Profile URL'
+app/Http/Controllers/Admin/OfficeController.php:263:                                'home_description'       => '--',
+app/Http/Controllers/Admin/SearchController.php:173:                    if ($request->get('show_in') != '') {
+app/Http/Controllers/Admin/SearchController.php:174:                        $objectContent->show_in = join(',', $request->get('show_in'));
+app/Http/Controllers/Admin/SearchController.php:353:                    if ($request->get('show_in') != '') {
+app/Http/Controllers/Admin/SearchController.php:354:                        $objectContent->show_in = join(',', $request->get('show_in'));
+app/Http/Controllers/Admin/SearchController.php:356:                        $objectContent->show_in = '';
+app/Models/Content.php:86:                                      (select show_in from pndc_content t2 where t2.id='$id') as show_in,
+app/Models/Content.php:266:            ->where('content.show_in', 'LIKE', '%' . $showIn . '%')
+app/Models/Home.php:18:    protected $fillable = array('is_active', 'is_deleted', 'created_by', 'updated_by', 'office_id', 'home_url', 'show_in', 'home_identity_name','data_2_title');
+app/Models/Home.php:129:            ->groupby('show_in')
+app/Models/Home.php:131:            ->pluck('show_in', 'home_url');
+app/Models/Home.php:143:                                        (select t2.show_in from pndc_home t2 where t2.id='$id') as show_in,
+app/Models/Home.php:151:                                        (select officer_name from pndc_home t2 join pndc_home_detail t3
+app/Models/Home.php:152:                                                        on t2.id=t3.home_id where t3.language_id=t1.id and t2.id='$id') as officer_name,
+app/Models/Home.php:153:                                        (select home_description from pndc_home t2 join pndc_home_detail t3
+app/Models/Home.php:154:                                                        on t2.id=t3.home_id where t3.language_id=t1.id and t2.id='$id') as home_description,
+app/Models/Home.php:185:                'home_detail.home_description'
+app/Models/Home.php:212:                'home_detail.home_description',
+app/Models/Home.php:216:                'home.data_1',
+app/Models/Home.php:217:                'home.data_2',
+app/Models/Home.php:218:                'home.data_3',
+app/Models/Home.php:219:                'home.data_4'
+app/Models/Home.php:222:            ->where('home.show_in', $showIn)
+app/Models/Home.php:245:                'home_detail.home_description',
+app/Models/Home.php:249:                'home.data_1',
+app/Models/Home.php:250:                'home.data_2',
+app/Models/Home.php:251:                'home.data_3',
+app/Models/Home.php:252:                'home.data_4'
+app/Models/Home.php:255:            ->where('home.show_in', $showIn)
+app/Models/Home.php:281:                'home_detail.home_description',
+app/Models/Home.php:285:                'home.data_1',
+app/Models/Home.php:286:                'home.data_2',
+app/Models/Home.php:287:                'home.data_3',
+app/Models/Home.php:288:                'home.data_4'
+app/Models/Home.php:291:            ->where('home.show_in', $showIn)
+app/Models/Home.php:310:                'home_detail.home_description',
+app/Models/Home.php:314:                'home.data_1',
+app/Models/Home.php:315:                'home.data_2',
+app/Models/Home.php:316:                'home.data_3',
+app/Models/Home.php:317:                'home.data_4'
+app/Models/Home.php:320:            // ->where('home.show_in', $showIn)
+app/Models/Home.php:346:                'home_detail.home_description',
+app/Models/Home.php:350:                'home.data_1',
+app/Models/Home.php:351:                'home.data_2',
+app/Models/Home.php:352:                'home.data_3',
+app/Models/Home.php:353:                'home.data_4'
+app/Models/Home.php:356:            ->where('home.show_in', $showIn)
+app/Models/Home.php:373:                'home_detail.home_description'
+app/Models/Home.php:376:            ->where('home.show_in', $showIn)
+app/Models/Home.php:400:                'home_detail.home_description'
+app/Models/Home.php:403:            ->where('home.show_in', $showIn)
+app/Models/Home.php:428:                'home_detail.home_description'
+app/Models/Home.php:431:            ->where('home.show_in', $showIn)
+app/Models/Home.php:508:            ->where('content.show_in', 'LIKE', '%1%')
+app/Models/Homedetail.php:17:    protected $fillable = array('home_heading', 'officer_name', 'home_description', 'home_page_title');
 doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$
