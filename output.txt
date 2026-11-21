@@ -1,509 +1,507 @@
-doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && echo "---- USER CONTROLLER ----" && sed -n '1,280p' app/Http/Controllers/Admin/UserController.php && echo "---- USER ROUTES ----" && grep -RniE 'UserController|admin/users|user-management' routes
----- USER CONTROLLER ----
-<?php
-
-/**
- * Project Name: Department of Road(DOR)
- * @author Veshraj Joshi | Sunil Adhikari
- * @copytop 2015 Peace Nepal DOT Com
- */
-
-namespace App\Http\Controllers\Admin;
-
-use App\Http\Controllers\ConfigurationController;
-use App\Models\Configuration;
-use App\Models\Language;
-use App\Models\Office;
-use App\Models\Project;
-use App\Models\User;
-use App\Models\UserAccessControlModel;
-use App\Models\UserTypeModel;
-use Helper;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Validator;
-
-class UserController extends ConfigurationController
-{
-    public $abs_site_url;
-    public $rel_site_url;
-    public $site_name;
-
-    public function __construct()
-    {
-        $this->abs_site_url = ConfigurationController::abs_site_url();
-        $this->rel_site_url = ConfigurationController::rel_site_url();
-        $this->site_name    = ConfigurationController::site_name();
-    }
-    /**
-     * This method is used to get the list of undeleted users(both active and deactive)
-     *
-     * @param array $array - no paramenter
-     * @param string $blah - none
-     * @return view(users::users..users)
-     */
-    public function getIndex()
-    {
-        $officeId = Auth::user()->office_id;
-        $authUserId = Auth::user()->id;
-        $users = User::with(['office.details' => function ($query) {
-            $query->where('language_id', 2);
-        }, 'usertype'])->get();
-
-        $addAccess     = UserAccessControlModel::getAccessAddByModuleAndUserMapId(5, $authUserId);
-        $editAccess    = UserAccessControlModel::getAccessUpdateByModuleAndUserMapId(5, $authUserId);
-        $publishAccess = UserAccessControlModel::getAccessPublishByModuleAndUserMapId(5, $authUserId);
-        $deleteAccess  = UserAccessControlModel::getAccessDeleteByModuleAndUserMapId(5, $authUserId);
-
-        return view('users.users.users')
-            ->with('users', $users)
-            ->with('addAccess', $addAccess)
-            ->with('editAccess', $editAccess)
-            ->with('publishAccess', $publishAccess)
-            ->with('deleteAccess', $deleteAccess)
-            ->with('site_name', $this->site_name)
-            ->with('abs_site_url', $this->abs_site_url);
-    }
-    /**
-     * This method is used to get the view part of the add user
-     *
-     * @param array $array - no paramenter
-     * @param string
-     * @return view(users::users..adduser)
-     */
-    public function getAddUser()
-    {
-        $officeId = Auth::user()->office_id;
-
-        return view('users.users.adduser')
-            ->with('abs_site_url', $this->abs_site_url)
-            ->with('rel_site_url', $this->rel_site_url)
-            ->with('site_name', $this->site_name)
-            ->with('usertypelist', $this->getUserTypeList())
-            ->with('officelist', $this->getOfficeList())
-            ->with('projectlist', $this->getProjectList())
-            ->with('officeId', $officeId)
-            ->with('languages', Language::getActiveLanguages());
-    }
-
-    /**
-     * This method is used add  the user
-     *
-     * @param array $array - no paramenter
-     * @param string  - none
-     * @return json_message_string_array
-     */
-    public function addUser(Request $request)
-    {
-        $rules = [
-            'usertype' => 'required',
-            'username' => 'required|email|unique:users,username',
-            'email_address' => 'required|email|max:254|unique:users,email_address',
-            'password' => 'required',
-            'confirm_password' => 'required|same:password',
-            'office_id' => 'required_unless:usertype,3',
-            'project_id' => 'required_if:usertype,3',
-        ];
-
-        $validator = Validator::make($request->all(), $rules);
-        if ($validator->fails()) {
-            return Redirect::back()->withInput()->withErrors($validator);
-        }
-
-        $user = new User();
-        $user->username = trim($request->get('username'));
-        $user->email_address = mb_strtolower(trim($request->get('email_address')));
-        $user->password = Hash::make($request->get('password'));
-        $user->office_id = $request->get('office_id');
-        $user->project_id = $request->get('project_id');
-        $user->user_type_id = $request->get('usertype');
-        $user->is_active = $request->get('is_active');
-        $user->created_by = Auth::user()->id;
-        $user->save();
-
-        return Redirect::route('admin.users')
-            ->with('message', "User added successfully.");
-    }
-    /**
-     * This method is used add  the user
-     *
-     * @param int - $id
-     * @return Illuminate\View\View
-     */
-    public function getEditUser($id)
-    {
-        $user       = User::find($id);
-        $authUserId = Auth::user()->id;
-        $offices    = Office::getPublishedOffices();
-        $projects   = Project::getPublishedProjects();
-        $usertypes  = UserTypeModel::getPublishedUserTypes();
-        $addAccess  = UserAccessControlModel::getAccessAddByModuleAndUserMapId(5, $authUserId);
-
-        return view('users.users.edituser')
-            ->with('user', $user)
-            ->with('usertypes', $usertypes)
-            ->with('offices', $offices)
-            ->with('projects', $projects)
-            ->with('abs_site_url', $this->abs_site_url)
-            ->with('rel_site_url', $this->rel_site_url)
-            ->with('site_name', $this->site_name)
-            ->with('addAccess', $addAccess);
-    }
-    /**
-     * This method is used edit  the user
-     *
-     * @param int $id
-     * @return json_message_string_array
-     */
-    public function editUser($id, Request $request)
-    {
-
-        $rules = [
-            'office_id' => 'required_unless:usertype,3',
-            'project_id' => 'required_if:usertype,3',
-            'username' => 'required|email|unique:users,username,' . $id,
-            'email_address' => 'required|email|max:254|unique:users,email_address,' . $id,
-        ];
-
-        $validator = Validator::make($request->all(), $rules);
-
-        if ($validator->fails()) {
-            return Redirect::back()->withInput()->withErrors($validator);
-        }
-
-        $user = User::find($id);
-        $user->username = trim($request->get('username'));
-        $user->email_address = mb_strtolower(trim($request->get('email_address')));
-        $user->office_id = $request->get('office_id');
-        $user->project_id = $request->get('project_id');
-        $user->user_type_id = $request->get('usertype');
-        $user->is_active = $request->get('is_active');
-        $user->updated_by = Auth::user()->id;
-        $user->save();
-
-        return Redirect::route('admin.users')
-            ->with('message', "User is updated successfully.");
-    }
-
-    /**
-     * This method is used delete  the user
-     *
-
-     * @author $author- Veshraj Joshi
-
-     * @param array $array - no paramenter
-
-     * @param string  - none
-
-     * @return json_message_string_array
-
-     */
-    public function deleteUser(Request $request)
-    {
-        $id               = $request->get('id');
-        $user             = User::find($id);
-        $user->is_active  = '0';
-        $user->delete();
-        $data['type']    = "success";
-        $data['message'] = "Deleted Successfully";
-        echo json_encode($data);
-    }
-
-    /**
-     * This method is used add  the user
-     *
-
-     * @author $author- Veshraj Joshi
-
-     * @param array $array - no paramenter
-
-     * @param string  - none
-
-     * @return json_message_string_array
-
-     */
-    public function changeStatus(Request $request)
-    {
-        $id   = $request->get('id');
-        $user = User::find($id);
-        if ($user->is_active == '0') {
-            $user->is_active = '1';
-            $user->save();
-            $feedback['type']    = 'success';
-            $feedback['message'] = 'The user has been activate successfully';
-            $feedback['icon']    = '<i class="icon-check"></i>';
-            exit(json_encode($feedback));
-        }
-        $user->is_active = '0';
-        $user->save();
-        $feedback['type']    = 'success';
-        $feedback['message'] = 'The user has been deactivate successfully';
-        $feedback['icon']    = '<i class="icon-check-empty"></i>';
-        exit(json_encode($feedback));
-    }
-
-    /**
-     * This method is used get user details dynamically to the front end
-     *
-
-     * @author $author- Veshraj Joshi
-
-     * @param array $array - no paramenter
-
-     * @param string  - none
-
-     * @return json_message_string_array
-
-     */
-    public function getUserDetails(Request $request)
-    {
-        $id      = $request->get('id');
-        $user    = User::find($id);
-        $details = User::getUserDetailsByIdForUpdate($id);
-
-        $feedback['type'] = 'success';
-        $feedback['id']   = $id;
-
-        $feedback['email']      = $user->user_email_address;
-        $feedback['status']     = $user->is_active;
-        $feedback['attachment'] = (is_null($user->user_attachment)) ? $this->rel_site_url . "assets/admin/img/no-image.png" : $this->rel_site_url . "uploads/users/" . $user->user_attachment;
-        $feedback['gender']     = $user->user_gender;
-        foreach ($details as $detail) {
-            $feedback['full_name_' . $detail->language_code]         = $detail->user_full_name;
-            $feedback['permanent_address_' . $detail->language_code] = $detail->user_permanent_address;
-            $feedback['temporary_address_' . $detail->language_code] = $detail->user_temporary_address;
-            $feedback['staff_id_' . $detail->language_code]          = $detail->user_staff_id;
-            $feedback['mobile_number_' . $detail->language_code]     = $detail->user_mobile_number;
-            $feedback['contact_number_' . $detail->language_code]    = $detail->user_contact_number;
-            $feedback['join_date' . $detail->language_code]          = $detail->user_office_join_date;
-            $feedback['id_' . $detail->language_code]                = $detail->detail_id;
-        }
----- USER ROUTES ----
-routes/web.php:159:    Route::get('users',  array('as' => 'admin.users', 'uses' => 'Admin\UserController@getIndex'));
-routes/web.php:160:    Route::get('user/add',  array('as' => 'admin.users.add', 'uses' => 'Admin\UserController@getAddUser'));
-routes/web.php:161:    Route::post('user/add',  array('as' => 'admin.users.store', 'uses' => 'Admin\UserController@addUser'));
-routes/web.php:162:    Route::get('user/edit/{id}',  array('as' => 'admin.users.edit', 'uses' => 'Admin\UserController@getEditUser'));
-routes/web.php:163:    Route::post('user/edit/{id}',  array('as' => 'admin.users.update', 'uses' => 'Admin\UserController@editUser'));
-routes/web.php:164:    Route::post('user/delete', array('as' => 'admin.user.delete', 'uses' => 'Admin\UserController@deleteUser'));
-routes/web.php:165:    Route::post('user/change-status', array('as' => 'admin.user.change.status', 'uses' => 'Admin\UserController@changeStatus'));
-routes/web.php:167:    Route::get('own/change-password', array('as' => 'admin.change.password', 'uses' => 'Admin\UserController@getChangePassword'));
-routes/web.php:168:    Route::post('own/change-password', array('as' => 'admin.change.password.post', 'uses' => 'AdminUserController@changeOwnPassword'));
-routes/web.php:169:    Route::get('user/change-password/{id}', array('as' => 'admin.user.change.password', 'as' => 'admin.users.change.password', 'uses' => 'Admin\UserController@getChangePasswordByAdmin'));
-routes/web.php:170:    Route::post('user/change-password/{id}', array('as' => 'admin.user.change.password.update', 'uses' => 'Admin\UserController@changePassword'));
-routes/web.php:172:    // Route::post('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
-routes/web.php:173:    // Route::get('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
-routes/web.php:223:    Route::get('own/change-password', array('as' => 'project.admin.change.password', 'uses' => 'Admin\Project\UserController@changePassword'));
-routes/web.php:224:    Route::post('own/change-password', array('as' => 'project.admin.update.password', 'uses' => 'Admin\Project\UserController@updatePassword'));
-routes/web.php.backup-appsheet:159:    Route::get('users',  array('as' => 'admin.users', 'uses' => 'Admin\UserController@getIndex'));
-routes/web.php.backup-appsheet:160:    Route::get('user/add',  array('as' => 'admin.users.add', 'uses' => 'Admin\UserController@getAddUser'));
-routes/web.php.backup-appsheet:161:    Route::post('user/add',  array('as' => 'admin.users.store', 'uses' => 'Admin\UserController@addUser'));
-routes/web.php.backup-appsheet:162:    Route::get('user/edit/{id}',  array('as' => 'admin.users.edit', 'uses' => 'Admin\UserController@getEditUser'));
-routes/web.php.backup-appsheet:163:    Route::post('user/edit/{id}',  array('as' => 'admin.users.update', 'uses' => 'Admin\UserController@editUser'));
-routes/web.php.backup-appsheet:164:    Route::post('user/delete', array('as' => 'admin.user.delete', 'uses' => 'Admin\UserController@deleteUser'));
-routes/web.php.backup-appsheet:165:    Route::post('user/change-status', array('as' => 'admin.user.change.status', 'uses' => 'Admin\UserController@changeStatus'));
-routes/web.php.backup-appsheet:167:    Route::get('own/change-password', array('as' => 'admin.change.password', 'uses' => 'Admin\UserController@getChangePassword'));
-routes/web.php.backup-appsheet:168:    Route::post('own/change-password', array('as' => 'admin.change.password.post', 'uses' => 'Admin\UserController@changeOwnPassword'));
-routes/web.php.backup-appsheet:169:    Route::get('user/change-password/{id}', array('as' => 'admin.user.change.password', 'as' => 'admin.users.change.password', 'uses' => 'Admin\UserController@getChangePasswordByAdmin'));
-routes/web.php.backup-appsheet:170:    Route::post('user/change-password/{id}', array('as' => 'admin.user.change.password.update', 'uses' => 'Admin\UserController@changePassword'));
-routes/web.php.backup-appsheet:172:    // Route::post('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
-routes/web.php.backup-appsheet:173:    // Route::get('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
-routes/web.php.backup-appsheet:223:    Route::get('own/change-password', array('as' => 'project.admin.change.password', 'uses' => 'Admin\Project\UserController@changePassword'));
-routes/web.php.backup-appsheet:224:    Route::post('own/change-password', array('as' => 'project.admin.update.password', 'uses' => 'Admin\Project\UserController@updatePassword'));
-routes/web.php.backup-remove-appsheet:164:    Route::get('users',  array('as' => 'admin.users', 'uses' => 'Admin\UserController@getIndex'));
-routes/web.php.backup-remove-appsheet:165:    Route::get('user/add',  array('as' => 'admin.users.add', 'uses' => 'Admin\UserController@getAddUser'));
-routes/web.php.backup-remove-appsheet:166:    Route::post('user/add',  array('as' => 'admin.users.store', 'uses' => 'Admin\UserController@addUser'));
-routes/web.php.backup-remove-appsheet:167:    Route::get('user/edit/{id}',  array('as' => 'admin.users.edit', 'uses' => 'Admin\UserController@getEditUser'));
-routes/web.php.backup-remove-appsheet:168:    Route::post('user/edit/{id}',  array('as' => 'admin.users.update', 'uses' => 'Admin\UserController@editUser'));
-routes/web.php.backup-remove-appsheet:169:    Route::post('user/delete', array('as' => 'admin.user.delete', 'uses' => 'Admin\UserController@deleteUser'));
-routes/web.php.backup-remove-appsheet:170:    Route::post('user/change-status', array('as' => 'admin.user.change.status', 'uses' => 'Admin\UserController@changeStatus'));
-routes/web.php.backup-remove-appsheet:172:    Route::get('own/change-password', array('as' => 'admin.change.password', 'uses' => 'Admin\UserController@getChangePassword'));
-routes/web.php.backup-remove-appsheet:173:    Route::post('own/change-password', array('as' => 'admin.change.password.post', 'uses' => 'Admin\UserController@changeOwnPassword'));
-routes/web.php.backup-remove-appsheet:174:    Route::get('user/change-password/{id}', array('as' => 'admin.user.change.password', 'as' => 'admin.users.change.password', 'uses' => 'Admin\UserController@getChangePasswordByAdmin'));
-routes/web.php.backup-remove-appsheet:175:    Route::post('user/change-password/{id}', array('as' => 'admin.user.change.password.update', 'uses' => 'Admin\UserController@changePassword'));
-routes/web.php.backup-remove-appsheet:177:    // Route::post('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
-routes/web.php.backup-remove-appsheet:178:    // Route::get('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
-routes/web.php.backup-remove-appsheet:228:    Route::get('own/change-password', array('as' => 'project.admin.change.password', 'uses' => 'Admin\Project\UserController@changePassword'));
-routes/web.php.backup-remove-appsheet:229:    Route::post('own/change-password', array('as' => 'project.admin.update.password', 'uses' => 'Admin\Project\UserController@updatePassword'));
-routes/web.php.bak-before-circular-email-otp-20261116-185939:46:    Route::get('users',  array('as' => 'admin.users', 'uses' => 'Admin\UserController@getIndex'));
-routes/web.php.bak-before-circular-email-otp-20261116-185939:47:    Route::get('user/add',  array('as' => 'admin.users.add', 'uses' => 'Admin\UserController@getAddUser'));
-routes/web.php.bak-before-circular-email-otp-20261116-185939:48:    Route::post('user/add',  array('as' => 'admin.users.store', 'uses' => 'Admin\UserController@addUser'));
-routes/web.php.bak-before-circular-email-otp-20261116-185939:49:    Route::get('user/edit/{id}',  array('as' => 'admin.users.edit', 'uses' => 'Admin\UserController@getEditUser'));
-routes/web.php.bak-before-circular-email-otp-20261116-185939:50:    Route::post('user/edit/{id}',  array('as' => 'admin.users.update', 'uses' => 'Admin\UserController@editUser'));
-routes/web.php.bak-before-circular-email-otp-20261116-185939:51:    Route::post('user/delete', array('as' => 'admin.user.delete', 'uses' => 'Admin\UserController@deleteUser'));
-routes/web.php.bak-before-circular-email-otp-20261116-185939:52:    Route::post('user/change-status', array('as' => 'admin.user.change.status', 'uses' => 'Admin\UserController@changeStatus'));
-routes/web.php.bak-before-circular-email-otp-20261116-185939:54:    Route::get('own/change-password', array('as' => 'admin.change.password', 'uses' => 'Admin\UserController@getChangePassword'));
-routes/web.php.bak-before-circular-email-otp-20261116-185939:55:    Route::post('own/change-password', array('as' => 'admin.change.password.post', 'uses' => 'Admin\UserController@changeOwnPassword'));
-routes/web.php.bak-before-circular-email-otp-20261116-185939:56:    Route::get('user/change-password/{id}', array('as' => 'admin.user.change.password', 'as' => 'admin.users.change.password', 'uses' => 'Admin\UserController@getChangePasswordByAdmin'));
-routes/web.php.bak-before-circular-email-otp-20261116-185939:57:    Route::post('user/change-password/{id}', array('as' => 'admin.user.change.password.update', 'uses' => 'Admin\UserController@changePassword'));
-routes/web.php.bak-before-circular-email-otp-20261116-185939:59:    // Route::post('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
-routes/web.php.bak-before-circular-email-otp-20261116-185939:60:    // Route::get('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
-routes/web.php.bak-before-circular-email-otp-20261116-185939:110:    Route::get('own/change-password', array('as' => 'project.admin.change.password', 'uses' => 'Admin\Project\UserController@changePassword'));
-routes/web.php.bak-before-circular-email-otp-20261116-185939:111:    Route::post('own/change-password', array('as' => 'project.admin.update.password', 'uses' => 'Admin\Project\UserController@updatePassword'));
-routes/web.php.bak-contact-bcc-20261117:56:    Route::get('users',  array('as' => 'admin.users', 'uses' => 'Admin\UserController@getIndex'));
-routes/web.php.bak-contact-bcc-20261117:57:    Route::get('user/add',  array('as' => 'admin.users.add', 'uses' => 'Admin\UserController@getAddUser'));
-routes/web.php.bak-contact-bcc-20261117:58:    Route::post('user/add',  array('as' => 'admin.users.store', 'uses' => 'Admin\UserController@addUser'));
-routes/web.php.bak-contact-bcc-20261117:59:    Route::get('user/edit/{id}',  array('as' => 'admin.users.edit', 'uses' => 'Admin\UserController@getEditUser'));
-routes/web.php.bak-contact-bcc-20261117:60:    Route::post('user/edit/{id}',  array('as' => 'admin.users.update', 'uses' => 'Admin\UserController@editUser'));
-routes/web.php.bak-contact-bcc-20261117:61:    Route::post('user/delete', array('as' => 'admin.user.delete', 'uses' => 'Admin\UserController@deleteUser'));
-routes/web.php.bak-contact-bcc-20261117:62:    Route::post('user/change-status', array('as' => 'admin.user.change.status', 'uses' => 'Admin\UserController@changeStatus'));
-routes/web.php.bak-contact-bcc-20261117:64:    Route::get('own/change-password', array('as' => 'admin.change.password', 'uses' => 'Admin\UserController@getChangePassword'));
-routes/web.php.bak-contact-bcc-20261117:65:    Route::post('own/change-password', array('as' => 'admin.change.password.post', 'uses' => 'Admin\UserController@changeOwnPassword'));
-routes/web.php.bak-contact-bcc-20261117:66:    Route::get('user/change-password/{id}', array('as' => 'admin.user.change.password', 'as' => 'admin.users.change.password', 'uses' => 'Admin\UserController@getChangePasswordByAdmin'));
-routes/web.php.bak-contact-bcc-20261117:67:    Route::post('user/change-password/{id}', array('as' => 'admin.user.change.password.update', 'uses' => 'Admin\UserController@changePassword'));
-routes/web.php.bak-contact-bcc-20261117:69:    // Route::post('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
-routes/web.php.bak-contact-bcc-20261117:70:    // Route::get('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
-routes/web.php.bak-contact-bcc-20261117:120:    Route::get('own/change-password', array('as' => 'project.admin.change.password', 'uses' => 'Admin\Project\UserController@changePassword'));
-routes/web.php.bak-contact-bcc-20261117:121:    Route::post('own/change-password', array('as' => 'project.admin.update.password', 'uses' => 'Admin\Project\UserController@updatePassword'));
-routes/web.php.bak-download-20261116-150141:46:    Route::get('users',  array('as' => 'admin.users', 'uses' => 'Admin\UserController@getIndex'));
-routes/web.php.bak-download-20261116-150141:47:    Route::get('user/add',  array('as' => 'admin.users.add', 'uses' => 'Admin\UserController@getAddUser'));
-routes/web.php.bak-download-20261116-150141:48:    Route::post('user/add',  array('as' => 'admin.users.store', 'uses' => 'Admin\UserController@addUser'));
-routes/web.php.bak-download-20261116-150141:49:    Route::get('user/edit/{id}',  array('as' => 'admin.users.edit', 'uses' => 'Admin\UserController@getEditUser'));
-routes/web.php.bak-download-20261116-150141:50:    Route::post('user/edit/{id}',  array('as' => 'admin.users.update', 'uses' => 'Admin\UserController@editUser'));
-routes/web.php.bak-download-20261116-150141:51:    Route::post('user/delete', array('as' => 'admin.user.delete', 'uses' => 'Admin\UserController@deleteUser'));
-routes/web.php.bak-download-20261116-150141:52:    Route::post('user/change-status', array('as' => 'admin.user.change.status', 'uses' => 'Admin\UserController@changeStatus'));
-routes/web.php.bak-download-20261116-150141:54:    Route::get('own/change-password', array('as' => 'admin.change.password', 'uses' => 'Admin\UserController@getChangePassword'));
-routes/web.php.bak-download-20261116-150141:55:    Route::post('own/change-password', array('as' => 'admin.change.password.post', 'uses' => 'Admin\UserController@changeOwnPassword'));
-routes/web.php.bak-download-20261116-150141:56:    Route::get('user/change-password/{id}', array('as' => 'admin.user.change.password', 'as' => 'admin.users.change.password', 'uses' => 'Admin\UserController@getChangePasswordByAdmin'));
-routes/web.php.bak-download-20261116-150141:57:    Route::post('user/change-password/{id}', array('as' => 'admin.user.change.password.update', 'uses' => 'Admin\UserController@changePassword'));
-routes/web.php.bak-download-20261116-150141:59:    // Route::post('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
-routes/web.php.bak-download-20261116-150141:60:    // Route::get('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
-routes/web.php.bak-download-20261116-150141:110:    Route::get('own/change-password', array('as' => 'project.admin.change.password', 'uses' => 'Admin\Project\UserController@changePassword'));
-routes/web.php.bak-download-20261116-150141:111:    Route::post('own/change-password', array('as' => 'project.admin.update.password', 'uses' => 'Admin\Project\UserController@updatePassword'));
-routes/web.php.bak-flash-control-20261117:66:    Route::get('users',  array('as' => 'admin.users', 'uses' => 'Admin\UserController@getIndex'));
-routes/web.php.bak-flash-control-20261117:67:    Route::get('user/add',  array('as' => 'admin.users.add', 'uses' => 'Admin\UserController@getAddUser'));
-routes/web.php.bak-flash-control-20261117:68:    Route::post('user/add',  array('as' => 'admin.users.store', 'uses' => 'Admin\UserController@addUser'));
-routes/web.php.bak-flash-control-20261117:69:    Route::get('user/edit/{id}',  array('as' => 'admin.users.edit', 'uses' => 'Admin\UserController@getEditUser'));
-routes/web.php.bak-flash-control-20261117:70:    Route::post('user/edit/{id}',  array('as' => 'admin.users.update', 'uses' => 'Admin\UserController@editUser'));
-routes/web.php.bak-flash-control-20261117:71:    Route::post('user/delete', array('as' => 'admin.user.delete', 'uses' => 'Admin\UserController@deleteUser'));
-routes/web.php.bak-flash-control-20261117:72:    Route::post('user/change-status', array('as' => 'admin.user.change.status', 'uses' => 'Admin\UserController@changeStatus'));
-routes/web.php.bak-flash-control-20261117:74:    Route::get('own/change-password', array('as' => 'admin.change.password', 'uses' => 'Admin\UserController@getChangePassword'));
-routes/web.php.bak-flash-control-20261117:75:    Route::post('own/change-password', array('as' => 'admin.change.password.post', 'uses' => 'Admin\UserController@changeOwnPassword'));
-routes/web.php.bak-flash-control-20261117:76:    Route::get('user/change-password/{id}', array('as' => 'admin.user.change.password', 'as' => 'admin.users.change.password', 'uses' => 'Admin\UserController@getChangePasswordByAdmin'));
-routes/web.php.bak-flash-control-20261117:77:    Route::post('user/change-password/{id}', array('as' => 'admin.user.change.password.update', 'uses' => 'Admin\UserController@changePassword'));
-routes/web.php.bak-flash-control-20261117:79:    // Route::post('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
-routes/web.php.bak-flash-control-20261117:80:    // Route::get('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
-routes/web.php.bak-flash-control-20261117:130:    Route::get('own/change-password', array('as' => 'project.admin.change.password', 'uses' => 'Admin\Project\UserController@changePassword'));
-routes/web.php.bak-flash-control-20261117:131:    Route::post('own/change-password', array('as' => 'project.admin.update.password', 'uses' => 'Admin\Project\UserController@updatePassword'));
-routes/web.php.bak-flash-tabs-20261116-224537:46:    Route::get('users',  array('as' => 'admin.users', 'uses' => 'Admin\UserController@getIndex'));
-routes/web.php.bak-flash-tabs-20261116-224537:47:    Route::get('user/add',  array('as' => 'admin.users.add', 'uses' => 'Admin\UserController@getAddUser'));
-routes/web.php.bak-flash-tabs-20261116-224537:48:    Route::post('user/add',  array('as' => 'admin.users.store', 'uses' => 'Admin\UserController@addUser'));
-routes/web.php.bak-flash-tabs-20261116-224537:49:    Route::get('user/edit/{id}',  array('as' => 'admin.users.edit', 'uses' => 'Admin\UserController@getEditUser'));
-routes/web.php.bak-flash-tabs-20261116-224537:50:    Route::post('user/edit/{id}',  array('as' => 'admin.users.update', 'uses' => 'Admin\UserController@editUser'));
-routes/web.php.bak-flash-tabs-20261116-224537:51:    Route::post('user/delete', array('as' => 'admin.user.delete', 'uses' => 'Admin\UserController@deleteUser'));
-routes/web.php.bak-flash-tabs-20261116-224537:52:    Route::post('user/change-status', array('as' => 'admin.user.change.status', 'uses' => 'Admin\UserController@changeStatus'));
-routes/web.php.bak-flash-tabs-20261116-224537:54:    Route::get('own/change-password', array('as' => 'admin.change.password', 'uses' => 'Admin\UserController@getChangePassword'));
-routes/web.php.bak-flash-tabs-20261116-224537:55:    Route::post('own/change-password', array('as' => 'admin.change.password.post', 'uses' => 'Admin\UserController@changeOwnPassword'));
-routes/web.php.bak-flash-tabs-20261116-224537:56:    Route::get('user/change-password/{id}', array('as' => 'admin.user.change.password', 'as' => 'admin.users.change.password', 'uses' => 'Admin\UserController@getChangePasswordByAdmin'));
-routes/web.php.bak-flash-tabs-20261116-224537:57:    Route::post('user/change-password/{id}', array('as' => 'admin.user.change.password.update', 'uses' => 'Admin\UserController@changePassword'));
-routes/web.php.bak-flash-tabs-20261116-224537:59:    // Route::post('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
-routes/web.php.bak-flash-tabs-20261116-224537:60:    // Route::get('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
-routes/web.php.bak-flash-tabs-20261116-224537:110:    Route::get('own/change-password', array('as' => 'project.admin.change.password', 'uses' => 'Admin\Project\UserController@changePassword'));
-routes/web.php.bak-flash-tabs-20261116-224537:111:    Route::post('own/change-password', array('as' => 'project.admin.update.password', 'uses' => 'Admin\Project\UserController@updatePassword'));
-routes/web.php.bak-grms-routes-20261117:56:    Route::get('users',  array('as' => 'admin.users', 'uses' => 'Admin\UserController@getIndex'));
-routes/web.php.bak-grms-routes-20261117:57:    Route::get('user/add',  array('as' => 'admin.users.add', 'uses' => 'Admin\UserController@getAddUser'));
-routes/web.php.bak-grms-routes-20261117:58:    Route::post('user/add',  array('as' => 'admin.users.store', 'uses' => 'Admin\UserController@addUser'));
-routes/web.php.bak-grms-routes-20261117:59:    Route::get('user/edit/{id}',  array('as' => 'admin.users.edit', 'uses' => 'Admin\UserController@getEditUser'));
-routes/web.php.bak-grms-routes-20261117:60:    Route::post('user/edit/{id}',  array('as' => 'admin.users.update', 'uses' => 'Admin\UserController@editUser'));
-routes/web.php.bak-grms-routes-20261117:61:    Route::post('user/delete', array('as' => 'admin.user.delete', 'uses' => 'Admin\UserController@deleteUser'));
-routes/web.php.bak-grms-routes-20261117:62:    Route::post('user/change-status', array('as' => 'admin.user.change.status', 'uses' => 'Admin\UserController@changeStatus'));
-routes/web.php.bak-grms-routes-20261117:64:    Route::get('own/change-password', array('as' => 'admin.change.password', 'uses' => 'Admin\UserController@getChangePassword'));
-routes/web.php.bak-grms-routes-20261117:65:    Route::post('own/change-password', array('as' => 'admin.change.password.post', 'uses' => 'Admin\UserController@changeOwnPassword'));
-routes/web.php.bak-grms-routes-20261117:66:    Route::get('user/change-password/{id}', array('as' => 'admin.user.change.password', 'as' => 'admin.users.change.password', 'uses' => 'Admin\UserController@getChangePasswordByAdmin'));
-routes/web.php.bak-grms-routes-20261117:67:    Route::post('user/change-password/{id}', array('as' => 'admin.user.change.password.update', 'uses' => 'Admin\UserController@changePassword'));
-routes/web.php.bak-grms-routes-20261117:69:    // Route::post('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
-routes/web.php.bak-grms-routes-20261117:70:    // Route::get('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
-routes/web.php.bak-grms-routes-20261117:120:    Route::get('own/change-password', array('as' => 'project.admin.change.password', 'uses' => 'Admin\Project\UserController@changePassword'));
-routes/web.php.bak-grms-routes-20261117:121:    Route::post('own/change-password', array('as' => 'project.admin.update.password', 'uses' => 'Admin\Project\UserController@updatePassword'));
-routes/web.php.before-album-fix:40:    Route::get('users',  array('as' => 'admin.users', 'uses' => 'Admin\UserController@getIndex'));
-routes/web.php.before-album-fix:41:    Route::get('user/add',  array('as' => 'admin.users.add', 'uses' => 'Admin\UserController@getAddUser'));
-routes/web.php.before-album-fix:42:    Route::post('user/add',  array('as' => 'admin.users.store', 'uses' => 'Admin\UserController@addUser'));
-routes/web.php.before-album-fix:43:    Route::get('user/edit/{id}',  array('as' => 'admin.users.edit', 'uses' => 'Admin\UserController@getEditUser'));
-routes/web.php.before-album-fix:44:    Route::post('user/edit/{id}',  array('as' => 'admin.users.update', 'uses' => 'Admin\UserController@editUser'));
-routes/web.php.before-album-fix:45:    Route::post('user/delete', array('as' => 'admin.user.delete', 'uses' => 'Admin\UserController@deleteUser'));
-routes/web.php.before-album-fix:46:    Route::post('user/change-status', array('as' => 'admin.user.change.status', 'uses' => 'Admin\UserController@changeStatus'));
-routes/web.php.before-album-fix:48:    Route::get('own/change-password', array('as' => 'admin.change.password', 'uses' => 'Admin\UserController@getChangePassword'));
-routes/web.php.before-album-fix:49:    Route::post('own/change-password', array('as' => 'admin.change.password.post', 'uses' => 'Admin\UserController@changeOwnPassword'));
-routes/web.php.before-album-fix:50:    Route::get('user/change-password/{id}', array('as' => 'admin.user.change.password', 'as' => 'admin.users.change.password', 'uses' => 'Admin\UserController@getChangePasswordByAdmin'));
-routes/web.php.before-album-fix:51:    Route::post('user/change-password/{id}', array('as' => 'admin.user.change.password.update', 'uses' => 'Admin\UserController@changePassword'));
-routes/web.php.before-album-fix:53:    // Route::post('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
-routes/web.php.before-album-fix:54:    // Route::get('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
-routes/web.php.before-album-fix:96:    Route::get('own/change-password', array('as' => 'project.admin.change.password', 'uses' => 'Admin\Project\UserController@changePassword'));
-routes/web.php.before-album-fix:97:    Route::post('own/change-password', array('as' => 'project.admin.update.password', 'uses' => 'Admin\Project\UserController@updatePassword'));
-routes/web.php.before-calendar-routes:72:    Route::get('users',  array('as' => 'admin.users', 'uses' => 'Admin\UserController@getIndex'));
-routes/web.php.before-calendar-routes:73:    Route::get('user/add',  array('as' => 'admin.users.add', 'uses' => 'AdminUserController@getAddUser'));
-routes/web.php.before-calendar-routes:74:    Route::post('user/add',  array('as' => 'admin.users.store', 'uses' => 'Admin\UserController@addUser'));
-routes/web.php.before-calendar-routes:75:    Route::get('user/edit/{id}',  array('as' => 'admin.users.edit', 'uses' => 'Admin\UserController@getEditUser'));
-routes/web.php.before-calendar-routes:76:    Route::post('user/edit/{id}',  array('as' => 'admin.users.update', 'uses' => 'Admin\UserController@editUser'));
-routes/web.php.before-calendar-routes:77:    Route::post('user/delete', array('as' => 'admin.user.delete', 'uses' => 'Admin\UserController@deleteUser'));
-routes/web.php.before-calendar-routes:78:    Route::post('user/change-status', array('as' => 'admin.user.change.status', 'uses' => 'Admin\UserController@changeStatus'));
-routes/web.php.before-calendar-routes:80:    Route::get('own/change-password', array('as' => 'admin.change.password', 'uses' => 'Admin\UserController@getChangePassword'));
-routes/web.php.before-calendar-routes:81:    Route::post('own/change-password', array('as' => 'admin.change.password.post', 'uses' => 'Admin\UserController@changeOwnPassword'));
-routes/web.php.before-calendar-routes:82:    Route::get('user/change-password/{id}', array('as' => 'admin.user.change.password', 'as' => 'admin.users.change.password', 'uses' => 'Admin\UserController@getChangePasswordByAdmin'));
-routes/web.php.before-calendar-routes:83:    Route::post('user/change-password/{id}', array('as' => 'admin.user.change.password.update', 'uses' => 'Admin\UserController@changePassword'));
-routes/web.php.before-calendar-routes:85:    // Route::post('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
-routes/web.php.before-calendar-routes:86:    // Route::get('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
-routes/web.php.before-calendar-routes:136:    Route::get('own/change-password', array('as' => 'project.admin.change.password', 'uses' => 'Admin\Project\UserController@changePassword'));
-routes/web.php.before-calendar-routes:137:    Route::post('own/change-password', array('as' => 'project.admin.update.password', 'uses' => 'Admin\Project\UserController@updatePassword'));
-routes/web.php.before-document-search-20261118-093902:72:    Route::get('users',  array('as' => 'admin.users', 'uses' => 'Admin\UserController@getIndex'));
-routes/web.php.before-document-search-20261118-093902:73:    Route::get('user/add',  array('as' => 'admin.users.add', 'uses' => 'Admin\UserController@getAddUser'));
-routes/web.php.before-document-search-20261118-093902:74:    Route::post('user/add',  array('as' => 'admin.users.store', 'uses' => 'Admin\UserController@addUser'));
-routes/web.php.before-document-search-20261118-093902:75:    Route::get('user/edit/{id}',  array('as' => 'admin.users.edit', 'uses' => 'Admin\UserController@getEditUser'));
-routes/web.php.before-document-search-20261118-093902:76:    Route::post('user/edit/{id}',  array('as' => 'admin.users.update', 'uses' => 'Admin\UserController@editUser'));
-routes/web.php.before-document-search-20261118-093902:77:    Route::post('user/delete', array('as' => 'admin.user.delete', 'uses' => 'Admin\UserController@deleteUser'));
-routes/web.php.before-document-search-20261118-093902:78:    Route::post('user/change-status', array('as' => 'admin.user.change.status', 'uses' => 'Admin\UserController@changeStatus'));
-routes/web.php.before-document-search-20261118-093902:80:    Route::get('own/change-password', array('as' => 'admin.change.password', 'uses' => 'Admin\UserController@getChangePassword'));
-routes/web.php.before-document-search-20261118-093902:81:    Route::post('own/change-password', array('as' => 'admin.change.password.post', 'uses' => 'Admin\UserController@changeOwnPassword'));
-routes/web.php.before-document-search-20261118-093902:82:    Route::get('user/change-password/{id}', array('as' => 'admin.user.change.password', 'as' => 'admin.users.change.password', 'uses' => 'Admin\UserController@getChangePasswordByAdmin'));
-routes/web.php.before-document-search-20261118-093902:83:    Route::post('user/change-password/{id}', array('as' => 'admin.user.change.password.update', 'uses' => 'Admin\UserController@changePassword'));
-routes/web.php.before-document-search-20261118-093902:85:    // Route::post('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
-routes/web.php.before-document-search-20261118-093902:86:    // Route::get('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
-routes/web.php.before-document-search-20261118-093902:136:    Route::get('own/change-password', array('as' => 'project.admin.change.password', 'uses' => 'Admin\Project\UserController@changePassword'));
-routes/web.php.before-document-search-20261118-093902:137:    Route::post('own/change-password', array('as' => 'project.admin.update.password', 'uses' => 'Admin\Project\UserController@updatePassword'));
-routes/web.php.before-document-search-20261118-094635:72:    Route::get('users',  array('as' => 'admin.users', 'uses' => 'Admin\UserController@getIndex'));
-routes/web.php.before-document-search-20261118-094635:73:    Route::get('user/add',  array('as' => 'admin.users.add', 'uses' => 'Admin\UserController@getAddUser'));
-routes/web.php.before-document-search-20261118-094635:74:    Route::post('user/add',  array('as' => 'admin.users.store', 'uses' => 'Admin\UserController@addUser'));
-routes/web.php.before-document-search-20261118-094635:75:    Route::get('user/edit/{id}',  array('as' => 'admin.users.edit', 'uses' => 'Admin\UserController@getEditUser'));
-routes/web.php.before-document-search-20261118-094635:76:    Route::post('user/edit/{id}',  array('as' => 'admin.users.update', 'uses' => 'Admin\UserController@editUser'));
-routes/web.php.before-document-search-20261118-094635:77:    Route::post('user/delete', array('as' => 'admin.user.delete', 'uses' => 'Admin\UserController@deleteUser'));
-routes/web.php.before-document-search-20261118-094635:78:    Route::post('user/change-status', array('as' => 'admin.user.change.status', 'uses' => 'Admin\UserController@changeStatus'));
-routes/web.php.before-document-search-20261118-094635:80:    Route::get('own/change-password', array('as' => 'admin.change.password', 'uses' => 'Admin\UserController@getChangePassword'));
-routes/web.php.before-document-search-20261118-094635:81:    Route::post('own/change-password', array('as' => 'admin.change.password.post', 'uses' => 'Admin\UserController@changeOwnPassword'));
-routes/web.php.before-document-search-20261118-094635:82:    Route::get('user/change-password/{id}', array('as' => 'admin.user.change.password', 'as' => 'admin.users.change.password', 'uses' => 'Admin\UserController@getChangePasswordByAdmin'));
-routes/web.php.before-document-search-20261118-094635:83:    Route::post('user/change-password/{id}', array('as' => 'admin.user.change.password.update', 'uses' => 'Admin\UserController@changePassword'));
-routes/web.php.before-document-search-20261118-094635:85:    // Route::post('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
-routes/web.php.before-document-search-20261118-094635:86:    // Route::get('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
-routes/web.php.before-document-search-20261118-094635:136:    Route::get('own/change-password', array('as' => 'project.admin.change.password', 'uses' => 'Admin\Project\UserController@changePassword'));
-routes/web.php.before-document-search-20261118-094635:137:    Route::post('own/change-password', array('as' => 'project.admin.update.password', 'uses' => 'Admin\Project\UserController@updatePassword'));
-routes/web.php.before-login-rate-limit:40:    Route::get('users',  array('as' => 'admin.users', 'uses' => 'Admin\UserController@getIndex'));
-routes/web.php.before-login-rate-limit:41:    Route::get('user/add',  array('as' => 'admin.users.add', 'uses' => 'Admin\UserController@getAddUser'));
-routes/web.php.before-login-rate-limit:42:    Route::post('user/add',  array('as' => 'admin.users.store', 'uses' => 'Admin\UserController@addUser'));
-routes/web.php.before-login-rate-limit:43:    Route::get('user/edit/{id}',  array('as' => 'admin.users.edit', 'uses' => 'Admin\UserController@getEditUser'));
-routes/web.php.before-login-rate-limit:44:    Route::post('user/edit/{id}',  array('as' => 'admin.users.update', 'uses' => 'Admin\UserController@editUser'));
-routes/web.php.before-login-rate-limit:45:    Route::post('user/delete', array('as' => 'admin.user.delete', 'uses' => 'Admin\UserController@deleteUser'));
-routes/web.php.before-login-rate-limit:46:    Route::post('user/change-status', array('as' => 'admin.user.change.status', 'uses' => 'Admin\UserController@changeStatus'));
-routes/web.php.before-login-rate-limit:48:    Route::get('own/change-password', array('as' => 'admin.change.password', 'uses' => 'Admin\UserController@getChangePassword'));
-routes/web.php.before-login-rate-limit:49:    Route::post('own/change-password', array('as' => 'admin.change.password.post', 'uses' => 'Admin\UserController@changeOwnPassword'));
-routes/web.php.before-login-rate-limit:50:    Route::get('user/change-password/{id}', array('as' => 'admin.user.change.password', 'as' => 'admin.users.change.password', 'uses' => 'Admin\UserController@getChangePasswordByAdmin'));
-routes/web.php.before-login-rate-limit:51:    Route::post('user/change-password/{id}', array('as' => 'admin.user.change.password.update', 'uses' => 'Admin\UserController@changePassword'));
-routes/web.php.before-login-rate-limit:53:    // Route::post('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
-routes/web.php.before-login-rate-limit:54:    // Route::get('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
-routes/web.php.before-login-rate-limit:96:    Route::get('own/change-password', array('as' => 'project.admin.change.password', 'uses' => 'Admin\Project\UserController@changePassword'));
-routes/web.php.before-login-rate-limit:97:    Route::post('own/change-password', array('as' => 'project.admin.update.password', 'uses' => 'Admin\Project\UserController@updatePassword'));
-routes/web.php.pre-flash-box-settings-20261117-080141:46:    Route::get('users',  array('as' => 'admin.users', 'uses' => 'Admin\UserController@getIndex'));
-routes/web.php.pre-flash-box-settings-20261117-080141:47:    Route::get('user/add',  array('as' => 'admin.users.add', 'uses' => 'Admin\UserController@getAddUser'));
-routes/web.php.pre-flash-box-settings-20261117-080141:48:    Route::post('user/add',  array('as' => 'admin.users.store', 'uses' => 'Admin\UserController@addUser'));
-routes/web.php.pre-flash-box-settings-20261117-080141:49:    Route::get('user/edit/{id}',  array('as' => 'admin.users.edit', 'uses' => 'Admin\UserController@getEditUser'));
-routes/web.php.pre-flash-box-settings-20261117-080141:50:    Route::post('user/edit/{id}',  array('as' => 'admin.users.update', 'uses' => 'Admin\UserController@editUser'));
-routes/web.php.pre-flash-box-settings-20261117-080141:51:    Route::post('user/delete', array('as' => 'admin.user.delete', 'uses' => 'Admin\UserController@deleteUser'));
-routes/web.php.pre-flash-box-settings-20261117-080141:52:    Route::post('user/change-status', array('as' => 'admin.user.change.status', 'uses' => 'Admin\UserController@changeStatus'));
-routes/web.php.pre-flash-box-settings-20261117-080141:54:    Route::get('own/change-password', array('as' => 'admin.change.password', 'uses' => 'Admin\UserController@getChangePassword'));
-routes/web.php.pre-flash-box-settings-20261117-080141:55:    Route::post('own/change-password', array('as' => 'admin.change.password.post', 'uses' => 'Admin\UserController@changeOwnPassword'));
-routes/web.php.pre-flash-box-settings-20261117-080141:56:    Route::get('user/change-password/{id}', array('as' => 'admin.user.change.password', 'as' => 'admin.users.change.password', 'uses' => 'Admin\UserController@getChangePasswordByAdmin'));
-routes/web.php.pre-flash-box-settings-20261117-080141:57:    Route::post('user/change-password/{id}', array('as' => 'admin.user.change.password.update', 'uses' => 'Admin\UserController@changePassword'));
-routes/web.php.pre-flash-box-settings-20261117-080141:59:    // Route::post('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
-routes/web.php.pre-flash-box-settings-20261117-080141:60:    // Route::get('/user/get-info-dynamically',array('uses'=>'Admin\UserController@getUserDetails'));
-routes/web.php.pre-flash-box-settings-20261117-080141:110:    Route::get('own/change-password', array('as' => 'project.admin.change.password', 'uses' => 'Admin\Project\UserController@changePassword'));
-routes/web.php.pre-flash-box-settings-20261117-080141:111:    Route::post('own/change-password', array('as' => 'project.admin.update.password', 'uses' => 'Admin\Project\UserController@updatePassword'));
+doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && echo "---- PROJECT USER METHODS ----" && grep -n -A 35 -B 5 -E 'getProjectList|getUserTypeList|project_id|user_type_id' app/Http/Controllers/Admin/UserController.php && echo "---- USER LIST VIEW ----" && grep -RniE 'project_id|project|user_type_id|usertype' resources/views/users/users resources/views/users 2>/dev/null | head -100 && echo "---- LOGIN AND OTP FILES ----" && grep -RniE 'OTP|one.time.password|password.*verify|Auth::attempt|Hash::check' app/Http/Controllers app/Http/Middleware routes/web.php | head -150
+---- PROJECT USER METHODS ----
+77-
+78-        return view('users.users.adduser')
+79-            ->with('abs_site_url', $this->abs_site_url)
+80-            ->with('rel_site_url', $this->rel_site_url)
+81-            ->with('site_name', $this->site_name)
+82:            ->with('usertypelist', $this->getUserTypeList())
+83-            ->with('officelist', $this->getOfficeList())
+84:            ->with('projectlist', $this->getProjectList())
+85-            ->with('officeId', $officeId)
+86-            ->with('languages', Language::getActiveLanguages());
+87-    }
+88-
+89-    /**
+90-     * This method is used add  the user
+91-     *
+92-     * @param array $array - no paramenter
+93-     * @param string  - none
+94-     * @return json_message_string_array
+95-     */
+96-    public function addUser(Request $request)
+97-    {
+98-        $rules = [
+99-            'usertype' => 'required',
+100-            'username' => 'required|email|unique:users,username',
+101-            'email_address' => 'required|email|max:254|unique:users,email_address',
+102-            'password' => 'required',
+103-            'confirm_password' => 'required|same:password',
+104-            'office_id' => 'required_unless:usertype,3',
+105:            'project_id' => 'required_if:usertype,3',
+106-        ];
+107-
+108-        $validator = Validator::make($request->all(), $rules);
+109-        if ($validator->fails()) {
+110-            return Redirect::back()->withInput()->withErrors($validator);
+111-        }
+112-
+113-        $user = new User();
+114-        $user->username = trim($request->get('username'));
+115-        $user->email_address = mb_strtolower(trim($request->get('email_address')));
+116-        $user->password = Hash::make($request->get('password'));
+117-        $user->office_id = $request->get('office_id');
+118:        $user->project_id = $request->get('project_id');
+119:        $user->user_type_id = $request->get('usertype');
+120-        $user->is_active = $request->get('is_active');
+121-        $user->created_by = Auth::user()->id;
+122-        $user->save();
+123-
+124-        return Redirect::route('admin.users')
+125-            ->with('message', "User added successfully.");
+126-    }
+127-    /**
+128-     * This method is used add  the user
+129-     *
+130-     * @param int - $id
+131-     * @return Illuminate\View\View
+132-     */
+133-    public function getEditUser($id)
+134-    {
+135-        $user       = User::find($id);
+136-        $authUserId = Auth::user()->id;
+137-        $offices    = Office::getPublishedOffices();
+138-        $projects   = Project::getPublishedProjects();
+139-        $usertypes  = UserTypeModel::getPublishedUserTypes();
+140-        $addAccess  = UserAccessControlModel::getAccessAddByModuleAndUserMapId(5, $authUserId);
+141-
+142-        return view('users.users.edituser')
+143-            ->with('user', $user)
+144-            ->with('usertypes', $usertypes)
+145-            ->with('offices', $offices)
+146-            ->with('projects', $projects)
+147-            ->with('abs_site_url', $this->abs_site_url)
+148-            ->with('rel_site_url', $this->rel_site_url)
+149-            ->with('site_name', $this->site_name)
+150-            ->with('addAccess', $addAccess);
+151-    }
+152-    /**
+153-     * This method is used edit  the user
+154-     *
+--
+158-    public function editUser($id, Request $request)
+159-    {
+160-
+161-        $rules = [
+162-            'office_id' => 'required_unless:usertype,3',
+163:            'project_id' => 'required_if:usertype,3',
+164-            'username' => 'required|email|unique:users,username,' . $id,
+165-            'email_address' => 'required|email|max:254|unique:users,email_address,' . $id,
+166-        ];
+167-
+168-        $validator = Validator::make($request->all(), $rules);
+169-
+170-        if ($validator->fails()) {
+171-            return Redirect::back()->withInput()->withErrors($validator);
+172-        }
+173-
+174-        $user = User::find($id);
+175-        $user->username = trim($request->get('username'));
+176-        $user->email_address = mb_strtolower(trim($request->get('email_address')));
+177-        $user->office_id = $request->get('office_id');
+178:        $user->project_id = $request->get('project_id');
+179:        $user->user_type_id = $request->get('usertype');
+180-        $user->is_active = $request->get('is_active');
+181-        $user->updated_by = Auth::user()->id;
+182-        $user->save();
+183-
+184-        return Redirect::route('admin.users')
+185-            ->with('message', "User is updated successfully.");
+186-    }
+187-
+188-    /**
+189-     * This method is used delete  the user
+190-     *
+191-
+192-     * @author $author- Veshraj Joshi
+193-
+194-     * @param array $array - no paramenter
+195-
+196-     * @param string  - none
+197-
+198-     * @return json_message_string_array
+199-
+200-     */
+201-    public function deleteUser(Request $request)
+202-    {
+203-        $id               = $request->get('id');
+204-        $user             = User::find($id);
+205-        $user->is_active  = '0';
+206-        $user->delete();
+207-        $data['type']    = "success";
+208-        $data['message'] = "Deleted Successfully";
+209-        echo json_encode($data);
+210-    }
+211-
+212-    /**
+213-     * This method is used add  the user
+214-     *
+--
+289-     * @param string  - none
+290-     *
+291-     * @return string
+292-
+293-     */
+294:    public function getUserTypeList()
+295-    {
+296-        $typelist = '';
+297-        $types    = UserTypeModel::getPublishedUserTypes();
+298-        foreach ($types as $type) {
+299-            $typelist .= '<option value="' . $type->id . '">' . $type->user_type_name . '</option>';
+300-        }
+301-        return $typelist;
+302-    }
+303-
+304-    /**
+305-     * This method is used get office name list
+306-     *
+307-     * @param string  - none
+308-     * @return stirng
+309-
+310-     */
+311-    public function getOfficeList()
+312-    {
+313-        $officeId   = Auth::user()->office_id;
+314-        $officelist = '';
+315-        $offices    = Office::getPublishedOffices();
+316-        foreach ($offices as $office) {
+317-            $selected = ($officeId == $office->id) ? 'selected' : '';
+318-            $officelist .= '<option value="' . e($office->id) . '" data-primary-email="' . e($office->office_email_address ?? '') . '" data-alternative-email="' . e($office->office_alternative_email ?? '') . '" ' . $selected . '>' . e($office->office_name) . ' ( ' . e($office->office_address) . ' )</option>';
+319-        }
+320-        return $officelist;
+321-    }
+322-
+323-    /**
+324-     * This method is used get project lists
+325-     *
+326-     * @param string  - none
+327-     * @return stirng
+328-
+329-     */
+330:    public function getProjectList()
+331-    {
+332-        $projectId = 0;
+333-        $projectlist = '';
+334-        $projects    = Project::getPublishedProjects();
+335-        foreach ($projects as $project) {
+336-            $selected = ($projectId == $project->id) ? 'selected' : '';
+337-            $projectlist .= '<option value="' . $project->id . '" ' . $selected . '>' . $project->project_heading . '</option>';
+338-        }
+339-        return $projectlist;
+340-    }
+341-    /**
+342-     * This method is used get the get change passowrd form of ownself
+343-     *
+344-     *
+345-     * @param array $array - no paramenter
+346-     *
+347-     * @param string  - none
+348-     *
+349-     * @return View
+350-
+351-     */
+352-    public function getChangePassword()
+353-    {
+354-        return view('users.users.changepassword')->with('abs_site_url', $this->abs_site_url)
+355-            ->with('rel_site_url', $this->rel_site_url)
+356-            ->with('site_name', $this->site_name)
+357-            ->with('user', Auth::User());
+358-    }
+359-
+360-    /**
+361-     * This method is used get the  change passowrd of the user
+362-     *
+363-     * @param int $id
+364-     * @return Redirect
+365-     */
+366-    public function changeOwnPassword(Request $request)
+367-    {
+368:        if ((int) Auth::user()->user_type_id === 13) {
+369-            $rules = [
+370-                'new_password' => [
+371-                    'required',
+372-                    'min:8',
+373-                    'regex:/[A-Z]/',
+374-                    'regex:/[0-9]/',
+375-                    'regex:/[^A-Za-z0-9]/',
+376-                ],
+377-                'confirm_password' => 'required|same:new_password',
+378-            ];
+379-        } else {
+380-            $rules = [
+381-                'new_password' => 'required',
+382-                'confirm_password' => 'required|same:new_password',
+383-            ];
+384-        }
+385-        $validator = Validator::make($request->all(), $rules);
+386-        if ($validator->fails())
+387-            return Redirect::back()->withErrors($validator);
+388-
+389-        $user = User::find(Auth::user()->id);
+390-        $user->password            = Hash::make($request->get('new_password'));
+391-        $user->password_changed_on = date('Y-m-d H:i:s');
+392-        $user->save();
+393-
+394-        return Redirect::back()
+395-            ->with('type', 'success')
+396-            ->with('message', 'Password has been changed successfully.');
+397-    }
+398-    /**
+399-     * This method is used get the get change passowrd form of others by admin
+400-     *
+401-     * @param int $userid
+402-     * @return View chagne passwor form
+403-
+---- USER LIST VIEW ----
+resources/views/users/users/adduser.blade.php:4:    // dd($usertypelist);
+resources/views/users/users/adduser.blade.php:64:                                            <select name="usertype" data-placeholder="Select User Type"
+resources/views/users/users/adduser.blade.php:65:                                                class="chosen-with-diselect span8" tabindex="-1" id="usertype">
+resources/views/users/users/adduser.blade.php:66:                                                {!! $usertypelist !!}
+resources/views/users/users/adduser.blade.php:108:                                    <div class="control-group" id="project_dropdown">
+resources/views/users/users/adduser.blade.php:159:            $("#project_dropdown").hide();
+resources/views/users/users/adduser.blade.php:160:            $('#usertype').change(function() {
+resources/views/users/users/adduser.blade.php:164:                    $("#project_dropdown").empty();
+resources/views/users/users/adduser.blade.php:165:                    $("#project_dropdown").show();
+resources/views/users/users/adduser.blade.php:166:                    var htmlToShow = '<label class="control-label">Project Name</label>' +
+resources/views/users/users/adduser.blade.php:168:                        '<select name="project_id" data-placeholder="Please Select Project" class="chosen-with-diselect span8" tabindex="-1" id="project-id">' +
+resources/views/users/users/adduser.blade.php:169:                        '<?php echo $projectlist; ?>' +
+resources/views/users/users/adduser.blade.php:172:                    $("#project_dropdown").append(htmlToShow);
+resources/views/users/users/adduser.blade.php:174:                    $("#project_dropdown").hide();
+resources/views/users/users/adduser.blade.php:175:                    $("#project_dropdown").empty();
+resources/views/users/users/changepassword.blade.php:18:                        {{ (int) Auth::user()->user_type_id === 13 ? 'Profile' : 'Users' }}
+resources/views/users/users/changepassword.blade.php:26:                        @if ((int) Auth::user()->user_type_id !== 13)
+resources/views/users/users/changepassword.blade.php:67:                                            @if ((int) Auth::user()->user_type_id === 13)
+resources/views/users/users/changepassword.blade.php:130:                                minlength: {{ (int) Auth::user()->user_type_id === 13 ? 8 : 6 }}
+resources/views/users/users/changepassword.blade.php:134:                                minlength: {{ (int) Auth::user()->user_type_id === 13 ? 8 : 6 }},
+resources/views/users/users/changepassword.blade.php:141:                                minlength: "{{ (int) Auth::user()->user_type_id === 13 ? 'Password must contain at least 8 characters.' : 'Password must require at least 6 characters.' }}"
+resources/views/users/users/changepassword.blade.php.bak-circular-profile-20261116-191017:18:                        {{ (int) Auth::user()->user_type_id === 13 ? 'Profile' : 'Users' }}
+resources/views/users/users/changepassword.blade.php.bak-circular-profile-20261116-191017:26:                        @if ((int) Auth::user()->user_type_id !== 13)
+resources/views/users/users/changepassword.blade.php.bak-circular-profile-20261116-191017:67:                                            @if ((int) Auth::user()->user_type_id === 13)
+resources/views/users/users/changepassword.blade.php.bak-circular-profile-20261116-191017:130:                                minlength: {{ (int) Auth::user()->user_type_id === 13 ? 8 : 6 }}
+resources/views/users/users/changepassword.blade.php.bak-circular-profile-20261116-191017:134:                                minlength: {{ (int) Auth::user()->user_type_id === 13 ? 8 : 6 }},
+resources/views/users/users/changepassword.blade.php.bak-circular-profile-20261116-191017:141:                                minlength: "{{ (int) Auth::user()->user_type_id === 13 ? 'Password must contain at least 8 characters.' : 'Password must require at least 6 characters.' }}"
+resources/views/users/users/edituser.blade.php:103:                                            <select name="usertype" data-placeholder="Select User Type"
+resources/views/users/users/edituser.blade.php:104:                                                class="chosen-with-diselect span8" tabindex="-1" id="usertype">
+resources/views/users/users/edituser.blade.php:105:                                                @foreach ($usertypes as $usertype)
+resources/views/users/users/edituser.blade.php:106:                                                    <option value="{{ $usertype->id }}" @if ($usertype->id == $user->user_type_id) selected="selected" @endif @if ($user->user_type_id == 3) disabled="disabled" @endif>
+resources/views/users/users/edituser.blade.php:107:                                                        {{ $usertype->user_type_name }}
+resources/views/users/users/edituser.blade.php:132:                                    @if ($user->user_type_id != 3)
+resources/views/users/users/edituser.blade.php:151:                                            <label class="control-label">Project Name</label>
+resources/views/users/users/edituser.blade.php:153:                                                <select name="project_id" data-placeholder="Please Select Project"
+resources/views/users/users/edituser.blade.php:154:                                                    class="chosen-with-diselect span8" tabindex="-1" id="project-id">
+resources/views/users/users/edituser.blade.php:155:                                                    @foreach ($projects as $project)
+resources/views/users/users/edituser.blade.php:156:                                                        <option value="{{ $project->id }}" @if ($project->id == $user->project_id) selected="selected" @endif>
+resources/views/users/users/edituser.blade.php:157:                                                            {{ $project->project_heading }}
+resources/views/users/users/users.blade.php:65:                                                @if (Auth::User()->user_type_id == 2)
+resources/views/users/users/users.blade.php:68:                                                <th>Office / Project</th>
+resources/views/users/users/users.blade.php:82:                                                    <td>{{ $user->usertype->user_type_name }}</td>
+resources/views/users/users/users.blade.php:83:                                                    @if (Auth::User()->user_type_id == 2)
+resources/views/users/users/users.blade.php:95:                                                        @if ($user->project_id)
+resources/views/users/users/users.blade.php:96:                                                            @foreach ($user->project->details as $project)
+resources/views/users/users/users.blade.php:97:                                                                {{ $project->project_heading }}
+resources/views/users/access/accesslist.blade.php:96:        <form name="addusertype" id="addusertype" action="{{ $abs_site_url }}admin/module/add" method="post">
+resources/views/users/access/accesslist.blade.php:157:            <form name="editusertype" id="editusertype" action="{{ $abs_site_url }}admin/update-user-type" method="post">
+resources/views/users/access/accesslist.blade.php:161:                        <input type="hidden" id="usertypeid" name="id" />
+resources/views/users/access/accesslist.blade.php:201:                    $("#addusertype").validate({
+resources/views/users/access/accesslist.blade.php:212:                            $data = $('#addusertype').serialize();
+resources/views/users/access/accesslist.blade.php:214:                                url: $('#addusertype').attr('action'),
+resources/views/users/access/accesslist.blade.php:226:                                        $('#addusertype')[0].reset();
+resources/views/users/access/accesslist.blade.php:294:                    $("#editusertype").validate({
+resources/views/users/access/accesslist.blade.php:305:                            $data = $('#editusertype').serialize();
+resources/views/users/access/accesslist.blade.php:307:                                url: $('#editusertype').attr('action'),
+resources/views/users/access/accesslist.blade.php:319:                                        $('#addusertype')[0].reset();
+resources/views/users/access/accesslist.blade.php:375:        $(document).on('click', '.editusertype', function() {
+resources/views/users/access/accesslist.blade.php:377:            $('#usertypeid').val(this.id);
+resources/views/users/access/accesslist.blade.php:386:                        $('#user_type_edit').val($json.usertype);
+resources/views/users/access/accesslist.blade.php:413:                            $('#addusertype')[0].reset();
+resources/views/users/access/editaccess.blade.php:102:            <form name="addusertype" id="addusertype" action="{{ $abs_site_url }}admin/add-user-type" method="post">
+resources/views/users/access/editaccess.blade.php:175:                    $("#addusertype").validate({
+resources/views/users/access/editaccess.blade.php:186:                            $data = $('#addusertype').serialize();
+resources/views/users/access/editaccess.blade.php:188:                                url: $('#addusertype').attr('action'),
+resources/views/users/access/editaccess.blade.php:200:                                        $('#addusertype')[0].reset();
+resources/views/users/access/useraccesslist.blade.php:109:            <form name="addusertype" id="addusertype" action="{{ $abs_site_url }}admin/module/add" method="post">
+resources/views/users/access/useraccesslist.blade.php:173:            <form name="editusertype" id="editusertype" action="{{ $abs_site_url }}admin/update-user-type" method="post">
+resources/views/users/access/useraccesslist.blade.php:177:                        <input type="hidden" id="usertypeid" name="id" />
+resources/views/users/access/useraccesslist.blade.php:208:                    $("#addusertype").validate({
+resources/views/users/access/useraccesslist.blade.php:219:                            $data = $('#addusertype').serialize();
+resources/views/users/access/useraccesslist.blade.php:221:                                url: $('#addusertype').attr('action'),
+resources/views/users/access/useraccesslist.blade.php:233:                                        $('#addusertype')[0].reset();
+resources/views/users/access/useraccesslist.blade.php:299:                    $("#editusertype").validate({
+resources/views/users/access/useraccesslist.blade.php:310:                            $data = $('#editusertype').serialize();
+resources/views/users/access/useraccesslist.blade.php:312:                                url: $('#editusertype').attr('action'),
+resources/views/users/access/useraccesslist.blade.php:324:                                        $('#addusertype')[0].reset();
+resources/views/users/access/useraccesslist.blade.php:379:        $(document).on('click', '.editusertype', function() {
+resources/views/users/access/useraccesslist.blade.php:381:            $('#usertypeid').val(this.id);
+resources/views/users/access/useraccesslist.blade.php:390:                        $('#user_type_edit').val($json.usertype);
+resources/views/users/access/useraccesslist.blade.php:417:                            $('#addusertype')[0].reset();
+resources/views/users/access/usereditaccess.blade.php:94:                                        <form name="addusertype" id="addusertype" action="{{ $abs_site_url }}admin/add-user-type" method="post">
+resources/views/users/access/usereditaccess.blade.php:159:            $("#addusertype").validate({
+resources/views/users/access/usereditaccess.blade.php:170:                                              $data=$('#addusertype').serialize();
+resources/views/users/access/usereditaccess.blade.php:172:                                                      url   :  $('#addusertype').attr('action'),
+resources/views/users/access/usereditaccess.blade.php:183:                                                            $('#addusertype')[0].reset();
+resources/views/users/circular-admins/form.blade.php:47:                            @if ((int) Auth::user()->user_type_id === 2)
+resources/views/users/circular-admins/form.blade.php.bak-before-circular-email-otp-20261116-185939:47:                            @if ((int) Auth::user()->user_type_id === 2)
+resources/views/users/circular-admins/form.blade.php.bak-circular-admin-label-20261116-181250:55:                            @if ((int) Auth::user()->user_type_id === 2)
+resources/views/users/circular-admins/form.blade.php.bak-email-login-20261116-182552:55:                            @if ((int) Auth::user()->user_type_id === 2)
+resources/views/users/offices/addoffice.blade.php:222:                                                Project office 1&nbsp;
+resources/views/users/offices/addoffice.blade.php:225:                                                Project office 2&nbsp;
+resources/views/users/offices/editoffice.blade.php:344:                                                Project office 1&nbsp;
+resources/views/users/offices/editoffice.blade.php:347:                                                Project office 2&nbsp;
+resources/views/users/project/change_password.blade.php:1:@extends('layout.project.masters')
+resources/views/users/project/change_password.blade.php:18:                                                     Project User
+resources/views/users/project/change_password.blade.php:23:                                <a href="{{ route('project.admin.dashboard') }}"><i class="icon-home"></i></a><span class="divider">&nbsp;</span>
+resources/views/users/project/change_password.blade.php:47:                        @include('layout.project.alert')
+resources/views/users/users/adduser.blade.php:4:    // dd($usertypelist);
+resources/views/users/users/adduser.blade.php:64:                                            <select name="usertype" data-placeholder="Select User Type"
+---- LOGIN AND OTP FILES ----
+app/Http/Controllers/Admin/ChatbotInternalProviderController.php:6:use App\Models\ChatbotProvider;
+app/Http/Controllers/Admin/ChatbotInternalProviderController.php:25:        $providers = ChatbotProvider::query()
+app/Http/Controllers/Admin/ChatbotInternalProviderController.php:34:    private function validated(Request $request, ?ChatbotProvider $provider = null): array
+app/Http/Controllers/Admin/ChatbotInternalProviderController.php:76:        $provider = new ChatbotProvider();
+app/Http/Controllers/Admin/ChatbotInternalProviderController.php:97:    public function update(Request $request, ChatbotProvider $provider)
+app/Http/Controllers/Admin/ChatbotInternalProviderController.php:129:    public function destroy(ChatbotProvider $provider)
+app/Http/Controllers/Admin/ExternalApiSettingController.php:23:    private function ensureOtpVerified(): void
+app/Http/Controllers/Admin/ExternalApiSettingController.php:29:            'Please verify your password and OTP before accessing External API Settings.'
+app/Http/Controllers/Admin/ExternalApiSettingController.php:39:                'otpSent' => (bool) session('chatbot_api_settings_otp_sent', false),
+app/Http/Controllers/Admin/ExternalApiSettingController.php:62:            Hash::check($request->input('password'), $user->password),
+app/Http/Controllers/Admin/ExternalApiSettingController.php:67:        $key = 'chatbot-api-otp:' . $user->id;
+app/Http/Controllers/Admin/ExternalApiSettingController.php:68:        abort_if(RateLimiter::tooManyAttempts($key, 3), 429, 'Please wait before requesting another OTP.');
+app/Http/Controllers/Admin/ExternalApiSettingController.php:71:        $recipient = config('chatbot.api_settings_otp_recipient');
+app/Http/Controllers/Admin/ExternalApiSettingController.php:75:            'The private OTP recipient is not configured on the server.'
+app/Http/Controllers/Admin/ExternalApiSettingController.php:78:        $otp = (string) random_int(100000, 999999);
+app/Http/Controllers/Admin/ExternalApiSettingController.php:80:        DB::table('password_reset_otps')
+app/Http/Controllers/Admin/ExternalApiSettingController.php:85:        DB::table('password_reset_otps')->insert([
+app/Http/Controllers/Admin/ExternalApiSettingController.php:87:            'otp_hash' => Hash::make($otp),
+app/Http/Controllers/Admin/ExternalApiSettingController.php:97:                'Your DoR External API Settings verification code is: ' . $otp . '\nThis code expires in 5 minutes.',
+app/Http/Controllers/Admin/ExternalApiSettingController.php:99:                    $message->to($recipient)->subject('DoR External API Settings OTP');
+app/Http/Controllers/Admin/ExternalApiSettingController.php:103:            DB::table('password_reset_otps')
+app/Http/Controllers/Admin/ExternalApiSettingController.php:111:            'chatbot_api_settings_otp_sent' => true,
+app/Http/Controllers/Admin/ExternalApiSettingController.php:116:            ->with('success', 'OTP sent to the server-configured private email address.');
+app/Http/Controllers/Admin/ExternalApiSettingController.php:119:    public function verifyOtp(Request $request)
+app/Http/Controllers/Admin/ExternalApiSettingController.php:123:        $request->validate(['otp' => ['required', 'digits:6']]);
+app/Http/Controllers/Admin/ExternalApiSettingController.php:127:            $record = DB::table('password_reset_otps')
+app/Http/Controllers/Admin/ExternalApiSettingController.php:138:            if (!Hash::check($request->input('otp'), $record->otp_hash)) {
+app/Http/Controllers/Admin/ExternalApiSettingController.php:139:                DB::table('password_reset_otps')->where('id', $record->id)
+app/Http/Controllers/Admin/ExternalApiSettingController.php:144:            DB::table('password_reset_otps')->where('id', $record->id)
+app/Http/Controllers/Admin/ExternalApiSettingController.php:151:            return back()->withErrors(['otp' => 'Invalid, expired, or already-used OTP.']);
+app/Http/Controllers/Admin/ExternalApiSettingController.php:156:            'chatbot_api_settings_otp_sent' => false,
+app/Http/Controllers/Admin/ExternalApiSettingController.php:165:        $this->ensureOtpVerified();
+app/Http/Controllers/Admin/ExternalApiSettingController.php:296:        $this->ensureOtpVerified();
+app/Http/Controllers/Admin/ExternalApiSettingController.php.backup-appsheet:23:    private function ensureOtpVerified(): void
+app/Http/Controllers/Admin/ExternalApiSettingController.php.backup-appsheet:29:            'Please verify your password and OTP before accessing External API Settings.'
+app/Http/Controllers/Admin/ExternalApiSettingController.php.backup-appsheet:39:                'otpSent' => (bool) session('chatbot_api_settings_otp_sent', false),
+app/Http/Controllers/Admin/ExternalApiSettingController.php.backup-appsheet:62:            Hash::check($request->input('password'), $user->password),
+app/Http/Controllers/Admin/ExternalApiSettingController.php.backup-appsheet:67:        $key = 'chatbot-api-otp:' . $user->id;
+app/Http/Controllers/Admin/ExternalApiSettingController.php.backup-appsheet:68:        abort_if(RateLimiter::tooManyAttempts($key, 3), 429, 'Please wait before requesting another OTP.');
+app/Http/Controllers/Admin/ExternalApiSettingController.php.backup-appsheet:71:        $recipient = config('chatbot.api_settings_otp_recipient');
+app/Http/Controllers/Admin/ExternalApiSettingController.php.backup-appsheet:75:            'The private OTP recipient is not configured on the server.'
+app/Http/Controllers/Admin/ExternalApiSettingController.php.backup-appsheet:78:        $otp = (string) random_int(100000, 999999);
+app/Http/Controllers/Admin/ExternalApiSettingController.php.backup-appsheet:80:        DB::table('password_reset_otps')
+app/Http/Controllers/Admin/ExternalApiSettingController.php.backup-appsheet:85:        DB::table('password_reset_otps')->insert([
+app/Http/Controllers/Admin/ExternalApiSettingController.php.backup-appsheet:87:            'otp_hash' => Hash::make($otp),
+app/Http/Controllers/Admin/ExternalApiSettingController.php.backup-appsheet:97:                'Your DoR External API Settings verification code is: ' . $otp . '\nThis code expires in 5 minutes.',
+app/Http/Controllers/Admin/ExternalApiSettingController.php.backup-appsheet:99:                    $message->to($recipient)->subject('DoR External API Settings OTP');
+app/Http/Controllers/Admin/ExternalApiSettingController.php.backup-appsheet:103:            DB::table('password_reset_otps')
+app/Http/Controllers/Admin/ExternalApiSettingController.php.backup-appsheet:111:            'chatbot_api_settings_otp_sent' => true,
+app/Http/Controllers/Admin/ExternalApiSettingController.php.backup-appsheet:116:            ->with('success', 'OTP sent to the server-configured private email address.');
+app/Http/Controllers/Admin/ExternalApiSettingController.php.backup-appsheet:119:    public function verifyOtp(Request $request)
+app/Http/Controllers/Admin/ExternalApiSettingController.php.backup-appsheet:123:        $request->validate(['otp' => ['required', 'digits:6']]);
+app/Http/Controllers/Admin/ExternalApiSettingController.php.backup-appsheet:127:            $record = DB::table('password_reset_otps')
+app/Http/Controllers/Admin/ExternalApiSettingController.php.backup-appsheet:138:            if (!Hash::check($request->input('otp'), $record->otp_hash)) {
+app/Http/Controllers/Admin/ExternalApiSettingController.php.backup-appsheet:139:                DB::table('password_reset_otps')->where('id', $record->id)
+app/Http/Controllers/Admin/ExternalApiSettingController.php.backup-appsheet:144:            DB::table('password_reset_otps')->where('id', $record->id)
+app/Http/Controllers/Admin/ExternalApiSettingController.php.backup-appsheet:151:            return back()->withErrors(['otp' => 'Invalid, expired, or already-used OTP.']);
+app/Http/Controllers/Admin/ExternalApiSettingController.php.backup-appsheet:156:            'chatbot_api_settings_otp_sent' => false,
+app/Http/Controllers/Admin/ExternalApiSettingController.php.backup-appsheet:165:        $this->ensureOtpVerified();
+app/Http/Controllers/Admin/ExternalApiSettingController.php.backup-appsheet:296:        $this->ensureOtpVerified();
+app/Http/Controllers/Admin/LoginController.php:60:            $auth = Auth::attempt(array(
+app/Http/Controllers/Admin/LoginController.php.before-login-timestamp-fix:60:            $auth = Auth::attempt(array(
+app/Http/Controllers/Admin/LoginController.php.before-logout-fix:60:            $auth = Auth::attempt(array(
+app/Http/Controllers/Admin/LoginController.php.before-user-id-fix:60:            $auth = Auth::attempt(array(
+app/Http/Controllers/Admin/LoginController.php.before-validation-fix:60:            $auth = Auth::attempt(array(
+app/Http/Controllers/Admin/PasswordResetOtpController.php:11:class PasswordResetOtpController extends Controller
+app/Http/Controllers/Admin/PasswordResetOtpController.php:14:    private const OTP_EXPIRY_MINUTES = 5;
+app/Http/Controllers/Admin/PasswordResetOtpController.php:15:    private const MAX_OTP_ATTEMPTS = 5;
+app/Http/Controllers/Admin/PasswordResetOtpController.php:17:    public function showForgotPassword(Request $request)
+app/Http/Controllers/Admin/PasswordResetOtpController.php:26:    public function sendOtp(Request $request)
+app/Http/Controllers/Admin/PasswordResetOtpController.php:28:        logger()->info('Password reset OTP endpoint reached.');
+app/Http/Controllers/Admin/PasswordResetOtpController.php:46:        $failureMessage = 'We could not send the OTP. Please check your registered email address or contact the administrator.';
+app/Http/Controllers/Admin/PasswordResetOtpController.php:54:                'Password reset OTP request rejected before mail delivery.',
+app/Http/Controllers/Admin/PasswordResetOtpController.php:71:                    'Password reset OTP delivery blocked because the test recipient is missing or invalid.'
+app/Http/Controllers/Admin/PasswordResetOtpController.php:95:                    'Password reset OTP request rejected because Gmail SMTP configuration is incomplete.'
+app/Http/Controllers/Admin/PasswordResetOtpController.php:102:        $otp = (string) random_int(100000, 999999);
+app/Http/Controllers/Admin/PasswordResetOtpController.php:104:        // Keep the previous OTP usable until the new OTP email is sent successfully.
+app/Http/Controllers/Admin/PasswordResetOtpController.php:105:        $otpId = DB::table('password_reset_otps')->insertGetId([
+app/Http/Controllers/Admin/PasswordResetOtpController.php:107:            'otp_hash' => Hash::make($otp),
+app/Http/Controllers/Admin/PasswordResetOtpController.php:108:            'expires_at' => now()->addMinutes(self::OTP_EXPIRY_MINUTES),
+app/Http/Controllers/Admin/PasswordResetOtpController.php:115:        $subject = 'Department of Roads - Password Reset OTP';
+app/Http/Controllers/Admin/PasswordResetOtpController.php:119:            <p>Your One-Time Password (OTP) is:</p>
+app/Http/Controllers/Admin/PasswordResetOtpController.php:120:            <h2 style="letter-spacing:5px;">' . e($otp) . '</h2>
+app/Http/Controllers/Admin/PasswordResetOtpController.php:121:            <p>This OTP is valid for 5 minutes and can only be used once.</p>
+app/Http/Controllers/Admin/PasswordResetOtpController.php:140:                'Password reset OTP email delivery failed.',
+app/Http/Controllers/Admin/PasswordResetOtpController.php:152:            DB::table('password_reset_otps')->where('id', $otpId)->delete();
+app/Http/Controllers/Admin/PasswordResetOtpController.php:157:        // Only a successfully delivered new OTP replaces previous unused OTPs.
+app/Http/Controllers/Admin/PasswordResetOtpController.php:158:        DB::table('password_reset_otps')
+app/Http/Controllers/Admin/PasswordResetOtpController.php:160:            ->where('id', '<>', $otpId)
+app/Http/Controllers/Admin/PasswordResetOtpController.php:168:            ->with('status', 'An OTP has been sent to your registered email address. Please check your inbox.');
+app/Http/Controllers/Admin/PasswordResetOtpController.php:183:            'otp' => ['required', 'digits:6'],
+app/Http/Controllers/Admin/PasswordResetOtpController.php:206:            $otpRecord = DB::table('password_reset_otps')
+app/Http/Controllers/Admin/PasswordResetOtpController.php:213:            if (!$otpRecord) {
+app/Http/Controllers/Admin/PasswordResetOtpController.php:217:            if (now()->greaterThan($otpRecord->expires_at)) {
+app/Http/Controllers/Admin/PasswordResetOtpController.php:218:                DB::table('password_reset_otps')
+app/Http/Controllers/Admin/PasswordResetOtpController.php:219:                    ->where('id', $otpRecord->id)
+app/Http/Controllers/Admin/PasswordResetOtpController.php:225:            if ($otpRecord->attempts >= self::MAX_OTP_ATTEMPTS) {
+app/Http/Controllers/Admin/PasswordResetOtpController.php:226:                DB::table('password_reset_otps')
+app/Http/Controllers/Admin/PasswordResetOtpController.php:227:                    ->where('id', $otpRecord->id)
+app/Http/Controllers/Admin/PasswordResetOtpController.php:233:            if (!Hash::check($request->input('otp'), $otpRecord->otp_hash)) {
+app/Http/Controllers/Admin/PasswordResetOtpController.php:234:                $newAttempts = $otpRecord->attempts + 1;
+app/Http/Controllers/Admin/PasswordResetOtpController.php:236:                DB::table('password_reset_otps')
+app/Http/Controllers/Admin/PasswordResetOtpController.php:237:                    ->where('id', $otpRecord->id)
+app/Http/Controllers/Admin/PasswordResetOtpController.php:240:                        'used_at' => $newAttempts >= self::MAX_OTP_ATTEMPTS ? now() : null,
+app/Http/Controllers/Admin/PasswordResetOtpController.php:255:            DB::table('password_reset_otps')
+app/Http/Controllers/Admin/PasswordResetOtpController.php:272:            'expired' => 'Your OTP has expired. Please request a new OTP.',
+app/Http/Controllers/Admin/PasswordResetOtpController.php:273:            'locked' => 'Too many attempts. Please request a new OTP.',
+app/Http/Controllers/Admin/PasswordResetOtpController.php:274:            default => 'The OTP is invalid or no longer available. Please check it or request a new OTP.',
+app/Http/Controllers/Admin/PasswordResetOtpController.php:277:        return back()->withErrors(['otp' => $message]);
+app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-20261109-223939:11:class PasswordResetOtpController extends Controller
+app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-20261109-223939:14:    private const OTP_EXPIRY_MINUTES = 5;
+app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-20261109-223939:15:    private const MAX_OTP_ATTEMPTS = 5;
+app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-20261109-223939:17:    public function showForgotPassword()
+app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-20261109-223939:22:    public function sendOtp(Request $request)
+app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-20261109-223939:50:        $genericMessage = 'If the account is eligible, an OTP will be sent to its registered email address.';
+app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-20261109-223939:78:        $otp = (string) random_int(100000, 999999);
+app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-20261109-223939:80:        $otpId = DB::transaction(function () use ($user, $otp) {
+app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-20261109-223939:81:            DB::table('password_reset_otps')
+app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-20261109-223939:86:            return DB::table('password_reset_otps')->insertGetId([
+app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-20261109-223939:88:                'otp_hash' => Hash::make($otp),
+app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-20261109-223939:89:                'expires_at' => now()->addMinutes(self::OTP_EXPIRY_MINUTES),
+app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-20261109-223939:97:        $subject = 'Department of Roads - Password Reset OTP';
+app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-20261109-223939:101:            <p>Your One-Time Password (OTP) is:</p>
+app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-20261109-223939:102:            <h2 style="letter-spacing:5px;">' . e($otp) . '</h2>
+app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-20261109-223939:103:            <p>This OTP is valid for 5 minutes and can only be used once.</p>
+app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-20261109-223939:122:                'Password reset OTP email delivery failed.',
+app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-20261109-223939:134:            DB::table('password_reset_otps')->where('id', $otpId)->delete();
+app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-20261109-223939:143:            ->with('status', 'If the account is eligible, an OTP has been sent to its registered email address.');
+app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-20261109-223939:151:                ->withErrors(['username' => 'Please request a password reset OTP first.']);
+app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-20261109-223939:154:        return view('users.reset_password_otp');
+app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-20261109-223939:164:            'otp' => ['required', 'digits:6'],
+app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-20261109-223939:187:            $otpRecord = DB::table('password_reset_otps')
+app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-20261109-223939:194:            if (!$otpRecord) {
+app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-20261109-223939:198:            if (now()->greaterThan($otpRecord->expires_at)) {
+app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-20261109-223939:199:                DB::table('password_reset_otps')
+app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-20261109-223939:200:                    ->where('id', $otpRecord->id)
+app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-20261109-223939:206:            if ($otpRecord->attempts >= self::MAX_OTP_ATTEMPTS) {
+app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-20261109-223939:207:                DB::table('password_reset_otps')
+app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-20261109-223939:208:                    ->where('id', $otpRecord->id)
+app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-20261109-223939:214:            if (!Hash::check($request->input('otp'), $otpRecord->otp_hash)) {
+app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-20261109-223939:215:                $newAttempts = $otpRecord->attempts + 1;
+app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-20261109-223939:217:                DB::table('password_reset_otps')
+app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-20261109-223939:218:                    ->where('id', $otpRecord->id)
+app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-20261109-223939:221:                        'used_at' => $newAttempts >= self::MAX_OTP_ATTEMPTS ? now() : null,
+app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-20261109-223939:236:            DB::table('password_reset_otps')
+app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-20261109-223939:253:            'expired' => 'Your OTP has expired. Please request a new OTP.',
+app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-20261109-223939:254:            'locked' => 'Too many attempts. Please request a new OTP.',
+app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-20261109-223939:255:            default => 'The OTP is invalid or no longer available. Please check it or request a new OTP.',
+app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-20261109-223939:258:        return back()->withErrors(['otp' => $message]);
+app/Http/Controllers/Admin/PasswordResetOtpController.php.bak-20261109-224007:11:class PasswordResetOtpController extends Controller
 doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$
