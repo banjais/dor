@@ -1,425 +1,124 @@
-doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && echo "========== KNOWLEDGE INDEXER ==========" && sed -n '1,320p' app/Services/Chatbot/ChatbotKnowledgeIndexer.php && echo "========== KNOWLEDGE RETRIEVER ==========" && sed -n '1,320p' app/Services/Chatbot/ChatbotKnowledgeRetriever.php
-========== KNOWLEDGE INDEXER ==========
-<?php
-
-namespace App\Services\Chatbot;
-
-use App\Models\ChatbotKnowledgeDocument;
-use App\Models\ChatbotKnowledgeSource;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
-use InvalidArgumentException;
-use RuntimeException;
-
-class ChatbotKnowledgeIndexer
-{
-    private const CHUNK_SIZE = 1200;
-    private const CHUNK_OVERLAP = 150;
-
-    public function __construct(
-        private readonly ChatbotDocumentExtractor $extractor
-    ) {
-    }
-
-    /**
-     * Extract and index a local document.
-     *
-     * Required: title, storage_disk, storage_path.
-     * Optional: source_id, office_id, language_id, document_type,
-     * source_key, source_url, mime_type, source_updated_at, metadata.
-     */
-    public function indexDocument(array $data): array
-    {
-        foreach (['title', 'storage_disk', 'storage_path'] as $field) {
-            if (!isset($data[$field]) || trim((string) $data[$field]) === '') {
-                throw new InvalidArgumentException("Missing required field: {$field}");
-            }
-        }
-
-        // A source is the authority for its office and must be enabled.
-        // Never allow caller-supplied office_id to move source content.
-        $source = null;
-
-        if (!empty($data['source_id'])) {
-            $source = ChatbotKnowledgeSource::findOrFail($data['source_id']);
-
-            if (!$source->is_enabled) {
-                throw new InvalidArgumentException('Knowledge source is disabled.');
-            }
-
-            if (array_key_exists('office_id', $data)
-                && $data['office_id'] !== null
-                && (int) $data['office_id'] !== (int) $source->office_id) {
-                throw new InvalidArgumentException(
-                    'Document office_id does not match its knowledge source.'
-                );
-            }
-        }
-
-        $disk = (string) $data['storage_disk'];
-        $path = (string) $data['storage_path'];
-
-        if (!in_array($disk, ['local', 'public'], true)) {
-            throw new InvalidArgumentException('Unapproved storage disk.');
-        }
-
-        $extraction = $this->extractor->extract($disk, $path);
-
-        // Never replace an existing successful index after extraction failure.
-        if (($extraction['status'] ?? null) !== 'extracted'
-            || trim((string) ($extraction['text'] ?? '')) === '') {
-            return [
-                'status' => 'failed',
-                'error' => $extraction['error'] ?? 'No extractable text found.',
-                'document' => null,
-                'chunks' => 0,
-            ];
-        }
-
-        $absolutePath = Storage::disk($disk)->path($path);
-
-        if (!is_file($absolutePath) || !is_readable($absolutePath)) {
-            return [
-                'status' => 'failed',
-                'error' => 'Document is not available for indexing.',
-                'document' => null,
-                'chunks' => 0,
-            ];
-        }
-
-        $checksum = hash_file('sha256', $absolutePath);
-
-        if ($checksum === false) {
-            throw new RuntimeException('Unable to calculate document checksum.');
-        }
-
-        $source = null;
-
-        if (!empty($data['source_id'])) {
-            $source = ChatbotKnowledgeSource::findOrFail($data['source_id']);
-        }
-
-        $officeId = $data['office_id'] ?? $source?->office_id;
-        $languageId = $data['language_id'] ?? null;
-        $sourceId = $source?->id;
-
-        $documentQuery = ChatbotKnowledgeDocument::query();
-
-        if ($sourceId !== null) {
-            $documentQuery->where('source_id', $sourceId);
-        } else {
-            $documentQuery->whereNull('source_id');
-        }
-
-        if (!empty($data['source_key'])) {
-            $documentQuery->where('source_key', $data['source_key']);
-        } else {
-            $documentQuery
-                ->where('storage_disk', $disk)
-                ->where('storage_path', $path);
-        }
-
-        $existing = $documentQuery->first();
-
-        // Identical content with existing chunks needs no re-indexing.
-        if ($existing
-            && $existing->checksum === $checksum
-            && $existing->parser_status === 'indexed'
-            && $existing->chunks()->exists()) {
-            return [
-                'status' => 'unchanged',
-                'document' => $existing,
-                'chunks' => $existing->chunks()->count(),
-                'checksum' => $checksum,
-            ];
-        }
-
-        $chunks = $this->splitText((string) $extraction['text']);
-
-        if ($chunks === []) {
-            return [
-                'status' => 'failed',
-                'error' => 'Document did not produce usable text chunks.',
-                'document' => null,
-                'chunks' => 0,
-            ];
-        }
-
-        // All document changes and chunk replacement are atomic.
-        $document = DB::transaction(function () use (
-            $existing,
-            $data,
-            $source,
-            $sourceId,
-            $officeId,
-            $languageId,
-            $disk,
-            $path,
-            $checksum,
-            $extraction,
-            $chunks
-        ) {
-            $document = $existing
-                ? ChatbotKnowledgeDocument::query()
-                    ->whereKey($existing->id)
-                    ->lockForUpdate()
-                    ->firstOrFail()
-                : new ChatbotKnowledgeDocument();
-
-            $document->fill([
-                'source_id' => $sourceId,
-                'office_id' => $officeId,
-                'language_id' => $languageId,
-                'document_type' => $data['document_type'] ?? 'document',
-                'source_key' => $data['source_key'] ?? null,
-                'title' => $data['title'],
-                'source_url' => $data['source_url'] ?? null,
-                'storage_disk' => $disk,
-                'storage_path' => $path,
-                'mime_type' => $data['mime_type'] ?? null,
-                'file_size' => filesize(Storage::disk($disk)->path($path)),
-                'checksum' => $checksum,
-                'source_updated_at' => $data['source_updated_at'] ?? null,
-                'extracted_text' => $extraction['text'],
-                'extraction_method' => $extraction['method'] ?? null,
-                'parser_status' => 'indexed',
-                'indexed_at' => now(),
-                'last_error' => null,
-                'metadata' => $data['metadata'] ?? null,
-            ]);
-
-            $document->save();
-
-            // Old chunks are removed only inside the successful transaction.
-            $document->chunks()->delete();
-
-            foreach ($chunks as $number => $chunkText) {
-                $document->chunks()->create([
-                    'source_id' => $sourceId,
-                    'office_id' => $officeId,
-                    'language_id' => $languageId,
-                    'chunk_number' => $number + 1,
-                    'chunk_text' => $chunkText,
-                    'token_count' => max(
-                        1,
-                        (int) ceil(mb_strlen($chunkText, 'UTF-8') / 4)
-                    ),
-                    'chunk_hash' => hash('sha256', $chunkText),
-                    'status' => 'active',
-                ]);
-            }
-
-            if ($source) {
-                $source->forceFill([
-                    'last_indexed_at' => now(),
-                    'content_checksum' => $checksum,
-                    'last_error' => null,
-                ])->save();
-            }
-
-            return $document->fresh();
-        });
-
-        return [
-            'status' => 'indexed',
-            'document' => $document,
-            'chunks' => count($chunks),
-            'checksum' => $checksum,
-            'method' => $extraction['method'] ?? null,
-        ];
-    }
-
-    /**
-     * Split Unicode text without cutting Nepali characters.
-     */
-    public function splitText(string $text): array
-    {
-        $text = trim(str_replace("\0", '', $text));
-
-        if ($text === '') {
-            return [];
-        }
-
-        $result = [];
-        $length = mb_strlen($text, 'UTF-8');
-        $start = 0;
-
-        while ($start < $length) {
-            $remaining = $length - $start;
-            $take = min(self::CHUNK_SIZE, $remaining);
-            $piece = mb_substr($text, $start, $take, 'UTF-8');
-
-            if ($remaining > self::CHUNK_SIZE) {
-                $newline = mb_strrpos($piece, "\n", 0, 'UTF-8');
-                $space = mb_strrpos($piece, ' ', 0, 'UTF-8');
-                $boundary = max(
-                    $newline === false ? -1 : $newline,
-                    $space === false ? -1 : $space
-                );
-
-                // Avoid producing very small chunks at an early boundary.
-                if ($boundary >= (int) (self::CHUNK_SIZE * 0.60)) {
-                    $take = $boundary + 1;
-                    $piece = mb_substr($text, $start, $take, 'UTF-8');
-                }
-            }
-
-            $piece = trim($piece);
-
-            if ($piece !== '') {
-                $result[] = $piece;
-            }
-
-            if ($start + $take >= $length) {
-                break;
-            }
-
-            $nextStart = $start + $take - self::CHUNK_OVERLAP;
-
-            // Guarantee forward progress.
-            $start = max($start + 1, $nextStart);
-        }
-
-        return $result;
-    }
-}
-========== KNOWLEDGE RETRIEVER ==========
-<?php
-
-namespace App\Services\Chatbot;
-
-use App\Models\ChatbotKnowledgeChunk;
-use Illuminate\Support\Collection;
-use InvalidArgumentException;
-
-class ChatbotKnowledgeRetriever
-{
-    /**
-     * Search only indexed, active, public knowledge for the requested office.
-     *
-     * @return array{question:string,office_id:int,matches:array}
-     */
-    public function search(string $question, int $officeId, int $limit = 5): array
-    {
-        $question = trim($question);
-
-        if ($question === '') {
-            throw new InvalidArgumentException('Search question is required.');
-        }
-
-        if ($officeId < 1) {
-            throw new InvalidArgumentException('A valid office is required.');
-        }
-
-        $limit = max(1, min($limit, 10));
-        $terms = $this->terms($question);
-
-        if ($terms === []) {
-            return [
-                'question' => $question,
-                'office_id' => $officeId,
-                'matches' => [],
-            ];
-        }
-
-        $query = ChatbotKnowledgeChunk::query()
-            ->with(['document'])
-            ->where(function ($scope) use ($officeId) {
-                $scope->where('office_id', $officeId)
-                    ->orWhereNull('office_id');
-            })
-            ->where('status', 'active')
-            ->whereHas('document', function ($documents) use ($officeId) {
-                $documents
-                    ->where(function ($scope) use ($officeId) {
-                        $scope->where('office_id', $officeId)
-                            ->orWhereNull('office_id');
-                    })
-                    ->where('parser_status', 'indexed')
-                    ->whereHas('source', function ($sources) use ($officeId) {
-                        $sources
-                            ->where('is_enabled', true)
-                            ->where('is_public', true)
-                            ->where(function ($scope) use ($officeId) {
-                                $scope->where('office_id', $officeId)
-                                    ->orWhereNull('office_id');
-                            });
-                    });
-            })
-            ->where(function ($search) use ($terms) {
-                foreach ($terms as $term) {
-                    $pattern = '%' . addcslashes($term, '\\%_') . '%';
-                    $search->orWhere('chunk_text', 'LIKE', $pattern);
-                }
-            });
-
-        // Bound database work even when a common word matches many records.
-        $candidates = $query
-            ->orderByDesc('id')
-            ->limit(300)
-            ->get();
-
-        $ranked = $candidates
-            ->map(function (ChatbotKnowledgeChunk $chunk) use ($terms) {
-                $text = mb_strtolower($chunk->chunk_text, 'UTF-8');
-                $score = 0;
-
-                foreach ($terms as $term) {
-                    if (mb_strpos($text, $term, 0, 'UTF-8') !== false) {
-                        $score++;
-                    }
-                }
-
-                return [
-                    'chunk' => $chunk,
-                    'score' => $score,
-                ];
-            })
-            ->filter(fn (array $item) => $item['score'] > 0)
-            ->sort(function (array $a, array $b) {
-                return ($b['score'] <=> $a['score'])
-                    ?: ($b['chunk']->id <=> $a['chunk']->id);
-            })
-            ->take($limit)
-            ->values();
-
-        return [
-            'question' => $question,
-            'office_id' => $officeId,
-            'matches' => $ranked->map(function (array $item) {
-                $chunk = $item['chunk'];
-                $document = $chunk->document;
-
-                return [
-                    'document_id' => (int) $document->id,
-                    'chunk_id' => (int) $chunk->id,
-                    'chunk_number' => (int) $chunk->chunk_number,
-                    'title' => $document->title,
-                    'source_url' => $document->source_url,
-                    'content' => $chunk->chunk_text,
-                    'score' => (int) $item['score'],
-                ];
-            })->all(),
-        ];
-    }
-
-    /**
-     * Keep Nepali and English Unicode words; ignore one-character fragments.
-     */
-    private function terms(string $question): array
-    {
-        $normalized = mb_strtolower($question, 'UTF-8');
-        $parts = preg_split('/[^\p{L}\p{N}]+/u', $normalized) ?: [];
-
-        $terms = [];
-
-        foreach ($parts as $part) {
-            if (mb_strlen($part, 'UTF-8') >= 2) {
-                $terms[] = $part;
-            }
-        }
-
-        return array_values(array_unique($terms));
-    }
-}
+doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && echo "---- HOME PAGE CONTENT MARKERS ----" && grep -Rni -E "main-content|content-wrapper|page-content|container-fluid|single-page|detail-content|article|<main" resources/views/home resources/views/layout/client | head -100 && echo "---- CONTENT DETAIL VIEW FILES ----" && find resources/views -type f | grep -Ei 'content|page.*detail|home.*detail' | head -60
+---- HOME PAGE CONTENT MARKERS ----
+resources/views/home/404.blade.php:3:    <main class="main-body">
+resources/views/home/admin/add.blade.php:7:    <div id="main-content">
+resources/views/home/admin/add.blade.php:8:        <div class="container-fluid">
+resources/views/home/admin/add.blade.php.bak-flash-tabs-20261116-224537:7:    <div id="main-content">
+resources/views/home/admin/add.blade.php.bak-flash-tabs-20261116-224537:8:        <div class="container-fluid">
+resources/views/home/admin/add.blade.php.bak-flash-validation-20261116-232152:7:    <div id="main-content">
+resources/views/home/admin/add.blade.php.bak-flash-validation-20261116-232152:8:        <div class="container-fluid">
+resources/views/home/admin/add.blade.php.bak-flash-validation2-20261116-232442:7:    <div id="main-content">
+resources/views/home/admin/add.blade.php.bak-flash-validation2-20261116-232442:8:        <div class="container-fluid">
+resources/views/home/admin/add.blade.php.bak-live-add-20261116-231120:7:    <div id="main-content">
+resources/views/home/admin/add.blade.php.bak-live-add-20261116-231120:8:        <div class="container-fluid">
+resources/views/home/admin/add_ticker.blade.php:7:    <div id="main-content">
+resources/views/home/admin/add_ticker.blade.php:9:        <div class="container-fluid">
+resources/views/home/admin/edit.blade.php:10:           <div id="main-content">
+resources/views/home/admin/edit.blade.php:12:             <div class="container-fluid">
+resources/views/home/admin/edit.blade.php.bak-flash-validation2-20261116-232442:10:             <div id="main-content">
+resources/views/home/admin/edit.blade.php.bak-flash-validation2-20261116-232442:12:               <div class="container-fluid">
+resources/views/home/admin/list.blade.php:10:    <div id="main-content">
+resources/views/home/admin/list.blade.php:12:        <div class="container-fluid">
+resources/views/home/admin/list.blade.php.bak-flash-control-20261117:10:    <div id="main-content">
+resources/views/home/admin/list.blade.php.bak-flash-control-20261117:12:        <div class="container-fluid">
+resources/views/home/admin/list.blade.php.bak-flash-tabs-20261116-224537:10:    <div id="main-content">
+resources/views/home/admin/list.blade.php.bak-flash-tabs-20261116-224537:12:        <div class="container-fluid">
+resources/views/home/admin/ticker_edit.blade.php:8:             <div id="main-content">
+resources/views/home/admin/ticker_edit.blade.php:10:              <div class="container-fluid">
+resources/views/home/admin/ticker_list.blade.php:9:    <div id="main-content">
+resources/views/home/admin/ticker_list.blade.php:11:        <div class="container-fluid">
+resources/views/home/banner-detail.blade.php:4:<main class="main-body">
+resources/views/home/banner-detail.blade.php:22:            <article class="banner-detail-content">
+resources/views/home/banner-detail.blade.php:47:            </article>
+resources/views/home/contact.backup.blade.php:46:    <main class="main-body">
+resources/views/home/contact.blade.php:73:    <main class="main-body">
+resources/views/home/contact.blade.php.bak-before-contact-form-labels:73:    <main class="main-body">
+resources/views/home/contact.blade.php.bak-contact-alternative-email-20261116-200801:73:    <main class="main-body">
+resources/views/home/contact.blade.php.bak-contact-bcc-20261117:73:    <main class="main-body">
+resources/views/home/contact.blade.php.bak-equal-contact-layout-20261116-201047:73:    <main class="main-body">
+resources/views/home/contact.blade.php.bak-fax-empty-20261116:73:    <main class="main-body">
+resources/views/home/contact.blade.php.bak-grms-auto-bcc-20261117:73:    <main class="main-body">
+resources/views/home/contact.blade.php.bak-quick-message-compact-20261117:73:    <main class="main-body">
+resources/views/home/contact.blade.php.save:44:    <main class="main-body">
+resources/views/home/distance.blade.php:15:    <main class="main-body">
+resources/views/home/feedback.blade.php:17:<main class="main-body">
+resources/views/home/home-detail.blade.php:12:    <main class="main-body">
+resources/views/home/home_2021.blade.php:4:        .homepage-content-section {
+resources/views/home/home_2021.blade.php:7:        .homepage-content-section > .container > .row {
+resources/views/home/home_2021.blade.php:42:            .homepage-content-section {
+resources/views/home/home_2021.blade.php:110:    <main class="main-body">
+resources/views/home/home_2021.blade.php:169:        <section class="content-block homepage-content-section">
+resources/views/home/home_2021.blade.php.backup-20261117_082351:4:        .homepage-content-section {
+resources/views/home/home_2021.blade.php.backup-20261117_082351:7:        .homepage-content-section > .container > .row {
+resources/views/home/home_2021.blade.php.backup-20261117_082351:36:            .homepage-content-section {
+resources/views/home/home_2021.blade.php.backup-20261117_082351:94:    <main class="main-body">
+resources/views/home/home_2021.blade.php.backup-20261117_082351:155:        <section class="content-block homepage-content-section">
+resources/views/home/home_2021.blade.php.backup-flashbox-height:4:        .homepage-content-section {
+resources/views/home/home_2021.blade.php.backup-flashbox-height:7:        .homepage-content-section > .container > .row {
+resources/views/home/home_2021.blade.php.backup-flashbox-height:36:            .homepage-content-section {
+resources/views/home/home_2021.blade.php.backup-flashbox-height:104:    <main class="main-body">
+resources/views/home/home_2021.blade.php.backup-flashbox-height:165:        <section class="content-block homepage-content-section">
+resources/views/home/home_2021.blade.php.backup-flashbox-order-fix:4:        .homepage-content-section {
+resources/views/home/home_2021.blade.php.backup-flashbox-order-fix:7:        .homepage-content-section > .container > .row {
+resources/views/home/home_2021.blade.php.backup-flashbox-order-fix:36:            .homepage-content-section {
+resources/views/home/home_2021.blade.php.backup-flashbox-order-fix:104:    <main class="main-body">
+resources/views/home/home_2021.blade.php.backup-flashbox-order-fix:165:        <section class="content-block homepage-content-section">
+resources/views/home/home_2021.blade.php.bak-flash-tabs-20261116-224537:4:        .homepage-content-section {
+resources/views/home/home_2021.blade.php.bak-flash-tabs-20261116-224537:7:        .homepage-content-section > .container > .row {
+resources/views/home/home_2021.blade.php.bak-flash-tabs-20261116-224537:36:            .homepage-content-section {
+resources/views/home/home_2021.blade.php.bak-flash-tabs-20261116-224537:94:    <main class="main-body">
+resources/views/home/home_2021.blade.php.bak-flash-tabs-20261116-224537:155:        <section class="content-block homepage-content-section">
+resources/views/home/home_2021.blade.php.before-ticker-20261117-1945:4:        .homepage-content-section {
+resources/views/home/home_2021.blade.php.before-ticker-20261117-1945:7:        .homepage-content-section > .container > .row {
+resources/views/home/home_2021.blade.php.before-ticker-20261117-1945:42:            .homepage-content-section {
+resources/views/home/home_2021.blade.php.before-ticker-20261117-1945:110:    <main class="main-body">
+resources/views/home/home_2021.blade.php.before-ticker-20261117-1945:171:        <section class="content-block homepage-content-section">
+resources/views/home/home_2021.blade.php.before-ticker-cleanup-20261117-215636:4:        .homepage-content-section {
+resources/views/home/home_2021.blade.php.before-ticker-cleanup-20261117-215636:7:        .homepage-content-section > .container > .row {
+resources/views/home/home_2021.blade.php.before-ticker-cleanup-20261117-215636:42:            .homepage-content-section {
+resources/views/home/home_2021.blade.php.before-ticker-cleanup-20261117-215636:110:    <main class="main-body">
+resources/views/home/home_2021.blade.php.before-ticker-cleanup-20261117-215636:171:        <section class="content-block homepage-content-section">
+resources/views/home/home_2021.blade.php.before-ticker-container-fix-20261117-222556:4:        .homepage-content-section {
+resources/views/home/home_2021.blade.php.before-ticker-container-fix-20261117-222556:7:        .homepage-content-section > .container > .row {
+resources/views/home/home_2021.blade.php.before-ticker-container-fix-20261117-222556:42:            .homepage-content-section {
+resources/views/home/home_2021.blade.php.before-ticker-container-fix-20261117-222556:110:    <main class="main-body">
+resources/views/home/home_2021.blade.php.before-ticker-container-fix-20261117-222556:168:        <section class="content-block homepage-content-section">
+resources/views/home/home_2021.blade.php.before-ticker-redesign-20261117-220142:4:        .homepage-content-section {
+resources/views/home/home_2021.blade.php.before-ticker-redesign-20261117-220142:7:        .homepage-content-section > .container > .row {
+resources/views/home/home_2021.blade.php.before-ticker-redesign-20261117-220142:42:            .homepage-content-section {
+resources/views/home/home_2021.blade.php.before-ticker-redesign-20261117-220142:110:    <main class="main-body">
+resources/views/home/home_2021.blade.php.before-ticker-redesign-20261117-220142:168:        <section class="content-block homepage-content-section">
+resources/views/home/login_request.blade.php:29:<main class="main-body">
+resources/views/home/news_ticker_content.blade.php:8:    <main class="main-body">
+resources/views/home/otherhome_2021.blade.php:13:    <main class="main-body">
+resources/views/home/otherhome_2021.blade.php:51:        <section class="content-block homepage-content-section">
+resources/views/home/otherhome_2021.blade.php.backup-20261118-220833:13:    <main class="main-body">
+resources/views/home/otherhome_2021.blade.php.backup-20261118-220833:51:        <section class="content-block homepage-content-section">
+resources/views/home/otherhome_2021.blade.php.before-match-head-office-layout-20261117-205342:13:    <main class="main-body">
+resources/views/home/otherhome_2021.blade.php.before-officer-reposition-20261117-204617:13:    <main class="main-body">
+resources/views/home/sitemap.blade.php:10:    <main class="main-body">
+resources/views/layout/client/header_2021.blade.php:237:                <div class="container-fluid">
+resources/views/layout/client/header_2021.blade.php.backup-admin-select:177:                <div class="container-fluid">
+resources/views/layout/client/header_2021.blade.php.backup-calendar-dropdown-20261118-223954:219:                <div class="container-fluid">
+---- CONTENT DETAIL VIEW FILES ----
+resources/views/content/admin/add.blade.php
+resources/views/content/admin/edit.blade.php
+resources/views/content/admin/list.blade.php
+resources/views/content/content.blade.php
+resources/views/content/content_old.blade.php
+resources/views/content/subdomain_links.blade.php
+resources/views/home/admin/extra_data_details_facebook_instagram_feed.blade.php
+resources/views/home/admin/extra_data_details_live.blade.php
+resources/views/home/admin/extra_data_details_live.blade.php.bak-flash-validation-20261116-232152
+resources/views/home/admin/extra_data_details_live.blade.php.bak-flash-validation2-20261116-232442
+resources/views/home/admin/extra_data_details_live.blade.php.bak-live-add-20261116-231120
+resources/views/home/banner-detail.blade.php
+resources/views/home/home-detail.blade.php
+resources/views/home/home-detail_old.blade.php
+resources/views/home/home_page_tabs.blade.php.before-content-height-20261118-084648
+resources/views/home/home_page_tabs.blade.php.before-office-content-fix-20261117-225641
+resources/views/home/news_ticker_content.blade.php
+resources/views/home/news_ticker_content_old.blade.php
+resources/views/home/new_ticker_content.blade.php
+resources/views/home/office-detail.blade.php
 doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$
