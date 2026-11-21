@@ -1,402 +1,486 @@
-doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && echo "===== INDEXER =====" && sed -n '1,260p' app/Services/Chatbot/ChatbotKnowledgeIndexer.php && echo "===== RETRIEVER =====" && sed -n '1,280p' app/Services/Chatbot/ChatbotKnowledgeRetriever.php
-===== INDEXER =====
+doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && for f in app/Models/Content.php app/Models/ContentDetail.php app/Models/Home.php app/Models/Homedetail.php; do echo "===== $f ====="; sed -n '1,220p' "$f"; done
+===== app/Models/Content.php =====
 <?php
 
-namespace App\Services\Chatbot;
+namespace App\Models;
 
-use App\Models\ChatbotKnowledgeDocument;
-use App\Models\ChatbotKnowledgeSource;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
-use InvalidArgumentException;
-use RuntimeException;
 
-class ChatbotKnowledgeIndexer
+class Content extends Model
 {
-    private const CHUNK_SIZE = 1200;
-    private const CHUNK_OVERLAP = 150;
+    public $languageId;
 
-    public function __construct(
-        private readonly ChatbotDocumentExtractor $extractor
-    ) {
+    /**
+     * The database table used by the model.
+     *
+     * @var string
+     */
+
+    protected $fillable = array('is_active', 'is_deleted', 'created_by', 'updated_by');
+
+    protected $table = 'content';
+
+    public function details()
+    {
+        return $this->hasMany(ContentDetail::class, 'content_id');
     }
 
     /**
-     * Extract and index a local document.
-     *
-     * Required: title, storage_disk, storage_path.
-     * Optional: source_id, office_id, language_id, document_type,
-     * source_key, source_url, mime_type, source_updated_at, metadata.
+     * get all undeleted contents
+     * @return object
      */
-    public function indexDocument(array $data): array
+    public static function getUndeletedContents()
     {
-        foreach (['title', 'storage_disk', 'storage_path'] as $field) {
-            if (!isset($data[$field]) || trim((string) $data[$field]) === '') {
-                throw new InvalidArgumentException("Missing required field: {$field}");
-            }
-        }
+        $languageId = Language::getIdFromCode('en');
+        $query      = "Select t1.id,t1.content_url,date_format( t1.updated_at, '%d %b, %Y' ) AS updated_on,
+                                                t1.is_active,t2.content_heading
+                                                from pndc_content t1
+                                                join pndc_content_detail t2 on t1.id=t2.content_id
+                                                where t1.is_deleted='0' and t2.language_id = '$languageId' ";
 
-        // A source is the authority for its office and must be enabled.
-        // Never allow caller-supplied office_id to move source content.
-        $source = null;
-
-        if (!empty($data['source_id'])) {
-            $source = ChatbotKnowledgeSource::findOrFail($data['source_id']);
-
-            if (!$source->is_enabled) {
-                throw new InvalidArgumentException('Knowledge source is disabled.');
-            }
-
-            if (array_key_exists('office_id', $data)
-                && $data['office_id'] !== null
-                && (int) $data['office_id'] !== (int) $source->office_id) {
-                throw new InvalidArgumentException(
-                    'Document office_id does not match its knowledge source.'
-                );
-            }
-        }
-
-        $disk = (string) $data['storage_disk'];
-        $path = (string) $data['storage_path'];
-
-        if (!in_array($disk, ['local', 'public'], true)) {
-            throw new InvalidArgumentException('Unapproved storage disk.');
-        }
-
-        $extraction = $this->extractor->extract($disk, $path);
-
-        // Never replace an existing successful index after extraction failure.
-        if (($extraction['status'] ?? null) !== 'extracted'
-            || trim((string) ($extraction['text'] ?? '')) === '') {
-            return [
-                'status' => 'failed',
-                'error' => $extraction['error'] ?? 'No extractable text found.',
-                'document' => null,
-                'chunks' => 0,
-            ];
-        }
-
-        $absolutePath = Storage::disk($disk)->path($path);
-
-        if (!is_file($absolutePath) || !is_readable($absolutePath)) {
-            return [
-                'status' => 'failed',
-                'error' => 'Document is not available for indexing.',
-                'document' => null,
-                'chunks' => 0,
-            ];
-        }
-
-        $checksum = hash_file('sha256', $absolutePath);
-
-        if ($checksum === false) {
-            throw new RuntimeException('Unable to calculate document checksum.');
-        }
-
-        $source = null;
-
-        if (!empty($data['source_id'])) {
-            $source = ChatbotKnowledgeSource::findOrFail($data['source_id']);
-        }
-
-        $officeId = $data['office_id'] ?? $source?->office_id;
-        $languageId = $data['language_id'] ?? null;
-        $sourceId = $source?->id;
-
-        $documentQuery = ChatbotKnowledgeDocument::query();
-
-        if ($sourceId !== null) {
-            $documentQuery->where('source_id', $sourceId);
-        } else {
-            $documentQuery->whereNull('source_id');
-        }
-
-        if (!empty($data['source_key'])) {
-            $documentQuery->where('source_key', $data['source_key']);
-        } else {
-            $documentQuery
-                ->where('storage_disk', $disk)
-                ->where('storage_path', $path);
-        }
-
-        $existing = $documentQuery->first();
-
-        // Identical content with existing chunks needs no re-indexing.
-        if ($existing
-            && $existing->checksum === $checksum
-            && $existing->parser_status === 'indexed'
-            && $existing->chunks()->exists()) {
-            return [
-                'status' => 'unchanged',
-                'document' => $existing,
-                'chunks' => $existing->chunks()->count(),
-                'checksum' => $checksum,
-            ];
-        }
-
-        $chunks = $this->splitText((string) $extraction['text']);
-
-        if ($chunks === []) {
-            return [
-                'status' => 'failed',
-                'error' => 'Document did not produce usable text chunks.',
-                'document' => null,
-                'chunks' => 0,
-            ];
-        }
-
-        // All document changes and chunk replacement are atomic.
-        $document = DB::transaction(function () use (
-            $existing,
-            $data,
-            $source,
-            $sourceId,
-            $officeId,
-            $languageId,
-            $disk,
-            $path,
-            $checksum,
-            $extraction,
-            $chunks
-        ) {
-            $document = $existing
-                ? ChatbotKnowledgeDocument::query()
-                    ->whereKey($existing->id)
-                    ->lockForUpdate()
-                    ->firstOrFail()
-                : new ChatbotKnowledgeDocument();
-
-            $document->fill([
-                'source_id' => $sourceId,
-                'office_id' => $officeId,
-                'language_id' => $languageId,
-                'document_type' => $data['document_type'] ?? 'document',
-                'source_key' => $data['source_key'] ?? null,
-                'title' => $data['title'],
-                'source_url' => $data['source_url'] ?? null,
-                'storage_disk' => $disk,
-                'storage_path' => $path,
-                'mime_type' => $data['mime_type'] ?? null,
-                'file_size' => filesize(Storage::disk($disk)->path($path)),
-                'checksum' => $checksum,
-                'source_updated_at' => $data['source_updated_at'] ?? null,
-                'extracted_text' => $extraction['text'],
-                'extraction_method' => $extraction['method'] ?? null,
-                'parser_status' => 'indexed',
-                'indexed_at' => now(),
-                'last_error' => null,
-                'metadata' => $data['metadata'] ?? null,
-            ]);
-
-            $document->save();
-
-            // Old chunks are removed only inside the successful transaction.
-            $document->chunks()->delete();
-
-            foreach ($chunks as $number => $chunkText) {
-                $document->chunks()->create([
-                    'source_id' => $sourceId,
-                    'office_id' => $officeId,
-                    'language_id' => $languageId,
-                    'chunk_number' => $number + 1,
-                    'chunk_text' => $chunkText,
-                    'token_count' => max(
-                        1,
-                        (int) ceil(mb_strlen($chunkText, 'UTF-8') / 4)
-                    ),
-                    'chunk_hash' => hash('sha256', $chunkText),
-                    'status' => 'active',
-                ]);
-            }
-
-            if ($source) {
-                $source->forceFill([
-                    'last_indexed_at' => now(),
-                    'content_checksum' => $checksum,
-                    'last_error' => null,
-                ])->save();
-            }
-
-            return $document->fresh();
-        });
-
-        return [
-            'status' => 'indexed',
-            'document' => $document,
-            'chunks' => count($chunks),
-            'checksum' => $checksum,
-            'method' => $extraction['method'] ?? null,
-        ];
+        return DB::select($query);
     }
 
     /**
-     * Split Unicode text without cutting Nepali characters.
+     * get all undeleted contents office wise
+     * @param int $officeId
+     * @return object
      */
-    public function splitText(string $text): array
+    public static function getUndeletedContentsByOffice($officeId)
     {
-        $text = trim(str_replace("\0", '', $text));
+        $languageId = Language::getIdFromCode('en');
+        $query      = "Select t1.id,t1.content_url,date_format( t1.updated_at, '%d %b, %Y' ) AS updated_on,
+                                                t1.is_active,t2.content_heading
+                                                from pndc_content t1
+                                                join pndc_content_detail t2 on t1.id=t2.content_id
+                                                where t1.is_deleted='0' and t2.language_id = '$languageId' and t1.office_id='$officeId' ";
 
-        if ($text === '') {
-            return [];
-        }
+        return DB::select($query);
+    }
 
-        $result = [];
-        $length = mb_strlen($text, 'UTF-8');
-        $start = 0;
-
-        while ($start < $length) {
-            $remaining = $length - $start;
-            $take = min(self::CHUNK_SIZE, $remaining);
-            $piece = mb_substr($text, $start, $take, 'UTF-8');
-
-            if ($remaining > self::CHUNK_SIZE) {
-                $newline = mb_strrpos($piece, "\n", 0, 'UTF-8');
-                $space = mb_strrpos($piece, ' ', 0, 'UTF-8');
-                $boundary = max(
-                    $newline === false ? -1 : $newline,
-                    $space === false ? -1 : $space
-                );
-
-                // Avoid producing very small chunks at an early boundary.
-                if ($boundary >= (int) (self::CHUNK_SIZE * 0.60)) {
-                    $take = $boundary + 1;
-===== RETRIEVER =====
-<?php
-
-namespace App\Services\Chatbot;
-
-use App\Models\ChatbotKnowledgeChunk;
-use Illuminate\Support\Collection;
-use InvalidArgumentException;
-
-class ChatbotKnowledgeRetriever
-{
     /**
-     * Search only indexed, active, public knowledge for the requested office.
-     *
-     * @return array{question:string,office_id:int,matches:array}
+     * check whether url exist or not for individual office
+     * @param  string $url
+     * @param  int $officeId
+     * @return int
      */
-    public function search(string $question, int $officeId, int $limit = 5): array
+    public static function checkExist($url, $officeId)
     {
-        $question = trim($question);
+        return Content::where('is_deleted', '0')
+            ->where('content_url', $url)
+            ->where('office_id', $officeId)
+            ->pluck('id')
+            ->first();
+    }
 
-        if ($question === '') {
-            throw new InvalidArgumentException('Search question is required.');
-        }
+    /**
+     * get content detail with languages
+     * @param  int $id
+     * @return object
+     */
+    public static function getContentDetailsWithLanguages($id)
+    {
+        $query = "select t1.id as language_id,t1.language_name,
+                                        (select t2.id from pndc_content t2 where t2.id='$id') as content_id,
+                                        (select t2.parent_id from pndc_content t2 where t2.id='$id') as parent_id,
+                                        (select content_url from pndc_content t2 where t2.id='$id') as content_url,
+                                        (select show_in from pndc_content t2 where t2.id='$id') as show_in,
+                                        (select order_menu from pndc_content t2 where t2.id='$id') as order_menu,
+                                        (select content_meta_tags from pndc_content t2 where t2.id='$id') as content_meta_tags,
+                                        (select content_meta_description from pndc_content t2 where t2.id='$id') as content_meta_description,
+                                        (select content_attachment from pndc_content t2 where t2.id='$id') as content_attachment,
+                                        (select is_active from pndc_content t2 where t2.id='$id') as is_active,
+                                        (select content_heading from pndc_content t2 join pndc_content_detail t3
+                                                        on t2.id=t3.content_id where t3.language_id=t1.id and t2.id='$id') as content_heading,
+                                        (select content_description from pndc_content t2 join pndc_content_detail t3
+                                                        on t2.id=t3.content_id where t3.language_id=t1.id and t2.id='$id') as content_description,
+                                        (select content_page_title from pndc_content t2 join pndc_content_detail t3
+                                                        on t2.id=t3.content_id where t3.language_id=t1.id and t2.id='$id') as content_page_title,
+                                        (select t3.id from pndc_content t2 join pndc_content_detail t3
+                                                        on t2.id=t3.content_id where t3.language_id=t1.id and t2.id='$id') as content_detail_id
+                                        from pndc_language t1
+                                        where t1.is_active = '1' ";
 
-        if ($officeId < 1) {
-            throw new InvalidArgumentException('A valid office is required.');
-        }
+        return DB::select($query);
+    }
 
-        $limit = max(1, min($limit, 10));
-        $terms = $this->terms($question);
-
-        if ($terms === []) {
-            return [
-                'question' => $question,
-                'office_id' => $officeId,
-                'matches' => [],
-            ];
-        }
-
-        $query = ChatbotKnowledgeChunk::query()
-            ->with(['document'])
-            ->where(function ($scope) use ($officeId) {
-                $scope->where('office_id', $officeId)
-                    ->orWhereNull('office_id');
-            })
-            ->where('status', 'active')
-            ->whereHas('document', function ($documents) use ($officeId) {
-                $documents
-                    ->where(function ($scope) use ($officeId) {
-                        $scope->where('office_id', $officeId)
-                            ->orWhereNull('office_id');
-                    })
-                    ->where('parser_status', 'indexed')
-                    ->whereHas('source', function ($sources) use ($officeId) {
-                        $sources
-                            ->where('is_enabled', true)
-                            ->where('is_public', true)
-                            ->where(function ($scope) use ($officeId) {
-                                $scope->where('office_id', $officeId)
-                                    ->orWhereNull('office_id');
-                            });
-                    });
-            })
-            ->where(function ($search) use ($terms) {
-                foreach ($terms as $term) {
-                    $pattern = '%' . addcslashes($term, '\\%_') . '%';
-                    $search->orWhere('chunk_text', 'LIKE', $pattern);
-                }
-            });
-
-        // Bound database work even when a common word matches many records.
-        $candidates = $query
-            ->orderByDesc('id')
-            ->limit(300)
+    /**
+     * get content list hierarchy wise
+     * @param  int $parentId
+     * @param  int $level
+     * @param  int $selected
+     * @return string
+     */
+    public static function content_list_for_contentEntry($officeId, $parentId, $level, $selected)
+    {
+        $languageId = Language::getIdFromCode('en');
+        $contents   = Content::join('content_detail', 'content.id', '=', 'content_detail.content_id')
+            ->select(
+                'content.id',
+                'content.parent_id',
+                'content_detail.content_heading'
+            )
+            ->where('content.office_id', $officeId)
+            ->where('content.parent_id', $parentId)
+            ->where('content.is_active', '1')
+            ->where('content_detail.language_id', $languageId)
+            ->orderby('content.id', 'asc')
             ->get();
 
-        $ranked = $candidates
-            ->map(function (ChatbotKnowledgeChunk $chunk) use ($terms) {
-                $text = mb_strtolower($chunk->chunk_text, 'UTF-8');
-                $score = 0;
+        $returnList = '<select class="m-wrap span6" name="parent_id" id="parent_id">';
+        $returnList .= '<option value="0" selected>Parent Itself</option>';
+        foreach ($contents as $content) {
+            if ($selected > 0 && $selected == $content->id) {
+                $selected_option = 'selected="selected"';
+            } else {
+                $selected_option = "";
+            }
 
-                foreach ($terms as $term) {
-                    if (mb_strpos($text, $term, 0, 'UTF-8') !== false) {
-                        $score++;
-                    }
-                }
+            $returnList .= '<option value="' . $content->id . '" ' . $selected_option . '>' .
+                str_repeat('&nbsp;--|- &nbsp;', $level) . $content->content_heading . '</option>';
+            $returnList .= self::subcontent_list_for_contentEntry($officeId, $content->id, $level + 1, $selected);
+        }
+        $returnList .= '</select>';
 
-                return [
-                    'chunk' => $chunk,
-                    'score' => $score,
-                ];
-            })
-            ->filter(fn (array $item) => $item['score'] > 0)
-            ->sort(function (array $a, array $b) {
-                return ($b['score'] <=> $a['score'])
-                    ?: ($b['chunk']->id <=> $a['chunk']->id);
-            })
-            ->take($limit)
-            ->values();
-
-        return [
-            'question' => $question,
-            'office_id' => $officeId,
-            'matches' => $ranked->map(function (array $item) {
-                $chunk = $item['chunk'];
-                $document = $chunk->document;
-
-                return [
-                    'document_id' => (int) $document->id,
-                    'chunk_id' => (int) $chunk->id,
-                    'chunk_number' => (int) $chunk->chunk_number,
-                    'title' => $document->title,
-                    'source_url' => $document->source_url,
-                    'content' => $chunk->chunk_text,
-                    'score' => (int) $item['score'],
-                ];
-            })->all(),
-        ];
+        return $returnList;
     }
 
     /**
-     * Keep Nepali and English Unicode words; ignore one-character fragments.
+     * get sub content list hierarchy wise
+     * @param  int $parentId
+     * @param  int $level
+     * @param  int $selected
+     * @return string
      */
-    private function terms(string $question): array
+    public static function subcontent_list_for_contentEntry($officeId, $parentId, $level, $selected = 0)
     {
-        $normalized = mb_strtolower($question, 'UTF-8');
-        $parts = preg_split('/[^\p{L}\p{N}]+/u', $normalized) ?: [];
+        $languageId  = Language::getIdFromCode('en');
+        $subcontents = Content::join('content_detail', 'content.id', '=', 'content_detail.content_id')
+            ->select(
+                'content.id',
+                'content.parent_id',
+                'content_detail.content_heading'
+            )
+            ->where('content.office_id', $officeId)
+            ->where('content.parent_id', $parentId)
+            ->where('content.is_active', '1')
+            ->where('content_detail.language_id', $languageId)
+            ->orderby('content.id', 'asc')
+            ->get();
 
-        $terms = [];
-
-        foreach ($parts as $part) {
-            if (mb_strlen($part, 'UTF-8') >= 2) {
-                $terms[] = $part;
+        $returnList = '';
+        foreach ($subcontents as $subcontent) {
+            if ($selected > 0 && $selected == $subcontent->id) {
+                $selected_option = 'selected="selected"';
+            } else {
+                $selected_option = "";
             }
+            $returnList .= '<option value="' . $subcontent->id . '" ' . $selected_option . '>' .
+                str_repeat('&nbsp;--|- &nbsp;', $level) . $subcontent->content_heading . '</option>';
+            $returnList .= self::subcontent_list_for_contentEntry($officeId, $subcontent->id, $level + 1, $selected);
         }
-
-        return array_values(array_unique($terms));
+        return $returnList;
     }
+
+    /*------------------------------------------------------*/
+    /**
+     * get content detail
+     * @param int $officeId
+     * @param string $url
+     * @param int $langId
+     * @return object
+     */
+    public static function getContentDetail($officeId, $url, $langId)
+    {
+        $result = Content::join('content_detail', 'content.id', '=', 'content_detail.content_id')
+            ->select(
+                'content.id',
+                'content.parent_id',
+                'content.content_url',
+                'content.content_meta_tags',
+                'content.content_meta_description',
+                'content_attachment',
+                'content_detail.content_heading',
+                'content_detail.content_page_title',
+                'content_detail.content_description',
+                'content.office_id'
+            )
+            ->where('content.office_id', $officeId)
+            ->where('content.content_url', $url)
+            ->where('content_detail.language_id', $langId)
+            ->where('content.is_active', '1')
+            ->where('content.is_deleted', '0')
+            ->first();
+        return $result;
+    }
+
+    /**
+     * get content detail
+     * @param int $officeId
+     * @param int $id
+     * @param int $langId
+===== app/Models/ContentDetail.php =====
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class ContentDetail extends Model
+{
+    public $languageId;
+
+    /**
+     * The database table used by the model.
+     *
+     * @var string
+     */
+
+    protected $fillable = array('content_heading', 'content_description', 'content_page_title');
+
+    protected $table = 'content_detail';
+}
+===== app/Models/Home.php =====
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+
+class Home extends Model
+{
+    public $languageId;
+
+    /**
+     * The database table used by the model.
+     *
+     * @var string
+     */
+
+    protected $fillable = array('is_active', 'is_deleted', 'created_by', 'updated_by', 'office_id', 'home_url', 'show_in', 'home_identity_name','data_2_title');
+
+    protected $table = 'home';
+
+    public function details()
+    {
+        return $this->hasMany(Homedetail::class);
+    }
+
+    public static function getAllTicker()
+    {
+        $languageId = Language::getIdFromCode('en');
+        $query    = "Select t1.id,date_format( t1.updated_at, '%d %b, %Y' ) AS updated_at,
+                                                t1.is_active,t2.ticker_des,t2.ticker_title
+                                                from pndc_ticker t1
+                                                join pndc_ticker_detail t2 on t1.id=t2.ticker_id
+                                                where t1.is_delete='0' and t2.language_id = '$languageId'
+                                                order by t1.created_at desc
+                                                ";
+
+        return DB::select($query);
+    }
+
+    public static function findTickerById($id)
+    {
+        $languageId = Language::getIdFromCode('en');
+
+
+
+        $query    = "SELECT * FROM pndc_ticker WHERE  is_delete='0'  and id='$id'  LIMIT 1";
+
+        return DB::select($query);
+    }
+
+    public static function getTickerDetailsWithLanguages($id)
+    {
+        $query    = "select t1.id as language_id,t1.language_name,
+                                        (select t2.id from pndc_ticker t2 where t2.id='$id') as ticker_id,
+
+
+
+                                        (select is_active from pndc_ticker t2 where t2.id='$id') as is_active,
+
+
+                                        (select t3.ticker_des from pndc_ticker t2 join pndc_ticker_detail t3
+                                                        on t2.id=t3.ticker_id where t3.language_id=t1.id and t2.id='$id') as ticker_description,
+                                        (select t3.ticker_title from pndc_ticker t2 join pndc_ticker_detail t3
+                                                        on t2.id=t3.ticker_id where t3.language_id=t1.id and t2.id='$id') as ticker_title,
+                                        (select t3.id from pndc_ticker t2 join pndc_ticker_detail t3
+                                                        on t2.id=t3.ticker_id where t3.language_id=t1.id and t2.id='$id') as ticker_detail_id
+                                        from pndc_language t1
+                                        where t1.is_active = '1'";
+
+        return DB::select($query);
+    }
+
+
+
+    /**
+     * get all undeleted homes
+     * @return object
+     */
+    public static function getUndeletedHomes()
+    {
+        $languageId = Language::getIdFromCode('en');
+        $query    = "Select t1.id,t1.home_url,date_format( t1.updated_at, '%d %b, %Y' ) AS updated_on,
+                                                t1.is_active,t2.home_heading
+                                                from pndc_home t1
+                                                join pndc_home_detail t2 on t1.id=t2.home_id
+                                                where t1.is_deleted='0' and t2.language_id = '$languageId' ";
+
+        return DB::select($query);
+    }
+
+    /**
+     * get all undeleted homes office wise
+     * @param int $officeId
+     * @return object
+     */
+    public static function getUndeletedHomesByOffice($officeId)
+    {
+        $languageId = Language::getIdFromCode('en');
+        $query    = "select t1.*, date_format( t1.updated_at, '%d %b, %Y' ) AS updated_on,t2.home_heading
+                                        from pndc_home t1 left join pndc_home_detail t2 on t1.id=t2.home_id
+                                        where t1.office_id = '$officeId'and t2.language_id = '$languageId'";
+        return DB::select($query);
+    }
+
+    /**
+     * check whether url exist or not for individual office
+     * @param  string $url
+     * @param  int $officeId
+     * @return int
+     */
+    public static function checkExist($url, $officeId)
+    {
+        return Home::where('is_deleted', '0')
+            ->where('home_url', $url)
+            ->where('office_id', $officeId)
+            ->pluck('id')->first();
+    }
+
+    /**
+     * get show in of undeleted home contents
+     * @return array
+     */
+    public static function getShowInOfUndeleted()
+    {
+        $homeOffice = Office::where('office_subdomain', 'home')->first();
+        return Home::where('is_deleted', '0')
+            ->where('office_id', '<>', $homeOffice->id)
+            ->groupby('show_in')
+            ->orderby('id')
+            ->pluck('show_in', 'home_url');
+    }
+
+    /**
+     * get home detail with languages
+     * @param  int $id
+     * @return object
+     */
+    public static function getHomeDetailsWithLanguages($id)
+    {
+        $query    = "select t1.id as language_id,t1.language_name,
+                                        (select t2.id from pndc_home t2 where t2.id='$id') as home_id,
+                                        (select t2.show_in from pndc_home t2 where t2.id='$id') as show_in,
+                                        (select home_url from pndc_home t2 where t2.id='$id') as home_url,
+                                        (select home_meta_tags from pndc_home t2 where t2.id='$id') as home_meta_tags,
+                                        (select home_meta_description from pndc_home t2 where t2.id='$id') as home_meta_description,
+                                        (select home_attachment from pndc_home t2 where t2.id='$id') as home_attachment,
+                                        (select is_active from pndc_home t2 where t2.id='$id') as is_active,
+                                        (select home_heading from pndc_home t2 join pndc_home_detail t3
+                                                        on t2.id=t3.home_id where t3.language_id=t1.id and t2.id='$id') as home_heading,
+                                        (select officer_name from pndc_home t2 join pndc_home_detail t3
+                                                        on t2.id=t3.home_id where t3.language_id=t1.id and t2.id='$id') as officer_name,
+                                        (select home_description from pndc_home t2 join pndc_home_detail t3
+                                                        on t2.id=t3.home_id where t3.language_id=t1.id and t2.id='$id') as home_description,
+                                        (select home_page_title from pndc_home t2 join pndc_home_detail t3
+                                                        on t2.id=t3.home_id where t3.language_id=t1.id and t2.id='$id') as home_page_title,
+                                        (select t3.id from pndc_home t2 join pndc_home_detail t3
+                                                        on t2.id=t3.home_id where t3.language_id=t1.id and t2.id='$id') as home_detail_id
+                                        from pndc_language t1
+                                        where t1.is_active = '1'";
+
+        return DB::select($query);
+    }
+
+    /*------------------------------------------------------*/
+    /**
+     * get home detail
+     * @param int $officeId
+     * @param string $url
+     * @param int $langId
+     * @return object
+     */
+    public static function getHomeDetail($officeId, $url, $langId)
+    {
+        // dd($officeId);
+        $result = Home::join('home_detail', 'home.id', '=', 'home_detail.home_id')
+            ->select(
+                'home.id',
+                'home.home_url',
+                'home.home_meta_tags',
+                'home.home_meta_description',
+                'home_attachment',
+                'home_detail.home_heading',
+                'home_detail.home_page_title',
+                'home_detail.home_description'
+            )
+            ->where('home.office_id', $officeId)
+            ->where('home.home_url', $url)
+            ->where('home_detail.language_id', $langId)
+            ->where('home.is_active', '1')
+            ->where('home.is_deleted', '0')
+            ->first();
+        return $result;
+    }
+
+    /**
+     * get home page setions data
+     * @param int $showIn
+     * @param int $officeId
+     * @param int $langId
+     * @return object
+     */
+    public static function getHomePageData($showIn, $officeId, $langId)
+    {
+        $result = Home::join('home_detail', 'home.id', '=', 'home_detail.home_id')
+            ->select(
+                'home.id',
+                'home.office_id',
+                'home.home_url',
+                'home.home_attachment',
+                'home_detail.home_heading',
+                'home_detail.home_description',
+                'home_detail.home_page_title',
+                'home.home_meta_tags',
+                'home.home_meta_description',
+                'home.data_1',
+                'home.data_2',
+                'home.data_3',
+                'home.data_4'
+            )
+===== app/Models/Homedetail.php =====
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Homedetail extends Model
+{
+    public $languageId;
+
+    /**
+     * The database table used by the model.
+     *
+     * @var string
+     */
+
+    protected $fillable = array('home_heading', 'officer_name', 'home_description', 'home_page_title');
+
+    protected $table = 'home_detail';
 }
 doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$
