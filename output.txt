@@ -1,3022 +1,836 @@
-doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && /usr/bin/php8.5 artisan tinker --execute='dump(["offices" => \Illuminate\Support\Facades\DB::table("office")->select("id","office_subdomain","is_active","is_deleted")->orderBy("id")->get()->toArray(), "content_by_office_language" => \Illuminate\Support\Facades\DB::table("content as c")->join("content_detail as d","d.content_id","=","c.id")->where("c.is_active","1")->where("c.is_deleted","0")->whereIn("d.language_id",[1,2])->select("c.office_id","d.language_id",\Illuminate\Support\Facades\DB::raw("count(*) as total"))->groupBy("c.office_id","d.language_id")->orderBy("c.office_id")->orderBy("d.language_id")->get()->toArray(), "home_by_office_language" => \Illuminate\Support\Facades\DB::table("home as h")->join("home_detail as d","d.home_id","=","h.id")->where("h.is_active","1")->where("h.is_deleted","0")->whereIn("d.language_id",[1,2])->select("h.office_id","d.language_id",\Illuminate\Support\Facades\DB::raw("count(*) as total"))->groupBy("h.office_id","d.language_id")->orderBy("h.office_id")->orderBy("d.language_id")->get()->toArray()]);'
-array:3 [
-  "offices" => array:234 [
-    0 => {#7122
-      +"id": 4
-      +"office_subdomain": "home"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    1 => {#7121
-      +"id": 23
-      +"office_subdomain": "pokhara"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    2 => {#7120
-      +"id": 31
-      +"office_subdomain": "butwal"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    3 => {#7119
-      +"id": 55
-      +"office_subdomain": "dhangadi"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    4 => {#7118
-      +"id": 64
-      +"office_subdomain": "chitwann"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    5 => {#7117
-      +"id": 65
-      +"office_subdomain": "frsmo-pokhara"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    6 => {#7116
-      +"id": 66
-      +"office_subdomain": "www.sadak_bhaktapur."
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    7 => {#7115
-      +"id": 67
-      +"office_subdomain": "repandehi"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    8 => {#7114
-      +"id": 68
-      +"office_subdomain": "kathmanduupatyaka"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    9 => {#7113
-      +"id": 69
-      +"office_subdomain": "Pachimanchal Chetriy"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    10 => {#7112
-      +"id": 70
-      +"office_subdomain": "frsmo-kathmandu"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    11 => {#7111
-      +"id": 71
-      +"office_subdomain": "frsmo-itahari"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    12 => {#7110
-      +"id": 72
-      +"office_subdomain": "frsmo-surkhet"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    13 => {#7109
-      +"id": 73
-      +"office_subdomain": "far-western"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    14 => {#7108
-      +"id": 74
-      +"office_subdomain": "ilam"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    15 => {#7107
-      +"id": 75
-      +"office_subdomain": "damak"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    16 => {#7106
-      +"id": 76
-      +"office_subdomain": "biratnagar"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    17 => {#7105
-      +"id": 77
-      +"office_subdomain": "dhankuta"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    18 => {#7104
-      +"id": 78
-      +"office_subdomain": "lahan"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    19 => {#7103
-      +"id": 79
-      +"office_subdomain": "tumlingtar"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    20 => {#7102
-      +"id": 80
-      +"office_subdomain": "Janakpur"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    21 => {#7101
-      +"id": 81
-      +"office_subdomain": "chandranigahapur"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    22 => {#7100
-      +"id": 82
-      +"office_subdomain": "hetauda"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    23 => {#7099
-      +"id": 83
-      +"office_subdomain": "bharatpur"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    24 => {#7098
-      +"id": 84
-      +"office_subdomain": "charikot"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    25 => {#7097
-      +"id": 85
-      +"office_subdomain": "khurkot"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    26 => {#7096
-      +"id": 86
-      +"office_subdomain": "kathmandu"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    27 => {#7095
-      +"id": 87
-      +"office_subdomain": "kathmandu 2"
-      +"is_active": "0"
-      +"is_deleted": "1"
-    }
-    28 => {#7094
-      +"id": 88
-      +"office_subdomain": "lalitpur"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    29 => {#7093
-      +"id": 89
-      +"office_subdomain": "bhaktapur"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    30 => {#7092
-      +"id": 90
-      +"office_subdomain": "nuwakot"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    31 => {#7091
-      +"id": 91
-      +"office_subdomain": "damauli"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    32 => {#7090
-      +"id": 92
-      +"office_subdomain": "pokhara"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    33 => {#7089
-      +"id": 93
-      +"office_subdomain": "baglung"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    34 => {#7088
-      +"id": 94
-      +"office_subdomain": "palpa"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    35 => {#7087
-      +"id": 95
-      +"office_subdomain": "butwal"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    36 => {#7086
-      +"id": 96
-      +"office_subdomain": "shivapur"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    37 => {#7085
-      +"id": 97
-      +"office_subdomain": "pyuthan"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    38 => {#7084
-      +"id": 98
-      +"office_subdomain": "dang"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    39 => {#7083
-      +"id": 99
-      +"office_subdomain": "nepalgunj"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    40 => {#7082
-      +"id": 100
-      +"office_subdomain": "surkhet"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    41 => {#7081
-      +"id": 101
-      +"office_subdomain": "jumla"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    42 => {#7080
-      +"id": 102
-      +"office_subdomain": "chaurjahari"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    43 => {#7079
-      +"id": 103
-      +"office_subdomain": "mahendranagar"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    44 => {#7078
-      +"id": 104
-      +"office_subdomain": "doti"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    45 => {#7077
-      +"id": 105
-      +"office_subdomain": "sanphebagar"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    46 => {#7076
-      +"id": 106
-      +"office_subdomain": "baitadi"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    47 => {#7075
-      +"id": 107
-      +"office_subdomain": "patandhoka"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    48 => {#7074
-      +"id": 108
-      +"office_subdomain": "ykdumre.dor.gov.np"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    49 => {#7073
-      +"id": 109
-      +"office_subdomain": "heditahari.dor.gov.n"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    50 => {#7072
-      +"id": 110
-      +"office_subdomain": "yantriksiraha.dor.go"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    51 => {#7071
-      +"id": 111
-      +"office_subdomain": "Heavy Equipment Divi"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    52 => {#7070
-      +"id": 112
-      +"office_subdomain": "Heavy Equipment Divi"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    53 => {#7069
-      +"id": 113
-      +"office_subdomain": "hed-itahari"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    54 => {#7068
-      +"id": 114
-      +"office_subdomain": "hed-hetauda"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    55 => {#7067
-      +"id": 115
-      +"office_subdomain": "hed-kathmandu"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    56 => {#7066
-      +"id": 116
-      +"office_subdomain": "hed-pokhara"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    57 => {#7065
-      +"id": 117
-      +"office_subdomain": "hed-butwal"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    58 => {#7064
-      +"id": 118
-      +"office_subdomain": "hed-nepalgunj"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    59 => {#7063
-      +"id": 119
-      +"office_subdomain": "hed-godawari"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    60 => {#7062
-      +"id": 120
-      +"office_subdomain": "mo-phidim"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    61 => {#7061
-      +"id": 121
-      +"office_subdomain": "mo-Birtamod"
-      +"is_active": "0"
-      +"is_deleted": "0"
-    }
-    62 => {#7060
-      +"id": 122
-      +"office_subdomain": "mo-lahan"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    63 => {#7059
-      +"id": 123
-      +"office_subdomain": "mo-Janakpur"
-      +"is_active": "0"
-      +"is_deleted": "0"
-    }
-    64 => {#7058
-      +"id": 124
-      +"office_subdomain": "mo-Bharatpur"
-      +"is_active": "0"
-      +"is_deleted": "0"
-    }
-    65 => {#7057
-      +"id": 125
-      +"office_subdomain": "mo-nuwakot"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    66 => {#7056
-      +"id": 126
-      +"office_subdomain": "mo-dumre"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    67 => {#7055
-      +"id": 127
-      +"office_subdomain": "mo-dang"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    68 => {#7054
-      +"id": 128
-      +"office_subdomain": "mo-Surkhet"
-      +"is_active": "0"
-      +"is_deleted": "0"
-    }
-    69 => {#7053
-      +"id": 129
-      +"office_subdomain": "mtc"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    70 => {#7052
-      +"id": 130
-      +"office_subdomain": "mo-budar"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    71 => {#7051
-      +"id": 131
-      +"office_subdomain": "harkapur"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    72 => {#7050
-      +"id": 132
-      +"office_subdomain": ""
-      +"is_active": "0"
-      +"is_deleted": "1"
-    }
-    73 => {#7049
-      +"id": 133
-      +"office_subdomain": ""
-      +"is_active": "0"
-      +"is_deleted": "1"
-    }
-    74 => {#7048
-      +"id": 134
-      +"office_subdomain": "nshpd"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    75 => {#7047
-      +"id": 135
-      +"office_subdomain": "test"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    76 => {#7046
-      +"id": 136
-      +"office_subdomain": "pdadb"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    77 => {#7045
-      +"id": 137
-      +"office_subdomain": "ppp"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    78 => {#7044
-      +"id": 138
-      +"office_subdomain": "pmhpd"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    79 => {#7043
-      +"id": 139
-      +"office_subdomain": "phpd"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    80 => {#7042
-      +"id": 140
-      +"office_subdomain": "dtrp"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    81 => {#7041
-      +"id": 141
-      +"office_subdomain": "test1"
-      +"is_active": "0"
-      +"is_deleted": "1"
-    }
-    82 => {#7040
-      +"id": 142
-      +"office_subdomain": "nmrp"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    83 => {#7039
-      +"id": 143
-      +"office_subdomain": "dor.gov.np/nmrp"
-      +"is_active": "0"
-      +"is_deleted": "1"
-    }
-    84 => {#7038
-      +"id": 144
-      +"office_subdomain": "phponpj"
-      +"is_active": "0"
-      +"is_deleted": "1"
-    }
-    85 => {#7037
-      +"id": 145
-      +"office_subdomain": "bs-dang"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    86 => {#7036
-      +"id": 146
-      +"office_subdomain": "sddsbrpo"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    87 => {#7035
-      +"id": 147
-      +"office_subdomain": "qrdc"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    88 => {#7034
-      +"id": 148
-      +"office_subdomain": "test11"
-      +"is_active": "0"
-      +"is_deleted": "1"
-    }
-    89 => {#7033
-      +"id": 149
-      +"office_subdomain": "testsurkhet"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    90 => {#7032
-      +"id": 150
-      +"office_subdomain": "circular"
-      +"is_active": "0"
-      +"is_deleted": "1"
-    }
-    91 => {#7031
-      +"id": 151
-      +"office_subdomain": "pmhpp"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    92 => {#7030
-      +"id": 152
-      +"office_subdomain": "krrp"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    93 => {#7029
-      +"id": 153
-      +"office_subdomain": "rbid"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    94 => {#7028
-      +"id": 154
-      +"office_subdomain": "rbidroadp"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    95 => {#7027
-      +"id": 155
-      +"office_subdomain": "hrpkapilvastu"
-      +"is_active": "0"
-      +"is_deleted": "1"
-    }
-    96 => {#7026
-      +"id": 156
-      +"office_subdomain": "admin"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    97 => {#7025
-      +"id": 157
-      +"office_subdomain": "pmeu"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    98 => {#7024
-      +"id": 158
-      +"office_subdomain": "ghaighat-diktel-road"
-      +"is_active": "0"
-      +"is_deleted": "1"
-    }
-    99 => {#7023
-      +"id": 159
-      +"office_subdomain": "pmeu1"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    100 => {#7022
-      +"id": 160
-      +"office_subdomain": "pmhpdhulikhel"
-      +"is_active": "0"
-      +"is_deleted": "1"
-    }
-    101 => {#7021
-      +"id": 161
-      +"office_subdomain": "ssdrp"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    102 => {#7020
-      +"id": 162
-      +"office_subdomain": "frsmo"
-      +"is_active": "0"
-      +"is_deleted": "1"
-    }
-    103 => {#7019
-      +"id": 163
-      +"office_subdomain": "TRIPD"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    104 => {#7018
-      +"id": 164
-      +"office_subdomain": "ridpd"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    105 => {#7017
-      +"id": 165
-      +"office_subdomain": "mabhpd"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    106 => {#7016
-      +"id": 166
-      +"office_subdomain": "hed-janakpur"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    107 => {#7015
-      +"id": 167
-      +"office_subdomain": "lumbini-road-office"
-      +"is_active": "0"
-      +"is_deleted": "1"
-    }
-    108 => {#7014
-      +"id": 168
-      +"office_subdomain": "stoffice"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    109 => {#7013
-      +"id": 169
-      +"office_subdomain": "tcrp"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    110 => {#7012
-      +"id": 170
-      +"office_subdomain": "dorfcb"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    111 => {#7011
-      +"id": 171
-      +"office_subdomain": "bridgebranch"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    112 => {#7010
-      +"id": 172
-      +"office_subdomain": "dcgkshpes"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    113 => {#7009
-      +"id": 173
-      +"office_subdomain": "mbhpod"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    114 => {#7008
-      +"id": 174
-      +"office_subdomain": "pmhpod"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    115 => {#7007
-      +"id": 175
-      +"office_subdomain": "pmhpr"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    116 => {#7006
-      +"id": 176
-      +"office_subdomain": "phpobirgunj"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    117 => {#7005
-      +"id": 177
-      +"office_subdomain": "mprpwestern"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    118 => {#7004
-      +"id": 178
-      +"office_subdomain": "bs-kathmandu"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    119 => {#7003
-      +"id": 179
-      +"office_subdomain": "pmhp-gorkha"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    120 => {#7002
-      +"id": 180
-      +"office_subdomain": "smrp-rolpa"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    121 => {#7001
-      +"id": 181
-      +"office_subdomain": "khutiyadipayal"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    122 => {#7000
-      +"id": 182
-      +"office_subdomain": "mbhpogulmi"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    123 => {#6999
-      +"id": 183
-      +"office_subdomain": "phpokapilvastu"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    124 => {#6998
-      +"id": 184
-      +"office_subdomain": "dbcrp"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    125 => {#6997
-      +"id": 185
-      +"office_subdomain": "mbpom"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    126 => {#6996
-      +"id": 186
-      +"office_subdomain": "phpkapilwastu"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    127 => {#6995
-      +"id": 187
-      +"office_subdomain": "raptihighway"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    128 => {#6994
-      +"id": 188
-      +"office_subdomain": "pkhsrp"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    129 => {#6993
-      +"id": 189
-      +"office_subdomain": "phpodhangadhi"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    130 => {#6992
-      +"id": 190
-      +"office_subdomain": "bs-pokhara"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    131 => {#6991
-      +"id": 191
-      +"office_subdomain": "nsrp"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    132 => {#6990
-      +"id": 192
-      +"office_subdomain": "mbhpoga"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    133 => {#6989
-      +"id": 193
-      +"office_subdomain": "hed-janakpur"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    134 => {#6988
-      +"id": 194
-      +"office_subdomain": "nbrp-east"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    135 => {#6987
-      +"id": 195
-      +"office_subdomain": "gdrp"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    136 => {#6986
-      +"id": 196
-      +"office_subdomain": "gtmsrrp"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    137 => {#6985
-      +"id": 197
-      +"office_subdomain": "srrps"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    138 => {#6984
-      +"id": 198
-      +"office_subdomain": "bridge"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    139 => {#6983
-      +"id": 201
-      +"office_subdomain": "test001"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    140 => {#6982
-      +"id": 202
-      +"office_subdomain": "frsmo-itr"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    141 => {#6981
-      +"id": 203
-      +"office_subdomain": "test-clickable"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    142 => {#6980
-      +"id": 204
-      +"office_subdomain": "hulaki"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    143 => {#6979
-      +"id": 205
-      +"office_subdomain": "mo-jumla"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    144 => {#6978
-      +"id": 206
-      +"office_subdomain": "mo-mulkot"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    145 => {#6977
-      +"id": 207
-      +"office_subdomain": "test001001"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    146 => {#6976
-      +"id": 208
-      +"office_subdomain": "finaltestofficeadd"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    147 => {#6975
-      +"id": 209
-      +"office_subdomain": "rtrepo"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    148 => {#6974
-      +"id": 210
-      +"office_subdomain": "ntcpo"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    149 => {#6973
-      +"id": 211
-      +"office_subdomain": "jinstrep"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    150 => {#6972
-      +"id": 212
-      +"office_subdomain": "lirpo"
-      +"is_active": "0"
-      +"is_deleted": "1"
-    }
-    151 => {#6971
-      +"id": 213
-      +"office_subdomain": "bnsbt"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    152 => {#6970
-      +"id": 214
-      +"office_subdomain": "ltjsrsrp"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    153 => {#6969
-      +"id": 215
-      +"office_subdomain": "brrp"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    154 => {#6968
-      +"id": 216
-      +"office_subdomain": "gandak"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    155 => {#7135
-      +"id": 217
-      +"office_subdomain": "bbckp"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    156 => {#7136
-      +"id": 218
-      +"office_subdomain": "sbdp"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    157 => {#6749
-      +"id": 219
-      +"office_subdomain": "phpoitahari"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    158 => {#7137
-      +"id": 221
-      +"office_subdomain": "pmhpparbat"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    159 => {#7138
-      +"id": 222
-      +"office_subdomain": "mbhpohtd"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    160 => {#7139
-      +"id": 223
-      +"office_subdomain": "mbhposkt"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    161 => {#7140
-      +"id": 224
-      +"office_subdomain": "bimp"
-      +"is_active": "0"
-      +"is_deleted": "0"
-    }
-    162 => {#7141
-      +"id": 225
-      +"office_subdomain": "bsdharan"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    163 => {#7142
-      +"id": 226
-      +"office_subdomain": "bs-surkhet"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    164 => {#7143
-      +"id": 227
-      +"office_subdomain": "sdsbrp"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    165 => {#7144
-      +"id": 228
-      +"office_subdomain": "lumbiniroad"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    166 => {#7145
-      +"id": 229
-      +"office_subdomain": "mkgrp"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    167 => {#7146
-      +"id": 230
-      +"office_subdomain": "sh-south"
-      +"is_active": "0"
-      +"is_deleted": "1"
-    }
-    168 => {#7147
-      +"id": 231
-      +"office_subdomain": "srrpn"
-      +"is_active": "0"
-      +"is_deleted": "1"
-    }
-    169 => {#7148
-      +"id": 232
-      +"office_subdomain": "gorkharoad"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    170 => {#7149
-      +"id": 233
-      +"office_subdomain": "srrpn"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    171 => {#7150
-      +"id": 234
-      +"office_subdomain": "maintb"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    172 => {#7151
-      +"id": 235
-      +"office_subdomain": "nmrp-east"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    173 => {#7152
-      +"id": 236
-      +"office_subdomain": "dsrpco"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    174 => {#7153
-      +"id": 237
-      +"office_subdomain": "dgrp"
-      +"is_active": "0"
-      +"is_deleted": "0"
-    }
-    175 => {#7154
-      +"id": 238
-      +"office_subdomain": "kdprp"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    176 => {#7155
-      +"id": 239
-      +"office_subdomain": "test205"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    177 => {#7156
-      +"id": 240
-      +"office_subdomain": "testing"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    178 => {#7157
-      +"id": 242
-      +"office_subdomain": "phpodhangadhi"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    179 => {#7158
-      +"id": 243
-      +"office_subdomain": "phpojanakpur"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    180 => {#7159
-      +"id": 244
-      +"office_subdomain": "bridgebranch"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    181 => {#7160
-      +"id": 245
-      +"office_subdomain": "bps1"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    182 => {#7161
-      +"id": 246
-      +"office_subdomain": "mechb"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    183 => {#7162
-      +"id": 247
-      +"office_subdomain": "mo-mulkot"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    184 => {#7163
-      +"id": 248
-      +"office_subdomain": "mo-jumla"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    185 => {#7164
-      +"id": 249
-      +"office_subdomain": "frsmo-kathmandu"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    186 => {#7165
-      +"id": 250
-      +"office_subdomain": "frsmo-pokhara"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    187 => {#7166
-      +"id": 251
-      +"office_subdomain": "hetauda"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    188 => {#7167
-      +"id": 252
-      +"office_subdomain": "mbhpohtd"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    189 => {#7168
-      +"id": 253
-      +"office_subdomain": "rtrep"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    190 => {#7169
-      +"id": 254
-      +"office_subdomain": "ntcp"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    191 => {#7170
-      +"id": 255
-      +"office_subdomain": "gcrp"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    192 => {#7171
-      +"id": 256
-      +"office_subdomain": "ridp-ltj"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    193 => {#7172
-      +"id": 257
-      +"office_subdomain": "bnsbt"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    194 => {#7173
-      +"id": 258
-      +"office_subdomain": "brrp"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    195 => {#7174
-      +"id": 259
-      +"office_subdomain": "gandak"
-      +"is_active": "0"
-      +"is_deleted": "0"
-    }
-    196 => {#7175
-      +"id": 260
-      +"office_subdomain": "bbbcklgt"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    197 => {#7176
-      +"id": 261
-      +"office_subdomain": "sbdp"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    198 => {#7177
-      +"id": 262
-      +"office_subdomain": "phpoitahari"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    199 => {#7178
-      +"id": 263
-      +"office_subdomain": "nbrp-west"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    200 => {#7179
-      +"id": 264
-      +"office_subdomain": "kkrp-east"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    201 => {#7180
-      +"id": 265
-      +"office_subdomain": "kkrp-west"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    202 => {#7181
-      +"id": 266
-      +"office_subdomain": "mprp-west"
-      +"is_active": "0"
-      +"is_deleted": "1"
-    }
-    203 => {#7182
-      +"id": 267
-      +"office_subdomain": "mprpeastern"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    204 => {#7183
-      +"id": 268
-      +"office_subdomain": "mbhpos"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    205 => {#7184
-      +"id": 269
-      +"office_subdomain": "pmhpop"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    206 => {#7185
-      +"id": 270
-      +"office_subdomain": "tamorcorridor"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    207 => {#7186
-      +"id": 271
-      +"office_subdomain": "tcrp-sdo"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    208 => {#7187
-      +"id": 272
-      +"office_subdomain": "snkrp"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    209 => {#7188
-      +"id": 273
-      +"office_subdomain": "kcrp-bjk"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    210 => {#7189
-      +"id": 274
-      +"office_subdomain": "kgcrp"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    211 => {#7190
-      +"id": 275
-      +"office_subdomain": "bcrp"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    212 => {#7191
-      +"id": 276
-      +"office_subdomain": "kcrp-hs"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    213 => {#7192
-      +"id": 277
-      +"office_subdomain": "birgunj6lane"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    214 => {#7193
-      +"id": 278
-      +"office_subdomain": "bgcrp"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    215 => {#7194
-      +"id": 279
-      +"office_subdomain": "smrp"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    216 => {#7195
-      +"id": 280
-      +"office_subdomain": "ssdrp"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    217 => {#7196
-      +"id": 281
-      +"office_subdomain": "klrp"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    218 => {#7197
-      +"id": 282
-      +"office_subdomain": "gnrp"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    219 => {#7198
-      +"id": 283
-      +"office_subdomain": "dbcrp"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    220 => {#7199
-      +"id": 284
-      +"office_subdomain": "tcrp.ktm"
-      +"is_active": "0"
-      +"is_deleted": "0"
-    }
-    221 => {#7200
-      +"id": 285
-      +"office_subdomain": "hmis-ict"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    222 => {#7201
-      +"id": 286
-      +"office_subdomain": "kvlrp"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    223 => {#7202
-      +"id": 287
-      +"office_subdomain": "kcrp-south"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    224 => {#7203
-      +"id": 288
-      +"office_subdomain": "sbtp"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    225 => {#7204
-      +"id": 289
-      +"office_subdomain": "kblrp-east"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    226 => {#7205
-      +"id": 290
-      +"office_subdomain": "klrp-west"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    227 => {#7206
-      +"id": 291
-      +"office_subdomain": "phponpj"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    228 => {#7207
-      +"id": 292
-      +"office_subdomain": "pmb"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    229 => {#7208
-      +"id": 293
-      +"office_subdomain": "bs-dhi"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    230 => {#7209
-      +"id": 294
-      +"office_subdomain": "flipbook.html"
-      +"is_active": "1"
-      +"is_deleted": "1"
-    }
-    231 => {#7210
-      +"id": 295
-      +"office_subdomain": "kdpwest"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    232 => {#7211
-      +"id": 296
-      +"office_subdomain": "Jaspur Pyuthan"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-    233 => {#7212
-      +"id": 297
-      +"office_subdomain": "kiip"
-      +"is_active": "1"
-      +"is_deleted": "0"
-    }
-  ]
-  "content_by_office_language" => array:48 [
-    0 => {#7218
-      +"office_id": 4
-      +"language_id": 1
-      +"total": 222
-    }
-    1 => {#7127
-      +"office_id": 4
-      +"language_id": 2
-      +"total": 222
-    }
-    2 => {#7213
-      +"office_id": 23
-      +"language_id": 1
-      +"total": 5
-    }
-    3 => {#7219
-      +"office_id": 23
-      +"language_id": 2
-      +"total": 5
-    }
-    4 => {#7217
-      +"office_id": 71
-      +"language_id": 1
-      +"total": 2
-    }
-    5 => {#7220
-      +"office_id": 71
-      +"language_id": 2
-      +"total": 2
-    }
-    6 => {#7221
-      +"office_id": 74
-      +"language_id": 1
-      +"total": 2
-    }
-    7 => {#7222
-      +"office_id": 74
-      +"language_id": 2
-      +"total": 2
-    }
-    8 => {#7223
-      +"office_id": 75
-      +"language_id": 1
-      +"total": 5
-    }
-    9 => {#7224
-      +"office_id": 75
-      +"language_id": 2
-      +"total": 5
-    }
-    10 => {#7225
-      +"office_id": 80
-      +"language_id": 1
-      +"total": 2
-    }
-    11 => {#7226
-      +"office_id": 80
-      +"language_id": 2
-      +"total": 2
-    }
-    12 => {#7227
-      +"office_id": 88
-      +"language_id": 1
-      +"total": 1
-    }
-    13 => {#7228
-      +"office_id": 88
-      +"language_id": 2
-      +"total": 1
-    }
-    14 => {#7229
-      +"office_id": 89
-      +"language_id": 1
-      +"total": 1
-    }
-    15 => {#7230
-      +"office_id": 89
-      +"language_id": 2
-      +"total": 1
-    }
-    16 => {#7231
-      +"office_id": 92
-      +"language_id": 1
-      +"total": 2
-    }
-    17 => {#7232
-      +"office_id": 92
-      +"language_id": 2
-      +"total": 2
-    }
-    18 => {#7233
-      +"office_id": 94
-      +"language_id": 1
-      +"total": 2
-    }
-    19 => {#7234
-      +"office_id": 94
-      +"language_id": 2
-      +"total": 2
-    }
-    20 => {#7235
-      +"office_id": 97
-      +"language_id": 1
-      +"total": 1
-    }
-    21 => {#7236
-      +"office_id": 97
-      +"language_id": 2
-      +"total": 1
-    }
-    22 => {#7237
-      +"office_id": 98
-      +"language_id": 1
-      +"total": 1
-    }
-    23 => {#7238
-      +"office_id": 98
-      +"language_id": 2
-      +"total": 1
-    }
-    24 => {#7239
-      +"office_id": 100
-      +"language_id": 1
-      +"total": 1
-    }
-    25 => {#7240
-      +"office_id": 100
-      +"language_id": 2
-      +"total": 1
-    }
-    26 => {#7241
-      +"office_id": 106
-      +"language_id": 1
-      +"total": 1
-    }
-    27 => {#7242
-      +"office_id": 106
-      +"language_id": 2
-      +"total": 1
-    }
-    28 => {#7243
-      +"office_id": 134
-      +"language_id": 1
-      +"total": 2
-    }
-    29 => {#7244
-      +"office_id": 134
-      +"language_id": 2
-      +"total": 2
-    }
-    30 => {#7245
-      +"office_id": 140
-      +"language_id": 1
-      +"total": 1
-    }
-    31 => {#7246
-      +"office_id": 140
-      +"language_id": 2
-      +"total": 1
-    }
-    32 => {#7247
-      +"office_id": 142
-      +"language_id": 1
-      +"total": 2
-    }
-    33 => {#7248
-      +"office_id": 142
-      +"language_id": 2
-      +"total": 2
-    }
-    34 => {#7249
-      +"office_id": 147
-      +"language_id": 1
-      +"total": 1
-    }
-    35 => {#7250
-      +"office_id": 147
-      +"language_id": 2
-      +"total": 1
-    }
-    36 => {#7251
-      +"office_id": 164
-      +"language_id": 1
-      +"total": 1
-    }
-    37 => {#7252
-      +"office_id": 164
-      +"language_id": 2
-      +"total": 1
-    }
-    38 => {#7253
-      +"office_id": 177
-      +"language_id": 1
-      +"total": 1
-    }
-    39 => {#7254
-      +"office_id": 177
-      +"language_id": 2
-      +"total": 1
-    }
-    40 => {#7255
-      +"office_id": 195
-      +"language_id": 1
-      +"total": 2
-    }
-    41 => {#7256
-      +"office_id": 195
-      +"language_id": 2
-      +"total": 2
-    }
-    42 => {#7257
-      +"office_id": 235
-      +"language_id": 1
-      +"total": 2
-    }
-    43 => {#7258
-      +"office_id": 235
-      +"language_id": 2
-      +"total": 2
-    }
-    44 => {#7259
-      +"office_id": 285
-      +"language_id": 1
-      +"total": 1
-    }
-    45 => {#7260
-      +"office_id": 285
-      +"language_id": 2
-      +"total": 1
-    }
-    46 => {#7261
-      +"office_id": 288
-      +"language_id": 1
-      +"total": 1
-    }
-    47 => {#7262
-      +"office_id": 288
-      +"language_id": 2
-      +"total": 1
-    }
-  ]
-  "home_by_office_language" => array:452 [
-    0 => {#7266
-      +"office_id": 4
-      +"language_id": 1
-      +"total": 19
-    }
-    1 => {#7125
-      +"office_id": 4
-      +"language_id": 2
-      +"total": 19
-    }
-    2 => {#7215
-      +"office_id": 23
-      +"language_id": 1
-      +"total": 4
-    }
-    3 => {#7267
-      +"office_id": 23
-      +"language_id": 2
-      +"total": 4
-    }
-    4 => {#7265
-      +"office_id": 31
-      +"language_id": 1
-      +"total": 2
-    }
-    5 => {#7268
-      +"office_id": 31
-      +"language_id": 2
-      +"total": 2
-    }
-    6 => {#7269
-      +"office_id": 55
-      +"language_id": 1
-      +"total": 2
-    }
-    7 => {#7270
-      +"office_id": 55
-      +"language_id": 2
-      +"total": 2
-    }
-    8 => {#7271
-      +"office_id": 64
-      +"language_id": 1
-      +"total": 2
-    }
-    9 => {#7272
-      +"office_id": 64
-      +"language_id": 2
-      +"total": 2
-    }
-    10 => {#7273
-      +"office_id": 65
-      +"language_id": 1
-      +"total": 6
-    }
-    11 => {#7274
-      +"office_id": 65
-      +"language_id": 2
-      +"total": 6
-    }
-    12 => {#7275
-      +"office_id": 66
-      +"language_id": 1
-      +"total": 2
-    }
-    13 => {#7276
-      +"office_id": 66
-      +"language_id": 2
-      +"total": 2
-    }
-    14 => {#7277
-      +"office_id": 67
-      +"language_id": 1
-      +"total": 3
-    }
-    15 => {#7278
-      +"office_id": 67
-      +"language_id": 2
-      +"total": 3
-    }
-    16 => {#7279
-      +"office_id": 68
-      +"language_id": 1
-      +"total": 3
-    }
-    17 => {#7280
-      +"office_id": 68
-      +"language_id": 2
-      +"total": 3
-    }
-    18 => {#7281
-      +"office_id": 69
-      +"language_id": 1
-      +"total": 2
-    }
-    19 => {#7282
-      +"office_id": 69
-      +"language_id": 2
-      +"total": 2
-    }
-    20 => {#7283
-      +"office_id": 70
-      +"language_id": 1
-      +"total": 6
-    }
-    21 => {#7284
-      +"office_id": 70
-      +"language_id": 2
-      +"total": 6
-    }
-    22 => {#7285
-      +"office_id": 71
-      +"language_id": 1
-      +"total": 6
-    }
-    23 => {#7286
-      +"office_id": 71
-      +"language_id": 2
-      +"total": 6
-    }
-    24 => {#7287
-      +"office_id": 72
-      +"language_id": 1
-      +"total": 6
-    }
-    25 => {#7288
-      +"office_id": 72
-      +"language_id": 2
-      +"total": 6
-    }
-    26 => {#7289
-      +"office_id": 73
-      +"language_id": 1
-      +"total": 6
-    }
-    27 => {#7290
-      +"office_id": 73
-      +"language_id": 2
-      +"total": 6
-    }
-    28 => {#7291
-      +"office_id": 74
-      +"language_id": 1
-      +"total": 6
-    }
-    29 => {#7292
-      +"office_id": 74
-      +"language_id": 2
-      +"total": 6
-    }
-    30 => {#7293
-      +"office_id": 75
-      +"language_id": 1
-      +"total": 3
-    }
-    31 => {#7294
-      +"office_id": 75
-      +"language_id": 2
-      +"total": 3
-    }
-    32 => {#7295
-      +"office_id": 76
-      +"language_id": 1
-      +"total": 5
-    }
-    33 => {#7296
-      +"office_id": 76
-      +"language_id": 2
-      +"total": 5
-    }
-    34 => {#7297
-      +"office_id": 77
-      +"language_id": 1
-      +"total": 6
-    }
-    35 => {#7298
-      +"office_id": 77
-      +"language_id": 2
-      +"total": 6
-    }
-    36 => {#7299
-      +"office_id": 78
-      +"language_id": 1
-      +"total": 6
-    }
-    37 => {#7300
-      +"office_id": 78
-      +"language_id": 2
-      +"total": 6
-    }
-    38 => {#7301
-      +"office_id": 79
-      +"language_id": 1
-      +"total": 4
-    }
-    39 => {#7302
-      +"office_id": 79
-      +"language_id": 2
-      +"total": 4
-    }
-    40 => {#7303
-      +"office_id": 80
-      +"language_id": 1
-      +"total": 6
-    }
-    41 => {#7304
-      +"office_id": 80
-      +"language_id": 2
-      +"total": 6
-    }
-    42 => {#7305
-      +"office_id": 81
-      +"language_id": 1
-      +"total": 6
-    }
-    43 => {#7306
-      +"office_id": 81
-      +"language_id": 2
-      +"total": 6
-    }
-    44 => {#7307
-      +"office_id": 82
-      +"language_id": 1
-      +"total": 6
-    }
-    45 => {#7308
-      +"office_id": 82
-      +"language_id": 2
-      +"total": 6
-    }
-    46 => {#7309
-      +"office_id": 83
-      +"language_id": 1
-      +"total": 6
-    }
-    47 => {#7310
-      +"office_id": 83
-      +"language_id": 2
-      +"total": 6
-    }
-    48 => {#7311
-      +"office_id": 84
-      +"language_id": 1
-      +"total": 6
-    }
-    49 => {#7312
-      +"office_id": 84
-      +"language_id": 2
-      +"total": 6
-    }
-    50 => {#7313
-      +"office_id": 85
-      +"language_id": 1
-      +"total": 6
-    }
-    51 => {#7314
-      +"office_id": 85
-      +"language_id": 2
-      +"total": 6
-    }
-    52 => {#7315
-      +"office_id": 86
-      +"language_id": 1
-      +"total": 6
-    }
-    53 => {#7316
-      +"office_id": 86
-      +"language_id": 2
-      +"total": 6
-    }
-    54 => {#7317
-      +"office_id": 87
-      +"language_id": 1
-      +"total": 6
-    }
-    55 => {#7318
-      +"office_id": 87
-      +"language_id": 2
-      +"total": 6
-    }
-    56 => {#7319
-      +"office_id": 88
-      +"language_id": 1
-      +"total": 5
-    }
-    57 => {#7320
-      +"office_id": 88
-      +"language_id": 2
-      +"total": 5
-    }
-    58 => {#7321
-      +"office_id": 89
-      +"language_id": 1
-      +"total": 6
-    }
-    59 => {#7322
-      +"office_id": 89
-      +"language_id": 2
-      +"total": 6
-    }
-    60 => {#7323
-      +"office_id": 90
-      +"language_id": 1
-      +"total": 6
-    }
-    61 => {#7324
-      +"office_id": 90
-      +"language_id": 2
-      +"total": 6
-    }
-    62 => {#7325
-      +"office_id": 91
-      +"language_id": 1
-      +"total": 5
-    }
-    63 => {#7326
-      +"office_id": 91
-      +"language_id": 2
-      +"total": 5
-    }
-    64 => {#7327
-      +"office_id": 92
-      +"language_id": 1
-      +"total": 6
-    }
-    65 => {#7328
-      +"office_id": 92
-      +"language_id": 2
-      +"total": 6
-    }
-    66 => {#7329
-      +"office_id": 93
-      +"language_id": 1
-      +"total": 6
-    }
-    67 => {#7330
-      +"office_id": 93
-      +"language_id": 2
-      +"total": 6
-    }
-    68 => {#7331
-      +"office_id": 94
-      +"language_id": 1
-      +"total": 6
-    }
-    69 => {#7332
-      +"office_id": 94
-      +"language_id": 2
-      +"total": 6
-    }
-    70 => {#7333
-      +"office_id": 95
-      +"language_id": 1
-      +"total": 6
-    }
-    71 => {#7334
-      +"office_id": 95
-      +"language_id": 2
-      +"total": 6
-    }
-    72 => {#7335
-      +"office_id": 96
-      +"language_id": 1
-      +"total": 6
-    }
-    73 => {#7336
-      +"office_id": 96
-      +"language_id": 2
-      +"total": 6
-    }
-    74 => {#7337
-      +"office_id": 97
-      +"language_id": 1
-      +"total": 5
-    }
-    75 => {#7338
-      +"office_id": 97
-      +"language_id": 2
-      +"total": 5
-    }
-    76 => {#7339
-      +"office_id": 98
-      +"language_id": 1
-      +"total": 6
-    }
-    77 => {#7340
-      +"office_id": 98
-      +"language_id": 2
-      +"total": 6
-    }
-    78 => {#7341
-      +"office_id": 99
-      +"language_id": 1
-      +"total": 6
-    }
-    79 => {#7342
-      +"office_id": 99
-      +"language_id": 2
-      +"total": 6
-    }
-    80 => {#7343
-      +"office_id": 100
-      +"language_id": 1
-      +"total": 6
-    }
-    81 => {#7344
-      +"office_id": 100
-      +"language_id": 2
-      +"total": 6
-    }
-    82 => {#7345
-      +"office_id": 101
-      +"language_id": 1
-      +"total": 6
-    }
-    83 => {#7346
-      +"office_id": 101
-      +"language_id": 2
-      +"total": 6
-    }
-    84 => {#7347
-      +"office_id": 102
-      +"language_id": 1
-      +"total": 5
-    }
-    85 => {#7348
-      +"office_id": 102
-      +"language_id": 2
-      +"total": 5
-    }
-    86 => {#7349
-      +"office_id": 103
-      +"language_id": 1
-      +"total": 6
-    }
-    87 => {#7350
-      +"office_id": 103
-      +"language_id": 2
-      +"total": 6
-    }
-    88 => {#7351
-      +"office_id": 104
-      +"language_id": 1
-      +"total": 6
-    }
-    89 => {#7352
-      +"office_id": 104
-      +"language_id": 2
-      +"total": 6
-    }
-    90 => {#7353
-      +"office_id": 105
-      +"language_id": 1
-      +"total": 4
-    }
-    91 => {#7354
-      +"office_id": 105
-      +"language_id": 2
-      +"total": 4
-    }
-    92 => {#7355
-      +"office_id": 106
-      +"language_id": 1
-      +"total": 4
-    }
-    93 => {#7356
-      +"office_id": 106
-      +"language_id": 2
-      +"total": 4
-    }
-    94 => {#7357
-      +"office_id": 107
-      +"language_id": 1
-      +"total": 2
-    }
-    95 => {#7358
-      +"office_id": 107
-      +"language_id": 2
-      +"total": 2
-    }
-    96 => {#7359
-      +"office_id": 108
-      +"language_id": 1
-      +"total": 2
-    }
-    97 => {#7360
-      +"office_id": 108
-      +"language_id": 2
-      +"total": 2
-    }
-    98 => {#7361
-      +"office_id": 109
-      +"language_id": 1
-      +"total": 2
-    }
-    99 => {#7362
-      +"office_id": 109
-      +"language_id": 2
-      +"total": 2
-    }
-    100 => {#7363
-      +"office_id": 110
-      +"language_id": 1
-      +"total": 2
-    }
-    101 => {#7364
-      +"office_id": 110
-      +"language_id": 2
-      +"total": 2
-    }
-    102 => {#7365
-      +"office_id": 111
-      +"language_id": 1
-      +"total": 2
-    }
-    103 => {#7366
-      +"office_id": 111
-      +"language_id": 2
-      +"total": 2
-    }
-    104 => {#7367
-      +"office_id": 112
-      +"language_id": 1
-      +"total": 2
-    }
-    105 => {#7368
-      +"office_id": 112
-      +"language_id": 2
-      +"total": 2
-    }
-    106 => {#7369
-      +"office_id": 113
-      +"language_id": 1
-      +"total": 6
-    }
-    107 => {#7370
-      +"office_id": 113
-      +"language_id": 2
-      +"total": 6
-    }
-    108 => {#7371
-      +"office_id": 114
-      +"language_id": 1
-      +"total": 6
-    }
-    109 => {#7372
-      +"office_id": 114
-      +"language_id": 2
-      +"total": 6
-    }
-    110 => {#7373
-      +"office_id": 115
-      +"language_id": 1
-      +"total": 6
-    }
-    111 => {#7374
-      +"office_id": 115
-      +"language_id": 2
-      +"total": 6
-    }
-    112 => {#7375
-      +"office_id": 116
-      +"language_id": 1
-      +"total": 6
-    }
-    113 => {#7376
-      +"office_id": 116
-      +"language_id": 2
-      +"total": 6
-    }
-    114 => {#7377
-      +"office_id": 117
-      +"language_id": 1
-      +"total": 6
-    }
-    115 => {#7378
-      +"office_id": 117
-      +"language_id": 2
-      +"total": 6
-    }
-    116 => {#7379
-      +"office_id": 118
-      +"language_id": 1
-      +"total": 6
-    }
-    117 => {#7380
-      +"office_id": 118
-      +"language_id": 2
-      +"total": 6
-    }
-    118 => {#7381
-      +"office_id": 119
-      +"language_id": 1
-      +"total": 6
-    }
-    119 => {#7382
-      +"office_id": 119
-      +"language_id": 2
-      +"total": 6
-    }
-    120 => {#7383
-      +"office_id": 120
-      +"language_id": 1
-      +"total": 6
-    }
-    121 => {#7384
-      +"office_id": 120
-      +"language_id": 2
-      +"total": 6
-    }
-    122 => {#7385
-      +"office_id": 121
-      +"language_id": 1
-      +"total": 6
-    }
-    123 => {#7386
-      +"office_id": 121
-      +"language_id": 2
-      +"total": 6
-    }
-    124 => {#7387
-      +"office_id": 122
-      +"language_id": 1
-      +"total": 6
-    }
-    125 => {#7388
-      +"office_id": 122
-      +"language_id": 2
-      +"total": 6
-    }
-    126 => {#7389
-      +"office_id": 123
-      +"language_id": 1
-      +"total": 6
-    }
-    127 => {#7390
-      +"office_id": 123
-      +"language_id": 2
-      +"total": 6
-    }
-    128 => {#7391
-      +"office_id": 124
-      +"language_id": 1
-      +"total": 6
-    }
-    129 => {#7392
-      +"office_id": 124
-      +"language_id": 2
-      +"total": 6
-    }
-    130 => {#7393
-      +"office_id": 125
-      +"language_id": 1
-      +"total": 6
-    }
-    131 => {#7394
-      +"office_id": 125
-      +"language_id": 2
-      +"total": 6
-    }
-    132 => {#7395
-      +"office_id": 126
-      +"language_id": 1
-      +"total": 6
-    }
-    133 => {#7396
-      +"office_id": 126
-      +"language_id": 2
-      +"total": 6
-    }
-    134 => {#7397
-      +"office_id": 127
-      +"language_id": 1
-      +"total": 6
-    }
-    135 => {#7398
-      +"office_id": 127
-      +"language_id": 2
-      +"total": 6
-    }
-    136 => {#7399
-      +"office_id": 128
-      +"language_id": 1
-      +"total": 6
-    }
-    137 => {#7400
-      +"office_id": 128
-      +"language_id": 2
-      +"total": 6
-    }
-    138 => {#7401
-      +"office_id": 129
-      +"language_id": 1
-      +"total": 6
-    }
-    139 => {#7402
-      +"office_id": 129
-      +"language_id": 2
-      +"total": 6
-    }
-    140 => {#7403
-      +"office_id": 130
-      +"language_id": 1
-      +"total": 6
-    }
-    141 => {#7404
-      +"office_id": 130
-      +"language_id": 2
-      +"total": 6
-    }
-    142 => {#7405
-      +"office_id": 131
-      +"language_id": 1
-      +"total": 6
-    }
-    143 => {#7406
-      +"office_id": 131
-      +"language_id": 2
-      +"total": 6
-    }
-    144 => {#7407
-      +"office_id": 132
-      +"language_id": 1
-      +"total": 2
-    }
-    145 => {#7408
-      +"office_id": 132
-      +"language_id": 2
-      +"total": 2
-    }
-    146 => {#7409
-      +"office_id": 133
-      +"language_id": 1
-      +"total": 2
-    }
-    147 => {#7410
-      +"office_id": 133
-      +"language_id": 2
-      +"total": 2
-    }
-    148 => {#7411
-      +"office_id": 134
-      +"language_id": 1
-      +"total": 6
-    }
-    149 => {#7412
-      +"office_id": 134
-      +"language_id": 2
-      +"total": 6
-    }
-    150 => {#7413
-      +"office_id": 135
-      +"language_id": 1
-      +"total": 2
-    }
-    151 => {#7414
-      +"office_id": 135
-      +"language_id": 2
-      +"total": 2
-    }
-    152 => {#7415
-      +"office_id": 136
-      +"language_id": 1
-      +"total": 5
-    }
-    153 => {#7416
-      +"office_id": 136
-      +"language_id": 2
-      +"total": 5
-    }
-    154 => {#7417
-      +"office_id": 137
-      +"language_id": 1
-      +"total": 6
-    }
-    155 => {#7418
-      +"office_id": 137
-      +"language_id": 2
-      +"total": 6
-    }
-    156 => {#7419
-      +"office_id": 138
-      +"language_id": 1
-      +"total": 6
-    }
-    157 => {#7420
-      +"office_id": 138
-      +"language_id": 2
-      +"total": 6
-    }
-    158 => {#7421
-      +"office_id": 139
-      +"language_id": 1
-      +"total": 6
-    }
-    159 => {#7422
-      +"office_id": 139
-      +"language_id": 2
-      +"total": 6
-    }
-    160 => {#7423
-      +"office_id": 140
-      +"language_id": 1
-      +"total": 6
-    }
-    161 => {#7424
-      +"office_id": 140
-      +"language_id": 2
-      +"total": 6
-    }
-    162 => {#7425
-      +"office_id": 141
-      +"language_id": 1
-      +"total": 2
-    }
-    163 => {#7426
-      +"office_id": 141
-      +"language_id": 2
-      +"total": 2
-    }
-    164 => {#7427
-      +"office_id": 142
-      +"language_id": 1
-      +"total": 4
-    }
-    165 => {#7428
-      +"office_id": 142
-      +"language_id": 2
-      +"total": 4
-    }
-    166 => {#7429
-      +"office_id": 143
-      +"language_id": 1
-      +"total": 2
-    }
-    167 => {#7430
-      +"office_id": 143
-      +"language_id": 2
-      +"total": 2
-    }
-    168 => {#7431
-      +"office_id": 144
-      +"language_id": 1
-      +"total": 6
-    }
-    169 => {#7432
-      +"office_id": 144
-      +"language_id": 2
-      +"total": 6
-    }
-    170 => {#7433
-      +"office_id": 145
-      +"language_id": 1
-      +"total": 6
-    }
-    171 => {#7434
-      +"office_id": 145
-      +"language_id": 2
-      +"total": 6
-    }
-    172 => {#7435
-      +"office_id": 146
-      +"language_id": 1
-      +"total": 2
-    }
-    173 => {#7436
-      +"office_id": 146
-      +"language_id": 2
-      +"total": 2
-    }
-    174 => {#7437
-      +"office_id": 147
-      +"language_id": 1
-      +"total": 6
-    }
-    175 => {#7438
-      +"office_id": 147
-      +"language_id": 2
-      +"total": 6
-    }
-    176 => {#7439
-      +"office_id": 148
-      +"language_id": 1
-      +"total": 2
-    }
-    177 => {#7440
-      +"office_id": 148
-      +"language_id": 2
-      +"total": 2
-    }
-    178 => {#7441
-      +"office_id": 149
-      +"language_id": 1
-      +"total": 2
-    }
-    179 => {#7442
-      +"office_id": 149
-      +"language_id": 2
-      +"total": 2
-    }
-    180 => {#7443
-      +"office_id": 150
-      +"language_id": 1
-      +"total": 2
-    }
-    181 => {#7444
-      +"office_id": 150
-      +"language_id": 2
-      +"total": 2
-    }
-    182 => {#7445
-      +"office_id": 151
-      +"language_id": 1
-      +"total": 6
-    }
-    183 => {#7446
-      +"office_id": 151
-      +"language_id": 2
-      +"total": 6
-    }
-    184 => {#7447
-      +"office_id": 152
-      +"language_id": 1
-      +"total": 6
-    }
-    185 => {#7448
-      +"office_id": 152
-      +"language_id": 2
-      +"total": 6
-    }
-    186 => {#7449
-      +"office_id": 153
-      +"language_id": 1
-      +"total": 2
-    }
-    187 => {#7450
-      +"office_id": 153
-      +"language_id": 2
-      +"total": 2
-    }
-    188 => {#7451
-      +"office_id": 154
-      +"language_id": 1
-      +"total": 6
-    }
-    189 => {#7452
-      +"office_id": 154
-      +"language_id": 2
-      +"total": 6
-    }
-    190 => {#7453
-      +"office_id": 155
-      +"language_id": 1
-      +"total": 2
-    }
-    191 => {#7454
-      +"office_id": 155
-      +"language_id": 2
-      +"total": 2
-    }
-    192 => {#7455
-      +"office_id": 156
-      +"language_id": 1
-      +"total": 2
-    }
-    193 => {#7456
-      +"office_id": 156
-      +"language_id": 2
-      +"total": 2
-    }
-    194 => {#7457
-      +"office_id": 157
-      +"language_id": 1
-      +"total": 2
-    }
-    195 => {#7458
-      +"office_id": 157
-      +"language_id": 2
-      +"total": 2
-    }
-    196 => {#7459
-      +"office_id": 158
-      +"language_id": 1
-      +"total": 2
-    }
-    197 => {#7460
-      +"office_id": 158
-      +"language_id": 2
-      +"total": 2
-    }
-    198 => {#7461
-      +"office_id": 159
-      +"language_id": 1
-      +"total": 2
-    }
-    199 => {#7462
-      +"office_id": 159
-      +"language_id": 2
-      +"total": 2
-    }
-    200 => {#7463
-      +"office_id": 160
-      +"language_id": 1
-      +"total": 2
-    }
-    201 => {#7464
-      +"office_id": 160
-      +"language_id": 2
-      +"total": 2
-    }
-    202 => {#7465
-      +"office_id": 161
-      +"language_id": 1
-      +"total": 6
-    }
-    203 => {#7466
-      +"office_id": 161
-      +"language_id": 2
-      +"total": 6
-    }
-    204 => {#7467
-      +"office_id": 162
-      +"language_id": 1
-      +"total": 2
-    }
-    205 => {#7468
-      +"office_id": 162
-      +"language_id": 2
-      +"total": 2
-    }
-    206 => {#7469
-      +"office_id": 163
-      +"language_id": 1
-      +"total": 5
-    }
-    207 => {#7470
-      +"office_id": 163
-      +"language_id": 2
-      +"total": 5
-    }
-    208 => {#7471
-      +"office_id": 164
-      +"language_id": 1
-      +"total": 6
-    }
-    209 => {#7472
-      +"office_id": 164
-      +"language_id": 2
-      +"total": 6
-    }
-    210 => {#7473
-      +"office_id": 165
-      +"language_id": 1
-      +"total": 6
-    }
-    211 => {#7474
-      +"office_id": 165
-      +"language_id": 2
-      +"total": 6
-    }
-    212 => {#7475
-      +"office_id": 166
-      +"language_id": 1
-      +"total": 2
-    }
-    213 => {#7476
-      +"office_id": 166
-      +"language_id": 2
-      +"total": 2
-    }
-    214 => {#7477
-      +"office_id": 167
-      +"language_id": 1
-      +"total": 6
-    }
-    215 => {#7478
-      +"office_id": 167
-      +"language_id": 2
-      +"total": 6
-    }
-    216 => {#7479
-      +"office_id": 168
-      +"language_id": 1
-      +"total": 2
-    }
-    217 => {#7480
-      +"office_id": 168
-      +"language_id": 2
-      +"total": 2
-    }
-    218 => {#7481
-      +"office_id": 169
-      +"language_id": 1
-      +"total": 6
-    }
-    219 => {#7482
-      +"office_id": 169
-      +"language_id": 2
-      +"total": 6
-    }
-    220 => {#7483
-      +"office_id": 170
-      +"language_id": 1
-      +"total": 6
-    }
-    221 => {#7484
-      +"office_id": 170
-      +"language_id": 2
-      +"total": 6
-    }
-    222 => {#7485
-      +"office_id": 171
-      +"language_id": 1
-      +"total": 6
-    }
-    223 => {#7486
-      +"office_id": 171
-      +"language_id": 2
-      +"total": 6
-    }
-    224 => {#7487
-      +"office_id": 172
-      +"language_id": 1
-      +"total": 2
-    }
-    225 => {#7488
-      +"office_id": 172
-      +"language_id": 2
-      +"total": 2
-    }
-    226 => {#7489
-      +"office_id": 173
-      +"language_id": 1
-      +"total": 6
-    }
-    227 => {#7490
-      +"office_id": 173
-      +"language_id": 2
-      +"total": 6
-    }
-    228 => {#7491
-      +"office_id": 174
-      +"language_id": 1
-       …1
-    }
-    229 => {#7492 …3}
-    230 => {#7493 …3}
-    231 => {#7494 …3}
-    232 => {#7495 …3}
-    233 => {#7496 …3}
-    234 => {#7497 …3}
-    235 => {#7498 …3}
-    236 => {#7499 …3}
-    237 => {#7500 …3}
-    238 => {#7501 …3}
-    239 => {#7502 …3}
-    240 => {#7503 …3}
-    241 => {#7504 …3}
-    242 => {#7505 …3}
-    243 => {#7506 …3}
-    244 => {#7507 …3}
-    245 => {#7508 …3}
-    246 => {#7509 …3}
-    247 => {#7510 …3}
-    248 => {#7511 …3}
-    249 => {#7512 …3}
-    250 => {#7513 …3}
-    251 => {#7514 …3}
-    252 => {#7515 …3}
-    253 => {#7516 …3}
-    254 => {#7517 …3}
-    255 => {#7518 …3}
-    256 => {#7519 …3}
-    257 => {#7520 …3}
-    258 => {#7521 …3}
-    259 => {#7522 …3}
-    260 => {#7523 …3}
-    261 => {#7524 …3}
-    262 => {#7525 …3}
-    263 => {#7526 …3}
-    264 => {#7527 …3}
-    265 => {#7528 …3}
-    266 => {#7529 …3}
-    267 => {#7530 …3}
-    268 => {#7531 …3}
-    269 => {#7532 …3}
-    270 => {#7533 …3}
-    271 => {#7534 …3}
-    272 => {#7535 …3}
-    273 => {#7536 …3}
-    274 => {#7537 …3}
-    275 => {#7538 …3}
-    276 => {#7539 …3}
-    277 => {#7540 …3}
-    278 => {#7541 …3}
-    279 => {#7542 …3}
-    280 => {#7543 …3}
-    281 => {#7544 …3}
-    282 => {#7545 …3}
-    283 => {#7546 …3}
-    284 => {#7547 …3}
-    285 => {#7548 …3}
-    286 => {#7549 …3}
-    287 => {#7550 …3}
-    288 => {#7551 …3}
-    289 => {#7552 …3}
-    290 => {#7553 …3}
-    291 => {#7554 …3}
-    292 => {#7555 …3}
-    293 => {#7556 …3}
-    294 => {#7557 …3}
-    295 => {#7558 …3}
-    296 => {#7559 …3}
-    297 => {#7560 …3}
-    298 => {#7561 …3}
-    299 => {#7562 …3}
-    300 => {#7563 …3}
-    301 => {#7564 …3}
-    302 => {#7565 …3}
-    303 => {#7566 …3}
-    304 => {#7567 …3}
-    305 => {#7568 …3}
-    306 => {#7569 …3}
-    307 => {#7570 …3}
-    308 => {#7571 …3}
-    309 => {#7572 …3}
-    310 => {#7573 …3}
-    311 => {#7574 …3}
-    312 => {#7575 …3}
-    313 => {#7576 …3}
-    314 => {#7577 …3}
-    315 => {#7578 …3}
-    316 => {#7579 …3}
-    317 => {#7580 …3}
-    318 => {#7581 …3}
-    319 => {#7582 …3}
-    320 => {#7583 …3}
-    321 => {#7584 …3}
-    322 => {#7585 …3}
-    323 => {#7586 …3}
-    324 => {#7587 …3}
-    325 => {#7588 …3}
-    326 => {#7589 …3}
-    327 => {#7590 …3}
-    328 => {#7591 …3}
-    329 => {#7592 …3}
-    330 => {#7593 …3}
-    331 => {#7594 …3}
-    332 => {#7595 …3}
-    333 => {#7596 …3}
-    334 => {#7597 …3}
-    335 => {#7598 …3}
-    336 => {#7599 …3}
-    337 => {#7600 …3}
-    338 => {#7601 …3}
-    339 => {#7602 …3}
-    340 => {#7603 …3}
-    341 => {#7604 …3}
-    342 => {#7605 …3}
-    343 => {#7606 …3}
-    344 => {#7607 …3}
-    345 => {#7608 …3}
-    346 => {#7609 …3}
-    347 => {#7610 …3}
-    348 => {#7611 …3}
-    349 => {#7612 …3}
-    350 => {#7613 …3}
-    351 => {#7614 …3}
-    352 => {#7615 …3}
-    353 => {#7616 …3}
-    354 => {#7617 …3}
-    355 => {#7618 …3}
-    356 => {#7619 …3}
-    357 => {#7620 …3}
-    358 => {#7621 …3}
-    359 => {#7622 …3}
-    360 => {#7623 …3}
-    361 => {#7624 …3}
-    362 => {#7625 …3}
-    363 => {#7626 …3}
-    364 => {#7627 …3}
-    365 => {#7628 …3}
-    366 => {#7629 …3}
-    367 => {#7630 …3}
-    368 => {#7631 …3}
-    369 => {#7632 …3}
-    370 => {#7633 …3}
-    371 => {#7634 …3}
-    372 => {#7635 …3}
-    373 => {#7636 …3}
-    374 => {#7637 …3}
-    375 => {#7638 …3}
-    376 => {#7639 …3}
-    377 => {#7640 …3}
-    378 => {#7641 …3}
-    379 => {#7642 …3}
-    380 => {#7643 …3}
-    381 => {#7644 …3}
-    382 => {#7645 …3}
-    383 => {#7646 …3}
-    384 => {#7647 …3}
-    385 => {#7648 …3}
-    386 => {#7649 …3}
-    387 => {#7650 …3}
-    388 => {#7651 …3}
-    389 => {#7652 …3}
-    390 => {#7653 …3}
-    391 => {#7654 …3}
-    392 => {#7655 …3}
-    393 => {#7656 …3}
-    394 => {#7657 …3}
-    395 => {#7658 …3}
-    396 => {#7659 …3}
-    397 => {#7660 …3}
-    398 => {#7661 …3}
-    399 => {#7662 …3}
-    400 => {#7663 …3}
-    401 => {#7664 …3}
-    402 => {#7665 …3}
-    403 => {#7666 …3}
-    404 => {#7667 …3}
-    405 => {#7668 …3}
-    406 => {#7669 …3}
-    407 => {#7670 …3}
-    408 => {#7671 …3}
-    409 => {#7672 …3}
-    410 => {#7673 …3}
-    411 => {#7674 …3}
-    412 => {#7675 …3}
-    413 => {#7676 …3}
-    414 => {#7677 …3}
-    415 => {#7678 …3}
-    416 => {#7679 …3}
-    417 => {#7680 …3}
-    418 => {#7681 …3}
-    419 => {#7682 …3}
-    420 => {#7683 …3}
-    421 => {#7684 …3}
-    422 => {#7685 …3}
-    423 => {#7686 …3}
-    424 => {#7687 …3}
-    425 => {#7688 …3}
-    426 => {#7689 …3}
-    427 => {#7690 …3}
-    428 => {#7691 …3}
-    429 => {#7692 …3}
-    430 => {#7693 …3}
-    431 => {#7694 …3}
-    432 => {#7695 …3}
-    433 => {#7696 …3}
-    434 => {#7697 …3}
-    435 => {#7698 …3}
-    436 => {#7699 …3}
-    437 => {#7700 …3}
-    438 => {#7701 …3}
-    439 => {#7702 …3}
-    440 => {#7703 …3}
-    441 => {#7704 …3}
-    442 => {#7705 …3}
-    443 => {#7706 …3}
-    444 => {#7707 …3}
-    445 => {#7708 …3}
-    446 => {#7709 …3}
-    447 => {#7710 …3}
-    448 => {#7711 …3}
-    449 => {#7712 …3}
-    450 => {#7713 …3}
-    451 => {#7714 …3}
-  ]
-] // /home/doradmin/dor13-vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:1
+doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && echo "========== OFFICE MODEL ==========" && sed -n '1,240p' app/Models/Office.php && echo "========== OFFICE DETAIL MODEL ==========" && sed -n '1,220p' app/Models/OfficeDetail.php && echo "========== CONTENT MODEL ==========" && sed -n '1,220p' app/Models/Content.php && echo "========== HOME MODEL ==========" && sed -n '1,220p' app/Models/Home.php && echo "========== CHATBOT RETRIEVER ==========" && sed -n '1,280p' app/Services/Chatbot/ChatbotKnowledgeRetriever.php
+========== OFFICE MODEL ==========
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Helper;
+
+use Illuminate\Support\Facades\DB;
+
+class Office extends Model
+{
+    /**
+     * The database table used by the model.
+     *
+     * @var string
+     */
+
+    protected $fillable = array('is_active', 'is_deleted', 'created_by', 'updated_by', 'office_email_address', 'office_alternative_email');
+
+    protected $table = 'office';
+
+    public function details()
+    {
+        return $this->hasMany(OfficeDetail::class, 'office_id');
+    }
+
+    public function detail($langId = 2)
+    {
+        return $this->details()->where('language_id', $langId);
+    }
+
+    public static function getUndeletedOffices()
+    {
+        $languageId = Language::getIdFromCode('en');
+        $query = "Select office.id as id,office.is_active as is_active,office_email_address, office_alternative_email, office_name, office_address, office_phone_number1, office_type, order_menu from pndc_office as office join pndc_office_detail detail on office.id=detail.office_id where office.is_deleted='0' and detail.language_id=" . $languageId . " order by `order_menu`";
+        return DB::select($query);
+    }
+
+    public static function getPublishedOffices()
+    {
+        $languageId = Language::getIdFromCode('en');
+        $query = "Select office.id as id,office.is_active as is_active,office_email_address, office_alternative_email, office_name, office_address, office_phone_number1 from pndc_office as office join pndc_office_detail detail on office.id=detail.office_id where office.is_deleted='0' and office.is_active='1' and detail.language_id=" . $languageId;
+        return DB::select($query);
+    }
+
+    public static function getPublishedOfficesbyID($id)
+    {
+        $query = "Select office.id as id, office.is_active as is_active, office.office_email_address, office.office_alternative_email, detail.office_name, detail.office_address, detail.office_phone_number1 from pndc_office as office join pndc_office_detail detail on office.id=detail.office_id where office.is_deleted='0' and office.is_active='1' and detail.language_id=2 and office.id=" . $id;
+        return DB::select($query);
+    }
+
+    public static function getOfficeDetailsWithLanguages($id, $language_id = null)
+    {
+        if ($language_id) {
+            $query = "Select lang.id, language_name, language_code,
+            (select id from pndc_office_detail where lang.id=language_id and office_id=$id) as detailid,
+            (select office_subdomain from pndc_office where  id=$id) as office_subdomain,
+            (select office_name from pndc_office_detail where lang.id=language_id and office_id=$id) as office_name,
+            (select office_address from pndc_office_detail where lang.id=language_id and office_id=$id) as office_address,
+            (select office_phone_number1 from pndc_office_detail where lang.id=language_id and office_id=$id) as office_phone_number1,
+            (select office_phone_number2 from pndc_office_detail where lang.id=language_id and office_id=$id) as office_phone_number2
+            from pndc_language lang where lang.is_active='1' and lang.is_deleted='0' and lang.id=$language_id";
+        } else {
+            $query = "Select lang.id, language_name, language_code,
+            (select id from pndc_office_detail where lang.id=language_id and office_id=$id) as detailid,
+            (select office_subdomain from pndc_office where  id=$id) as office_subdomain,
+            (select office_name from pndc_office_detail where lang.id=language_id and office_id=$id) as office_name,
+            (select office_address from pndc_office_detail where lang.id=language_id and office_id=$id) as office_address,
+            (select office_phone_number1 from pndc_office_detail where lang.id=language_id and office_id=$id) as office_phone_number1,
+            (select office_phone_number2 from pndc_office_detail where lang.id=language_id and office_id=$id) as office_phone_number2
+            from pndc_language lang where lang.is_active='1' and lang.is_deleted='0'";
+        }
+
+        // print_r($query);exit;
+        return DB::select($query);
+    }
+
+    /*
+        * get active offices ids
+        * @return array
+        */
+    public static function getActiveOfficesIds()
+    {
+
+        return Office::where('is_active', '1')
+            ->where('is_deleted', '0')
+            ->select('id')->get();
+    }
+
+    /*
+        * get office id from office subdomain
+        * @param string $subdomain
+        * @return int
+        */
+    public static function getIdfromSubdomain($subdomain)
+    {
+        // dd($subdomain);
+        return Office::where('office_subdomain', $subdomain)
+            ->where('is_deleted', '0')
+            ->where('is_active', '1')
+            ->pluck('id')
+            ->first();
+    }
+
+    /*
+        * get office name from office subdomain
+        * @param string $subdomain
+        * @param int $langId
+        * @return string
+        */
+    public static function getNamefromSubdomain($subdomain, $langId)
+    {
+        return Office::join('office_detail', 'office.id', '=', 'office_detail.office_id')
+            ->where('office.is_active', '1')
+            ->where('office.is_deleted', '0')
+            ->where('office.office_subdomain', $subdomain)
+            ->where('language_id', $langId)
+            ->pluck('office_name');
+    }
+
+    /*
+        * get office subdomain from office id
+        * @param int $id
+        * @return string
+        */
+    public static function getSubdomainfromId($id)
+    {
+        return Office::where('id', $id)
+            ->where('is_deleted', '0')
+            ->where('is_active', '1')
+            ->pluck('office_subdomain');
+    }
+
+    /*
+        * get detail of office
+        * @param int $officeId
+        * @param int $langId
+        * @return object
+        */
+    public static function getOfficeDetailFromId($officeId, $langId)
+    {
+        return Office::join('office_detail', 'office.id', '=', 'office_detail.office_id')
+            ->select(
+                'office.id',
+                'office.office_subdomain',
+                'office.office_email_address',
+                'office.office_latitude',
+                'office.office_longitude',
+                'office.office_attachment',
+                'office_detail.office_name',
+                'office_detail.office_address',
+                'office_detail.office_phone_number1',
+                'office_detail.office_phone_number2'
+            )
+            ->where('office.is_active', '1')
+            ->where('office.is_deleted', '0')
+            ->where('office.id', $officeId)
+            ->where('language_id', $langId)
+            ->first();
+    }
+
+    /*
+        * get detail of office
+        * @param string $subdomain
+        * @param int $langId
+        * @return object
+        */
+    public static function getOfficeDetailFromSubdomain($subdomain, $langId)
+    {
+        // print_r($subdomain);exit;
+        // DB::enableQueryLog();
+        $data = Office::join('office_detail', 'office.id', '=', 'office_detail.office_id')
+
+            ->where('office.is_active', '1')
+            ->where('office.is_deleted', '0')
+            ->where('office.office_subdomain', $subdomain)
+            ->where('language_id', $langId)
+            ->select(
+                'office.id',
+                'office_subdomain',
+                'office_email_address',
+                'office_alternative_email',
+                'office_facebook_page',
+                'office_instagram_page',
+                'office_latitude',
+                'office_longitude',
+                'google_map_embed',
+                'office_type',
+                'office_attachment',
+                'office_detail.office_name',
+                'office_detail.office_address',
+                'office_detail.office_phone_number1',
+                'office_detail.office_phone_number2'
+            )
+            ->first();
+
+        // dd(Helper::get_last_query());
+        return $data;
+    }
+
+    /*
+        * get office list
+        * @param int $langId
+        * @param string $subdomain
+        * @param int $limit
+        * @return object
+        */
+    public static function getActiveRegionalOffices($langId, $subdomain, $limit = 10)
+    {
+        return Office::join('office_detail', 'office.id', '=', 'office_detail.office_id')
+            ->select(
+                'office.id',
+                'office.office_subdomain',
+                'office_detail.office_name'
+            )
+            ->where('office.is_active', '1')
+            ->where('office.is_deleted', '0')
+            ->where('office_detail.language_id', $langId)
+            ->where('office.office_type', 'like', '%2%')
+            ->orderby('office.order_menu', 'ASC')
+            ->take($limit)
+            ->get();
+    }
+
+    /*
+        * get office list
+        * @param int $langId
+        * @param string $subdomain
+        * @param int $limit
+        * @return object
+        */
+    public static function getActiveHEDivisionsOffices($langId, $zoneId, $subdomain, $limit = 10)
+    {
+        return Office::join('office_detail', 'office.id', '=', 'office_detail.office_id')
+            ->select(
+                'office.id',
+                'office.office_subdomain',
+                'office_detail.office_name'
+            )
+            ->where('office.is_active', '1')
+========== OFFICE DETAIL MODEL ==========
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class OfficeDetail extends Model
+{
+    protected $fillable = array('office_name', 'office_address', 'office_phone_number1', 'office_phone_number2', 'language_id', 'office_id');
+    protected $table = 'office_detail';
+}
+========== CONTENT MODEL ==========
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+
+class Content extends Model
+{
+    public $languageId;
+
+    /**
+     * The database table used by the model.
+     *
+     * @var string
+     */
+
+    protected $fillable = array('is_active', 'is_deleted', 'created_by', 'updated_by');
+
+    protected $table = 'content';
+
+    public function details()
+    {
+        return $this->hasMany(ContentDetail::class, 'content_id');
+    }
+
+    /**
+     * get all undeleted contents
+     * @return object
+     */
+    public static function getUndeletedContents()
+    {
+        $languageId = Language::getIdFromCode('en');
+        $query      = "Select t1.id,t1.content_url,date_format( t1.updated_at, '%d %b, %Y' ) AS updated_on,
+                                                t1.is_active,t2.content_heading
+                                                from pndc_content t1
+                                                join pndc_content_detail t2 on t1.id=t2.content_id
+                                                where t1.is_deleted='0' and t2.language_id = '$languageId' ";
+
+        return DB::select($query);
+    }
+
+    /**
+     * get all undeleted contents office wise
+     * @param int $officeId
+     * @return object
+     */
+    public static function getUndeletedContentsByOffice($officeId)
+    {
+        $languageId = Language::getIdFromCode('en');
+        $query      = "Select t1.id,t1.content_url,date_format( t1.updated_at, '%d %b, %Y' ) AS updated_on,
+                                                t1.is_active,t2.content_heading
+                                                from pndc_content t1
+                                                join pndc_content_detail t2 on t1.id=t2.content_id
+                                                where t1.is_deleted='0' and t2.language_id = '$languageId' and t1.office_id='$officeId' ";
+
+        return DB::select($query);
+    }
+
+    /**
+     * check whether url exist or not for individual office
+     * @param  string $url
+     * @param  int $officeId
+     * @return int
+     */
+    public static function checkExist($url, $officeId)
+    {
+        return Content::where('is_deleted', '0')
+            ->where('content_url', $url)
+            ->where('office_id', $officeId)
+            ->pluck('id')
+            ->first();
+    }
+
+    /**
+     * get content detail with languages
+     * @param  int $id
+     * @return object
+     */
+    public static function getContentDetailsWithLanguages($id)
+    {
+        $query = "select t1.id as language_id,t1.language_name,
+                                        (select t2.id from pndc_content t2 where t2.id='$id') as content_id,
+                                        (select t2.parent_id from pndc_content t2 where t2.id='$id') as parent_id,
+                                        (select content_url from pndc_content t2 where t2.id='$id') as content_url,
+                                        (select show_in from pndc_content t2 where t2.id='$id') as show_in,
+                                        (select order_menu from pndc_content t2 where t2.id='$id') as order_menu,
+                                        (select content_meta_tags from pndc_content t2 where t2.id='$id') as content_meta_tags,
+                                        (select content_meta_description from pndc_content t2 where t2.id='$id') as content_meta_description,
+                                        (select content_attachment from pndc_content t2 where t2.id='$id') as content_attachment,
+                                        (select is_active from pndc_content t2 where t2.id='$id') as is_active,
+                                        (select content_heading from pndc_content t2 join pndc_content_detail t3
+                                                        on t2.id=t3.content_id where t3.language_id=t1.id and t2.id='$id') as content_heading,
+                                        (select content_description from pndc_content t2 join pndc_content_detail t3
+                                                        on t2.id=t3.content_id where t3.language_id=t1.id and t2.id='$id') as content_description,
+                                        (select content_page_title from pndc_content t2 join pndc_content_detail t3
+                                                        on t2.id=t3.content_id where t3.language_id=t1.id and t2.id='$id') as content_page_title,
+                                        (select t3.id from pndc_content t2 join pndc_content_detail t3
+                                                        on t2.id=t3.content_id where t3.language_id=t1.id and t2.id='$id') as content_detail_id
+                                        from pndc_language t1
+                                        where t1.is_active = '1' ";
+
+        return DB::select($query);
+    }
+
+    /**
+     * get content list hierarchy wise
+     * @param  int $parentId
+     * @param  int $level
+     * @param  int $selected
+     * @return string
+     */
+    public static function content_list_for_contentEntry($officeId, $parentId, $level, $selected)
+    {
+        $languageId = Language::getIdFromCode('en');
+        $contents   = Content::join('content_detail', 'content.id', '=', 'content_detail.content_id')
+            ->select(
+                'content.id',
+                'content.parent_id',
+                'content_detail.content_heading'
+            )
+            ->where('content.office_id', $officeId)
+            ->where('content.parent_id', $parentId)
+            ->where('content.is_active', '1')
+            ->where('content_detail.language_id', $languageId)
+            ->orderby('content.id', 'asc')
+            ->get();
+
+        $returnList = '<select class="m-wrap span6" name="parent_id" id="parent_id">';
+        $returnList .= '<option value="0" selected>Parent Itself</option>';
+        foreach ($contents as $content) {
+            if ($selected > 0 && $selected == $content->id) {
+                $selected_option = 'selected="selected"';
+            } else {
+                $selected_option = "";
+            }
+
+            $returnList .= '<option value="' . $content->id . '" ' . $selected_option . '>' .
+                str_repeat('&nbsp;--|- &nbsp;', $level) . $content->content_heading . '</option>';
+            $returnList .= self::subcontent_list_for_contentEntry($officeId, $content->id, $level + 1, $selected);
+        }
+        $returnList .= '</select>';
+
+        return $returnList;
+    }
+
+    /**
+     * get sub content list hierarchy wise
+     * @param  int $parentId
+     * @param  int $level
+     * @param  int $selected
+     * @return string
+     */
+    public static function subcontent_list_for_contentEntry($officeId, $parentId, $level, $selected = 0)
+    {
+        $languageId  = Language::getIdFromCode('en');
+        $subcontents = Content::join('content_detail', 'content.id', '=', 'content_detail.content_id')
+            ->select(
+                'content.id',
+                'content.parent_id',
+                'content_detail.content_heading'
+            )
+            ->where('content.office_id', $officeId)
+            ->where('content.parent_id', $parentId)
+            ->where('content.is_active', '1')
+            ->where('content_detail.language_id', $languageId)
+            ->orderby('content.id', 'asc')
+            ->get();
+
+        $returnList = '';
+        foreach ($subcontents as $subcontent) {
+            if ($selected > 0 && $selected == $subcontent->id) {
+                $selected_option = 'selected="selected"';
+            } else {
+                $selected_option = "";
+            }
+            $returnList .= '<option value="' . $subcontent->id . '" ' . $selected_option . '>' .
+                str_repeat('&nbsp;--|- &nbsp;', $level) . $subcontent->content_heading . '</option>';
+            $returnList .= self::subcontent_list_for_contentEntry($officeId, $subcontent->id, $level + 1, $selected);
+        }
+        return $returnList;
+    }
+
+    /*------------------------------------------------------*/
+    /**
+     * get content detail
+     * @param int $officeId
+     * @param string $url
+     * @param int $langId
+     * @return object
+     */
+    public static function getContentDetail($officeId, $url, $langId)
+    {
+        $result = Content::join('content_detail', 'content.id', '=', 'content_detail.content_id')
+            ->select(
+                'content.id',
+                'content.parent_id',
+                'content.content_url',
+                'content.content_meta_tags',
+                'content.content_meta_description',
+                'content_attachment',
+                'content_detail.content_heading',
+                'content_detail.content_page_title',
+                'content_detail.content_description',
+                'content.office_id'
+            )
+            ->where('content.office_id', $officeId)
+            ->where('content.content_url', $url)
+            ->where('content_detail.language_id', $langId)
+            ->where('content.is_active', '1')
+            ->where('content.is_deleted', '0')
+            ->first();
+        return $result;
+    }
+
+    /**
+     * get content detail
+     * @param int $officeId
+     * @param int $id
+     * @param int $langId
+========== HOME MODEL ==========
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+
+class Home extends Model
+{
+    public $languageId;
+
+    /**
+     * The database table used by the model.
+     *
+     * @var string
+     */
+
+    protected $fillable = array('is_active', 'is_deleted', 'created_by', 'updated_by', 'office_id', 'home_url', 'show_in', 'home_identity_name','data_2_title');
+
+    protected $table = 'home';
+
+    public function details()
+    {
+        return $this->hasMany(Homedetail::class);
+    }
+
+    public static function getAllTicker()
+    {
+        $languageId = Language::getIdFromCode('en');
+        $query    = "Select t1.id,date_format( t1.updated_at, '%d %b, %Y' ) AS updated_at,
+                                                t1.is_active,t2.ticker_des,t2.ticker_title
+                                                from pndc_ticker t1
+                                                join pndc_ticker_detail t2 on t1.id=t2.ticker_id
+                                                where t1.is_delete='0' and t2.language_id = '$languageId'
+                                                order by t1.created_at desc
+                                                ";
+
+        return DB::select($query);
+    }
+
+    public static function findTickerById($id)
+    {
+        $languageId = Language::getIdFromCode('en');
+
+
+
+        $query    = "SELECT * FROM pndc_ticker WHERE  is_delete='0'  and id='$id'  LIMIT 1";
+
+        return DB::select($query);
+    }
+
+    public static function getTickerDetailsWithLanguages($id)
+    {
+        $query    = "select t1.id as language_id,t1.language_name,
+                                        (select t2.id from pndc_ticker t2 where t2.id='$id') as ticker_id,
+
+
+
+                                        (select is_active from pndc_ticker t2 where t2.id='$id') as is_active,
+
+
+                                        (select t3.ticker_des from pndc_ticker t2 join pndc_ticker_detail t3
+                                                        on t2.id=t3.ticker_id where t3.language_id=t1.id and t2.id='$id') as ticker_description,
+                                        (select t3.ticker_title from pndc_ticker t2 join pndc_ticker_detail t3
+                                                        on t2.id=t3.ticker_id where t3.language_id=t1.id and t2.id='$id') as ticker_title,
+                                        (select t3.id from pndc_ticker t2 join pndc_ticker_detail t3
+                                                        on t2.id=t3.ticker_id where t3.language_id=t1.id and t2.id='$id') as ticker_detail_id
+                                        from pndc_language t1
+                                        where t1.is_active = '1'";
+
+        return DB::select($query);
+    }
+
+
+
+    /**
+     * get all undeleted homes
+     * @return object
+     */
+    public static function getUndeletedHomes()
+    {
+        $languageId = Language::getIdFromCode('en');
+        $query    = "Select t1.id,t1.home_url,date_format( t1.updated_at, '%d %b, %Y' ) AS updated_on,
+                                                t1.is_active,t2.home_heading
+                                                from pndc_home t1
+                                                join pndc_home_detail t2 on t1.id=t2.home_id
+                                                where t1.is_deleted='0' and t2.language_id = '$languageId' ";
+
+        return DB::select($query);
+    }
+
+    /**
+     * get all undeleted homes office wise
+     * @param int $officeId
+     * @return object
+     */
+    public static function getUndeletedHomesByOffice($officeId)
+    {
+        $languageId = Language::getIdFromCode('en');
+        $query    = "select t1.*, date_format( t1.updated_at, '%d %b, %Y' ) AS updated_on,t2.home_heading
+                                        from pndc_home t1 left join pndc_home_detail t2 on t1.id=t2.home_id
+                                        where t1.office_id = '$officeId'and t2.language_id = '$languageId'";
+        return DB::select($query);
+    }
+
+    /**
+     * check whether url exist or not for individual office
+     * @param  string $url
+     * @param  int $officeId
+     * @return int
+     */
+    public static function checkExist($url, $officeId)
+    {
+        return Home::where('is_deleted', '0')
+            ->where('home_url', $url)
+            ->where('office_id', $officeId)
+            ->pluck('id')->first();
+    }
+
+    /**
+     * get show in of undeleted home contents
+     * @return array
+     */
+    public static function getShowInOfUndeleted()
+    {
+        $homeOffice = Office::where('office_subdomain', 'home')->first();
+        return Home::where('is_deleted', '0')
+            ->where('office_id', '<>', $homeOffice->id)
+            ->groupby('show_in')
+            ->orderby('id')
+            ->pluck('show_in', 'home_url');
+    }
+
+    /**
+     * get home detail with languages
+     * @param  int $id
+     * @return object
+     */
+    public static function getHomeDetailsWithLanguages($id)
+    {
+        $query    = "select t1.id as language_id,t1.language_name,
+                                        (select t2.id from pndc_home t2 where t2.id='$id') as home_id,
+                                        (select t2.show_in from pndc_home t2 where t2.id='$id') as show_in,
+                                        (select home_url from pndc_home t2 where t2.id='$id') as home_url,
+                                        (select home_meta_tags from pndc_home t2 where t2.id='$id') as home_meta_tags,
+                                        (select home_meta_description from pndc_home t2 where t2.id='$id') as home_meta_description,
+                                        (select home_attachment from pndc_home t2 where t2.id='$id') as home_attachment,
+                                        (select is_active from pndc_home t2 where t2.id='$id') as is_active,
+                                        (select home_heading from pndc_home t2 join pndc_home_detail t3
+                                                        on t2.id=t3.home_id where t3.language_id=t1.id and t2.id='$id') as home_heading,
+                                        (select officer_name from pndc_home t2 join pndc_home_detail t3
+                                                        on t2.id=t3.home_id where t3.language_id=t1.id and t2.id='$id') as officer_name,
+                                        (select home_description from pndc_home t2 join pndc_home_detail t3
+                                                        on t2.id=t3.home_id where t3.language_id=t1.id and t2.id='$id') as home_description,
+                                        (select home_page_title from pndc_home t2 join pndc_home_detail t3
+                                                        on t2.id=t3.home_id where t3.language_id=t1.id and t2.id='$id') as home_page_title,
+                                        (select t3.id from pndc_home t2 join pndc_home_detail t3
+                                                        on t2.id=t3.home_id where t3.language_id=t1.id and t2.id='$id') as home_detail_id
+                                        from pndc_language t1
+                                        where t1.is_active = '1'";
+
+        return DB::select($query);
+    }
+
+    /*------------------------------------------------------*/
+    /**
+     * get home detail
+     * @param int $officeId
+     * @param string $url
+     * @param int $langId
+     * @return object
+     */
+    public static function getHomeDetail($officeId, $url, $langId)
+    {
+        // dd($officeId);
+        $result = Home::join('home_detail', 'home.id', '=', 'home_detail.home_id')
+            ->select(
+                'home.id',
+                'home.home_url',
+                'home.home_meta_tags',
+                'home.home_meta_description',
+                'home_attachment',
+                'home_detail.home_heading',
+                'home_detail.home_page_title',
+                'home_detail.home_description'
+            )
+            ->where('home.office_id', $officeId)
+            ->where('home.home_url', $url)
+            ->where('home_detail.language_id', $langId)
+            ->where('home.is_active', '1')
+            ->where('home.is_deleted', '0')
+            ->first();
+        return $result;
+    }
+
+    /**
+     * get home page setions data
+     * @param int $showIn
+     * @param int $officeId
+     * @param int $langId
+     * @return object
+     */
+    public static function getHomePageData($showIn, $officeId, $langId)
+    {
+        $result = Home::join('home_detail', 'home.id', '=', 'home_detail.home_id')
+            ->select(
+                'home.id',
+                'home.office_id',
+                'home.home_url',
+                'home.home_attachment',
+                'home_detail.home_heading',
+                'home_detail.home_description',
+                'home_detail.home_page_title',
+                'home.home_meta_tags',
+                'home.home_meta_description',
+                'home.data_1',
+                'home.data_2',
+                'home.data_3',
+                'home.data_4'
+            )
+========== CHATBOT RETRIEVER ==========
+<?php
+
+namespace App\Services\Chatbot;
+
+use App\Models\ChatbotKnowledgeChunk;
+use Illuminate\Support\Collection;
+use InvalidArgumentException;
+
+class ChatbotKnowledgeRetriever
+{
+    /**
+     * Search only indexed, active, public knowledge for the requested office.
+     *
+     * @return array{question:string,office_id:int,matches:array}
+     */
+    public function search(string $question, int $officeId, int $limit = 5): array
+    {
+        $question = trim($question);
+
+        if ($question === '') {
+            throw new InvalidArgumentException('Search question is required.');
+        }
+
+        if ($officeId < 1) {
+            throw new InvalidArgumentException('A valid office is required.');
+        }
+
+        $limit = max(1, min($limit, 10));
+        $terms = $this->terms($question);
+
+        if ($terms === []) {
+            return [
+                'question' => $question,
+                'office_id' => $officeId,
+                'matches' => [],
+            ];
+        }
+
+        $query = ChatbotKnowledgeChunk::query()
+            ->with(['document'])
+            ->where(function ($scope) use ($officeId) {
+                $scope->where('office_id', $officeId)
+                    ->orWhereNull('office_id');
+            })
+            ->where('status', 'active')
+            ->whereHas('document', function ($documents) use ($officeId) {
+                $documents
+                    ->where(function ($scope) use ($officeId) {
+                        $scope->where('office_id', $officeId)
+                            ->orWhereNull('office_id');
+                    })
+                    ->where('parser_status', 'indexed')
+                    ->whereHas('source', function ($sources) use ($officeId) {
+                        $sources
+                            ->where('is_enabled', true)
+                            ->where('is_public', true)
+                            ->where(function ($scope) use ($officeId) {
+                                $scope->where('office_id', $officeId)
+                                    ->orWhereNull('office_id');
+                            });
+                    });
+            })
+            ->where(function ($search) use ($terms) {
+                foreach ($terms as $term) {
+                    $pattern = '%' . addcslashes($term, '\\%_') . '%';
+                    $search->orWhere('chunk_text', 'LIKE', $pattern);
+                }
+            });
+
+        // Bound database work even when a common word matches many records.
+        $candidates = $query
+            ->orderByDesc('id')
+            ->limit(300)
+            ->get();
+
+        $ranked = $candidates
+            ->map(function (ChatbotKnowledgeChunk $chunk) use ($terms) {
+                $text = mb_strtolower($chunk->chunk_text, 'UTF-8');
+                $score = 0;
+
+                foreach ($terms as $term) {
+                    if (mb_strpos($text, $term, 0, 'UTF-8') !== false) {
+                        $score++;
+                    }
+                }
+
+                return [
+                    'chunk' => $chunk,
+                    'score' => $score,
+                ];
+            })
+            ->filter(fn (array $item) => $item['score'] > 0)
+            ->sort(function (array $a, array $b) {
+                return ($b['score'] <=> $a['score'])
+                    ?: ($b['chunk']->id <=> $a['chunk']->id);
+            })
+            ->take($limit)
+            ->values();
+
+        return [
+            'question' => $question,
+            'office_id' => $officeId,
+            'matches' => $ranked->map(function (array $item) {
+                $chunk = $item['chunk'];
+                $document = $chunk->document;
+
+                return [
+                    'document_id' => (int) $document->id,
+                    'chunk_id' => (int) $chunk->id,
+                    'chunk_number' => (int) $chunk->chunk_number,
+                    'title' => $document->title,
+                    'source_url' => $document->source_url,
+                    'content' => $chunk->chunk_text,
+                    'score' => (int) $item['score'],
+                ];
+            })->all(),
+        ];
+    }
+
+    /**
+     * Keep Nepali and English Unicode words; ignore one-character fragments.
+     */
+    private function terms(string $question): array
+    {
+        $normalized = mb_strtolower($question, 'UTF-8');
+        $parts = preg_split('/[^\p{L}\p{N}]+/u', $normalized) ?: [];
+
+        $terms = [];
+
+        foreach ($parts as $part) {
+            if (mb_strlen($part, 'UTF-8') >= 2) {
+                $terms[] = $part;
+            }
+        }
+
+        return array_values(array_unique($terms));
+    }
+}
 doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$
