@@ -1,436 +1,5 @@
-doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && for f in app/Models/Content.php app/Models/ContentDetail.php app/Models/Home.php app/Models/Homedetail.php; do echo "===== $f ====="; sed -n '1,220p' "$f"; done
-===== app/Models/Content.php =====
-<?php
-
-namespace App\Models;
-
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
-
-class Content extends Model
-{
-    public $languageId;
-
-    /**
-     * The database table used by the model.
-     *
-     * @var string
-     */
-
-    protected $fillable = array('is_active', 'is_deleted', 'created_by', 'updated_by');
-
-    protected $table = 'content';
-
-    public function details()
-    {
-        return $this->hasMany(ContentDetail::class, 'content_id');
-    }
-
-    /**
-     * get all undeleted contents
-     * @return object
-     */
-    public static function getUndeletedContents()
-    {
-        $languageId = Language::getIdFromCode('en');
-        $query      = "Select t1.id,t1.content_url,date_format( t1.updated_at, '%d %b, %Y' ) AS updated_on,
-                                                t1.is_active,t2.content_heading
-                                                from pndc_content t1
-                                                join pndc_content_detail t2 on t1.id=t2.content_id
-                                                where t1.is_deleted='0' and t2.language_id = '$languageId' ";
-
-        return DB::select($query);
-    }
-
-    /**
-     * get all undeleted contents office wise
-     * @param int $officeId
-     * @return object
-     */
-    public static function getUndeletedContentsByOffice($officeId)
-    {
-        $languageId = Language::getIdFromCode('en');
-        $query      = "Select t1.id,t1.content_url,date_format( t1.updated_at, '%d %b, %Y' ) AS updated_on,
-                                                t1.is_active,t2.content_heading
-                                                from pndc_content t1
-                                                join pndc_content_detail t2 on t1.id=t2.content_id
-                                                where t1.is_deleted='0' and t2.language_id = '$languageId' and t1.office_id='$officeId' ";
-
-        return DB::select($query);
-    }
-
-    /**
-     * check whether url exist or not for individual office
-     * @param  string $url
-     * @param  int $officeId
-     * @return int
-     */
-    public static function checkExist($url, $officeId)
-    {
-        return Content::where('is_deleted', '0')
-            ->where('content_url', $url)
-            ->where('office_id', $officeId)
-            ->pluck('id')
-            ->first();
-    }
-
-    /**
-     * get content detail with languages
-     * @param  int $id
-     * @return object
-     */
-    public static function getContentDetailsWithLanguages($id)
-    {
-        $query = "select t1.id as language_id,t1.language_name,
-                                        (select t2.id from pndc_content t2 where t2.id='$id') as content_id,
-                                        (select t2.parent_id from pndc_content t2 where t2.id='$id') as parent_id,
-                                        (select content_url from pndc_content t2 where t2.id='$id') as content_url,
-                                        (select show_in from pndc_content t2 where t2.id='$id') as show_in,
-                                        (select order_menu from pndc_content t2 where t2.id='$id') as order_menu,
-                                        (select content_meta_tags from pndc_content t2 where t2.id='$id') as content_meta_tags,
-                                        (select content_meta_description from pndc_content t2 where t2.id='$id') as content_meta_description,
-                                        (select content_attachment from pndc_content t2 where t2.id='$id') as content_attachment,
-                                        (select is_active from pndc_content t2 where t2.id='$id') as is_active,
-                                        (select content_heading from pndc_content t2 join pndc_content_detail t3
-                                                        on t2.id=t3.content_id where t3.language_id=t1.id and t2.id='$id') as content_heading,
-                                        (select content_description from pndc_content t2 join pndc_content_detail t3
-                                                        on t2.id=t3.content_id where t3.language_id=t1.id and t2.id='$id') as content_description,
-                                        (select content_page_title from pndc_content t2 join pndc_content_detail t3
-                                                        on t2.id=t3.content_id where t3.language_id=t1.id and t2.id='$id') as content_page_title,
-                                        (select t3.id from pndc_content t2 join pndc_content_detail t3
-                                                        on t2.id=t3.content_id where t3.language_id=t1.id and t2.id='$id') as content_detail_id
-                                        from pndc_language t1
-                                        where t1.is_active = '1' ";
-
-        return DB::select($query);
-    }
-
-    /**
-     * get content list hierarchy wise
-     * @param  int $parentId
-     * @param  int $level
-     * @param  int $selected
-     * @return string
-     */
-    public static function content_list_for_contentEntry($officeId, $parentId, $level, $selected)
-    {
-        $languageId = Language::getIdFromCode('en');
-        $contents   = Content::join('content_detail', 'content.id', '=', 'content_detail.content_id')
-            ->select(
-                'content.id',
-                'content.parent_id',
-                'content_detail.content_heading'
-            )
-            ->where('content.office_id', $officeId)
-            ->where('content.parent_id', $parentId)
-            ->where('content.is_active', '1')
-            ->where('content_detail.language_id', $languageId)
-            ->orderby('content.id', 'asc')
-            ->get();
-
-        $returnList = '<select class="m-wrap span6" name="parent_id" id="parent_id">';
-        $returnList .= '<option value="0" selected>Parent Itself</option>';
-        foreach ($contents as $content) {
-            if ($selected > 0 && $selected == $content->id) {
-                $selected_option = 'selected="selected"';
-            } else {
-                $selected_option = "";
-            }
-
-            $returnList .= '<option value="' . $content->id . '" ' . $selected_option . '>' .
-                str_repeat('&nbsp;--|- &nbsp;', $level) . $content->content_heading . '</option>';
-            $returnList .= self::subcontent_list_for_contentEntry($officeId, $content->id, $level + 1, $selected);
-        }
-        $returnList .= '</select>';
-
-        return $returnList;
-    }
-
-    /**
-     * get sub content list hierarchy wise
-     * @param  int $parentId
-     * @param  int $level
-     * @param  int $selected
-     * @return string
-     */
-    public static function subcontent_list_for_contentEntry($officeId, $parentId, $level, $selected = 0)
-    {
-        $languageId  = Language::getIdFromCode('en');
-        $subcontents = Content::join('content_detail', 'content.id', '=', 'content_detail.content_id')
-            ->select(
-                'content.id',
-                'content.parent_id',
-                'content_detail.content_heading'
-            )
-            ->where('content.office_id', $officeId)
-            ->where('content.parent_id', $parentId)
-            ->where('content.is_active', '1')
-            ->where('content_detail.language_id', $languageId)
-            ->orderby('content.id', 'asc')
-            ->get();
-
-        $returnList = '';
-        foreach ($subcontents as $subcontent) {
-            if ($selected > 0 && $selected == $subcontent->id) {
-                $selected_option = 'selected="selected"';
-            } else {
-                $selected_option = "";
-            }
-            $returnList .= '<option value="' . $subcontent->id . '" ' . $selected_option . '>' .
-                str_repeat('&nbsp;--|- &nbsp;', $level) . $subcontent->content_heading . '</option>';
-            $returnList .= self::subcontent_list_for_contentEntry($officeId, $subcontent->id, $level + 1, $selected);
-        }
-        return $returnList;
-    }
-
-    /*------------------------------------------------------*/
-    /**
-     * get content detail
-     * @param int $officeId
-     * @param string $url
-     * @param int $langId
-     * @return object
-     */
-    public static function getContentDetail($officeId, $url, $langId)
-    {
-        $result = Content::join('content_detail', 'content.id', '=', 'content_detail.content_id')
-            ->select(
-                'content.id',
-                'content.parent_id',
-                'content.content_url',
-                'content.content_meta_tags',
-                'content.content_meta_description',
-                'content_attachment',
-                'content_detail.content_heading',
-                'content_detail.content_page_title',
-                'content_detail.content_description',
-                'content.office_id'
-            )
-            ->where('content.office_id', $officeId)
-            ->where('content.content_url', $url)
-            ->where('content_detail.language_id', $langId)
-            ->where('content.is_active', '1')
-            ->where('content.is_deleted', '0')
-            ->first();
-        return $result;
-    }
-
-    /**
-     * get content detail
-     * @param int $officeId
-     * @param int $id
-     * @param int $langId
-===== app/Models/ContentDetail.php =====
-<?php
-
-namespace App\Models;
-
-use Illuminate\Database\Eloquent\Model;
-
-class ContentDetail extends Model
-{
-    public $languageId;
-
-    /**
-     * The database table used by the model.
-     *
-     * @var string
-     */
-
-    protected $fillable = array('content_heading', 'content_description', 'content_page_title');
-
-    protected $table = 'content_detail';
-}
-===== app/Models/Home.php =====
-<?php
-
-namespace App\Models;
-
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
-
-class Home extends Model
-{
-    public $languageId;
-
-    /**
-     * The database table used by the model.
-     *
-     * @var string
-     */
-
-    protected $fillable = array('is_active', 'is_deleted', 'created_by', 'updated_by', 'office_id', 'home_url', 'show_in', 'home_identity_name','data_2_title');
-
-    protected $table = 'home';
-
-    public function details()
-    {
-        return $this->hasMany(Homedetail::class);
-    }
-
-    public static function getAllTicker()
-    {
-        $languageId = Language::getIdFromCode('en');
-        $query    = "Select t1.id,date_format( t1.updated_at, '%d %b, %Y' ) AS updated_at,
-                                                t1.is_active,t2.ticker_des,t2.ticker_title
-                                                from pndc_ticker t1
-                                                join pndc_ticker_detail t2 on t1.id=t2.ticker_id
-                                                where t1.is_delete='0' and t2.language_id = '$languageId'
-                                                order by t1.created_at desc
-                                                ";
-
-        return DB::select($query);
-    }
-
-    public static function findTickerById($id)
-    {
-        $languageId = Language::getIdFromCode('en');
-
-
-
-        $query    = "SELECT * FROM pndc_ticker WHERE  is_delete='0'  and id='$id'  LIMIT 1";
-
-        return DB::select($query);
-    }
-
-    public static function getTickerDetailsWithLanguages($id)
-    {
-        $query    = "select t1.id as language_id,t1.language_name,
-                                        (select t2.id from pndc_ticker t2 where t2.id='$id') as ticker_id,
-
-
-
-                                        (select is_active from pndc_ticker t2 where t2.id='$id') as is_active,
-
-
-                                        (select t3.ticker_des from pndc_ticker t2 join pndc_ticker_detail t3
-                                                        on t2.id=t3.ticker_id where t3.language_id=t1.id and t2.id='$id') as ticker_description,
-                                        (select t3.ticker_title from pndc_ticker t2 join pndc_ticker_detail t3
-                                                        on t2.id=t3.ticker_id where t3.language_id=t1.id and t2.id='$id') as ticker_title,
-                                        (select t3.id from pndc_ticker t2 join pndc_ticker_detail t3
-                                                        on t2.id=t3.ticker_id where t3.language_id=t1.id and t2.id='$id') as ticker_detail_id
-                                        from pndc_language t1
-                                        where t1.is_active = '1'";
-
-        return DB::select($query);
-    }
-
-
-
-    /**
-     * get all undeleted homes
-     * @return object
-     */
-    public static function getUndeletedHomes()
-    {
-        $languageId = Language::getIdFromCode('en');
-        $query    = "Select t1.id,t1.home_url,date_format( t1.updated_at, '%d %b, %Y' ) AS updated_on,
-                                                t1.is_active,t2.home_heading
-                                                from pndc_home t1
-                                                join pndc_home_detail t2 on t1.id=t2.home_id
-                                                where t1.is_deleted='0' and t2.language_id = '$languageId' ";
-
-        return DB::select($query);
-    }
-
-    /**
-     * get all undeleted homes office wise
-     * @param int $officeId
-     * @return object
-     */
-    public static function getUndeletedHomesByOffice($officeId)
-    {
-        $languageId = Language::getIdFromCode('en');
-        $query    = "select t1.*, date_format( t1.updated_at, '%d %b, %Y' ) AS updated_on,t2.home_heading
-                                        from pndc_home t1 left join pndc_home_detail t2 on t1.id=t2.home_id
-                                        where t1.office_id = '$officeId'and t2.language_id = '$languageId'";
-        return DB::select($query);
-    }
-
-    /**
-     * check whether url exist or not for individual office
-     * @param  string $url
-     * @param  int $officeId
-     * @return int
-     */
-    public static function checkExist($url, $officeId)
-    {
-        return Home::where('is_deleted', '0')
-            ->where('home_url', $url)
-            ->where('office_id', $officeId)
-            ->pluck('id')->first();
-    }
-
-    /**
-     * get show in of undeleted home contents
-     * @return array
-     */
-    public static function getShowInOfUndeleted()
-    {
-        $homeOffice = Office::where('office_subdomain', 'home')->first();
-        return Home::where('is_deleted', '0')
-            ->where('office_id', '<>', $homeOffice->id)
-            ->groupby('show_in')
-            ->orderby('id')
-            ->pluck('show_in', 'home_url');
-    }
-
-    /**
-     * get home detail with languages
-     * @param  int $id
-     * @return object
-     */
-    public static function getHomeDetailsWithLanguages($id)
-    {
-        $query    = "select t1.id as language_id,t1.language_name,
-                                        (select t2.id from pndc_home t2 where t2.id='$id') as home_id,
-                                        (select t2.show_in from pndc_home t2 where t2.id='$id') as show_in,
-                                        (select home_url from pndc_home t2 where t2.id='$id') as home_url,
-                                        (select home_meta_tags from pndc_home t2 where t2.id='$id') as home_meta_tags,
-                                        (select home_meta_description from pndc_home t2 where t2.id='$id') as home_meta_description,
-                                        (select home_attachment from pndc_home t2 where t2.id='$id') as home_attachment,
-                                        (select is_active from pndc_home t2 where t2.id='$id') as is_active,
-                                        (select home_heading from pndc_home t2 join pndc_home_detail t3
-                                                        on t2.id=t3.home_id where t3.language_id=t1.id and t2.id='$id') as home_heading,
-                                        (select officer_name from pndc_home t2 join pndc_home_detail t3
-                                                        on t2.id=t3.home_id where t3.language_id=t1.id and t2.id='$id') as officer_name,
-                                        (select home_description from pndc_home t2 join pndc_home_detail t3
-                                                        on t2.id=t3.home_id where t3.language_id=t1.id and t2.id='$id') as home_description,
-                                        (select home_page_title from pndc_home t2 join pndc_home_detail t3
-                                                        on t2.id=t3.home_id where t3.language_id=t1.id and t2.id='$id') as home_page_title,
-                                        (select t3.id from pndc_home t2 join pndc_home_detail t3
-                                                        on t2.id=t3.home_id where t3.language_id=t1.id and t2.id='$id') as home_detail_id
-                                        from pndc_language t1
-                                        where t1.is_active = '1'";
-
-        return DB::select($query);
-    }
-
-    /*------------------------------------------------------*/
-    /**
-     * get home detail
-     * @param int $officeId
-     * @param string $url
-     * @param int $langId
-     * @return object
-     */
-    public static function getHomeDetail($officeId, $url, $langId)
-    {
-        // dd($officeId);
-        $result = Home::join('home_detail', 'home.id', '=', 'home_detail.home_id')
-            ->select(
-                'home.id',
-                'home.home_url',
-                'home.home_meta_tags',
-                'home.home_meta_description',
-                'home_attachment',
-                'home_detail.home_heading',
-                'home_detail.home_page_title',
-                'home_detail.home_description'
-            )
-            ->where('home.office_id', $officeId)
-            ->where('home.home_url', $url)
-            ->where('home_detail.language_id', $langId)
+doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && echo "===== HOME MODEL PUBLIC QUERIES =====" && sed -n '190,370p' app/Models/Home.php && echo "===== FRONTEND HOME DATA DISPLAY =====" && grep -Rni --include='*.php' -E 'home_identity_name|home_description|data_1|data_2|data_3|data_4|data_5|data_6|data_7' resources/views/home resources/views/layout
+===== HOME MODEL PUBLIC QUERIES =====
             ->where('home.is_active', '1')
             ->where('home.is_deleted', '0')
             ->first();
@@ -462,25 +31,319 @@ class Home extends Model
                 'home.data_3',
                 'home.data_4'
             )
-===== app/Models/Homedetail.php =====
-<?php
-
-namespace App\Models;
-
-use Illuminate\Database\Eloquent\Model;
-
-class Homedetail extends Model
-{
-    public $languageId;
+            ->where('home.office_id', $officeId)
+            ->where('home.show_in', $showIn)
+            ->where('home_detail.language_id', $langId)
+            ->where('home.is_active', '1')
+            ->where('home.is_deleted', '0')
+            ->first();
+        return $result;
+    }
+    /**
+     * get home page setions data
+     * @param int $showIn
+     * @param int $officeId
+     * @param int $langId
+     * @return object
+     */
+    public static function getHomePageSpokeperson($showIn, $officeId, $langId)
+    {
+        $result = Home::join('home_detail', 'home.id', '=', 'home_detail.home_id')
+            ->select(
+                'home.id',
+                'home.office_id',
+                'home.home_url',
+                'home.home_attachment',
+                'home_detail.home_heading',
+                'home_detail.home_description',
+                'home_detail.home_page_title',
+                'home.home_meta_tags',
+                'home.home_meta_description',
+                'home.data_1',
+                'home.data_2',
+                'home.data_3',
+                'home.data_4'
+            )
+            ->where('home.office_id', $officeId)
+            ->where('home.show_in', $showIn)
+            ->where('home_detail.language_id', $langId)
+            ->where('home.home_url', 'dor-spoke-person')
+            ->where('home.is_active', '1')
+            ->where('home.is_deleted', '0')
+            ->first();
+        // dd($result);
+        return $result;
+    }
 
     /**
-     * The database table used by the model.
-     *
-     * @var string
+     * get home page setions data
+     * @param int $showIn
+     * @param int $officeId
+     * @param int $langId
+     * @return object
      */
+    public static function getHomePageInformationOfficer($showIn, $officeId, $langId)
+    {
+        $result = Home::join('home_detail', 'home.id', '=', 'home_detail.home_id')
+            ->select(
+                'home.id',
+                'home.office_id',
+                'home.home_url',
+                'home.home_attachment',
+                'home_detail.home_heading',
+                'home_detail.home_description',
+                'home_detail.home_page_title',
+                'home.home_meta_tags',
+                'home.home_meta_description',
+                'home.data_1',
+                'home.data_2',
+                'home.data_3',
+                'home.data_4'
+            )
+            ->where('home.office_id', $officeId)
+            ->where('home.show_in', $showIn)
+            ->where('home_detail.language_id', $langId)
+            ->where('home.home_url', 'information-officer')
+            ->where('home.is_active', '1')
+            ->where('home.is_deleted', '0')
+            ->first();
+        // dd($result);
+        return $result;
+    }
 
-    protected $fillable = array('home_heading', 'officer_name', 'home_description', 'home_page_title');
+    public static function getHomePageDirectorGeneral($showIn, $officeId, $langId)
+    {
+        $result = Home::join('home_detail', 'home.id', '=', 'home_detail.home_id')
+            ->select(
+                'home.id',
+                'home.office_id',
+                'home.home_url',
+                'home.home_attachment',
+                'home_detail.home_heading',
+                'home_detail.home_description',
+                'home_detail.home_page_title',
+                'home.home_meta_tags',
+                'home.home_meta_description',
+                'home.data_1',
+                'home.data_2',
+                'home.data_3',
+                'home.data_4'
+            )
+            ->where('home.office_id', $officeId)
+            // ->where('home.show_in', $showIn)
+            ->where('home_detail.language_id', $langId)
+            ->where('home.home_url', 'message-from-director-general')
+            ->where('home.is_active', '1')
+            ->where('home.is_deleted', '0')
+            ->first();
+        // dd($result);
+        return $result;
+    }
 
-    protected $table = 'home_detail';
-}
+    /**
+     * get home page setions data
+     * @param int $showIn
+     * @param int $officeId
+     * @param int $langId
+     * @return object
+     */
+    public static function getHomePageGrievanceOfficer($showIn, $officeId, $langId)
+    {
+        return Home::join('home_detail', 'home.id', '=', 'home_detail.home_id')
+            ->select(
+                'home.id',
+                'home.office_id',
+                'home.home_url',
+                'home.home_attachment',
+                'home_detail.home_heading',
+                'home_detail.home_description',
+                'home_detail.home_page_title',
+                'home.home_meta_tags',
+                'home.home_meta_description',
+                'home.data_1',
+                'home.data_2',
+                'home.data_3',
+                'home.data_4'
+            )
+            ->where('home.office_id', $officeId)
+            ->where('home.show_in', $showIn)
+            ->where('home_detail.language_id', $langId)
+            ->where('home.home_url', 'grievance-hearing-officer')
+            ->where('home.is_active', '1')
+            ->where('home.is_deleted', '0')
+            ->first();
+    }
+
+    public static function getHomePageWorkingarea($showIn, $officeId, $langId)
+    {
+        $result = Home::join('home_detail', 'home.id', '=', 'home_detail.home_id')
+            ->select(
+                'home.id',
+                'home.office_id',
+                'home.home_url',
+===== FRONTEND HOME DATA DISPLAY =====
+resources/views/home/admin/add.blade.php:84:                                                    <label class="control-label">{{ $the_home->data_3_title }}</label>
+resources/views/home/admin/add.blade.php:86:                                                        <input type="text" name="data_3" class="span8"
+resources/views/home/admin/add.blade.php:87:                                                            value="{{ old('data_3', $the_home->data_3) }}">
+resources/views/home/admin/add.blade.php:91:                                                    <label class="control-label">{{ $the_home->data_4_title }}</label>
+resources/views/home/admin/add.blade.php:93:                                                        <input type="text" name="data_4" class="span8"
+resources/views/home/admin/add.blade.php:94:                                                            value="{{ old('data_4', $the_home->data_4) }}">
+resources/views/home/admin/add.blade.php:129:                                                    name="home_description_{{ $language->id }}">
+resources/views/home/admin/add.blade.php:130:                    {{ old('home_description_' . $language->id) }}</textarea>
+resources/views/home/admin/add.blade.php:227:        CKEDITOR.replace('home_description_<?php echo $language->id; ?>', {
+resources/views/home/admin/add.blade.php:265:                                    echo 'home_description_' . $language->id . ': "required",';
+resources/views/home/admin/add.blade.php:281:                                    echo 'home_description_' . $language->id . ': "Please enter the home description in ' . $language->language_name . '",';
+resources/views/home/admin/edit.blade.php:105:                                <textarea class="m-wrap span12 ckeditor" rows="20" cols="20" name="home_description_{{ $home->language_id }}">
+resources/views/home/admin/edit.blade.php:106:                                   {{ $home->home_description }}
+resources/views/home/admin/edit.blade.php:194:CKEDITOR.replace( 'home_description_<?php echo $language->id ?>',{
+resources/views/home/admin/extra_data.blade.php:8:    // dd($the_home->data_1);
+resources/views/home/admin/extra_data.blade.php:12:    @if ($the_home->data_1_title)
+resources/views/home/admin/extra_data.blade.php:14:            <label class="control-label">{{ $the_home->data_1_title }} </label>
+resources/views/home/admin/extra_data.blade.php:16:                <input type="text" name="data_1" class="span8" value="{{ $the_home->data_1 }}" />
+resources/views/home/admin/extra_data.blade.php:21:    @if ($the_home->data_2_title)
+resources/views/home/admin/extra_data.blade.php:23:            <label class="control-label">{{ $the_home->data_2_title }} </label>
+resources/views/home/admin/extra_data.blade.php:25:                <input type="text" name="data_2" class="span8" value="{{ $the_home->data_2 }}" />
+resources/views/home/admin/extra_data.blade.php:31:@if ($the_home->data_3_title)
+resources/views/home/admin/extra_data.blade.php:33:        <label class="control-label">{{ $the_home->data_3_title }} </label>
+resources/views/home/admin/extra_data.blade.php:35:            <input type="text" name="data_3" class="span8" value="{{ $the_home->data_3 }}" />
+resources/views/home/admin/extra_data.blade.php:40:@if ($the_home->data_4_title)
+resources/views/home/admin/extra_data.blade.php:42:        <label class="control-label">{{ $the_home->data_4_title }} </label>
+resources/views/home/admin/extra_data.blade.php:44:            <input type="text" name="data_4" class="span8" value="{{ $the_home->data_4 }}" />
+resources/views/home/admin/extra_data.blade.php:49:@if ($the_home->data_5_title && !$isLiveFlashBox)
+resources/views/home/admin/extra_data.blade.php:51:        <label class="control-label">{{ $the_home->data_5_title }} </label>
+resources/views/home/admin/extra_data.blade.php:53:            <input type="text" name="data_5" class="span8" value="{{ $the_home->data_5 }}" />
+resources/views/home/admin/extra_data.blade.php:58:@if ($the_home->data_6_title && !$isLiveFlashBox)
+resources/views/home/admin/extra_data.blade.php:60:        <label class="control-label">{{ $the_home->data_6_title }} </label>
+resources/views/home/admin/extra_data.blade.php:62:            <input type="text" name="data_6" class="span8" value="{{ $the_home->data_6 }}" />
+resources/views/home/admin/extra_data_details_facebook_instagram_feed.blade.php:5:            <textarea name="data_1" class="span8" rows="4">{{ $the_home->data_1 }}</textarea>
+resources/views/home/admin/extra_data_details_facebook_instagram_feed.blade.php:11:            <input type="text" name="data_2" class="span8" value="{{ $the_home->data_2 }}" />
+resources/views/home/admin/extra_data_details_facebook_instagram_feed.blade.php:15:    @if ($the_home->data_1_title)
+resources/views/home/admin/extra_data_details_facebook_instagram_feed.blade.php:17:            <label class="control-label">{{ $the_home->data_1_title }}</label>
+resources/views/home/admin/extra_data_details_facebook_instagram_feed.blade.php:19:                <textarea name="data_1" class="span8" rows="4">{{ $the_home->data_1 }}</textarea>
+resources/views/home/admin/extra_data_details_facebook_instagram_feed.blade.php:23:    @if ($the_home->data_2_title)
+resources/views/home/admin/extra_data_details_facebook_instagram_feed.blade.php:25:            <label class="control-label">{{ $the_home->data_2_title }}</label>
+resources/views/home/admin/extra_data_details_facebook_instagram_feed.blade.php:27:                <input type="text" name="data_2" class="span8" value="{{ $the_home->data_2 }}" />
+resources/views/home/admin/extra_data_details_live.blade.php:2:// dd($the_home->data_2);
+resources/views/home/admin/extra_data_details_live.blade.php:4:@if ($the_home->data_1_title)
+resources/views/home/admin/extra_data_details_live.blade.php:6:        <label class="control-label">{{ $the_home->data_1_title }} </label>
+resources/views/home/admin/extra_data_details_live.blade.php:8:            <input id="data_1" type="text" name="data_" class="span8"
+resources/views/home/admin/extra_data_details_live.blade.php:9:                value="{{ old('data_1', $the_home->data_1) }}" />&nbsp;
+resources/views/home/admin/extra_data_details_live.blade.php:13:            <img id='imgCoverPhoto' src="{{ $the_home->data_1 }}" onerror="this.src='/assets/admin/img/no-image.png'"
+resources/views/home/admin/extra_data_details_live.blade.php:21:    <label class="control-label">{{ $the_home->data_5_title }} </label>
+resources/views/home/admin/extra_data_details_live.blade.php:23:        <input id="data_5_txt" type="text" name="data_5_txt" class="span8"
+resources/views/home/admin/extra_data_details_live.blade.php:24:            value="{{ old('data_5_txt', $the_home->data_5) }}" />&nbsp;
+resources/views/home/admin/extra_data_details_live.blade.php:27:        @if ($the_home->data_5)
+resources/views/home/admin/extra_data_details_live.blade.php:30:                    href="{{ $the_home->data_5 }}" target="_blank">{{ $the_home->data_5 }}</a></span>
+resources/views/home/admin/extra_data_details_live.blade.php:36:    <label class="control-label">{{ $the_home->data_6_title }} </label>
+resources/views/home/admin/extra_data_details_live.blade.php:38:        <input id="data_6_txt" type="text" name="data_6_txt" class="span8"
+resources/views/home/admin/extra_data_details_live.blade.php:39:            value="{{ old('data_6_txt', $the_home->data_6) }}" />&nbsp;
+resources/views/home/admin/extra_data_details_live.blade.php:42:        @if ($the_home->data_6)
+resources/views/home/admin/extra_data_details_live.blade.php:45:                    href="{{ $the_home->data_6 }}" target="_blank">{{ $the_home->data_6 }}</a></span>
+resources/views/home/admin/extra_data_details_live.blade.php:51:    <label class="control-label">{{ $the_home->data_7_title }} </label>
+resources/views/home/admin/extra_data_details_live.blade.php:53:        <input id="data_7" type="text" name="data_7" class="span8"
+resources/views/home/admin/extra_data_details_live.blade.php:54:            value="{{ old('data_7', $the_home->data_7) }}" />
+resources/views/home/admin/extra_data_details_live.blade.php:58:@if ($the_home->data_2_title)
+resources/views/home/admin/extra_data_details_live.blade.php:60:        <label class="control-label">{{ $the_home->data_2_title }} </label>
+resources/views/home/admin/extra_data_details_live.blade.php:62:            <input id="data_2" type="text" name="data_2" class="span2" value="{{ old('data_2', $the_home->data_2) }}" />
+resources/views/home/admin/extra_data_details_live.blade.php:71:        document.getElementById('data_1').value = data;
+resources/views/home/admin/extra_data_details_live.blade.php:82:        document.getElementById('data_5_txt').value = data;
+resources/views/home/admin/extra_data_details_live.blade.php:93:        document.getElementById('data_6_txt').value = data;
+resources/views/home/admin/extra_data_details_live.blade.php:103:        $cur_val = $('#data_1').val();
+resources/views/home/admin/extra_data_details_live.blade.php:106:            $('#data_1').val('');
+resources/views/home/admin/extra_data_details_live.blade.php:110:        $cur_val_pdf = $('#data_5').val();
+resources/views/home/admin/extra_data_details_live.blade.php:112:            $('#data_5_txt').val('');
+resources/views/home/admin/extra_data_details_live.blade.php:116:        $cur_val_video = $('#data_6').val();
+resources/views/home/admin/extra_data_details_live.blade.php:118:            $('#data_6_txt').val('');
+resources/views/home/admin/extra_data_details_live.blade.php:121:        $("#data_2").spectrum({
+resources/views/home/admin/extra_data_details_live.blade.php:122:            color: "{{ old('data_2', $the_home->data_2) }}",
+resources/views/home/admin/list.blade.php:98:                                                    <td>{{$home->home_identity_name}}</td>
+resources/views/home/contact.blade.php:68:    $facebookUrl = trim((string) ($facebookFeed->data_2 ?? ''));
+resources/views/home/contact.blade.php:70:    $instagramUrl = trim((string) ($instagramFeed->data_2 ?? ''));
+resources/views/home/contact_officers.blade.php:24:                    <h5>{{ $languageId == 1 ? $homeDirectorGeneral->data_1 : $homeDirectorGeneral->data_2 }}</h5>
+resources/views/home/contact_officers.blade.php:26:                    @if ($homeDirectorGeneral->data_3)
+resources/views/home/contact_officers.blade.php:27:                        <p><i class="fa fa-phone-alt me-2"></i> {{ strtr((string) $homeDirectorGeneral->data_3, $englishDigits) }}</p>
+resources/views/home/contact_officers.blade.php:29:                    @if ($homeDirectorGeneral->data_4)
+resources/views/home/contact_officers.blade.php:30:                        <p><i class="far fa-envelope me-2"></i> {{ $homeDirectorGeneral->data_4 }}</p>
+resources/views/home/contact_officers.blade.php:44:                        <h5>{{ $languageId == 1 ? $homespokeperson->data_1 : $homespokeperson->data_2 }}</h5>
+resources/views/home/contact_officers.blade.php:46:                        @if ($homespokeperson->data_3)
+resources/views/home/contact_officers.blade.php:47:                            <p><i class="fa fa-phone-alt me-2"></i> {{ strtr((string) $homespokeperson->data_3, $englishDigits) }}</p>
+resources/views/home/contact_officers.blade.php:49:                        @if ($homespokeperson->data_4)
+resources/views/home/contact_officers.blade.php:50:                            <p><i class="far fa-envelope me-2"></i> {{ $homespokeperson->data_4 }}</p>
+resources/views/home/contact_officers.blade.php:65:                        <h5>{{ $languageId == 1 ? $homeInformationOfficer->data_1 : $homeInformationOfficer->data_2 }}
+resources/views/home/contact_officers.blade.php:68:                        @if ($homeInformationOfficer->data_3)
+resources/views/home/contact_officers.blade.php:69:                            <p><i class="fa fa-phone-alt me-2"></i> {{ strtr((string) $homeInformationOfficer->data_3, $englishDigits) }}
+resources/views/home/contact_officers.blade.php:72:                        @if ($homeInformationOfficer->data_4)
+resources/views/home/contact_officers.blade.php:73:                            <p><i class="far fa-envelope me-2"></i> {{ $homeInformationOfficer->data_4 }}
+resources/views/home/contact_officers.blade.php:85:                ? $homeGrievanceOfficer->data_1
+resources/views/home/contact_officers.blade.php:86:                : $homeGrievanceOfficer->data_2;
+resources/views/home/contact_officers.blade.php:103:                @if ($homeGrievanceOfficer->data_3)
+resources/views/home/contact_officers.blade.php:105:                        <a href="tel:{{ strtr((string) $homeGrievanceOfficer->data_3, $englishDigits) }}">{{ strtr((string) $homeGrievanceOfficer->data_3, $englishDigits) }}</a>
+resources/views/home/feedback.blade.php:65:                                @if ($facebookFeed && $facebookFeed->data_)
+resources/views/home/feedback.blade.php:66:                                    <a class="me-2" href="{{ $facebookFeed->data_2 }}" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+resources/views/home/feedback.blade.php:68:                                @if ($instagramFeed && $instagramFeed->data_2)
+resources/views/home/feedback.blade.php:69:                                    <a href="{{ $instagramFeed->data_2 }}" target="_blank" rel="noopener noreferrer" aria-label="X"><strong>X</strong></a>
+resources/views/home/home-detail.blade.php:44:                            <div>{!! $homeData->home_description !!}</div>
+resources/views/home/home-detail_old.blade.php:20:                     <div>{{ $homeData->home_description }}</div>
+resources/views/home/home.blade.php:338:                                    if (strlen($homeData2->home_description) != strlen(utf8_decode($homeData2->home_description))) {
+resources/views/home/home.blade.php:339:                                        echo Str::limit($homeData2->home_description, 250, '....');
+resources/views/home/home.blade.php:341:                                        echo Str::limit($homeData2->home_description, 150, '....');
+resources/views/home/home.blade.php:368:                                    if (strlen($homeData1->home_description) != strlen(utf8_decode($homeData1->home_description))) {
+resources/views/home/home.blade.php:370:                                        if (strlen($homeData1->home_description) > 499) {
+resources/views/home/home.blade.php:373:                                        echo Str::limit($homeData1->home_description, 500, '....');
+resources/views/home/home.blade.php:376:                                        if (strlen($homeData1->home_description) > 499) {
+resources/views/home/home.blade.php:380:                                        echo Str::limit($homeData1->home_description, 500, '....');
+resources/views/home/home.blade.php:406:                            {!! $homespokeperson->home_description !!}
+resources/views/home/live.blade.php:19:            if ($item->data_6) {
+resources/views/home/live.blade.php:20:                $destinationUrl = $item->data_6;
+resources/views/home/live.blade.php:21:            } elseif ($item->data_5) {
+resources/views/home/live.blade.php:22:                $destinationUrl = $item->data_5;
+resources/views/home/live.blade.php:23:            } elseif ($item->data_7) {
+resources/views/home/live.blade.php:24:                $destinationUrl = $item->data_7;
+resources/views/home/live.blade.php:26:                $destinationUrl = $item->data_1;
+resources/views/home/live.blade.php:38:                    @if ($item->data_1 && $bandwidth_code == 'high')
+resources/views/home/live.blade.php:40:                            <img src="{{ $item->data_1 }}" width="100%" />
+resources/views/home/live.blade.php:48:                            <span class="live-alert" style="background:{{ $item->data_2 }}"></span>
+resources/views/home/live.blade.php:49:                            {{ $languageId == 1 ? $item->data_3 : $item->data_ }}
+resources/views/home/other_office_officers.blade.php:23:                $rawOfficerDescription = $officer->home_description ?? '';
+resources/views/home/other_office_officers.blade.php:28:                // पुराना रेकर्डका लागि पुरानो data_1 / data_ नाम प्रयोग
+resources/views/home/other_office_officers.blade.php:31:                        ? trim($officer->data_1 ?? '')
+resources/views/home/other_office_officers.blade.php:32:                        : trim($officer->data_2 ?? '');
+resources/views/home/other_office_officers.blade.php:207:                        @if ($officer->data_3)
+resources/views/home/other_office_officers.blade.php:209:                                $englishPhone = strtr((string) $officer->data_3, [
+resources/views/home/other_office_officers.blade.php:219:                        @if ($officer->data_4)
+resources/views/home/other_office_officers.blade.php:220:                            <p><i class="far fa-envelope me-2"></i> {{ $officer->data_4 }}</p>
+resources/views/layout/client/footer.blade.php:13:    <strong>{{ $footer_quote && $footer_quote->home_description && $footer_quote->home_description != '--' ? trim(html_entity_decode(strip_tags($footer_quote->home_description))) : ($languageId == 1 ? 'राष्ट्रिय सम्पर्क सञ्जाल र सामाजिक–आर्थिक समृद्धिका लागि सुरक्षित, भरपर्दो तथा दिगो सडक सञ्जालको विकास।' : 'Developing a Safe, Reliable and Sustainable Road Network for National Connectivity and Socio-Economic Prosperity.') }}</strong>
+resources/views/layout/client/footer_2021.blade.php:48:        <p>“{{ $footer_quote && $footer_quote->home_descriptio && $footer_quote->home_description != '--' ? trim(html_entity_decode(strip_tags($footer_quote->home_description))) : ($sessionLangId == 1 ? 'राष्ट्रिय सम्पर्क सञ्जाल र सामाजिक–आर्थिक समृद्धिका लागि सुरक्षित, भरपर्दो तथा दिगो सडक सञ्जालको विकास।' : 'Developing a Safe, Reliable and Sustainable Road Network for National Connectivity and Socio-Economic Prosperity.') }}”</p>
+resources/views/layout/client/footer_2021.blade.php:81:        @if ($footer_col_2 && $footer_col_2->home_description && $footer_col_2->home_description != '--')
+resources/views/layout/client/footer_2021.blade.php:82:            {!! \Helper::normalizeFooterLinks($footer_col_2->home_description) !!}
+resources/views/layout/client/footer_2021.blade.php:92:            $importantDescription = $footer_col_3->home_description ?? '';
+resources/views/layout/client/sidebar.blade.php:55:                @if (strlen($homeData3->home_description) != strlen(utf8_decode($homeData3->home_description)))
+resources/views/layout/client/sidebar.blade.php:56:                    {{ Str::limit($homeData3->home_description, 600, '....') }}
+resources/views/layout/client/sidebar.blade.php:58:                    {{ Str::limit($homeData3->home_description, 150, '....') }}
+resources/views/layout/client/sidebar.blade.php:61:            @if (strlen($homeData3->home_description) != strlen(utf8_decode($homeData3->home_description)))
+resources/views/layout/client/sidebar.blade.php:62:                @if (strlen($homeData3->home_description) > 250)
+resources/views/layout/client/sidebar.blade.php:70:                @if (strlen($homeData3->home_description) > 150)
+resources/views/layout/client/sidebar.blade.php:85:                @if (strlen($homegeneralinfo->home_description) != strlen(utf8_decode($homegeneralinfo->home_description)))
+resources/views/layout/client/sidebar.blade.php:86:                    {{ nl2br(Str::limit($homegeneralinfo->home_description, 250, '....')) }}
+resources/views/layout/client/sidebar.blade.php:88:                    {{ nl2br(Str::limit($homegeneralinfo->home_description, 150, '....')) }}
+resources/views/layout/client/sidebar.blade.php:91:                @if (strlen($homegeneralinfo->home_description) != strlen(utf8_decode($homegeneralinfo->home_description)))
+resources/views/layout/client/sidebar.blade.php:92:                    @if (strlen($homegeneralinfo->home_description) > 250)
+resources/views/layout/client/sidebar.blade.php:100:                    @if (strlen($homegeneralinfo->home_descriptio) > 150)
+resources/views/layout/client/sidebar.blade.php:121:                @if (strlen($homespokeperson->home_description) != strlen(utf8_decode($homespokeperson->home_description)))
+resources/views/layout/client/sidebar.blade.php:122:                    {{ nl2br(Str::limit($homespokeperson->home_description, 250, '....')) }}
+resources/views/layout/client/sidebar.blade.php:124:                    {{ nl2br(Str::limit($homespokeperson->home_description, 150, '....')) }}
+resources/views/layout/client/sidebar.blade.php:128:                @if (strlen($homespokeperson->home_description) != strlen(utf8_decode($homespokeperson->home_description)))
+resources/views/layout/client/sidebar.blade.php:129:                    @if (strlen($homespokeperson->home_descriptio) > 250)
+resources/views/layout/client/sidebar.blade.php:137:                    @if (strlen($homespokeperson->home_descriptio) > 150)
+resources/views/layout/client/sidebar_2021.blade.php:56:            @if (strlen($homeData3->home_description) != strlen(utf8_decode($homeData3->home_description)))
+resources/views/layout/client/sidebar_2021.blade.php:57:                {!! Str::limit($homeData3->home_description, 600, '....') !!}
+resources/views/layout/client/sidebar_2021.blade.php:59:                {!! Str::limit($homeData3->home_description, 150, '....') !!}
+resources/views/layout/client/sidebar_2021.blade.php:64:        @if (strlen($homeData3->home_description) != strlen(utf8_decode($homeData3->home_description)))
+resources/views/layout/client/sidebar_2021.blade.php:65:            @if (strlen($homeData3->home_description) > 250)
+resources/views/layout/client/sidebar_2021.blade.php:74:            @if (strlen($homeData3->home_description) > 150)
+resources/views/layout/client/sidebar_2021.blade.php:96:{{-- @if ($facebookFeed && $facebookFeed->data_1)
+resources/views/layout/client/sidebar_2021.blade.php:99:            {!! $facebookFeed->data_1 !!}
+resources/views/layout/client/sitemap/menu_items.blade.php:220:        @if ($footer_col_2 && $footer_col_2->home_description && $footer_col_2->home_description != '--')
+resources/views/layout/client/sitemap/menu_items.blade.php:221:            {!! \Helper::normalizeFooterLinks($footer_col_2->home_description) !!}
+resources/views/layout/client/sitemap/menu_items.blade.php:229:            $importantDescription = $footer_col_3->home_description ?? '';
 doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$
