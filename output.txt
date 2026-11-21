@@ -1,500 +1,504 @@
-doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && for f in app/Services/Chatbot/ChatbotKnowledgeIndexer.php app/Services/Chatbot/ChatbotKnowledgeRetriever.php app/Models/ChatbotKnowledgeSource.php app/Models/ChatbotKnowledgeDocument.php; do echo "========== $f =========="; sed -n '1,280p' "$f"; done
-========== app/Services/Chatbot/ChatbotKnowledgeIndexer.php ==========
+doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && echo "========== PUBLIC CHATBOT ==========" && sed -n '1,300p' app/Http/Controllers/PublicChatbotController.php && echo "========== KNOWLEDGE ADMIN CONTROLLER ==========" && sed -n '1,340p' app/Http/Controllers/Admin/ChatbotKnowledgeController.php
+========== PUBLIC CHATBOT ==========
 <?php
 
-namespace App\Services\Chatbot;
+namespace App\Http\Controllers;
 
-use App\Models\ChatbotKnowledgeDocument;
-use App\Models\ChatbotKnowledgeSource;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
-use InvalidArgumentException;
-use RuntimeException;
+use App\Models\ChatbotSetting;
+use App\Models\Office;
+use App\Services\Chatbot\ChatbotKnowledgeRetriever;
+use App\Services\Chatbot\ChatbotProviderRouter;
+use Illuminate\Http\Request;
+use Throwable;
 
-class ChatbotKnowledgeIndexer
+class PublicChatbotController extends Controller
 {
-    private const CHUNK_SIZE = 1200;
-    private const CHUNK_OVERLAP = 150;
-
-    public function __construct(
-        private readonly ChatbotDocumentExtractor $extractor
+    public function message(
+        Request $request,
+        string $subdomain,
+        ChatbotKnowledgeRetriever $retriever,
+        ChatbotProviderRouter $router
     ) {
+        $settings = ChatbotSetting::current();
+
+        abort_unless($settings->enabled, 404);
+
+        $validated = $request->validate([
+            'question' => ['required', 'string', 'min:2', 'max:2000'],
+        ]);
+
+        $officeId = (int) Office::getIdfromSubdomain($subdomain);
+
+        abort_unless($officeId > 0, 404);
+
+        $question = trim($validated['question']);
+
+        try {
+            $result = $retriever->search($question, $officeId, 5);
+        } catch (Throwable $e) {
+            report($e);
+
+            return response()->json([
+                'ok' => false,
+                'message' => 'अहिले आधिकारिक स्रोत खोज्न सकिएन। कृपया पछि प्रयास गर्नुहोस्।',
+            ], 503);
+        }
+
+        $matches = $result['matches'] ?? [];
+
+        if (empty($matches)) {
+            return response()->json([
+                'ok' => true,
+                'needs_consent' => true,
+                'message' => 'DoR को आधिकारिक स्रोतमा जानकारी भेटिएन। बाह्य स्रोतबाट खोजौँ?',
+                'sources' => [],
+            ]);
+        }
+
+        $context = [];
+
+        foreach (array_slice($matches, 0, 5) as $index => $match) {
+            $context[] = "SOURCE " . ($index + 1)
+                . "\nTitle: " . ($match['title'] ?? 'DoR document')
+                . "\nContent: " . mb_substr(
+                    (string) ($match['content'] ?? ''),
+                    0,
+                    2500
+                );
+        }
+
+        $languageInstruction = match ($settings->response_language) {
+            'ne' => 'Answer in Nepali.',
+            'en' => 'Answer in English.',
+            default => 'Answer in the language used by the question.',
+        };
+
+        $messages = [
+            [
+                'role' => 'system',
+                'content' => 'You are the Department of Roads official information assistant. '
+                    . 'Answer only from the supplied DoR official source excerpts. '
+                    . 'Do not invent facts, dates, figures, policies or references. '
+                    . 'If the excerpts do not answer the question, say so clearly. '
+                    . $languageInstruction,
+            ],
+            [
+                'role' => 'user',
+                'content' => "Question:\n{$question}\n\n"
+                    . "DoR Official Sources:\n"
+                    . implode("\n\n", $context),
+            ],
+        ];
+
+        $answer = null;
+        $providerLabel = null;
+
+        try {
+            // Official-source answers must never fail over to external AI.
+            $providerResult = $router->chat($messages, ['internal']);
+
+            $answer = trim((string) ($providerResult['content'] ?? ''));
+
+            if ($settings->provider_info_visible) {
+                $providerLabel = $providerResult['provider_name']
+                    ?? $providerResult['provider_code']
+                    ?? null;
+            }
+        } catch (Throwable $e) {
+            // If internal AI is unavailable, show retrieved official
+            // excerpts instead of sending them to an external provider.
+            report($e);
+        }
+
+        if (! filled($answer)) {
+            $answer = implode("\n\n", array_map(
+                fn ($item) => (string) ($item['content'] ?? ''),
+                array_slice($matches, 0, 3)
+            ));
+        }
+
+        $sources = collect($matches)
+            ->unique('document_id')
+            ->map(fn ($item) => [
+                'title' => $item['title'] ?? 'DoR Official Document',
+                'url' => $item['source_url'] ?? null,
+            ])
+            ->values()
+            ->all();
+
+        return response()->json([
+            'ok' => true,
+            'needs_consent' => false,
+            'answer' => $answer,
+            'source_label' => 'DoR Official Sources',
+            'sources' => $sources,
+            'provider_label' => $providerLabel,
+        ]);
     }
 
-    /**
-     * Extract and index a local document.
-     *
-     * Required: title, storage_disk, storage_path.
-     * Optional: source_id, office_id, language_id, document_type,
-     * source_key, source_url, mime_type, source_updated_at, metadata.
-     */
-    public function indexDocument(array $data): array
+    public function externalConsent(Request $request, string $subdomain)
     {
-        foreach (['title', 'storage_disk', 'storage_path'] as $field) {
-            if (!isset($data[$field]) || trim((string) $data[$field]) === '') {
-                throw new InvalidArgumentException("Missing required field: {$field}");
+        $settings = ChatbotSetting::current();
+
+        abort_unless($settings->enabled, 404);
+
+        $request->validate([
+            'question' => ['required', 'string', 'min:2', 'max:2000'],
+        ]);
+
+        abort_unless(
+            (int) Office::getIdfromSubdomain($subdomain) > 0,
+            404
+        );
+
+        // Explicit consent is received, but no external web-search
+        // integration has been configured yet.
+        return response()->json([
+            'ok' => false,
+            'code' => 'external_search_not_configured',
+            'message' => 'बाह्य वेबसाइट खोज सेवा अहिले जडान गरिएको छैन।',
+        ], 503);
+    }
+}
+========== KNOWLEDGE ADMIN CONTROLLER ==========
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\ChatbotKnowledgeSource;
+use App\Models\Office;
+use App\Services\Chatbot\ChatbotKnowledgeIndexer;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
+use Throwable;
+
+class ChatbotKnowledgeController extends Controller
+{
+    private function ensureSuperAdmin(): void
+    {
+        abort_unless(
+            Auth::check() && (int) Auth::user()->user_type_id === 2,
+            403
+        );
+    }
+
+    public function index()
+    {
+        $this->ensureSuperAdmin();
+
+        $sources = ChatbotKnowledgeSource::where('source_type', '!=', 'appsheet')
+            ->withCount('documents')
+            ->orderByDesc('id')
+            ->paginate(20);
+
+        $offices = Office::getPublishedOffices();
+
+        return view('chatbot_settings.admin.knowledge', compact(
+            'sources',
+            'offices'
+        ));
+    }
+
+    public function upload(Request $request, ChatbotKnowledgeIndexer $indexer)
+    {
+        $this->ensureSuperAdmin();
+
+        $uploadErrors = $_FILES['files']['error'] ?? [];
+        if (!is_array($uploadErrors)) {
+            $uploadErrors = [$uploadErrors];
+        }
+
+        foreach ($uploadErrors as $uploadError) {
+            if (in_array((int) $uploadError, [
+                UPLOAD_ERR_INI_SIZE,
+                UPLOAD_ERR_FORM_SIZE,
+            ], true)) {
+                return back()->with('error', 'File is too large (maximum 300 MB).');
             }
         }
 
-        // A source is the authority for its office and must be enabled.
-        // Never allow caller-supplied office_id to move source content.
-        $source = null;
+        $data = $request->validate([
+            'office_id' => ['nullable', 'integer'],
+            'files' => [
+                'required',
+                'array',
+                'min:1',
+                function ($attribute, $files, $fail) {
+                    $totalBytes = 0;
 
-        if (!empty($data['source_id'])) {
-            $source = ChatbotKnowledgeSource::findOrFail($data['source_id']);
+                    foreach ((array) $files as $file) {
+                        if ($file instanceof \Illuminate\Http\UploadedFile && $file->isValid()) {
+                            $totalBytes += (int) $file->getSize();
+                        }
+                    }
 
-            if (!$source->is_enabled) {
-                throw new InvalidArgumentException('Knowledge source is disabled.');
+                    if ($totalBytes > 300 * 1024 * 1024) {
+                        $fail('Combined document size must not exceed 300 MB per upload.');
+                    }
+                },
+            ],
+            'files.*' => [
+                'required',
+                'file',
+                'max:307200',
+                'mimes:pdf,docx,xlsx,pptx',
+            ],
+            'is_public' => ['nullable', 'boolean'],
+        ], [
+            'office_id.integer' => 'Please select a valid office.',
+            'files.required' => 'Please add at least one document.',
+            'files.min' => 'Please add at least one document.',
+            'files.*.file' => 'A selected file could not be uploaded.',
+            'files.*.max' => 'A document is too large (maximum 300 MB).',
+            'files.*.mimes' => 'Use PDF, DOCX, XLSX or PPTX documents.',
+        ]);
+
+        $officeId = isset($data['office_id']) && $data['office_id'] !== ''
+            ? (int) $data['office_id']
+            : null;
+
+        if ($officeId !== null) {
+            $officeExists = collect(Office::getPublishedOffices())
+                ->contains(fn ($office) => (int) $office->id === $officeId);
+
+            if (!$officeExists) {
+                return back()->with('error', 'Please select a valid active office.');
             }
-
-            if (array_key_exists('office_id', $data)
-                && $data['office_id'] !== null
-                && (int) $data['office_id'] !== (int) $source->office_id) {
-                throw new InvalidArgumentException(
-                    'Document office_id does not match its knowledge source.'
-                );
-            }
         }
 
-        $disk = (string) $data['storage_disk'];
-        $path = (string) $data['storage_path'];
+        $indexed = 0;
+        $failed = 0;
 
-        if (!in_array($disk, ['local', 'public'], true)) {
-            throw new InvalidArgumentException('Unapproved storage disk.');
-        }
+        foreach ($data['files'] as $file) {
+            $source = null;
+            $path = null;
 
-        $extraction = $this->extractor->extract($disk, $path);
-
-        // Never replace an existing successful index after extraction failure.
-        if (($extraction['status'] ?? null) !== 'extracted'
-            || trim((string) ($extraction['text'] ?? '')) === '') {
-            return [
-                'status' => 'failed',
-                'error' => $extraction['error'] ?? 'No extractable text found.',
-                'document' => null,
-                'chunks' => 0,
-            ];
-        }
-
-        $absolutePath = Storage::disk($disk)->path($path);
-
-        if (!is_file($absolutePath) || !is_readable($absolutePath)) {
-            return [
-                'status' => 'failed',
-                'error' => 'Document is not available for indexing.',
-                'document' => null,
-                'chunks' => 0,
-            ];
-        }
-
-        $checksum = hash_file('sha256', $absolutePath);
-
-        if ($checksum === false) {
-            throw new RuntimeException('Unable to calculate document checksum.');
-        }
-
-        $source = null;
-
-        if (!empty($data['source_id'])) {
-            $source = ChatbotKnowledgeSource::findOrFail($data['source_id']);
-        }
-
-        $officeId = $data['office_id'] ?? $source?->office_id;
-        $languageId = $data['language_id'] ?? null;
-        $sourceId = $source?->id;
-
-        $documentQuery = ChatbotKnowledgeDocument::query();
-
-        if ($sourceId !== null) {
-            $documentQuery->where('source_id', $sourceId);
-        } else {
-            $documentQuery->whereNull('source_id');
-        }
-
-        if (!empty($data['source_key'])) {
-            $documentQuery->where('source_key', $data['source_key']);
-        } else {
-            $documentQuery
-                ->where('storage_disk', $disk)
-                ->where('storage_path', $path);
-        }
-
-        $existing = $documentQuery->first();
-
-        // Identical content with existing chunks needs no re-indexing.
-        if ($existing
-            && $existing->checksum === $checksum
-            && $existing->parser_status === 'indexed'
-            && $existing->chunks()->exists()) {
-            return [
-                'status' => 'unchanged',
-                'document' => $existing,
-                'chunks' => $existing->chunks()->count(),
-                'checksum' => $checksum,
-            ];
-        }
-
-        $chunks = $this->splitText((string) $extraction['text']);
-
-        if ($chunks === []) {
-            return [
-                'status' => 'failed',
-                'error' => 'Document did not produce usable text chunks.',
-                'document' => null,
-                'chunks' => 0,
-            ];
-        }
-
-        // All document changes and chunk replacement are atomic.
-        $document = DB::transaction(function () use (
-            $existing,
-            $data,
-            $source,
-            $sourceId,
-            $officeId,
-            $languageId,
-            $disk,
-            $path,
-            $checksum,
-            $extraction,
-            $chunks
-        ) {
-            $document = $existing
-                ? ChatbotKnowledgeDocument::query()
-                    ->whereKey($existing->id)
-                    ->lockForUpdate()
-                    ->firstOrFail()
-                : new ChatbotKnowledgeDocument();
-
-            $document->fill([
-                'source_id' => $sourceId,
-                'office_id' => $officeId,
-                'language_id' => $languageId,
-                'document_type' => $data['document_type'] ?? 'document',
-                'source_key' => $data['source_key'] ?? null,
-                'title' => $data['title'],
-                'source_url' => $data['source_url'] ?? null,
-                'storage_disk' => $disk,
-                'storage_path' => $path,
-                'mime_type' => $data['mime_type'] ?? null,
-                'file_size' => filesize(Storage::disk($disk)->path($path)),
-                'checksum' => $checksum,
-                'source_updated_at' => $data['source_updated_at'] ?? null,
-                'extracted_text' => $extraction['text'],
-                'extraction_method' => $extraction['method'] ?? null,
-                'parser_status' => 'indexed',
-                'indexed_at' => now(),
-                'last_error' => null,
-                'metadata' => $data['metadata'] ?? null,
-            ]);
-
-            $document->save();
-
-            // Old chunks are removed only inside the successful transaction.
-            $document->chunks()->delete();
-
-            foreach ($chunks as $number => $chunkText) {
-                $document->chunks()->create([
-                    'source_id' => $sourceId,
+            try {
+                $source = ChatbotKnowledgeSource::create([
                     'office_id' => $officeId,
-                    'language_id' => $languageId,
-                    'chunk_number' => $number + 1,
-                    'chunk_text' => $chunkText,
-                    'token_count' => max(
-                        1,
-                        (int) ceil(mb_strlen($chunkText, 'UTF-8') / 4)
-                    ),
-                    'chunk_hash' => hash('sha256', $chunkText),
-                    'status' => 'active',
+                    'source_type' => 'file',
+                    'name' => $file->getClientOriginalName(),
+                    'storage_disk' => 'local',
+                    'storage_path' => null,
+                    'language_code' => 'both',
+                    'status' => 'pending',
+                    'is_enabled' => true,
+                    'is_public' => $request->boolean('is_public'),
+                    'created_by' => Auth::id(),
+                    'updated_by' => Auth::id(),
+                ]);
+
+                $folder = 'chatbot-knowledge/' . ($officeId ?? 'general');
+                $path = $file->store($folder, 'local');
+
+                if (!$path) {
+                    $source->update([
+                        'status' => 'failed',
+                        'last_error' => 'Upload failed. Please try again.',
+                    ]);
+                    $failed++;
+                    continue;
+                }
+
+                $source->update(['storage_path' => $path]);
+            } catch (Throwable $e) {
+                report($e);
+
+                if ($source) {
+                    $source->update([
+                        'status' => 'failed',
+                        'last_error' => 'Upload failed. Please try again.',
+                    ]);
+                }
+
+                if ($path) {
+                    Storage::disk('local')->delete($path);
+                }
+
+                $failed++;
+                continue;
+            }
+
+            try {
+                $result = $indexer->indexDocument([
+                    'source_id' => $source->id,
+                    'title' => $source->name,
+                    'storage_disk' => 'local',
+                    'storage_path' => $path,
+                    'document_type' => 'document',
+                    'mime_type' => $file->getMimeType(),
+                    'source_key' => 'upload-' . $source->id,
+                    'metadata' => [
+                        'original_name' => $file->getClientOriginalName(),
+                    ],
+                ]);
+
+                $success = in_array(
+                    $result['status'] ?? '',
+                    ['indexed', 'unchanged'],
+                    true
+                );
+
+                $source->update([
+                    'status' => $success ? 'indexed' : 'failed',
+                    'last_error' => $success
+                        ? null
+                        : mb_substr(
+                            (string) ($result['error'] ?? 'Indexing failed.'),
+                            0,
+                            500
+                        ),
+                    'updated_by' => Auth::id(),
+                ]);
+
+                $success ? $indexed++ : $failed++;
+            } catch (Throwable $e) {
+                report($e);
+
+                $source->update([
+                    'status' => 'failed',
+                    'last_error' => 'Indexing failed. Please retry.',
+                    'updated_by' => Auth::id(),
+                ]);
+
+                $failed++;
+            }
+        }
+
+        return back();
+    }
+
+    public function registerUrl(Request $request)
+    {
+        $this->ensureSuperAdmin();
+
+        $data = $request->validate([
+            'office_id' => ['nullable', 'integer'],
+            'is_public' => ['nullable', 'boolean'],
+            'urls' => ['required', 'array', 'min:1'],
+            'urls.*.type' => ['required', 'in:website,google_sheets'],
+            'urls.*.name' => ['required', 'string', 'max:200'],
+            'urls.*.source_url' => ['required', 'url', 'max:2000'],
+        ], [
+            'office_id.integer' => 'Please select a valid office.',
+            'urls.required' => 'Please add at least one URL.',
+            'urls.*.name.required' => 'Please enter a source name.',
+            'urls.*.source_url.required' => 'Please enter a URL.',
+            'urls.*.source_url.url' => 'Please enter a valid URL.',
+        ]);
+
+        $officeId = isset($data['office_id']) && $data['office_id'] !== ''
+            ? (int) $data['office_id']
+            : null;
+
+        if ($officeId !== null) {
+            $officeExists = collect(Office::getPublishedOffices())
+                ->contains(fn ($office) => (int) $office->id === $officeId);
+
+            if (!$officeExists) {
+                return back()->withErrors([
+                    'office_id' => 'Please select a valid active office.',
+                ]);
+            }
+        }
+
+        foreach ($data['urls'] as $index => $item) {
+            $parts = parse_url($item['source_url']);
+
+            if (
+                !is_array($parts)
+                || strtolower($parts['scheme'] ?? '') !== 'https'
+                || empty($parts['host'])
+                || isset($parts['user'])
+                || isset($parts['pass'])
+            ) {
+                return back()->withErrors([
+                    'urls' => 'Only HTTPS URLs without embedded credentials are accepted.',
                 ]);
             }
 
-            if ($source) {
-                $source->forceFill([
-                    'last_indexed_at' => now(),
-                    'content_checksum' => $checksum,
-                    'last_error' => null,
-                ])->save();
-            }
-
-            return $document->fresh();
-        });
-
-        return [
-            'status' => 'indexed',
-            'document' => $document,
-            'chunks' => count($chunks),
-            'checksum' => $checksum,
-            'method' => $extraction['method'] ?? null,
-        ];
-    }
-
-    /**
-     * Split Unicode text without cutting Nepali characters.
-     */
-    public function splitText(string $text): array
-    {
-        $text = trim(str_replace("\0", '', $text));
-
-        if ($text === '') {
-            return [];
         }
 
-        $result = [];
-        $length = mb_strlen($text, 'UTF-8');
-        $start = 0;
+        foreach ($data['urls'] as $item) {
 
-        while ($start < $length) {
-            $remaining = $length - $start;
-            $take = min(self::CHUNK_SIZE, $remaining);
-            $piece = mb_substr($text, $start, $take, 'UTF-8');
-
-            if ($remaining > self::CHUNK_SIZE) {
-                $newline = mb_strrpos($piece, "\n", 0, 'UTF-8');
-                $space = mb_strrpos($piece, ' ', 0, 'UTF-8');
-                $boundary = max(
-                    $newline === false ? -1 : $newline,
-                    $space === false ? -1 : $space
-                );
-
-                // Avoid producing very small chunks at an early boundary.
-                if ($boundary >= (int) (self::CHUNK_SIZE * 0.60)) {
-                    $take = $boundary + 1;
-                    $piece = mb_substr($text, $start, $take, 'UTF-8');
-                }
-            }
-
-            $piece = trim($piece);
-
-            if ($piece !== '') {
-                $result[] = $piece;
-            }
-
-            if ($start + $take >= $length) {
-                break;
-            }
-
-            $nextStart = $start + $take - self::CHUNK_OVERLAP;
-
-            // Guarantee forward progress.
-            $start = max($start + 1, $nextStart);
-        }
-
-========== app/Services/Chatbot/ChatbotKnowledgeRetriever.php ==========
-<?php
-
-namespace App\Services\Chatbot;
-
-use App\Models\ChatbotKnowledgeChunk;
-use Illuminate\Support\Collection;
-use InvalidArgumentException;
-
-class ChatbotKnowledgeRetriever
-{
-    /**
-     * Search only indexed, active, public knowledge for the requested office.
-     *
-     * @return array{question:string,office_id:int,matches:array}
-     */
-    public function search(string $question, int $officeId, int $limit = 5): array
-    {
-        $question = trim($question);
-
-        if ($question === '') {
-            throw new InvalidArgumentException('Search question is required.');
-        }
-
-        if ($officeId < 1) {
-            throw new InvalidArgumentException('A valid office is required.');
-        }
-
-        $limit = max(1, min($limit, 10));
-        $terms = $this->terms($question);
-
-        if ($terms === []) {
-            return [
-                'question' => $question,
+            ChatbotKnowledgeSource::create([
                 'office_id' => $officeId,
-                'matches' => [],
-            ];
+                'source_type' => $item['type'],
+                'name' => $item['name'],
+                'source_url' => $item['source_url'],
+                'language_code' => 'both',
+                'status' => 'pending',
+                'is_enabled' => true,
+                'is_public' => $request->boolean('is_public'),
+                'created_by' => Auth::id(),
+                'updated_by' => Auth::id(),
+            ]);
         }
 
-        $query = ChatbotKnowledgeChunk::query()
-            ->with(['document'])
-            ->where(function ($scope) use ($officeId) {
-                $scope->where('office_id', $officeId)
-                    ->orWhereNull('office_id');
-            })
-            ->where('status', 'active')
-            ->whereHas('document', function ($documents) use ($officeId) {
-                $documents
-                    ->where(function ($scope) use ($officeId) {
-                        $scope->where('office_id', $officeId)
-                            ->orWhereNull('office_id');
-                    })
-                    ->where('parser_status', 'indexed')
-                    ->whereHas('source', function ($sources) use ($officeId) {
-                        $sources
-                            ->where('is_enabled', true)
-                            ->where('is_public', true)
-                            ->where(function ($scope) use ($officeId) {
-                                $scope->where('office_id', $officeId)
-                                    ->orWhereNull('office_id');
-                            });
-                    });
-            })
-            ->where(function ($search) use ($terms) {
-                foreach ($terms as $term) {
-                    $pattern = '%' . addcslashes($term, '\\%_') . '%';
-                    $search->orWhere('chunk_text', 'LIKE', $pattern);
-                }
-            });
-
-        // Bound database work even when a common word matches many records.
-        $candidates = $query
-            ->orderByDesc('id')
-            ->limit(300)
-            ->get();
-
-        $ranked = $candidates
-            ->map(function (ChatbotKnowledgeChunk $chunk) use ($terms) {
-                $text = mb_strtolower($chunk->chunk_text, 'UTF-8');
-                $score = 0;
-
-                foreach ($terms as $term) {
-                    if (mb_strpos($text, $term, 0, 'UTF-8') !== false) {
-                        $score++;
-                    }
-                }
-
-                return [
-                    'chunk' => $chunk,
-                    'score' => $score,
-                ];
-            })
-            ->filter(fn (array $item) => $item['score'] > 0)
-            ->sort(function (array $a, array $b) {
-                return ($b['score'] <=> $a['score'])
-                    ?: ($b['chunk']->id <=> $a['chunk']->id);
-            })
-            ->take($limit)
-            ->values();
-
-        return [
-            'question' => $question,
-            'office_id' => $officeId,
-            'matches' => $ranked->map(function (array $item) {
-                $chunk = $item['chunk'];
-                $document = $chunk->document;
-
-                return [
-                    'document_id' => (int) $document->id,
-                    'chunk_id' => (int) $chunk->id,
-                    'chunk_number' => (int) $chunk->chunk_number,
-                    'title' => $document->title,
-                    'source_url' => $document->source_url,
-                    'content' => $chunk->chunk_text,
-                    'score' => (int) $item['score'],
-                ];
-            })->all(),
-        ];
+        return back();
     }
 
-    /**
-     * Keep Nepali and English Unicode words; ignore one-character fragments.
-     */
-    private function terms(string $question): array
-    {
-        $normalized = mb_strtolower($question, 'UTF-8');
-        $parts = preg_split('/[^\p{L}\p{N}]+/u', $normalized) ?: [];
+    public function reindex(
+        ChatbotKnowledgeSource $source,
+        ChatbotKnowledgeIndexer $indexer
+    ) {
+        $this->ensureSuperAdmin();
 
-        $terms = [];
+        abort_unless($source->source_type === 'file', 422);
 
-        foreach ($parts as $part) {
-            if (mb_strlen($part, 'UTF-8') >= 2) {
-                $terms[] = $part;
-            }
+        if (!$source->is_enabled) {
+            return back()->with('error', 'Enable this source before indexing.');
         }
 
-        return array_values(array_unique($terms));
+        if (
+            !$source->storage_path
+            || !Storage::disk('local')->exists($source->storage_path)
+        ) {
+            return back()->with('error', 'The private source file is missing.');
+        }
+
+        try {
+            $result = $indexer->indexDocument([
+                'source_id' => $source->id,
+                'title' => $source->name,
+                'storage_disk' => 'local',
+                'storage_path' => $source->storage_path,
+                'document_type' => 'document',
+                'source_key' => 'upload-' . $source->id,
+            ]);
+
+            $success = in_array($result['status'] ?? '', ['indexed', 'unchanged'], true);
+
+            $source->update([
+                'status' => $success ? 'indexed' : 'failed',
+                'last_error' => $success
+                    ? null
+                    : mb_substr((string) ($result['error'] ?? 'Indexing failed.'), 0, 2000),
+                'updated_by' => Auth::id(),
+            ]);
+
+            return back()->with(
+                $success ? 'success' : 'error',
+                $success ? 'Source indexed successfully.' : 'Indexing failed.'
+            );
+        } catch (Throwable $e) {
+            report($e);
+
+            $source->update([
+                'status' => 'failed',
+                'last_error' => 'Indexing failed. Check application logs.',
+            ]);
+
+            return back()->with('error', 'Indexing failed. Check application logs.');
+        }
     }
-}
-========== app/Models/ChatbotKnowledgeSource.php ==========
-<?php
 
-namespace App\Models;
-
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-
-class ChatbotKnowledgeSource extends Model
-{
-    protected $table = 'chatbot_knowledge_sources';
-
-    protected $fillable = [
-        'office_id', 'source_type', 'name', 'source_url',
-        'storage_disk', 'storage_path', 'external_id',
-        'auth_config', 'language_code', 'status',
-        'is_enabled', 'is_public', 'last_checked_at',
-        'last_indexed_at', 'content_checksum', 'source_version',
-        'last_error', 'created_by', 'updated_by',
-    ];
-
-    protected function casts(): array
+    public function toggle(ChatbotKnowledgeSource $source)
     {
-        return [
-            'auth_config' => 'encrypted:array',
-            'is_enabled' => 'boolean',
-            'is_public' => 'boolean',
-            'last_checked_at' => 'datetime',
-            'last_indexed_at' => 'datetime',
-        ];
-    }
+        $this->ensureSuperAdmin();
 
-    public function documents(): HasMany
-    {
-        return $this->hasMany(ChatbotKnowledgeDocument::class, 'source_id');
-    }
-}
-========== app/Models/ChatbotKnowledgeDocument.php ==========
-<?php
-
-namespace App\Models;
-
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-
-class ChatbotKnowledgeDocument extends Model
-{
-    protected $table = 'chatbot_knowledge_documents';
-
-    protected $fillable = [
-        'source_id', 'office_id', 'language_id', 'document_type',
-        'source_key', 'title', 'source_url', 'storage_disk',
-        'storage_path', 'mime_type', 'file_size', 'checksum',
-        'source_updated_at', 'extracted_text', 'extraction_method',
-        'parser_status', 'indexed_at', 'last_error', 'metadata',
-    ];
-
-    protected function casts(): array
-    {
-        return [
-            'file_size' => 'integer',
-            'source_updated_at' => 'datetime',
-            'indexed_at' => 'datetime',
-            'metadata' => 'array',
-        ];
-    }
-
-    public function source(): BelongsTo
-    {
-        return $this->belongsTo(ChatbotKnowledgeSource::class, 'source_id');
-    }
-
-    public function chunks(): HasMany
-    {
-        return $this->hasMany(ChatbotKnowledgeChunk::class, 'document_id');
-    }
-}
+        $source->update([
 doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$
