@@ -1,505 +1,374 @@
-doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && echo "========== PUBLIC CHATBOT CONTROLLER ==========" && sed -n '1,300p' app/Http/Controllers/PublicChatbotController.php && echo "========== CHATBOT WIDGET ==========" && sed -n '1,320p' resources/views/chatbot/widget.blade.php && echo "========== CHATBOT MODEL RELATIONSHIPS ==========" && sed -n '1,200p' app/Models/ChatbotKnowledgeChunk.php && sed -n '1,200p' app/Models/ChatbotKnowledgeDocument.php && sed -n '1,180p' app/Models/ChatbotKnowledgeSource.php
-========== PUBLIC CHATBOT CONTROLLER ==========
+doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && echo "========== OFFICE MODEL ==========" && sed -n '1,220p' app/Models/Office.php && echo "========== OFFICE DETAIL MODEL ==========" && sed -n '1,180p' app/Models/OfficeDetail.php && echo "========== CHATBOT RETRIEVER ==========" && sed -n '1,280p' app/Services/Chatbot/ChatbotKnowledgeRetriever.php
+========== OFFICE MODEL ==========
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Models;
 
-use App\Models\ChatbotSetting;
-use App\Models\Office;
-use App\Services\Chatbot\ChatbotKnowledgeRetriever;
-use App\Services\Chatbot\ChatbotProviderRouter;
-use Illuminate\Http\Request;
-use Throwable;
+use Illuminate\Database\Eloquent\Model;
+use Helper;
 
-class PublicChatbotController extends Controller
+use Illuminate\Support\Facades\DB;
+
+class Office extends Model
 {
-    public function message(
-        Request $request,
-        string $subdomain,
-        ChatbotKnowledgeRetriever $retriever,
-        ChatbotProviderRouter $router
-    ) {
-        $settings = ChatbotSetting::current();
+    /**
+     * The database table used by the model.
+     *
+     * @var string
+     */
 
-        abort_unless($settings->enabled, 404);
+    protected $fillable = array('is_active', 'is_deleted', 'created_by', 'updated_by', 'office_email_address', 'office_alternative_email');
 
-        $validated = $request->validate([
-            'question' => ['required', 'string', 'min:2', 'max:2000'],
-        ]);
+    protected $table = 'office';
 
-        $officeId = (int) Office::getIdfromSubdomain($subdomain);
-
-        abort_unless($officeId > 0, 404);
-
-        $question = trim($validated['question']);
-
-        try {
-            $result = $retriever->search($question, $officeId, 5);
-        } catch (Throwable $e) {
-            report($e);
-
-            return response()->json([
-                'ok' => false,
-                'message' => 'अहिले आधिकारिक स्रोत खोज्न सकिएन। कृपया पछि प्रयास गर्नुहोस्।',
-            ], 503);
-        }
-
-        $matches = $result['matches'] ?? [];
-
-        if (empty($matches)) {
-            return response()->json([
-                'ok' => true,
-                'needs_consent' => true,
-                'message' => 'DoR को आधिकारिक स्रोतमा जानकारी भेटिएन। बाह्य स्रोतबाट खोजौँ?',
-                'sources' => [],
-            ]);
-        }
-
-        $context = [];
-
-        foreach (array_slice($matches, 0, 5) as $index => $match) {
-            $context[] = "SOURCE " . ($index + 1)
-                . "\nTitle: " . ($match['title'] ?? 'DoR document')
-                . "\nContent: " . mb_substr(
-                    (string) ($match['content'] ?? ''),
-                    0,
-                    2500
-                );
-        }
-
-        $languageInstruction = match ($settings->response_language) {
-            'ne' => 'Answer in Nepali.',
-            'en' => 'Answer in English.',
-            default => 'Answer in the language used by the question.',
-        };
-
-        $messages = [
-            [
-                'role' => 'system',
-                'content' => 'You are the Department of Roads official information assistant. '
-                    . 'Answer only from the supplied DoR official source excerpts. '
-                    . 'Do not invent facts, dates, figures, policies or references. '
-                    . 'If the excerpts do not answer the question, say so clearly. '
-                    . $languageInstruction,
-            ],
-            [
-                'role' => 'user',
-                'content' => "Question:\n{$question}\n\n"
-                    . "DoR Official Sources:\n"
-                    . implode("\n\n", $context),
-            ],
-        ];
-
-        $answer = null;
-        $providerLabel = null;
-
-        try {
-            // Official-source answers must never fail over to external AI.
-            $providerResult = $router->chat($messages, ['internal']);
-
-            $answer = trim((string) ($providerResult['content'] ?? ''));
-
-            if ($settings->provider_info_visible) {
-                $providerLabel = $providerResult['provider_name']
-                    ?? $providerResult['provider_code']
-                    ?? null;
-            }
-        } catch (Throwable $e) {
-            // If internal AI is unavailable, show retrieved official
-            // excerpts instead of sending them to an external provider.
-            report($e);
-        }
-
-        if (! filled($answer)) {
-            $answer = implode("\n\n", array_map(
-                fn ($item) => (string) ($item['content'] ?? ''),
-                array_slice($matches, 0, 3)
-            ));
-        }
-
-        $sources = collect($matches)
-            ->unique('document_id')
-            ->map(fn ($item) => [
-                'title' => $item['title'] ?? 'DoR Official Document',
-                'url' => $item['source_url'] ?? null,
-            ])
-            ->values()
-            ->all();
-
-        return response()->json([
-            'ok' => true,
-            'needs_consent' => false,
-            'answer' => $answer,
-            'source_label' => 'DoR Official Sources',
-            'sources' => $sources,
-            'provider_label' => $providerLabel,
-        ]);
-    }
-
-    public function externalConsent(Request $request, string $subdomain)
+    public function details()
     {
-        $settings = ChatbotSetting::current();
-
-        abort_unless($settings->enabled, 404);
-
-        $request->validate([
-            'question' => ['required', 'string', 'min:2', 'max:2000'],
-        ]);
-
-        abort_unless(
-            (int) Office::getIdfromSubdomain($subdomain) > 0,
-            404
-        );
-
-        // Explicit consent is received, but no external web-search
-        // integration has been configured yet.
-        return response()->json([
-            'ok' => false,
-            'code' => 'external_search_not_configured',
-            'message' => 'बाह्य वेबसाइट खोज सेवा अहिले जडान गरिएको छैन।',
-        ], 503);
+        return $this->hasMany(OfficeDetail::class, 'office_id');
     }
+
+    public function detail($langId = 2)
+    {
+        return $this->details()->where('language_id', $langId);
+    }
+
+    public static function getUndeletedOffices()
+    {
+        $languageId = Language::getIdFromCode('en');
+        $query = "Select office.id as id,office.is_active as is_active,office_email_address, office_alternative_email, office_name, office_address, office_phone_number1, office_type, order_menu from pndc_office as office join pndc_office_detail detail on office.id=detail.office_id where office.is_deleted='0' and detail.language_id=" . $languageId . " order by `order_menu`";
+        return DB::select($query);
+    }
+
+    public static function getPublishedOffices()
+    {
+        $languageId = Language::getIdFromCode('en');
+        $query = "Select office.id as id,office.is_active as is_active,office_email_address, office_alternative_email, office_name, office_address, office_phone_number1 from pndc_office as office join pndc_office_detail detail on office.id=detail.office_id where office.is_deleted='0' and office.is_active='1' and detail.language_id=" . $languageId;
+        return DB::select($query);
+    }
+
+    public static function getPublishedOfficesbyID($id)
+    {
+        $query = "Select office.id as id, office.is_active as is_active, office.office_email_address, office.office_alternative_email, detail.office_name, detail.office_address, detail.office_phone_number1 from pndc_office as office join pndc_office_detail detail on office.id=detail.office_id where office.is_deleted='0' and office.is_active='1' and detail.language_id=2 and office.id=" . $id;
+        return DB::select($query);
+    }
+
+    public static function getOfficeDetailsWithLanguages($id, $language_id = null)
+    {
+        if ($language_id) {
+            $query = "Select lang.id, language_name, language_code,
+            (select id from pndc_office_detail where lang.id=language_id and office_id=$id) as detailid,
+            (select office_subdomain from pndc_office where  id=$id) as office_subdomain,
+            (select office_name from pndc_office_detail where lang.id=language_id and office_id=$id) as office_name,
+            (select office_address from pndc_office_detail where lang.id=language_id and office_id=$id) as office_address,
+            (select office_phone_number1 from pndc_office_detail where lang.id=language_id and office_id=$id) as office_phone_number1,
+            (select office_phone_number2 from pndc_office_detail where lang.id=language_id and office_id=$id) as office_phone_number2
+            from pndc_language lang where lang.is_active='1' and lang.is_deleted='0' and lang.id=$language_id";
+        } else {
+            $query = "Select lang.id, language_name, language_code,
+            (select id from pndc_office_detail where lang.id=language_id and office_id=$id) as detailid,
+            (select office_subdomain from pndc_office where  id=$id) as office_subdomain,
+            (select office_name from pndc_office_detail where lang.id=language_id and office_id=$id) as office_name,
+            (select office_address from pndc_office_detail where lang.id=language_id and office_id=$id) as office_address,
+            (select office_phone_number1 from pndc_office_detail where lang.id=language_id and office_id=$id) as office_phone_number1,
+            (select office_phone_number2 from pndc_office_detail where lang.id=language_id and office_id=$id) as office_phone_number2
+            from pndc_language lang where lang.is_active='1' and lang.is_deleted='0'";
+        }
+
+        // print_r($query);exit;
+        return DB::select($query);
+    }
+
+    /*
+        * get active offices ids
+        * @return array
+        */
+    public static function getActiveOfficesIds()
+    {
+
+        return Office::where('is_active', '1')
+            ->where('is_deleted', '0')
+            ->select('id')->get();
+    }
+
+    /*
+        * get office id from office subdomain
+        * @param string $subdomain
+        * @return int
+        */
+    public static function getIdfromSubdomain($subdomain)
+    {
+        // dd($subdomain);
+        return Office::where('office_subdomain', $subdomain)
+            ->where('is_deleted', '0')
+            ->where('is_active', '1')
+            ->pluck('id')
+            ->first();
+    }
+
+    /*
+        * get office name from office subdomain
+        * @param string $subdomain
+        * @param int $langId
+        * @return string
+        */
+    public static function getNamefromSubdomain($subdomain, $langId)
+    {
+        return Office::join('office_detail', 'office.id', '=', 'office_detail.office_id')
+            ->where('office.is_active', '1')
+            ->where('office.is_deleted', '0')
+            ->where('office.office_subdomain', $subdomain)
+            ->where('language_id', $langId)
+            ->pluck('office_name');
+    }
+
+    /*
+        * get office subdomain from office id
+        * @param int $id
+        * @return string
+        */
+    public static function getSubdomainfromId($id)
+    {
+        return Office::where('id', $id)
+            ->where('is_deleted', '0')
+            ->where('is_active', '1')
+            ->pluck('office_subdomain');
+    }
+
+    /*
+        * get detail of office
+        * @param int $officeId
+        * @param int $langId
+        * @return object
+        */
+    public static function getOfficeDetailFromId($officeId, $langId)
+    {
+        return Office::join('office_detail', 'office.id', '=', 'office_detail.office_id')
+            ->select(
+                'office.id',
+                'office.office_subdomain',
+                'office.office_email_address',
+                'office.office_latitude',
+                'office.office_longitude',
+                'office.office_attachment',
+                'office_detail.office_name',
+                'office_detail.office_address',
+                'office_detail.office_phone_number1',
+                'office_detail.office_phone_number2'
+            )
+            ->where('office.is_active', '1')
+            ->where('office.is_deleted', '0')
+            ->where('office.id', $officeId)
+            ->where('language_id', $langId)
+            ->first();
+    }
+
+    /*
+        * get detail of office
+        * @param string $subdomain
+        * @param int $langId
+        * @return object
+        */
+    public static function getOfficeDetailFromSubdomain($subdomain, $langId)
+    {
+        // print_r($subdomain);exit;
+        // DB::enableQueryLog();
+        $data = Office::join('office_detail', 'office.id', '=', 'office_detail.office_id')
+
+            ->where('office.is_active', '1')
+            ->where('office.is_deleted', '0')
+            ->where('office.office_subdomain', $subdomain)
+            ->where('language_id', $langId)
+            ->select(
+                'office.id',
+                'office_subdomain',
+                'office_email_address',
+                'office_alternative_email',
+                'office_facebook_page',
+                'office_instagram_page',
+                'office_latitude',
+                'office_longitude',
+                'google_map_embed',
+                'office_type',
+                'office_attachment',
+                'office_detail.office_name',
+                'office_detail.office_address',
+                'office_detail.office_phone_number1',
+                'office_detail.office_phone_number2'
+            )
+            ->first();
+
+        // dd(Helper::get_last_query());
+        return $data;
+    }
+
+    /*
+        * get office list
+        * @param int $langId
+        * @param string $subdomain
+        * @param int $limit
+        * @return object
+        */
+    public static function getActiveRegionalOffices($langId, $subdomain, $limit = 10)
+    {
+        return Office::join('office_detail', 'office.id', '=', 'office_detail.office_id')
+            ->select(
+                'office.id',
+                'office.office_subdomain',
+                'office_detail.office_name'
+            )
+            ->where('office.is_active', '1')
+            ->where('office.is_deleted', '0')
+            ->where('office_detail.language_id', $langId)
+            ->where('office.office_type', 'like', '%2%')
+            ->orderby('office.order_menu', 'ASC')
+========== OFFICE DETAIL MODEL ==========
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class OfficeDetail extends Model
+{
+    protected $fillable = array('office_name', 'office_address', 'office_phone_number1', 'office_phone_number2', 'language_id', 'office_id');
+    protected $table = 'office_detail';
 }
-========== CHATBOT WIDGET ==========
-<div id="dor-chatbot"
-     data-subdomain="{{ $subdomain }}"
-     data-token="{{ csrf_token() }}"
-     data-position="{{ $settings->position }}"
-     data-bot-name="{{ $settings->bot_name }}"
-     data-welcome="{{ $settings->welcome_message ?: 'नमस्कार! म DoR Assistant हुँ। तपाईंलाई के जानकारी चाहिन्छ?' }}"
-     data-panel="{{ $settings->panel_color }}"
-     data-header="{{ $settings->header_color }}"
-     data-user="{{ $settings->user_message_color }}"
-     data-bot="{{ $settings->bot_message_color }}"
-     data-text="{{ $settings->text_color }}"
-     data-voice="{{ $settings->voice_enabled ? '1' : '0' }}"
-     data-speech-input="{{ $settings->speech_input_enabled ? '1' : '0' }}"
-     data-speech-output="{{ $settings->voice_output_enabled ? '1' : '0' }}">
-    <button type="button" id="dor-chatbot-toggle" aria-label="Open DoR Assistant">
-        <span aria-hidden="true">💬</span> सहायता
-    </button>
+========== CHATBOT RETRIEVER ==========
+<?php
 
-    <section id="dor-chatbot-panel" hidden aria-label="DoR Assistant">
-        <header>
-            <strong id="dor-chatbot-title"></strong>
-            <button type="button" id="dor-chatbot-close" aria-label="Close">×</button>
-        </header>
-        <div id="dor-chatbot-messages" aria-live="polite"></div>
-        <div class="dor-chatbot-input-row">
-            <textarea id="dor-chatbot-question" rows="2"
-                maxlength="2000" placeholder="आफ्नो प्रश्न लेख्नुहोस्..."></textarea>
-            <button type="button" id="dor-chatbot-send">पठाउनुहोस्</button>
-        </div>
-        <div id="dor-chatbot-status" role="status"></div>
-    </section>
-</div>
+namespace App\Services\Chatbot;
 
-<style>
-#dor-chatbot{position:fixed;z-index:99990;bottom:22px;font-family:inherit}
-#dor-chatbot[data-position="bottom_left"]{left:20px}
-#dor-chatbot:not([data-position="bottom_left"]){right:20px}
-#dor-chatbot-toggle{border:0;border-radius:24px;padding:12px 19px;background:#142d4e;color:#fff;font-weight:700;box-shadow:0 3px 14px #0003;cursor:pointer}
-#dor-chatbot-panel{position:absolute;bottom:60px;right:0;width:min(370px,calc(100vw - 28px));height:min(540px,72vh);background:var(--dor-panel);color:var(--dor-text);border:1px solid #ccd3dc;border-radius:12px;box-shadow:0 8px 30px #0003;overflow:hidden;display:flex;flex-direction:column}
-#dor-chatbot[data-position="bottom_left"] #dor-chatbot-panel{right:auto;left:0}
-#dor-chatbot-panel[hidden]{display:none}
-#dor-chatbot-panel header{background:var(--dor-header);color:#fff;padding:13px 15px;display:flex;justify-content:space-between;align-items:center}
-#dor-chatbot-close{background:none;border:0;color:#fff;font-size:25px;cursor:pointer}
-#dor-chatbot-messages{padding:13px;overflow:auto;flex:1}
-.dor-chat-message{white-space:pre-wrap;overflow-wrap:anywhere;margin:8px 0;padding:10px 12px;border-radius:10px;line-height:1.5}
-.dor-chat-user{background:var(--dor-user);color:#fff;margin-left:30px}
-.dor-chat-answer{background:var(--dor-bot);color:var(--dor-text);margin-right:15px}
-.dor-chat-sources{font-size:12px;margin-top:8px}
-.dor-chat-sources a{display:block;overflow-wrap:anywhere}
-.dor-chatbot-input-row{display:flex;gap:7px;padding:10px;border-top:1px solid #ddd}
-#dor-chatbot-question{min-width:0;flex:1;resize:vertical;padding:8px;border:1px solid #bbc4cf;border-radius:7px}
-#dor-chatbot-send{border:0;border-radius:7px;background:#142d4e;color:#fff;padding:8px 11px;cursor:pointer}
-#dor-chatbot-status{font-size:12px;padding:0 12px 9px}
-.dor-chat-consent{display:flex;gap:8px;margin-top:9px}
-.dor-chat-consent button{padding:7px 10px;border:1px solid #8795a5;border-radius:6px;background:#fff;cursor:pointer}
-@media(max-width:480px){#dor-chatbot{bottom:12px}#dor-chatbot[data-position="bottom_left"]{left:10px}#dor-chatbot:not([data-position="bottom_left"]){right:10px}#dor-chatbot-panel{height:min(70vh,560px)}}
-</style>
+use App\Models\ChatbotKnowledgeChunk;
+use Illuminate\Support\Collection;
+use InvalidArgumentException;
 
-<script>
-(function () {
-    const root = document.getElementById('dor-chatbot');
-    if (!root || root.dataset.initialized) return;
-    root.dataset.initialized = '1';
+class ChatbotKnowledgeRetriever
+{
+    /**
+     * Search only indexed, active, public knowledge for the requested office.
+     *
+     * @return array{question:string,office_id:int,matches:array}
+     */
+    public function search(string $question, int $officeId, int $limit = 5): array
+    {
+        $question = trim($question);
 
-    const $ = id => document.getElementById(id);
-    const panel = $('dor-chatbot-panel');
-    const messages = $('dor-chatbot-messages');
-    const question = $('dor-chatbot-question');
-    const status = $('dor-chatbot-status');
-    const subdomain = root.dataset.subdomain;
-    let pendingQuestion = '';
+        if ($question === '') {
+            throw new InvalidArgumentException('Search question is required.');
+        }
 
-    root.style.setProperty('--dor-panel', root.dataset.panel);
-    root.style.setProperty('--dor-header', root.dataset.header);
-    root.style.setProperty('--dor-user', root.dataset.user);
-    root.style.setProperty('--dor-bot', root.dataset.bot);
-    root.style.setProperty('--dor-text', root.dataset.text);
-    $('dor-chatbot-title').textContent = root.dataset.botName;
+        if ($officeId < 1) {
+            throw new InvalidArgumentException('A valid office is required.');
+        }
 
-    function addMessage(text, type) {
-        const item = document.createElement('div');
-        item.className = 'dor-chat-message ' + type;
-        item.textContent = text;
-        messages.appendChild(item);
-        messages.scrollTop = messages.scrollHeight;
-        return item;
-    }
+        $limit = max(1, min($limit, 10));
+        $terms = $this->terms($question);
 
-    function addSources(parent, sources) {
-        if (!Array.isArray(sources) || !sources.length) return;
-        const area = document.createElement('div');
-        area.className = 'dor-chat-sources';
-        const heading = document.createElement('strong');
-        heading.textContent = 'DoR Official Sources';
-        area.appendChild(heading);
+        if ($terms === []) {
+            return [
+                'question' => $question,
+                'office_id' => $officeId,
+                'matches' => [],
+            ];
+        }
 
-        sources.forEach(source => {
-            if (!source.url) return;
-            try {
-                const url = new URL(source.url, window.location.origin);
-                if (!['http:', 'https:'].includes(url.protocol)) return;
-                const link = document.createElement('a');
-                link.href = url.href;
-                link.target = '_blank';
-                link.rel = 'noopener noreferrer';
-                link.textContent = source.title || 'Official document';
-                area.appendChild(link);
-            } catch (_) {}
-        });
-        parent.appendChild(area);
-    }
-
-    async function post(path, payload) {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 25000);
-
-        try {
-            const response = await fetch(path, {
-                method: 'POST',
-                credentials: 'same-origin',
-                cache: 'no-store',
-                signal: controller.signal,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'Cache-Control': 'no-store',
-                    'X-CSRF-TOKEN': root.dataset.token
-                },
-                body: JSON.stringify(payload)
+        $query = ChatbotKnowledgeChunk::query()
+            ->with(['document'])
+            ->where(function ($scope) use ($officeId) {
+                $scope->where('office_id', $officeId)
+                    ->orWhereNull('office_id');
+            })
+            ->where('status', 'active')
+            ->whereHas('document', function ($documents) use ($officeId) {
+                $documents
+                    ->where(function ($scope) use ($officeId) {
+                        $scope->where('office_id', $officeId)
+                            ->orWhereNull('office_id');
+                    })
+                    ->where('parser_status', 'indexed')
+                    ->whereHas('source', function ($sources) use ($officeId) {
+                        $sources
+                            ->where('is_enabled', true)
+                            ->where('is_public', true)
+                            ->where(function ($scope) use ($officeId) {
+                                $scope->where('office_id', $officeId)
+                                    ->orWhereNull('office_id');
+                            });
+                    });
+            })
+            ->where(function ($search) use ($terms) {
+                foreach ($terms as $term) {
+                    $pattern = '%' . addcslashes($term, '\\%_') . '%';
+                    $search->orWhere('chunk_text', 'LIKE', $pattern);
+                }
             });
 
-            const data = await response.json().catch(() => ({}));
-            return { response, data };
-        } finally {
-            clearTimeout(timeoutId);
-        }
-    }
+        // Bound database work even when a common word matches many records.
+        $candidates = $query
+            ->orderByDesc('id')
+            ->limit(300)
+            ->get();
 
-    function consentButtons(questionText, parent) {
-        const area = document.createElement('div');
-        area.className = 'dor-chat-consent';
+        $ranked = $candidates
+            ->map(function (ChatbotKnowledgeChunk $chunk) use ($terms) {
+                $text = mb_strtolower($chunk->chunk_text, 'UTF-8');
+                $score = 0;
 
-        const yes = document.createElement('button');
-        yes.type = 'button';
-        yes.textContent = 'Agree & Continue';
-        yes.addEventListener('click', async () => {
-            yes.disabled = true;
-            no.disabled = true;
-            status.textContent = 'बाह्य खोज सेवा जाँच हुँदैछ...';
-            try {
-                const result = await post(
-                    '/chatbot/' + encodeURIComponent(subdomain) + '/external-consent',
-                    { question: questionText }
-                );
-                status.textContent = result.data.message || 'बाह्य खोज उपलब्ध छैन।';
-            } catch (_) {
-                status.textContent = 'अहिले अनुरोध पूरा गर्न सकिएन।';
-            }
-        });
-
-        const no = document.createElement('button');
-        no.type = 'button';
-        no.textContent = 'No, Thanks';
-        no.addEventListener('click', () => {
-            area.remove();
-            status.textContent = 'DoR आधिकारिक स्रोतबाट मात्र उत्तर खोजिनेछ।';
-        });
-
-        area.append(yes, no);
-        parent.appendChild(area);
-    }
-
-    async function sendQuestion() {
-        const value = question.value.trim();
-        if (value.length < 2) return;
-
-        question.value = '';
-        pendingQuestion = value;
-        addMessage(value, 'dor-chat-user');
-        status.textContent = 'आधिकारिक स्रोत खोजिँदैछ...';
-        $('dor-chatbot-send').disabled = true;
-
-        try {
-            const result = await post(
-                '/chatbot/' + encodeURIComponent(subdomain) + '/message',
-                { question: value }
-            );
-            const data = result.data;
-
-            if (data.needs_consent) {
-                const item = addMessage(data.message, 'dor-chat-answer');
-                consentButtons(value, item);
-            } else if (data.ok) {
-                const item = addMessage(data.answer || 'उत्तर उपलब्ध भएन।', 'dor-chat-answer');
-                if (data.source_label) {
-                    const label = document.createElement('small');
-                    label.textContent = data.source_label;
-                    item.appendChild(document.createElement('br'));
-                    item.appendChild(label);
+                foreach ($terms as $term) {
+                    if (mb_strpos($text, $term, 0, 'UTF-8') !== false) {
+                        $score++;
+                    }
                 }
-                addSources(item, data.sources);
-                if (data.provider_label) {
-                    const provider = document.createElement('small');
-                    provider.textContent = 'Powered by ' + data.provider_label;
-                    item.appendChild(document.createElement('br'));
-                    item.appendChild(provider);
-                }
-                status.textContent = '';
-            } else {
-                status.textContent = data.message || 'अहिले उत्तर उपलब्ध छैन।';
+
+                return [
+                    'chunk' => $chunk,
+                    'score' => $score,
+                ];
+            })
+            ->filter(fn (array $item) => $item['score'] > 0)
+            ->sort(function (array $a, array $b) {
+                return ($b['score'] <=> $a['score'])
+                    ?: ($b['chunk']->id <=> $a['chunk']->id);
+            })
+            ->take($limit)
+            ->values();
+
+        return [
+            'question' => $question,
+            'office_id' => $officeId,
+            'matches' => $ranked->map(function (array $item) {
+                $chunk = $item['chunk'];
+                $document = $chunk->document;
+
+                return [
+                    'document_id' => (int) $document->id,
+                    'chunk_id' => (int) $chunk->id,
+                    'chunk_number' => (int) $chunk->chunk_number,
+                    'title' => $document->title,
+                    'source_url' => $document->source_url,
+                    'content' => $chunk->chunk_text,
+                    'score' => (int) $item['score'],
+                ];
+            })->all(),
+        ];
+    }
+
+    /**
+     * Keep Nepali and English Unicode words; ignore one-character fragments.
+     */
+    private function terms(string $question): array
+    {
+        $normalized = mb_strtolower($question, 'UTF-8');
+        $parts = preg_split('/[^\p{L}\p{N}]+/u', $normalized) ?: [];
+
+        $terms = [];
+
+        foreach ($parts as $part) {
+            if (mb_strlen($part, 'UTF-8') >= 2) {
+                $terms[] = $part;
             }
-        } catch (_) {
-            status.textContent = 'सर्भरसँग सम्पर्क हुन सकेन। कृपया फेरि प्रयास गर्नुहोस्।';
-        } finally {
-            $('dor-chatbot-send').disabled = false;
         }
-    }
 
-    $('dor-chatbot-toggle').addEventListener('click', () => {
-        panel.hidden = !panel.hidden;
-        if (!panel.hidden && !messages.children.length) {
-            addMessage(root.dataset.welcome, 'dor-chat-answer');
-        }
-    });
-    $('dor-chatbot-close').addEventListener('click', () => panel.hidden = true);
-    $('dor-chatbot-send').addEventListener('click', sendQuestion);
-    question.addEventListener('keydown', event => {
-        if (event.key === 'Enter' && !event.shiftKey) {
-            event.preventDefault();
-            sendQuestion();
-        }
-    });
-})();
-</script>
-========== CHATBOT MODEL RELATIONSHIPS ==========
-<?php
-
-namespace App\Models;
-
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-
-class ChatbotKnowledgeChunk extends Model
-{
-    protected $table = 'chatbot_knowledge_chunks';
-
-    protected $fillable = [
-        'document_id', 'source_id', 'office_id', 'language_id',
-        'chunk_number', 'chunk_text', 'token_count',
-        'chunk_hash', 'status',
-    ];
-
-    protected function casts(): array
-    {
-        return [
-            'chunk_number' => 'integer',
-            'token_count' => 'integer',
-        ];
-    }
-
-    public function document(): BelongsTo
-    {
-        return $this->belongsTo(ChatbotKnowledgeDocument::class, 'document_id');
-    }
-}
-<?php
-
-namespace App\Models;
-
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-
-class ChatbotKnowledgeDocument extends Model
-{
-    protected $table = 'chatbot_knowledge_documents';
-
-    protected $fillable = [
-        'source_id', 'office_id', 'language_id', 'document_type',
-        'source_key', 'title', 'source_url', 'storage_disk',
-        'storage_path', 'mime_type', 'file_size', 'checksum',
-        'source_updated_at', 'extracted_text', 'extraction_method',
-        'parser_status', 'indexed_at', 'last_error', 'metadata',
-    ];
-
-    protected function casts(): array
-    {
-        return [
-            'file_size' => 'integer',
-            'source_updated_at' => 'datetime',
-            'indexed_at' => 'datetime',
-            'metadata' => 'array',
-        ];
-    }
-
-    public function source(): BelongsTo
-    {
-        return $this->belongsTo(ChatbotKnowledgeSource::class, 'source_id');
-    }
-
-    public function chunks(): HasMany
-    {
-        return $this->hasMany(ChatbotKnowledgeChunk::class, 'document_id');
-    }
-}
-<?php
-
-namespace App\Models;
-
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-
-class ChatbotKnowledgeSource extends Model
-{
-    protected $table = 'chatbot_knowledge_sources';
-
-    protected $fillable = [
-        'office_id', 'source_type', 'name', 'source_url',
-        'storage_disk', 'storage_path', 'external_id',
-        'auth_config', 'language_code', 'status',
-        'is_enabled', 'is_public', 'last_checked_at',
-        'last_indexed_at', 'content_checksum', 'source_version',
-        'last_error', 'created_by', 'updated_by',
-    ];
-
-    protected function casts(): array
-    {
-        return [
-            'auth_config' => 'encrypted:array',
-            'is_enabled' => 'boolean',
-            'is_public' => 'boolean',
-            'last_checked_at' => 'datetime',
-            'last_indexed_at' => 'datetime',
-        ];
-    }
-
-    public function documents(): HasMany
-    {
-        return $this->hasMany(ChatbotKnowledgeDocument::class, 'source_id');
+        return array_values(array_unique($terms));
     }
 }
 doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$
