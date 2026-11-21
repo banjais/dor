@@ -1,305 +1,1148 @@
-doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && echo "---- BUTLIKE CSS ----" && grep -n -B 8 -A 15 '\.butlike' public/assets/css_2021/*.css && echo "---- BACK BTN CSS ----" && grep -n -B 8 -A 15 '\.back-btn' public/assets/css_2021/*.css
----- BUTLIKE CSS ----
-public/assets/css_2021/website-theme.css-2729-.other-office-officers-frame .media-desc p {
-public/assets/css_2021/website-theme.css-2730-    white-space: normal !important;
-public/assets/css_2021/website-theme.css-2731-    overflow-wrap: anywhere !important;
-public/assets/css_2021/website-theme.css-2732-    word-break: normal !important;
-public/assets/css_2021/website-theme.css-2733-    line-height: 1.35 !important;
-public/assets/css_2021/website-theme.css-2734-}
-public/assets/css_2021/website-theme.css-2735-
-public/assets/css_2021/website-theme.css-2736-/* Keep the switch link plates visually consistent */
-public/assets/css_2021/website-theme.css:2737:.butlike,
-public/assets/css_2021/website-theme.css-2738-.back-btn {
-public/assets/css_2021/website-theme.css-2739-    background: #eef2f5 !important;
-public/assets/css_2021/website-theme.css-2740-    border-radius: 4px;
-public/assets/css_2021/website-theme.css-2741-}
-public/assets/css_2021/website-theme.css-2742-
-public/assets/css_2021/website-theme.css:2743:.butlike {
-public/assets/css_2021/website-theme.css-2744-    display: inline-block;
-public/assets/css_2021/website-theme.css-2745-    padding: 10px;
-public/assets/css_2021/website-theme.css-2746-}
-public/assets/css_2021/website-theme.css-2747-
-public/assets/css_2021/website-theme.css:2748:.butlike:hover,
-public/assets/css_2021/website-theme.css-2749-.back-btn:hover {
-public/assets/css_2021/website-theme.css-2750-    background: #e5ebf0 !important;
-public/assets/css_2021/website-theme.css-2751-}
-public/assets/css_2021/website-theme.css-2752-
-public/assets/css_2021/website-theme.css-2753-/* Mobile: let content determine height to avoid clipping */
-public/assets/css_2021/website-theme.css-2754-@media (max-width: 767.98px) {
-public/assets/css_2021/website-theme.css-2755-    .home-officers-panel > .person-block,
-public/assets/css_2021/website-theme.css-2756-    .head-office-contact-officers,
-public/assets/css_2021/website-theme.css-2757-    .other-office-officers-frame {
-public/assets/css_2021/website-theme.css-2758-        height: auto !important;
-public/assets/css_2021/website-theme.css-2759-        min-height: 0 !important;
-public/assets/css_2021/website-theme.css-2760-        max-height: none !important;
-public/assets/css_2021/website-theme.css-2761-    }
-public/assets/css_2021/website-theme.css-2762-
-public/assets/css_2021/website-theme.css-2763-    .head-office-contact-officers > .media-block,
---
-public/assets/css_2021/website-theme.css-4017-    .nav-wrap .navbar-nav .nav-link {
-public/assets/css_2021/website-theme.css-4018-        padding-top: 10px !important;
-public/assets/css_2021/website-theme.css-4019-        padding-bottom: 10px !important;
-public/assets/css_2021/website-theme.css-4020-        line-height: 1.2 !important;
-public/assets/css_2021/website-theme.css-4021-    }
-public/assets/css_2021/website-theme.css-4022-
-public/assets/css_2021/website-theme.css-4023-    /* Both Head Office switch plates */
-public/assets/css_2021/website-theme.css-4024-    #cssmenu > .back-btn,
-public/assets/css_2021/website-theme.css:4025:    #cssmenu > .butlike,
-public/assets/css_2021/website-theme.css-4026-    #cssmenu .back-btn,
-public/assets/css_2021/website-theme.css:4027:    #cssmenu .butlike {
-public/assets/css_2021/website-theme.css-4028-        display: inline-flex !important;
-public/assets/css_2021/website-theme.css-4029-        align-items: center !important;
-public/assets/css_2021/website-theme.css-4030-        justify-content: center !important;
-public/assets/css_2021/website-theme.css-4031-        box-sizing: border-box !important;
-public/assets/css_2021/website-theme.css-4032-        padding: 6px 11px !important;
-public/assets/css_2021/website-theme.css-4033-        margin: 0 0 0 8px !important;
-public/assets/css_2021/website-theme.css-4034-        min-height: 0 !important;
-public/assets/css_2021/website-theme.css-4035-        height: auto !important;
-public/assets/css_2021/website-theme.css-4036-        line-height: 1.2 !important;
-public/assets/css_2021/website-theme.css-4037-        background: #e3e9ef !important;
-public/assets/css_2021/website-theme.css-4038-        color: #29465f !important;
-public/assets/css_2021/website-theme.css-4039-        border: 1px solid #c5d0db !important;
-public/assets/css_2021/website-theme.css-4040-        border-radius: 4px !important;
-public/assets/css_2021/website-theme.css-4041-        text-decoration: none !important;
-public/assets/css_2021/website-theme.css-4042-    }
-public/assets/css_2021/website-theme.css-4043-
-public/assets/css_2021/website-theme.css-4044-    #cssmenu > .back-btn:hover,
-public/assets/css_2021/website-theme.css:4045:    #cssmenu > .butlike:hover,
-public/assets/css_2021/website-theme.css-4046-    #cssmenu .back-btn:hover,
-public/assets/css_2021/website-theme.css:4047:    #cssmenu .butlike:hover {
-public/assets/css_2021/website-theme.css-4048-        background: #d2dde7 !important;
-public/assets/css_2021/website-theme.css-4049-        color: #18364f !important;
-public/assets/css_2021/website-theme.css-4050-    }
-public/assets/css_2021/website-theme.css-4051-}
-public/assets/css_2021/website-theme.css-4052-
-public/assets/css_2021/website-theme.css-4053-/* Final desktop navigation sizing: Main and Other Offices */
-public/assets/css_2021/website-theme.css-4054-@media (min-width: 992px) {
-public/assets/css_2021/website-theme.css-4055-    /* Other Office - Bootstrap 5 navigation */
-public/assets/css_2021/website-theme.css-4056-    #navbarSupportedContent .navbar-nav > li > a,
-public/assets/css_2021/website-theme.css-4057-    #navbarSupportedContent .navbar-nav > li > .nav-link,
-public/assets/css_2021/website-theme.css-4058-    #navbarSupportedContent .navbar-nav .nav-link {
-public/assets/css_2021/website-theme.css-4059-        padding-top: 10px !important;
-public/assets/css_2021/website-theme.css-4060-        padding-bottom: 10px !important;
-public/assets/css_2021/website-theme.css-4061-        line-height: 1.2 !important;
-public/assets/css_2021/website-theme.css-4062-    }
----- BACK BTN CSS ----
-public/assets/css_2021/responsive.css-79-         height: 536px !important;
-public/assets/css_2021/responsive.css-80-     }
-public/assets/css_2021/responsive.css-81-     .fig-wrap {
-public/assets/css_2021/responsive.css-82-         height: 200px;
-public/assets/css_2021/responsive.css-83-     }
-public/assets/css_2021/responsive.css-84-     .slider-fig {
-public/assets/css_2021/responsive.css-85-         height: 358px;
-public/assets/css_2021/responsive.css-86-     }
-public/assets/css_2021/responsive.css:87:     .back-btn{
-public/assets/css_2021/responsive.css-88-         margin: 0;
-public/assets/css_2021/responsive.css-89-     }
-public/assets/css_2021/responsive.css-90-     .main-header-wrap {
-public/assets/css_2021/responsive.css-91-        position: fixed;
-public/assets/css_2021/responsive.css-92-    }
-public/assets/css_2021/responsive.css-93-   .main-header-wrap.sticky-nav {
-public/assets/css_2021/responsive.css-94-        top: -133px;
-public/assets/css_2021/responsive.css-95-    }
-public/assets/css_2021/responsive.css-96-    .main-body {
-public/assets/css_2021/responsive.css-97-        padding-top: 181px;
-public/assets/css_2021/responsive.css-98-    }
-public/assets/css_2021/responsive.css-99- }
-public/assets/css_2021/responsive.css-100- /*Extra large devices (large desktops, 1200px and up)*/
-public/assets/css_2021/responsive.css-101-
-public/assets/css_2021/responsive.css-102- @media (min-width: 1200px) {
---
-public/assets/css_2021/style.css-1503-    height: auto;
-public/assets/css_2021/style.css-1504-    color: #fff;
-public/assets/css_2021/style.css-1505-}
-public/assets/css_2021/style.css-1506-
-public/assets/css_2021/style.css-1507-.general-info p {
-public/assets/css_2021/style.css-1508-    text-align: justify;
-public/assets/css_2021/style.css-1509-    line-height: normal;
-public/assets/css_2021/style.css-1510-}
-public/assets/css_2021/style.css:1511:.back-btn {
-public/assets/css_2021/style.css-1512-    display: inline-block;
-public/assets/css_2021/style.css-1513-    padding: 10px 10px;
-public/assets/css_2021/style.css-1514-    background: #f1f3f5;
-public/assets/css_2021/style.css-1515-    color:#0099DA;
-public/assets/css_2021/style.css-1516-    margin-bottom: 10px;
-public/assets/css_2021/style.css-1517-    border-radius: 4px;
-public/assets/css_2021/style.css-1518-    -webkit-border-radius: 4px;
-public/assets/css_2021/style.css-1519-    -moz-border-radius: 4px;
-public/assets/css_2021/style.css-1520-    -ms-border-radius: 4px;
-public/assets/css_2021/style.css-1521-    -o-border-radius: 4px;
-public/assets/css_2021/style.css-1522-}
-public/assets/css_2021/style.css:1523:.back-btn:hover{
-public/assets/css_2021/style.css-1524-    background: #f0efef;
-public/assets/css_2021/style.css-1525-}
-public/assets/css_2021/style.css-1526-.dept-wrap {
-public/assets/css_2021/style.css-1527-    padding: 10px 10px;
-public/assets/css_2021/style.css-1528-}
-public/assets/css_2021/style.css-1529-.dept-wrap p {
-public/assets/css_2021/style.css-1530-    margin: 0;
-public/assets/css_2021/style.css-1531-    line-height: 22px;
-public/assets/css_2021/style.css-1532-}
-public/assets/css_2021/style.css-1533-.fig-holder {
-public/assets/css_2021/style.css-1534-    margin: 0 0 10px;
-public/assets/css_2021/style.css-1535-}
-public/assets/css_2021/style.css-1536-.dept-wrap h6 {
-public/assets/css_2021/style.css-1537-    margin: 0;
-public/assets/css_2021/style.css-1538-    line-height: 22px;
---
-public/assets/css_2021/website-theme.css-2730-    white-space: normal !important;
-public/assets/css_2021/website-theme.css-2731-    overflow-wrap: anywhere !important;
-public/assets/css_2021/website-theme.css-2732-    word-break: normal !important;
-public/assets/css_2021/website-theme.css-2733-    line-height: 1.35 !important;
-public/assets/css_2021/website-theme.css-2734-}
-public/assets/css_2021/website-theme.css-2735-
-public/assets/css_2021/website-theme.css-2736-/* Keep the switch link plates visually consistent */
-public/assets/css_2021/website-theme.css-2737-.butlike,
-public/assets/css_2021/website-theme.css:2738:.back-btn {
-public/assets/css_2021/website-theme.css-2739-    background: #eef2f5 !important;
-public/assets/css_2021/website-theme.css-2740-    border-radius: 4px;
-public/assets/css_2021/website-theme.css-2741-}
-public/assets/css_2021/website-theme.css-2742-
-public/assets/css_2021/website-theme.css-2743-.butlike {
-public/assets/css_2021/website-theme.css-2744-    display: inline-block;
-public/assets/css_2021/website-theme.css-2745-    padding: 10px;
-public/assets/css_2021/website-theme.css-2746-}
-public/assets/css_2021/website-theme.css-2747-
-public/assets/css_2021/website-theme.css-2748-.butlike:hover,
-public/assets/css_2021/website-theme.css:2749:.back-btn:hover {
-public/assets/css_2021/website-theme.css-2750-    background: #e5ebf0 !important;
-public/assets/css_2021/website-theme.css-2751-}
-public/assets/css_2021/website-theme.css-2752-
-public/assets/css_2021/website-theme.css-2753-/* Mobile: let content determine height to avoid clipping */
-public/assets/css_2021/website-theme.css-2754-@media (max-width: 767.98px) {
-public/assets/css_2021/website-theme.css-2755-    .home-officers-panel > .person-block,
-public/assets/css_2021/website-theme.css-2756-    .head-office-contact-officers,
-public/assets/css_2021/website-theme.css-2757-    .other-office-officers-frame {
-public/assets/css_2021/website-theme.css-2758-        height: auto !important;
-public/assets/css_2021/website-theme.css-2759-        min-height: 0 !important;
-public/assets/css_2021/website-theme.css-2760-        max-height: none !important;
-public/assets/css_2021/website-theme.css-2761-    }
-public/assets/css_2021/website-theme.css-2762-
-public/assets/css_2021/website-theme.css-2763-    .head-office-contact-officers > .media-block,
-public/assets/css_2021/website-theme.css-2764-    .other-office-officers-frame > .media-block {
---
-public/assets/css_2021/website-theme.css-3975-    .nav-wrap .navbar-nav > li > a,
-public/assets/css_2021/website-theme.css-3976-    .nav-wrap .navbar-nav .nav-link {
-public/assets/css_2021/website-theme.css-3977-        padding-top: 10px !important;
-public/assets/css_2021/website-theme.css-3978-        padding-bottom: 10px !important;
-public/assets/css_2021/website-theme.css-3979-        line-height: 1.2 !important;
-public/assets/css_2021/website-theme.css-3980-    }
-public/assets/css_2021/website-theme.css-3981-
-public/assets/css_2021/website-theme.css-3982-    /* Switch to Head Office plate */
-public/assets/css_2021/website-theme.css:3983:    .nav-wrap .navbar-collapse .back-btn,
-public/assets/css_2021/website-theme.css:3984:    .navbar-collapse .back-btn {
-public/assets/css_2021/website-theme.css-3985-        display: inline-flex !important;
-public/assets/css_2021/website-theme.css-3986-        align-items: center !important;
-public/assets/css_2021/website-theme.css-3987-        justify-content: center !important;
-public/assets/css_2021/website-theme.css-3988-        padding: 7px 10px !important;
-public/assets/css_2021/website-theme.css-3989-        margin-top: 0 !important;
-public/assets/css_2021/website-theme.css-3990-        margin-bottom: 0 !important;
-public/assets/css_2021/website-theme.css-3991-        min-height: 0 !important;
-public/assets/css_2021/website-theme.css-3992-        height: auto !important;
-public/assets/css_2021/website-theme.css-3993-        line-height: 1.2 !important;
-public/assets/css_2021/website-theme.css-3994-        background-color: #e3e9ef !important;
-public/assets/css_2021/website-theme.css-3995-        color: #29465f !important;
-public/assets/css_2021/website-theme.css-3996-        border: 1px solid #c5d0db !important;
-public/assets/css_2021/website-theme.css-3997-        border-radius: 4px !important;
-public/assets/css_2021/website-theme.css-3998-    }
-public/assets/css_2021/website-theme.css-3999-
-public/assets/css_2021/website-theme.css:4000:    .nav-wrap .navbar-collapse .back-btn:hover,
-public/assets/css_2021/website-theme.css:4001:    .navbar-collapse .back-btn:hover {
-public/assets/css_2021/website-theme.css-4002-        background-color: #d2dde7 !important;
-public/assets/css_2021/website-theme.css-4003-        color: #18364f !important;
-public/assets/css_2021/website-theme.css-4004-    }
-public/assets/css_2021/website-theme.css-4005-}
-public/assets/css_2021/website-theme.css-4006-
-public/assets/css_2021/website-theme.css-4007-/* Final compact navigation for Main Office and Other Offices */
-public/assets/css_2021/website-theme.css-4008-@media (min-width: 992px) {
-public/assets/css_2021/website-theme.css-4009-    #cssmenu > .nav,
-public/assets/css_2021/website-theme.css-4010-    #cssmenu > .navbar-nav {
-public/assets/css_2021/website-theme.css-4011-        align-items: center !important;
-public/assets/css_2021/website-theme.css-4012-    }
-public/assets/css_2021/website-theme.css-4013-
-public/assets/css_2021/website-theme.css-4014-    #cssmenu .navbar-nav > li > a,
-public/assets/css_2021/website-theme.css-4015-    #cssmenu .navbar-nav .nav-link,
-public/assets/css_2021/website-theme.css-4016-    .nav-wrap .navbar-nav > li > a,
-public/assets/css_2021/website-theme.css-4017-    .nav-wrap .navbar-nav .nav-link {
-public/assets/css_2021/website-theme.css-4018-        padding-top: 10px !important;
-public/assets/css_2021/website-theme.css-4019-        padding-bottom: 10px !important;
-public/assets/css_2021/website-theme.css-4020-        line-height: 1.2 !important;
-public/assets/css_2021/website-theme.css-4021-    }
-public/assets/css_2021/website-theme.css-4022-
-public/assets/css_2021/website-theme.css-4023-    /* Both Head Office switch plates */
-public/assets/css_2021/website-theme.css:4024:    #cssmenu > .back-btn,
-public/assets/css_2021/website-theme.css-4025-    #cssmenu > .butlike,
-public/assets/css_2021/website-theme.css:4026:    #cssmenu .back-btn,
-public/assets/css_2021/website-theme.css-4027-    #cssmenu .butlike {
-public/assets/css_2021/website-theme.css-4028-        display: inline-flex !important;
-public/assets/css_2021/website-theme.css-4029-        align-items: center !important;
-public/assets/css_2021/website-theme.css-4030-        justify-content: center !important;
-public/assets/css_2021/website-theme.css-4031-        box-sizing: border-box !important;
-public/assets/css_2021/website-theme.css-4032-        padding: 6px 11px !important;
-public/assets/css_2021/website-theme.css-4033-        margin: 0 0 0 8px !important;
-public/assets/css_2021/website-theme.css-4034-        min-height: 0 !important;
-public/assets/css_2021/website-theme.css-4035-        height: auto !important;
-public/assets/css_2021/website-theme.css-4036-        line-height: 1.2 !important;
-public/assets/css_2021/website-theme.css-4037-        background: #e3e9ef !important;
-public/assets/css_2021/website-theme.css-4038-        color: #29465f !important;
-public/assets/css_2021/website-theme.css-4039-        border: 1px solid #c5d0db !important;
-public/assets/css_2021/website-theme.css-4040-        border-radius: 4px !important;
-public/assets/css_2021/website-theme.css-4041-        text-decoration: none !important;
-public/assets/css_2021/website-theme.css-4042-    }
-public/assets/css_2021/website-theme.css-4043-
-public/assets/css_2021/website-theme.css:4044:    #cssmenu > .back-btn:hover,
-public/assets/css_2021/website-theme.css-4045-    #cssmenu > .butlike:hover,
-public/assets/css_2021/website-theme.css:4046:    #cssmenu .back-btn:hover,
-public/assets/css_2021/website-theme.css-4047-    #cssmenu .butlike:hover {
-public/assets/css_2021/website-theme.css-4048-        background: #d2dde7 !important;
-public/assets/css_2021/website-theme.css-4049-        color: #18364f !important;
-public/assets/css_2021/website-theme.css-4050-    }
-public/assets/css_2021/website-theme.css-4051-}
-public/assets/css_2021/website-theme.css-4052-
-public/assets/css_2021/website-theme.css-4053-/* Final desktop navigation sizing: Main and Other Offices */
-public/assets/css_2021/website-theme.css-4054-@media (min-width: 992px) {
-public/assets/css_2021/website-theme.css-4055-    /* Other Office - Bootstrap 5 navigation */
-public/assets/css_2021/website-theme.css-4056-    #navbarSupportedContent .navbar-nav > li > a,
-public/assets/css_2021/website-theme.css-4057-    #navbarSupportedContent .navbar-nav > li > .nav-link,
-public/assets/css_2021/website-theme.css-4058-    #navbarSupportedContent .navbar-nav .nav-link {
-public/assets/css_2021/website-theme.css-4059-        padding-top: 10px !important;
-public/assets/css_2021/website-theme.css-4060-        padding-bottom: 10px !important;
-public/assets/css_2021/website-theme.css-4061-        line-height: 1.2 !important;
-public/assets/css_2021/website-theme.css-4062-    }
-public/assets/css_2021/website-theme.css-4063-
-public/assets/css_2021/website-theme.css-4064-    /* Other Office switch plate */
-public/assets/css_2021/website-theme.css:4065:    #navbarSupportedContent .back-btn {
-public/assets/css_2021/website-theme.css-4066-        display: inline-flex !important;
-public/assets/css_2021/website-theme.css-4067-        align-items: center !important;
-public/assets/css_2021/website-theme.css-4068-        justify-content: center !important;
-public/assets/css_2021/website-theme.css-4069-        box-sizing: border-box !important;
-public/assets/css_2021/website-theme.css-4070-        padding: 6px 11px !important;
-public/assets/css_2021/website-theme.css-4071-        margin: 0 0 0 8px !important;
-public/assets/css_2021/website-theme.css-4072-        background-color: #c2ccd6 !important;
-public/assets/css_2021/website-theme.css-4073-        color: #18364f !important;
-public/assets/css_2021/website-theme.css-4074-        border: 1px solid #9eacba !important;
-public/assets/css_2021/website-theme.css-4075-        border-radius: 4px !important;
-public/assets/css_2021/website-theme.css-4076-        line-height: 1.2 !important;
-public/assets/css_2021/website-theme.css-4077-        text-decoration: none !important;
-public/assets/css_2021/website-theme.css-4078-    }
-public/assets/css_2021/website-theme.css-4079-
-public/assets/css_2021/website-theme.css:4080:    #navbarSupportedContent .back-btn:hover {
-public/assets/css_2021/website-theme.css-4081-        background-color: #aebbc9 !important;
-public/assets/css_2021/website-theme.css-4082-        color: #102b43 !important;
-public/assets/css_2021/website-theme.css-4083-    }
-public/assets/css_2021/website-theme.css-4084-}
-public/assets/css_2021/website-theme.css-4085-
-public/assets/css_2021/website-theme.css-4086-/* Final: Other Office officer panel height follows actual officer count */
-public/assets/css_2021/website-theme.css-4087-@media (min-width: 992px) {
-public/assets/css_2021/website-theme.css-4088-    .home-officers-panel > .person-block.other-office-officers-frame {
-public/assets/css_2021/website-theme.css-4089-        height: calc(52px + var(--officer-count, 4) * 79px) !important;
-public/assets/css_2021/website-theme.css-4090-        min-height: calc(52px + var(--officer-count, 4) * 79px) !important;
-public/assets/css_2021/website-theme.css-4091-        max-height: calc(52px + var(--officer-count, 4) * 79px) !important;
-public/assets/css_2021/website-theme.css-4092-        flex: 0 0 auto !important;
-public/assets/css_2021/website-theme.css-4093-        box-sizing: border-box !important;
-public/assets/css_2021/website-theme.css-4094-    }
-public/assets/css_2021/website-theme.css-4095-
+oradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && echo "---- PROJECT CONTROLLER ----" && sed -n '95,140p' app/Http/Controllers/Project/ProjectController.php && echo "---- ADMIN PROJECT ROUTES ----" && sed -n '255,280p' routes/web.php && echo "---- PROJECT EDIT ROUTE REFERENCES ----" && grep -RniE "ProjectController|project.*edit|edit.*project" routes --include='*.php'
+---- PROJECT CONTROLLER ----
+
+            if (!$projectData) {
+                return $this->errorView();
+            }
+
+            $languages = Language::getActiveLanguages();
+
+            // Include every active language, even if its detail row is missing.
+            $projects = DB::table('language')
+                ->leftJoin('project_detail', function ($join) use ($id) {
+                    $join->on('project_detail.language_id', '=', 'language.id')
+                        ->where('project_detail.project_id', '=', $id);
+                })
+                ->where('language.is_active', '1')
+                ->where('language.is_deleted', '0')
+                ->select(
+                    'language.id as language_id',
+                    'language.language_name',
+                    DB::raw((int) $id . ' as project_id'),
+                    'project_detail.id as project_detail_id',
+                    'project_detail.project_heading',
+                    'project_detail.project_description',
+                    'project_detail.project_page_title'
+                )
+                ->orderBy('language.id')
+                ->get();
+
+            return view('projects.project.edit')
+                ->with('projects', $projects)
+                ->with('projectData', $projectData)
+                ->with('languages', $languages)
+                ->with('abs_site_url', $this->abs_site_url)
+                ->with('rel_site_url', $this->rel_site_url)
+                ->with('site_name', $this->site_name);
+        } catch (Throwable $e) {
+            if ($e instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface) {
+                throw $e;
+            }
+
+            report($e);
+            return $this->errorView();
+        }
+    }
+
+    /**
+     * Update only the authenticated Project User's own project.
+---- ADMIN PROJECT ROUTES ----
+//admin - contents
+Route::group(array('middleware' => ['auth', 'restrict.admin.roles'], 'prefix' => 'admin'), function () {
+    Route::get('/contents', ['as' => 'admin.contents', 'uses' => 'Admin\ContentController@getIndex']);
+    Route::get('/content/add', ['as' => 'admin.content.add', 'uses' => 'Admin\ContentController@getAddContent']);
+    Route::post('/content/add', ['as' => 'admin.content.store', 'uses' => 'Admin\ContentController@addContent']);
+    Route::get('/content/edit/{id}', ['as' => 'admin.content.edit', 'uses' => 'Admin\ContentController@getEditContent']);
+    Route::post('/content/edit/{id}', ['as' => 'admin.content.update', 'uses' => 'Admin\ContentController@editContent']);
+    Route::post('/content/delete', ['as' => 'admin.content.delete', 'uses' => 'Admin\ContentController@deleteContent']);
+    Route::post('/content/change-status', ['as' => 'admin.content.change.status', 'uses' => 'Admin\ContentController@changeStatus']);
+    Route::post('/content_document/delete', ['as' => 'admin.content.delete.document', 'uses' => 'Admin\ContentController@deleteContentDoc']);
+});
+
+//admin - projects
+Route::group(array('middleware' => ['auth', 'restrict.admin.roles'], 'prefix' => 'admin'), function () {
+    Route::get('projects', ['as' => 'admin.projects', 'uses' => 'Admin\ProjectController@getIndex']);
+    Route::get('project/add', ['as' => 'admin.project.add', 'uses' => 'Admin\ProjectController@getAddProject']);
+    Route::post('project/add', ['as' => 'admin.project.store', 'uses' => 'Admin\ProjectController@addProject']);
+    Route::get('project/edit/{id}', ['as' => 'admin.project.edit', 'uses' => 'Admin\ProjectController@getEditProject']);
+    Route::post('project/edit/{id}', ['as' => 'admin.project.update', 'uses' => 'Admin\ProjectController@editProject']);
+    Route::post('project/delete', ['as' => 'admin.project.delete', 'uses' => 'Admin\ProjectController@deleteProject']);
+    Route::post('project/change-status', ['as' => 'admin.project.change.status', 'uses' => 'Admin\ProjectController@changeStatus']);
+});
+
+Route::group(array('middleware' => 'auth', 'prefix' => 'project'), function () {
+    Route::get('dashboard', ['as' => 'project.admin.dashboard', 'uses' => 'Project\ProjectController@getIndex']);
+    Route::get('edit/{id}', ['as' => 'project.admin.edit', 'uses' => 'Project\ProjectController@getEditProject']);
+---- PROJECT EDIT ROUTE REFERENCES ----
+routes/web.php:269:    Route::get('projects', ['as' => 'admin.projects', 'uses' => 'Admin\ProjectController@getIndex']);
+routes/web.php:270:    Route::get('project/add', ['as' => 'admin.project.add', 'uses' => 'Admin\ProjectController@getAddProject']);
+routes/web.php:271:    Route::post('project/add', ['as' => 'admin.project.store', 'uses' => 'Admin\ProjectController@addProject']);
+routes/web.php:272:    Route::get('project/edit/{id}', ['as' => 'admin.project.edit', 'uses' => 'Admin\ProjectController@getEditProject']);
+routes/web.php:273:    Route::post('project/edit/{id}', ['as' => 'admin.project.update', 'uses' => 'Admin\ProjectController@editProject']);
+routes/web.php:274:    Route::post('project/delete', ['as' => 'admin.project.delete', 'uses' => 'Admin\ProjectController@deleteProject']);
+routes/web.php:275:    Route::post('project/change-status', ['as' => 'admin.project.change.status', 'uses' => 'Admin\ProjectController@changeStatus']);
+routes/web.php:279:    Route::get('dashboard', ['as' => 'project.admin.dashboard', 'uses' => 'Project\ProjectController@getIndex']);
+routes/web.php:280:    Route::get('edit/{id}', ['as' => 'project.admin.edit', 'uses' => 'Project\ProjectController@getEditProject']);
+routes/web.php:281:    Route::post('edit/{id}', ['as' => 'project.admin.update', 'uses' => 'Project\ProjectController@updateProject']);
+routes/web.php:668:Route::get('{subdomain}/projects',  'ProjectController@getActiveProjects');
+routes/web.php:669:Route::get('{subdomain}/project/{url}',  ['as' => 'project.detail.slug', 'uses' => 'ProjectController@getProjectDetail']);
+doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && grep -q "Project Edit Route and Controller Confirmation" JAVASCRIPT-UPGRADE-PLAN.md || printf '%s\n' '' '## Project Edit Route and Controller Confirmation - 2026-11-21' '' '- Confirmed route: `/project/edit/{id}` is registered in the `auth` middleware group with route name `project.admin.edit` and controller `Project\ProjectController@getEditProject`.' '- Confirmed controller: `app/Http/Controllers/Project/ProjectController.php` returns the `projects.project.edit` view and passes project data, language data and site URL variables.' '- Separate Admin route: `/admin/project/edit/{id}` uses `Admin\ProjectController@getEditProject`; it is not the same view or controller.' '- The active Google Maps picker belongs to the authenticated Project User edit workflow, not the Admin Project Edit view.' '- JavaScript migration must preserve the Project User edit map picker and test the `/project/edit/{id}` workflow. Keep Admin and Project User workflows distinct.' '- No JavaScript source or library files were changed.' '' >> JAVASCRIPT-UPGRADE-PLAN.md
+doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && php artisan route:list --path=project/edit -v
+Composer detected issues in your platform:
+
+Your Composer dependencies require a PHP version ">= 8.4.1". You are running 8.1.34.
+
+PHP Fatal error:  Uncaught RuntimeException: Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.4.1". You are running 8.1.34. in /home/doradmin/dor13-vendor/composer/platform_check.php:22
+Stack trace:
+#0 /home/doradmin/dor13-vendor/composer/autoload_real.php(25): require()
+#1 /home/doradmin/dor13-vendor/autoload.php(22): ComposerAutoloaderInit56e317833e85a40212fa3b9b62965075::getLoader()
+#2 /mnt/d/DoR-Website-Backup/Laravel13-Upgrade/artisan(18): require('...')
+#3 {main}
+  thrown in /home/doradmin/dor13-vendor/composer/platform_check.php on line 22
+doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ echo "---- CURRENT PHP ----" && which php && php -v && echo "---- AVAILABLE PHP EXECUTABLES ----" && ls -l /usr/bin/php* /usr/local/bin/php* 2>/dev/null
+---- CURRENT PHP ----
+/usr/bin/php
+PHP 8.1.34 (cli) (built: Oct 21 2026 14:26:47) (NTS)
+Copyright (c) The PHP Group
+Zend Engine v4.1.34, Copyright (c) Zend Technologies
+    with Zend OPcache v8.1.34, Copyright (c), by Zend Technologies
+---- AVAILABLE PHP EXECUTABLES ----
+lrwxrwxrwx 1 root root       21 Nov  6 18:58  /usr/bin/php -> /etc/alternatives/php
+-rwxr-xr-x 1 root root  4813912 Oct 21 20:07  /usr/bin/php7.4
+-rwxr-xr-x 1 root root  5576200 Oct 21 20:11  /usr/bin/php8.1
+-rwxr-xr-x 1 root root 12401760 Oct 21 20:21  /usr/bin/php8.5
+doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && /usr/bin/php8.5 artisan route:list --path=project/edit -v
+
+  GET|HEAD   admin/project/edit/{id} ....... admin.project.edit › Admin\ProjectController@getEditProject
+             ⇂ web
+             ⇂ App\Http\Middleware\Authenticate
+             ⇂ App\Http\Middleware\RestrictAdminRoles
+  POST       admin/project/edit/{id} ........ admin.project.update › Admin\ProjectController@editProject
+             ⇂ web
+             ⇂ App\Http\Middleware\Authenticate
+             ⇂ App\Http\Middleware\RestrictAdminRoles
+  GET|HEAD   project/edit/{id} ........... project.admin.edit › Project\ProjectController@getEditProject
+             ⇂ web
+             ⇂ App\Http\Middleware\Authenticate
+  POST       project/edit/{id} .......... project.admin.update › Project\ProjectController@updateProject
+             ⇂ web
+             ⇂ App\Http\Middleware\Authenticate
+
+                                                                                      Showing [4] routes
+
+doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && /usr/bin/php8.5 artisan route:list --path=project/edit -v
+
+  GET|HEAD   admin/project/edit/{id} ....... admin.project.edit › Admin\ProjectController@getEditProject
+             ⇂ web
+             ⇂ App\Http\Middleware\Authenticate
+             ⇂ App\Http\Middleware\RestrictAdminRoles
+  POST       admin/project/edit/{id} ........ admin.project.update › Admin\ProjectController@editProject
+             ⇂ web
+             ⇂ App\Http\Middleware\Authenticate
+             ⇂ App\Http\Middleware\RestrictAdminRoles
+  GET|HEAD   project/edit/{id} ........... project.admin.edit › Project\ProjectController@getEditProject
+             ⇂ web
+             ⇂ App\Http\Middleware\Authenticate
+  POST       project/edit/{id} .......... project.admin.update › Project\ProjectController@updateProject
+             ⇂ web
+             ⇂ App\Http\Middleware\Authenticate
+
+                                                                                      Showing [4] routes
+
 doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$
+-bash: doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$: No such file or directory
+Command 'GET' not found, but can be installed with:
+Command 'HEAD' not found, but can be installed with:
+sudo apt install libwww-perl
+sudo apt install libwww-perl
+⇂: command not found
+⇂: command not found
+⇂: command not found
+Command 'POST' not found, but can be installed with:
+sudo apt install libwww-perl
+⇂: command not found
+⇂: command not found
+⇂: command not found
+Command 'GET' not found, but can be installed with:
+sudo apt install libwww-perl
+Command 'HEAD' not found, but can be installed with:
+sudo apt install libwww-perl
+⇂: command not found
+⇂: command not found
+Command 'POST' not found, but can be installed with:
+sudo apt install libwww-perl
+⇂: command not found
+⇂: command not found
+Showing: command not found
+-bash: doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$: No such file or directory
+doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && grep -q "PHP CLI Selection and Project Route Verification" JAVASCRIPT-UPGRADE-PLAN.md || printf '%s\n' '' '## PHP CLI Selection and Project Route Verification - 2026-11-21' '' '- Default CLI resolves to `/usr/bin/php` and reports PHP 8.1.34. This is below the Composer dependency requirement of PHP >= 8.4.1, so the default `php artisan` command fails before Laravel starts.' '- `/usr/bin/php8.5` is available and successfully runs Artisan for this project. Use `/usr/bin/php8.5` explicitly for project Artisan commands in this environment; do not change the system default PHP as part of this audit.' '- Verified with `/usr/bin/php8.5 artisan route:list --path=project/edit -v`: four routes are registered.' '- Project User GET/POST routes `/project/edit/{id}` use `Project\\ProjectController@getEditProject` and `Project\\ProjectController@updateProject`, protected by `web` and `Authenticate` middleware.' '- Admin GET/POST routes `/admin/project/edit/{id}` use `Admin\\ProjectController@getEditProject` and `Admin\\ProjectController@editProject`, protected by `web`, `Authenticate` and `RestrictAdminRoles` middleware.' '- Keep Project User and Admin Project workflows distinct in the JavaScript migration. The active Google Maps picker belongs to the Project User Edit view.' '- No PHP configuration, JavaScript source or library files were changed.' '' >> JAVASCRIPT-UPGRADE-PLAN.mdcd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && grep -q "PHP CLI Selection and Project Route Verification" JAVASCRIPT-UPGRADE-PLAN.md || printf '%s\n' '' '## PHP CLI Selection and Project Route Verification - 2026-11-21' '' '- Default CLI resolves to `/usr/bin/php` and reports PHP 8.1.34. This is below the Composer dependency requirement of PHP >= 8.4.1, so the default `php artisan` command fails before Laravel starts.' '- `/usr/bin/php8.5` is available and successfully runs Artisan for this project. Use `/usr/bin/php8.5` explicitly for project Artisan commands in this environment; do not change the system default PHP as part of this audit.' '- Verified with `/usr/bin/php8.5 artisan route:list --path=project/edit -v`: four routes are registered.' '- Project User GET/POST routes `/project/edit/{id}` use `Project\\ProjectController@getEditProject` and `Project\\ProjectController@updateProject`, protected by `web` and `Authenticate` middleware.' '- Admin GET/POST routes `/admin/project/edit/{id}` use `Admin\\ProjectController@getEditProject` and `Admin\\ProjectController@editProject`, protected by `web`, `Authenticate` and `RestrictAdminRoles` middleware.' '- Keep Project User and Admin Project workflows distinct in the JavaScript migration. The active Google Maps picker belongs to the Project User Edit view.' '- No PHP configuration, JavaScript source or library files were changed.' '' >> JAVASCRIPT-UPGRADE-PLAN.md
+doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && grep -n -A 9 "PHP CLI Selection and Project Route Verification" JAVASCRIPT-UPGRADE-PLAN.md
+585:## PHP CLI Selection and Project Route Verification - 2026-11-21
+586-
+587-- Default CLI resolves to `/usr/bin/php` and reports PHP 8.1.34. This is below the Composer dependency requirement of PHP >= 8.4.1, so the default `php artisan` command fails before Laravel starts.
+588-- `/usr/bin/php8.5` is available and successfully runs Artisan for this project. Use `/usr/bin/php8.5` explicitly for project Artisan commands in this environment; do not change the system default PHP as part of this audit.
+589-- Verified with `/usr/bin/php8.5 artisan route:list --path=project/edit -v`: four routes are registered.
+590-- Project User GET/POST routes `/project/edit/{id}` use `Project\\ProjectController@getEditProject` and `Project\\ProjectController@updateProject`, protected by `web` and `Authenticate` middleware.
+591-- Admin GET/POST routes `/admin/project/edit/{id}` use `Admin\\ProjectController@getEditProject` and `Admin\\ProjectController@editProject`, protected by `web`, `Authenticate` and `RestrictAdminRoles` middleware.
+592-- Keep Project User and Admin Project workflows distinct in the JavaScript migration. The active Google Maps picker belongs to the Project User Edit view.
+593-- No PHP configuration, JavaScript source or library files were changed.
+594-
+doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && grep -q "Project User Legacy Workflow Decision" JAVASCRIPT-UPGRADE-PLAN.md || printf '\n%s\n\n%s\n%s\n%s\n%s\n%s\n' '## Project User Legacy Workflow Decision - 2026-11-21' '- The user confirmed that the separate Project User account/workflow is no longer required after the website upgrade.' '- Project content is now managed under the related Office/Webpage User; this content and its current management workflow must be preserved.' '- Treat the old Project User role, routes, controllers, views, and Google Maps picker as legacy candidates for removal, subject to dependency and data-impact audits.' '- Do not assume Admin Project management is obsolete; assess it separately.' '- Do not delete Role ID 3 accounts, database records, routes, or files until all dependencies and existing data ownership have been verified.' >> JAVASCRIPT-UPGRADE-PLAN.md
+doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && grep -RniE 'role_id[[:space:]]*==?[[:space:]]*3|role_id[[:space:]]*=[[:space:]]*3|role[[:space:]]*3|Project User|project\.admin|RestrictProject' app routes resources database --include='*.php' --exclude-dir=vendor
+app/Http/Controllers/Admin/LoginController.php:83:                    return Redirect::route('project.admin.dashboard');
+app/Http/Controllers/Project/ProjectController.php:48:     * Project User Dashboard
+app/Http/Controllers/Project/ProjectController.php:80:     * Project User Edit Form
+app/Http/Controllers/Project/ProjectController.php:87:            // A Project User can edit only their own assigned project.
+app/Http/Controllers/Project/ProjectController.php:140:     * Update only the authenticated Project User's own project.
+app/Http/Controllers/Project/ProjectController.php:258:            return Redirect::route('project.admin.dashboard')
+routes/web.php:223:    Route::get('own/change-password', array('as' => 'project.admin.change.password', 'uses' => 'Admin\Project\UserController@changePassword'));
+routes/web.php:224:    Route::post('own/change-password', array('as' => 'project.admin.update.password', 'uses' => 'Admin\Project\UserController@updatePassword'));
+routes/web.php:279:    Route::get('dashboard', ['as' => 'project.admin.dashboard', 'uses' => 'Project\ProjectController@getIndex']);
+routes/web.php:280:    Route::get('edit/{id}', ['as' => 'project.admin.edit', 'uses' => 'Project\ProjectController@getEditProject']);
+routes/web.php:281:    Route::post('edit/{id}', ['as' => 'project.admin.update', 'uses' => 'Project\ProjectController@updateProject']);
+resources/views/layout/project/header.blade.php:42:                                <li><a href="{{ route('project.admin.change.password') }}"><i class="icon-tasks"></i> Change Password</a></li>
+resources/views/projects/project/edit.blade.php:24:                                <a href="{{ route('project.admin.dashboard') }}"><i class="icon-home"></i></a><span class="divider">&nbsp;</span>
+resources/views/projects/project/edit.blade.php:211:                              <a href="{{ route('project.admin.dashboard') }}"> <button type="button" class="btn btn-danger "><i class="icon-remove-sign"></i>  Cancel</button></a>
+resources/views/projects/project/index.blade.php:42:                            <a href="{{ route('project.admin.edit', $project->id) }}"><button class="btn  btn-primary pull-right"><i class="icon-plus"></i> Edit Project</button></a>
+resources/views/users/project/change_password.blade.php:18:                                             Project User
+resources/views/users/project/change_password.blade.php:23:                                <a href="{{ route('project.admin.dashboard') }}"><i class="icon-home"></i></a><span class="divider">&nbsp;</span>
+doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && echo "---- LOGIN REDIRECT ----" && sed -n '55,100p' app/Http/Controllers/Admin/LoginController.php && echo "---- PROJECT ROUTES ----" && sed -n '205,290p' routes/web.php
+---- LOGIN REDIRECT ----
+            'username' => 'Required',
+            'password' => 'Required');
+
+        $v = Validator::make($request->all(), $rules);
+        if (!$v->fails()) {
+            $auth = Auth::attempt(array(
+                'username'   => $request->get('username'),
+                'password'   => $request->get('password'),
+                'is_active'  => '1'));
+            // print_r($request->all());
+
+            if ($auth) {
+                $authUser = Auth::User();
+
+                $data = array(
+                    'user_id'      => $authUser->id,
+                    'user_type_id' => $authUser->user_type_id,
+                    'office_id'    => $authUser->office_id,
+                    'username'     => $authUser->username,
+                    'ip_address'   => $_SERVER['REMOTE_ADDR'],
+                    'login_ts'     => date('Y-m-d H:i:s'),
+                    'agent'        => $_SERVER['HTTP_USER_AGENT'],
+                );
+                $user       = IpMapping::create($data);
+                $insertedId = $user->id;
+                Session::put('log_id', $insertedId);
+
+                if($authUser->user_type_id == 3){
+                    return Redirect::route('project.admin.dashboard');
+                } else{
+                   return Redirect::route('dashboard');
+                }
+            } else {
+
+                return view('users.login')->with('error_message', 'Invalid username or password')
+                    ->with('rel_site_url', $this->rel_site_url)
+                    ->with('abs_site_url', $this->abs_site_url)
+                    ->with('site_name', $this->site_name);
+            }
+        } else {
+            return view('users.login')->with('error_message', 'Either username or password is empty.')
+                ->with('rel_site_url', $this->rel_site_url)
+                ->with('abs_site_url', $this->abs_site_url)
+                ->with('site_name', $this->site_name);
+        }
+    }
+---- PROJECT ROUTES ----
+    // Route::post('/office/get-info-dynamically',array('uses'=>'Admin\OfficeController@getOfficeDetails'));
+    // Route::get('/office/get-info-dynamically',array('uses'=>'Admin\OfficeController@getOfficeDetails'));
+
+    //==================== access control routes        ===========================================
+    Route::get('/access-control', array('as' => 'admin.access.control', 'uses' => 'Admin\AccessListController@getIndex'));
+    Route::get('/access-control/edit/{id?}', array('uses' => 'Admin\AccessListController@getEditAccessList'));
+    Route::get('/acess-control/change-access-status-dynamically', array('uses' => 'Admin\AccessListController@changeStatus'));
+    Route::post('/acess-control/change-access-status-dynamically', array('uses' => 'Admin\AccessListController@changeStatus'));
+
+    Route::get('/access-control-user', array('uses' => 'Admin\AccessListController@getIndexUser'));
+    Route::get('/access-control-user/edit/{id?}', array('uses' => 'Admin\AccessListController@getEditAccessListUser'));
+    Route::get('/acess-control-user/change-access-status-dynamically', array('uses' => 'Admin\AccessListController@changeStatusUser'));
+    Route::post('/acess-control-user/change-access-status-dynamically', array('uses' => 'Admin\AccessListController@changeStatusUser'));
+    //==================== modules routes       ===========================================
+    Route::post('/module/add', array('as' => 'admin.module.add', 'uses' => 'Admin\AccessListController@addModule'));
+});
+
+Route::group(array('middleware' => 'auth', 'prefix' => 'project'), function () {
+    Route::get('own/change-password', array('as' => 'project.admin.change.password', 'uses' => 'Admin\Project\UserController@changePassword'));
+    Route::post('own/change-password', array('as' => 'project.admin.update.password', 'uses' => 'Admin\Project\UserController@updatePassword'));
+});
+
+//admin - homes
+Route::group(array('middleware' => ['auth', 'restrict.admin.roles'], 'prefix' => 'admin'), function () {
+    Route::get('homes', ['as' => 'admin.homes', 'uses' => 'Admin\HomeController@getIndex']);
+    Route::get('home/add', ['as' => 'admin.home.add', 'uses' => 'Admin\HomeController@getAddHome']);
+    Route::get('home/add-live', ['as' => 'admin.home.add.live', 'uses' => 'Admin\HomeController@getAddLiveHome']);
+    Route::post('home/add', ['as' => 'admin.home.store', 'uses' => 'Admin\HomeController@addHome']);
+    Route::post('home/add-live', ['as' => 'admin.home.store.live', 'uses' => 'Admin\HomeController@addHome']);
+    Route::get('home/edit/{id}', ['as' => 'admin.home.edit', 'uses' => 'Admin\HomeController@getEditHome']);
+    Route::post('home/edit/{id}', ['as' => 'admin.home.update', 'uses' => 'Admin\HomeController@editHome']);
+    // Route::post('home/delete', ['as'=>'admin.home.delete','uses'=>'Admin\HomeController@deleteHome']);
+    Route::post('home/change-status', ['as' => 'admin.home.change.status', 'uses' => 'Admin\HomeController@changeStatus']);
+
+    Route::get('home/addspoke', 'Admin\HomeController@getAddHomespoke');
+    Route::get('home/addworkarea', 'Admin\HomeController@getAddHomework');
+    Route::get('home/addgeninfo', 'Admin\HomeController@getAddHomegeneralinfo');
+    Route::get('home/addaboutus', 'Admin\HomeController@getAddHomeaboutus');
+    Route::get('home/addgrievance', 'Admin\HomeController@getAddHomeGrievanceOfficer');
+    Route::get('home/addadditionalofficer', 'Admin\HomeController@getAddHomeAdditionalOfficer');
+
+    Route::get('news-ticker', 'Admin\HomeController@getNewsTicker');
+    Route::get('news-ticker/add', 'Admin\HomeController@getAddNewsTicker');
+    Route::get('news-ticker/edit/{id}', 'Admin\HomeController@getEditNewsTicker');
+    Route::post('news-ticker/add', 'Admin\HomeController@addNewsTicker');
+    Route::post('news-ticker/edit/{id}', 'Admin\HomeController@editNewsTicker');
+    Route::post('news-ticker/change', 'Admin\HomeController@changeNewsTickerStatus');
+    Route::post('news-ticker/delete', 'Admin\HomeController@deleteNewsTicker');
+});
+
+//admin - contents
+Route::group(array('middleware' => ['auth', 'restrict.admin.roles'], 'prefix' => 'admin'), function () {
+    Route::get('/contents', ['as' => 'admin.contents', 'uses' => 'Admin\ContentController@getIndex']);
+    Route::get('/content/add', ['as' => 'admin.content.add', 'uses' => 'Admin\ContentController@getAddContent']);
+    Route::post('/content/add', ['as' => 'admin.content.store', 'uses' => 'Admin\ContentController@addContent']);
+    Route::get('/content/edit/{id}', ['as' => 'admin.content.edit', 'uses' => 'Admin\ContentController@getEditContent']);
+    Route::post('/content/edit/{id}', ['as' => 'admin.content.update', 'uses' => 'Admin\ContentController@editContent']);
+    Route::post('/content/delete', ['as' => 'admin.content.delete', 'uses' => 'Admin\ContentController@deleteContent']);
+    Route::post('/content/change-status', ['as' => 'admin.content.change.status', 'uses' => 'Admin\ContentController@changeStatus']);
+    Route::post('/content_document/delete', ['as' => 'admin.content.delete.document', 'uses' => 'Admin\ContentController@deleteContentDoc']);
+});
+
+//admin - projects
+Route::group(array('middleware' => ['auth', 'restrict.admin.roles'], 'prefix' => 'admin'), function () {
+    Route::get('projects', ['as' => 'admin.projects', 'uses' => 'Admin\ProjectController@getIndex']);
+    Route::get('project/add', ['as' => 'admin.project.add', 'uses' => 'Admin\ProjectController@getAddProject']);
+    Route::post('project/add', ['as' => 'admin.project.store', 'uses' => 'Admin\ProjectController@addProject']);
+    Route::get('project/edit/{id}', ['as' => 'admin.project.edit', 'uses' => 'Admin\ProjectController@getEditProject']);
+    Route::post('project/edit/{id}', ['as' => 'admin.project.update', 'uses' => 'Admin\ProjectController@editProject']);
+    Route::post('project/delete', ['as' => 'admin.project.delete', 'uses' => 'Admin\ProjectController@deleteProject']);
+    Route::post('project/change-status', ['as' => 'admin.project.change.status', 'uses' => 'Admin\ProjectController@changeStatus']);
+});
+
+Route::group(array('middleware' => 'auth', 'prefix' => 'project'), function () {
+    Route::get('dashboard', ['as' => 'project.admin.dashboard', 'uses' => 'Project\ProjectController@getIndex']);
+    Route::get('edit/{id}', ['as' => 'project.admin.edit', 'uses' => 'Project\ProjectController@getEditProject']);
+    Route::post('edit/{id}', ['as' => 'project.admin.update', 'uses' => 'Project\ProjectController@updateProject']);
+});
+
+//admin - news
+Route::group(array('middleware' => ['auth', 'restrict.admin.roles'], 'prefix' => 'admin'), function () {
+    Route::get('news',  array('as' => 'admin.news', 'uses' => 'Admin\NewsController@getIndex'));
+    Route::get('news/add',  array('as' => 'admin.news.add', 'uses' => 'Admin\NewsController@getAddNews'));
+    Route::post('news/add',  array('as' => 'admin.news.store', 'uses' => 'Admin\NewsController@addNews'));
+    Route::get('news/edit/{id}',  array('as' => 'admin.news.edit', 'uses' => 'Admin\NewsController@getEditNews'));
+    Route::post('news/edit/{id}',  array('as' => 'admin.news.update', 'uses' => 'Admin\NewsController@editNews'));
+doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && echo "---- ROLE ID 3 REFERENCES ----" && grep -RniE 'user_type_id|userType|user_type' app routes database --include='*.php' --exclude-dir=vendor | grep -E '==[[:space:]]*3|===[[:space:]]*3|!=[[:space:]]*3|!==[[:space:]]*3|user_type_id|user_type' | head -100 && echo "---- PROJECT USER PASSWORD CONTROLLER ----" && sed -n '1,240p' app/Http/Controllers/Admin/Project/UserController.php
+---- ROLE ID 3 REFERENCES ----
+app/Console/Commands/AddModule.php:69:                            'user_type_id'            => $usertype->id,
+app/Console/Commands/AddModule.php:81:                            'user_type_id'            => $usertype->id,
+app/Http/Controllers/Admin/AccessListController.php:175:        $usertypeid = UserMap::find($usermapid)->user_type_id;
+app/Http/Controllers/Admin/AccessListController.php:264:        $usertype = $request->get('user_type');
+app/Http/Controllers/Admin/AccessListController.php:266:            'user_type' => $usertype,
+app/Http/Controllers/Admin/AccessListController.php:274:                    'user_type_id' => $usertype->id,
+app/Http/Controllers/Admin/AccessListController.php:325:                            'user_type_id'            => $usertype->id,
+app/Http/Controllers/Admin/AccessListController.php:337:                            'user_type_id'            => $usertype->id,
+app/Http/Controllers/Admin/AccessListController.php:382:                                                <td style="vertical-align:middle;">' . $usertype->user_type_name . '</td>
+app/Http/Controllers/Admin/AccessListController.php:525:        $usertype->user_type = $request->get('user_type');
+app/Http/Controllers/Admin/AccessListController.php:560:                                                <td style="vertical-align:middle;">' . $usertype->user_type_name . '</td>
+app/Http/Controllers/Admin/AccessListController.php:574:        $response['usertype'] = $usertype->user_type;
+app/Http/Controllers/Admin/AlbumController.php:32:        return (int) $user->user_type_id === 2;
+app/Http/Controllers/Admin/ChatbotInternalProviderController.php:16:            Auth::check() && (int) Auth::user()->user_type_id === 2,
+app/Http/Controllers/Admin/ChatbotKnowledgeController.php:20:            Auth::check() && (int) Auth::user()->user_type_id === 2,
+app/Http/Controllers/Admin/ChatbotSettingController.php:18:            Auth::check() && (int) Auth::user()->user_type_id === 2,
+app/Http/Controllers/Admin/CircularAdminController.php:38:        $roleId = (int) Auth::user()->user_type_id;
+app/Http/Controllers/Admin/CircularAdminController.php:58:            ->where('user_type_id', 13)
+app/Http/Controllers/Admin/CircularAdminController.php:158:        $account->user_type_id = 13;
+app/Http/Controllers/Admin/CircularController.php:39:            Auth::check() && (int) Auth::user()->user_type_id === 2,
+app/Http/Controllers/Admin/CircularController.php:54:        $user_type_id = $authUser->user_type_id;
+app/Http/Controllers/Admin/CircularController.php:245:            $isSuperAdmin = (int) $user->user_type_id === 2;
+app/Http/Controllers/Admin/ContactBccSettingController.php:18:            Auth::check() && (int) Auth::user()->user_type_id === 2,
+app/Http/Controllers/Admin/ExternalApiSettingController.php:20:        abort_unless(Auth::check() && (int) Auth::user()->user_type_id === 2, 403);
+app/Http/Controllers/Admin/FlashBoxSettingController.php:18:            Auth::check() && (int) Auth::user()->user_type_id === 2,
+app/Http/Controllers/Admin/FlashBoxSettingController.php:51:        $isSuperAdmin = (int) $user->user_type_id === 2;
+app/Http/Controllers/Admin/GalleryController.php:49:        return (int) $user->user_type_id === 2;
+app/Http/Controllers/Admin/HomeController.php:883:            // dd(Auth::User()->user_type_id);
+app/Http/Controllers/Admin/LoginController.php:71:                    'user_type_id' => $authUser->user_type_id,
+app/Http/Controllers/Admin/LoginController.php:82:                if($authUser->user_type_id == 3){
+app/Http/Controllers/Admin/LoginController.php:180:        if($user->user_type_id == 3){
+app/Http/Controllers/Admin/OfficeChiefController.php:388:            (int) $authUser->user_type_id === 12 &&
+app/Http/Controllers/Admin/OfficeChiefController.php:422:            (int) $authUser->user_type_id === 12 &&
+app/Http/Controllers/Admin/OfficeController.php:48:        return Auth::check() && (int) Auth::user()->user_type_id === 12;
+app/Http/Controllers/Admin/OfficeController.php:495:                        ->where('user_type_id', 12)
+app/Http/Controllers/Admin/PasswordResetOtpController.php:43:            ->whereIn('user_type_id', self::ALLOWED_USER_TYPES)
+app/Http/Controllers/Admin/PasswordResetOtpController.php:198:                ->whereIn('user_type_id', self::ALLOWED_USER_TYPES)
+app/Http/Controllers/Admin/PhotoStudioController.php:112:                (int) $user->user_type_id === 12 &&
+app/Http/Controllers/Admin/UserController.php:119:        $user->user_type_id = $request->get('usertype');
+app/Http/Controllers/Admin/UserController.php:179:        $user->user_type_id = $request->get('usertype');
+app/Http/Controllers/Admin/UserController.php:299:            $typelist .= '<option value="' . $type->id . '">' . $type->user_type_name . '</option>';
+app/Http/Controllers/Admin/UserController.php:368:        if ((int) Auth::user()->user_type_id === 13) {
+app/Http/Controllers/Admin/UserTypeController.php:63:                                                   <td>' . $type->user_type_name . '</td>
+app/Http/Controllers/Admin/UserTypeController.php:113:            'user_type' => 'required',
+app/Http/Controllers/Admin/UserTypeController.php:122:            'user_type_name' => $request->get('user_type'),
+app/Http/Controllers/Admin/UserTypeController.php:135:                    'user_type_id' => $usertype->id,
+app/Http/Controllers/Admin/UserTypeController.php:173:            'user_type' => 'required',
+app/Http/Controllers/Admin/UserTypeController.php:184:            if (!UserTypeModel::isUserTypeUniqueForUpdate($request->get('user_type'), $id)) {
+app/Http/Controllers/Admin/UserTypeController.php:189:            $usertype->user_type_name = trim($request->get('user_type'));
+app/Http/Controllers/Admin/UserTypeController.php:280:        $response['usertype'] = $usertype->user_type_name;
+app/Http/Controllers/Admin/UserTypeController.php:316:                                                  <td>' . $type->user_type_name . '</td>
+app/Http/Controllers/Admin/WebsiteIdentitySettingController.php:16:            Auth::check() && (int) Auth::user()->user_type_id === 2,
+app/Http/Controllers/Admin/WebsiteThemeSettingController.php:18:            Auth::check() && (int) Auth::user()->user_type_id === 2,
+app/Http/Controllers/Project/ProjectController.php:40:        if (!$user || (int) $user->user_type_id !== 3 || empty($user->project_id)) {
+app/Http/Middleware/RestrictAdminRoles.php:18:        $roleId = (int) Auth::user()->user_type_id;
+app/Models/AccessControlModel.php:10:    protected $fillable = array('module_id', 'user_type_id', 'access_add', 'access_delete', 'access_update', 'access_publish', 'access_view', 'access_upload', 'access_download');
+app/Models/AccessControlModel.php:13:    public static function getAccessListByUserTypeId($user_type_id)
+app/Models/AccessControlModel.php:30:                                           where user_type_id= $user_type_id and is_deleted='0' ";
+app/Models/AccessControlModel.php:36:        $query = "Select id from pndc_group_access_list where module_id=$module_id and user_type_id=$usertype";
+app/Models/AccessControlModel.php:50:            ->where('user_type_id', $usertype)
+app/Models/AccessControlModel.php:63:            ->where('user_type_id', $usertype)
+app/Models/AccessControlModel.php:76:            ->where('user_type_id', $usertype)
+app/Models/AccessControlModel.php:89:            ->where('user_type_id', $usertype)
+app/Models/AccessControlModel.php:102:            ->where('user_type_id', $usertype)
+app/Models/AccessControlModel.php:117:            ->where('user_type_id', $usertype)
+app/Models/AccessControlModel.php:132:            ->where('user_type_id', $usertype)
+app/Models/AccessControlModel.php:147:            ->where('user_type_id', $usertype)
+app/Models/AccessControlModel.php:162:            ->where('user_type_id', $usertype)
+app/Models/AccessControlModel.php:177:            ->where('user_type_id', $usertype)
+app/Models/IpMapping.php:10:    protected $fillable = array('user_id', 'user_type_id', 'office_id', 'username', 'agent', 'login_ts', 'logout_ts', 'ip_address');
+app/Models/User.php:34:        return $this->belongsTo(UserTypeModel::class, 'user_type_id');
+app/Models/User.php:53:        $query = "Select user.id as  id,user.office_id, (select user_full_name  from pndc_user_details where user_id=user.id and language_id=" . $languageId . " ) as user_full_name,user_name,user.is_active as  is_active , user_type_name, user_email_address from pndc_users user left join pndc_user_map usermp on user.id=usermp.user_id left join pndc_usertype type on type.id=usermp.user_type_id   where user.is_deleted='0'";
+app/Models/User.php:60:        $query = "Select user.id as  id,user.office_id,user.user_attachment, (select user_full_name  from pndc_user_details where user_id=user.id and language_id=" . $languageId . " ) as user_full_name,user_name,user.is_active as  is_active , user_type_name, user_email_address from pndc_users user left join pndc_user_map usermp on user.id=usermp.user_id left join pndc_usertype type on type.id=usermp.user_type_id   where user.is_deleted='0' and user.office_id=$office_id order by 'order_position'";
+app/Models/User.php:162:                                pndc_usertype type on type.id=usermp.user_type_id
+app/Models/UserAccessControlModel.php:56:            $usertype    = Auth::User()->user_type_id;
+app/Models/UserAccessControlModel.php:61:                ->where('user_type_id', $usertype)
+app/Models/UserAccessControlModel.php:140:            $usertype    = Auth::User()->user_type_id;
+app/Models/UserAccessControlModel.php:144:                ->where('user_type_id', $usertype)
+app/Models/UserAccessControlModel.php:165:            $usertype    = Auth::User()->user_type_id;
+app/Models/UserAccessControlModel.php:169:                ->where('user_type_id', $usertype)
+app/Models/UserAccessControlModel.php:190:            $usertype    = Auth::User()->user_type_id;
+app/Models/UserAccessControlModel.php:194:                ->where('user_type_id', $usertype)
+app/Models/UserAccessControlModel.php:217:            $usertype    = Auth::User()->user_type_id;
+app/Models/UserAccessControlModel.php:221:                ->where('user_type_id', $usertype)
+app/Models/UserAccessControlModel.php:242:            $usertype    = Auth::User()->user_type_id;
+app/Models/UserAccessControlModel.php:246:                ->where('user_type_id', $usertype)
+app/Models/UserAccessControlModel.php:267:            $usertype    = Auth::User()->user_type_id;
+app/Models/UserAccessControlModel.php:271:                ->where('user_type_id', $usertype)
+app/Models/UserMap.php:10:    protected $fillable = array('user_id', 'user_name', 'user_type_id', 'password', 'is_active', 'is_deleted', 'created_by', 'updated_by');
+app/Models/UserMap.php:109:        $query = "SELECT map.id,map.user_type_id,map.user_name,user.office_id,(
+app/Models/UserMap.php:123:        $query = "SELECT map.id,map.user_type_id,map.user_name,user.office_id,(
+app/Models/UserMap.php:135:        $query = "SELECT map.id,map.user_type_id,map.user_name,map.password,user.office_id,(
+app/Models/UserTypeModel.php:11:    protected $fillable = array('user_type_name', 'is_active', 'is_deleted', 'created_by', 'updated_by');
+app/Models/UserTypeModel.php:22:        $query = "Select id as val from pndc_usertype where user_type_name='$usertypename' and is_deleted='0'";
+app/Models/UserTypeModel.php:31:        $query = "Select id as val from pndc_usertype where user_type_name='$usertypename' and id<>$id and is_deleted='0'";
+app/Models/UserTypeModel.php:42:        if (Auth::user()->user_type_id == 2) {
+---- PROJECT USER PASSWORD CONTROLLER ----
+<?php
+
+/**
+ * Project Name: Department of Road(DOR)
+ * @author Veshraj Joshi | Sunil Adhikari
+ * @copytop 2015 Peace Nepal DOT Com
+ */
+
+namespace App\Http\Controllers\Admin\Project;
+use App\Http\Controllers\ConfigurationController;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Validator;
+
+class UserController extends ConfigurationController
+{
+    public $abs_site_url;
+    public $rel_site_url;
+    public $site_name;
+
+    public function __construct()
+    {
+        $this->abs_site_url = ConfigurationController::abs_site_url();
+        $this->rel_site_url = ConfigurationController::rel_site_url();
+        $this->site_name    = ConfigurationController::site_name();
+    }
+
+/**
+ * This method is used get the get change passowrd form of ownself
+ *
+ * @return Illuminate\View\View
+ */
+    public function changePassword()
+    {
+        return view('users.project.change_password')->with('abs_site_url', $this->abs_site_url)
+            ->with('rel_site_url', $this->rel_site_url)
+            ->with('site_name', $this->site_name)
+            ->with('user', Auth::User());
+    }
+
+    /**
+     * This method is used get the  change passowrd of the user
+     *
+     * @param int $id
+     * @return Redirect
+     */
+    public function updatePassword(Request $request)
+    {
+        $rules = ['new_password'=>'required',
+                'confirm_password'=>'required|same:new_password'];
+        $validator = Validator::make($request->all(), $rules);
+        if($validator->fails())
+            return Redirect::back()->withErrors($validator);
+
+        $user = User::find(Auth::user()->id);
+        $user->password            = Hash::make($request->get('new_password'));
+        $user->password_changed_on = date('Y-m-d H:i:s');
+        $user->save();
+
+        return Redirect::back()
+                ->with('type', 'success')
+                ->with('message', 'Password has been changed successfully.');
+    }
+}
+doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && echo "---- LOGIN CONTROLLER SECOND ROLE CHECK ----" && sed -n '155,200p' app/Http/Controllers/Admin/LoginController.php && echo "---- PROJECT CONTROLLER ROLE CHECK ----" && sed -n '1,65p' app/Http/Controllers/Project/ProjectController.php && echo "---- ADMIN ROLE MIDDLEWARE ----" && sed -n '1,120p' app/Http/Middleware/RestrictAdminRoles.php
+---- LOGIN CONTROLLER SECOND ROLE CHECK ----
+    {
+        $rule = array('username' => 'required',
+            'newpassword'            => 'required|min:6',
+            'conpassword'            => 'required');
+        $v = Validator::make($request->all(), $rule);
+        if ($v->fails()) {
+            $feedback['type']    = 'validationerror';
+            $feedback['message'] = $v->getMessageBag();
+            exit(json_encode($feedback));
+        }
+        $rec = DB::table('users')->where('username', $request->get('username'))->update(array('password' => Hash::make($request->get('newpassword'))));
+        if ($rec) {
+            $feedback['type']    = 'success';
+            $feedback['message'] = 'Update Successfully.';
+            exit(json_encode($feedback));
+        }
+        $feedback['type']    = 'error';
+        $feedback['message'] = 'Such username doesnot exist in the database.';
+        exit(json_encode($feedback));
+
+    }
+
+    public function getHome()
+    {
+        $user     = Auth::User();
+        if($user->user_type_id == 3){
+            $projectId = $user->project_id;
+            $project = Project::with('detailEng')
+                        ->find($projectId);
+
+            return view('project_home')
+                ->with('abs_site_url', $this->abs_site_url)
+                ->with('rel_site_url', $this->rel_site_url)
+                ->with('site_name', $this->site_name)
+                ->with('project', $project);
+        }
+        $officeId = $user->office_id;
+
+        $staff_count = Staff::where('office_id', $officeId)
+            ->where('is_deleted', '0')->count();
+        $project_count = Project::where('office_id', $officeId)
+            ->where('is_deleted', '0')->count();
+        $content_count = Content::where('office_id', $officeId)
+            ->where('is_deleted', '0')->count();
+        $notice_count = Notice::where('office_id', $officeId)
+            ->where('is_deleted', '0')->count();
+---- PROJECT CONTROLLER ROLE CHECK ----
+<?php
+
+namespace App\Http\Controllers\Project;
+
+use App\Http\Controllers\ConfigurationController;
+use App\Models\Language;
+use App\Models\Project as ProjectModel;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Validator;
+use Throwable;
+
+class ProjectController extends ConfigurationController
+{
+    public $abs_site_url;
+    public $rel_site_url;
+    public $site_name;
+
+    public function __construct()
+    {
+        $this->abs_site_url = ConfigurationController::abs_site_url();
+        $this->rel_site_url = ConfigurationController::rel_site_url();
+        $this->site_name = ConfigurationController::site_name();
+    }
+
+    private function errorView()
+    {
+        return view('error')
+            ->with('abs_site_url', $this->abs_site_url)
+            ->with('rel_site_url', $this->rel_site_url)
+            ->with('site_name', $this->site_name);
+    }
+
+    private function projectUser()
+    {
+        $user = Auth::user();
+
+        if (!$user || (int) $user->user_type_id !== 3 || empty($user->project_id)) {
+            abort(403);
+        }
+
+        return $user;
+    }
+
+    /**
+     * Project User Dashboard
+     */
+    public function getIndex()
+    {
+        try {
+            $user = $this->projectUser();
+
+            $project = ProjectModel::with(['detailEng', 'detailNep'])
+                ->where('id', $user->project_id)
+                ->where('is_deleted', '0')
+                ->first();
+
+            if (!$project) {
+                return $this->errorView();
+            }
+
+            return view('projects.project.index')
+                ->with('project', $project)
+---- ADMIN ROLE MIDDLEWARE ----
+<?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpFoundation\Response;
+
+class RestrictAdminRoles
+{
+    public function handle(Request $request, Closure $next): Response
+    {
+        if (!Auth::check()) {
+            return redirect()->route('admin.login');
+        }
+
+        $roleId = (int) Auth::user()->user_type_id;
+
+        // Super Admin and other existing roles retain their current rules.
+        if (!in_array($roleId, [12, 13], true)) {
+            return $next($request);
+        }
+
+        $route = $request->route();
+        $routeName = $route ? $route->getName() : null;
+
+        $commonAllowed = [
+            'dashboard',
+            'admin.logout',
+            'admin.change.password',
+            'admin.change.password.post',
+            'admin.circulars',
+            'admin.circular.view',
+        ];
+
+        if (in_array($routeName, $commonAllowed, true)) {
+            return $next($request);
+        }
+
+        // Permit the unnamed /admin landing route as well.
+        if (in_array(trim($request->path(), '/'), ['admin', 'admin/home'], true)) {
+            return $next($request);
+        }
+
+        if ($roleId === 12) {
+            // Office Admin may manage Circular Admin accounts through dedicated routes.
+            if ($routeName && str_starts_with($routeName, 'admin.circular-admin.')) {
+                return $next($request);
+            }
+
+            // OfficeController enforces ownership of the Office Profile.
+            if (in_array($routeName, ['admin.office.edit', 'admin.office.update'], true)) {
+                return $next($request);
+            }
+
+            // These modules are not granted to Role 12 in group_access_list.
+            $restrictedRoutePrefixes = [
+                'admin.users',
+                'admin.user.',
+                'admin.usertypes',
+                'admin.usertype.',
+                'admin.offices',
+                'admin.office.',
+                'office.sortorder',
+                'admin.circular.',
+                'admin.website-theme.',
+                'admin.website-identity.',
+                'admin.access.',
+                'admin.module.',
+            ];
+
+            foreach ($restrictedRoutePrefixes as $prefix) {
+                if ($routeName && str_starts_with($routeName, $prefix)) {
+                    abort(403, 'You are not authorized to access this administrative section.');
+                }
+            }
+
+            // Also protect ACL routes that do not have route names.
+            $adminPath = trim($request->path(), '/');
+            foreach ([
+                'admin/access-control',
+                'admin/access-control-user',
+                'admin/acess-control',
+                'admin/acess-control-user',
+                'admin/module/',
+            ] as $restrictedPath) {
+                if ($adminPath === $restrictedPath ||
+                    str_starts_with($adminPath, $restrictedPath . '/') ||
+                    str_starts_with($adminPath, $restrictedPath)) {
+                    abort(403, 'You are not authorized to access this administrative section.');
+                }
+            }
+
+            // Preserve Role 12's existing content-management routes.
+            // Only the explicitly restricted administrative modules above are denied.
+            return $next($request);
+        }
+
+        // Role 13 remains limited to its explicitly allowed routes.
+        abort(403, 'You are not authorized to access this administrative section.');
+    }
+}
+doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && echo "---- DASHBOARD ROUTE ----" && grep -RniE "getHome|route\('dashboard'|name\(['\"]dashboard" routes app --include='*.php' --exclude-dir=vendor && echo "---- PROJECT HOME VIEW REFERENCES ----" && grep -RniE "project_home|view\(['\"]project_home" app routes resources --include='*.php' --include='*.blade.php' --exclude-dir=vendor
+---- DASHBOARD ROUTE ----
+routes/web.php:23:    Route::get('/home', array('as' => 'dashboard', 'uses' => 'Admin\LoginController@getHome'));
+routes/web.php:157:    Route::get('/', array('uses' => 'Admin\LoginController@getHome'));
+routes/web.php:559:Route::get('/', ['as' => 'root', 'uses' => 'HomeController@getHome']);
+routes/web.php:590:Route::get('{subdomain}/home/{url}', 'HomeController@getHomeDetail');
+routes/web.php:597:Route::get('{subdomain}/DRO', 'HomeController@getHomeOffice');
+app/Http/Controllers/Admin/HomeController.php:60:            $spokeId       = Home::getHomePageAdmin('dor-spoke-person', $officeId);
+app/Http/Controllers/Admin/HomeController.php:61:            $workingId     = Home::getHomePageAdmin('working-area', $officeId);
+app/Http/Controllers/Admin/HomeController.php:62:            $generalId     = Home::getHomePageAdmin('general-info', $officeId);
+app/Http/Controllers/Admin/HomeController.php:63:            $aboutId       = Home::getHomePageAdmin('about-us', $officeId);
+app/Http/Controllers/Admin/HomeController.php:64:            $grievanceId   = Home::getHomePageAdmin('grievance-hearing-officer', $officeId);
+app/Http/Controllers/Admin/HomeController.php:65:            $additionalOfficerId = Home::getHomePageAdmin('additional-officer', $officeId);
+app/Http/Controllers/Admin/HomeController.php:545:                    $homes     = Home::getHomeDetailsWithLanguages($id);
+app/Http/Controllers/Admin/HomeController.php:588:        $homes     = Home::getHomeDetailsWithLanguages($homeId);
+app/Http/Controllers/Admin/HomeController.php:841:        //var_dump(Ticker::getHomePageBannersTest(4,1));exit;
+app/Http/Controllers/Admin/LoginController.php:85:                   return Redirect::route('dashboard');
+app/Http/Controllers/Admin/LoginController.php:177:    public function getHome()
+app/Http/Controllers/HomeController.php:46:    public function getHome()
+app/Http/Controllers/HomeController.php:74:                $banners = Banner::getHomePageBanners($officeId, $sessionLangId);
+app/Http/Controllers/HomeController.php:76:                // $tenders = Tender::getHomePageTenders($officeId, $sessionLangId);
+app/Http/Controllers/HomeController.php:78:                // $homepagenews = News::getHomePageNews($officeId, $sessionLangId);
+app/Http/Controllers/HomeController.php:79:                $homepagenewstickers = Ticker::getHomePageNewsTicker($officeId, $sessionLangId);
+app/Http/Controllers/HomeController.php:80:                // $publications = Publication::getHomePagePublications($officeId, $sessionLangId);
+app/Http/Controllers/HomeController.php:81:                // $notices      = Notice::getHomePageNotices($officeId, $sessionLangId);
+app/Http/Controllers/HomeController.php:82:                // $downloads    = Download::getHomePageDownloads($officeId, $sessionLangId);
+app/Http/Controllers/HomeController.php:84:                $homeData1    = Home::getHomePageData(1, $officeId, $sessionLangId);
+app/Http/Controllers/HomeController.php:86:                $homeData2    = Home::getHomePageData(4, $officeId, $sessionLangId);
+app/Http/Controllers/HomeController.php:88:                $homeAbout    = Home::getHomePageGeneralAbout(4, $officeId, $sessionLangId);
+app/Http/Controllers/HomeController.php:91:                $homespokeperson  = Home::getHomePageSpokeperson($officeId, $officeId, $sessionLangId);
+app/Http/Controllers/HomeController.php:92:                $homeDirectorGeneral  = Home::getHomePageDirectorGeneral($officeId, $officeId, $sessionLangId);
+app/Http/Controllers/HomeController.php:94:                $homeInformationOfficer  = Home::getHomePageInformationOfficer(4, $officeId, $sessionLangId);
+app/Http/Controllers/HomeController.php:96:                    ? Home::getHomePageGrievanceOfficer(4, $officeId, $sessionLangId)
+app/Http/Controllers/HomeController.php:233:    public function getHomeDetail($subdomain, $url)
+app/Http/Controllers/HomeController.php:248:                $homeData = Home::getHomeDetail($mainOfficeId, $url, $sessionLangId);
+app/Http/Controllers/HomeController.php:250:                $homeData = Home::getHomeDetail($officeId, $url, $sessionLangId);
+app/Http/Controllers/HomeController.php:931:    public function getHomeOffice($subdomain)
+app/Models/Banner.php:96:   /* public static function getHomePageBanners($officeId)
+app/Models/Banner.php:108:      public static function getHomePageBanners($officeId, $langId){
+app/Models/Circular.php:248:    public static function getHomePageCirculars($officeId, $langId)
+app/Models/Download.php:116:    public static function getHomePageDownloads($officeId, $langId){
+app/Models/Home.php:139:    public static function getHomeDetailsWithLanguages($id)
+app/Models/Home.php:173:    public static function getHomeDetail($officeId, $url, $langId)
+app/Models/Home.php:203:    public static function getHomePageData($showIn, $officeId, $langId)
+app/Models/Home.php:236:    public static function getHomePageSpokeperson($showIn, $officeId, $langId)
+app/Models/Home.php:272:    public static function getHomePageInformationOfficer($showIn, $officeId, $langId)
+app/Models/Home.php:301:    public static function getHomePageDirectorGeneral($showIn, $officeId, $langId)
+app/Models/Home.php:337:    public static function getHomePageGrievanceOfficer($showIn, $officeId, $langId)
+app/Models/Home.php:364:    public static function getHomePageWorkingarea($showIn, $officeId, $langId)
+app/Models/Home.php:391:    public static function getHomePageGeneralInfo($showIn, $officeId, $langId)
+app/Models/Home.php:419:    public static function getHomePageGeneralAbout($showIn, $officeId, $langId)
+app/Models/Home.php:447:    public static function getHomePageAdmin($slug, $officeId)
+app/Models/Home.php:464:    public static function getHomeDataFrontend($slug, $officeId, $languageId = 1)
+app/Models/News.php:128:        public static function getHomePageNews($officeId, $langId, $limit=null){
+app/Models/Notice.php:284:    public static function getHomePageNotices($officeId, $langId, $limit = null)
+app/Models/Publication.php:206:    public static function getHomePagePublications($officeId, $langId, $limit=null)
+app/Models/Tender.php:152:    public static function getHomePageTenders($officeId, $langId)
+app/Models/Ticker.php:26:    public static function getHomePageNewsTicker($officeId, $langId)
+---- PROJECT HOME VIEW REFERENCES ----
+app/Http/Controllers/Admin/LoginController.php:185:            return view('project_home')
+doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && echo "---- HOME ROUTE CONTEXT ----" && sed -n '1,32p' routes/web.php && sed -n '145,165p' routes/web.php && echo "---- DASHBOARD METHOD ----" && sed -n '177,240p' app/Http/Controllers/Admin/LoginController.php && echo "---- PROJECT HOME VIEW FILE ----" && ls -l resources/views/project_home.blade.php
+---- HOME ROUTE CONTEXT ----
+<?php
+
+use Illuminate\Support\Facades\Route;
+
+//admin-user
+Route::get('admin/login', array('as' => 'admin.login', 'uses' => 'Admin\LoginController@getLogin'));
+Route::post('admin/login', array('uses' => 'Admin\LoginController@postLogin'))->middleware('throttle:5,1');
+
+// Public email OTP password reset for Super Admin, Office Admin and Circular Admin
+Route::get('admin/forgot-password', array('as' => 'admin.password.request', 'uses' => 'Admin\PasswordResetOtpController@showForgotPassword'));
+Route::post('admin/forgot-password', array('as' => 'admin.password.email', 'uses' => 'Admin\PasswordResetOtpController@sendOtp'))->middleware('throttle:5,1');
+Route::get('admin/reset-password', array('as' => 'admin.password.reset', 'uses' => 'Admin\PasswordResetOtpController@showResetForm'));
+Route::post('admin/reset-password', array('as' => 'admin.password.verify', 'uses' => 'Admin\PasswordResetOtpController@resetPassword'))->middleware('throttle:10,1');
+
+Route::group(array('middleware' => ['auth', 'restrict.admin.roles'], 'prefix' => 'admin'), function () {
+
+    // Route::get('/logout', array('as' => 'admin.logout', 'uses' => 'Admin\LoginController@logoutUser'))
+    //     ->after('invalidate-browser-cache');
+
+    Route::get('/logout', array('as' => 'admin.logout', 'uses' => 'Admin\LoginController@logoutUser'));
+
+
+    Route::get('/home', array('as' => 'dashboard', 'uses' => 'Admin\LoginController@getHome'));
+    // Global website appearance settings (Super Admin only)
+    Route::get('website-theme', array(
+        'as' => 'admin.website-theme.index',
+        'uses' => 'Admin\WebsiteThemeSettingController@index'
+    ));
+    Route::post('website-theme', array(
+        'as' => 'admin.website-theme.update',
+        'uses' => 'Admin\WebsiteThemeSettingController@update'
+    ));
+    Route::post('chatbot-settings/integration-test', [
+        'as' => 'admin.chatbot-settings.integration-test',
+        'uses' => 'Admin\\ChatbotSettingController@testIntegration'
+    ]);
+
+
+    // Government identity settings (Super Admin only)
+    Route::post('website-identity', array(
+        'as' => 'admin.website-identity.update',
+        'uses' => 'Admin\WebsiteIdentitySettingController@update'
+    ));
+
+    Route::get('/', array('uses' => 'Admin\LoginController@getHome'));
+
+    Route::get('users',  array('as' => 'admin.users', 'uses' => 'Admin\UserController@getIndex'));
+    Route::get('user/add',  array('as' => 'admin.users.add', 'uses' => 'Admin\UserController@getAddUser'));
+    Route::post('user/add',  array('as' => 'admin.users.store', 'uses' => 'Admin\UserController@addUser'));
+    Route::get('user/edit/{id}',  array('as' => 'admin.users.edit', 'uses' => 'Admin\UserController@getEditUser'));
+    Route::post('user/edit/{id}',  array('as' => 'admin.users.update', 'uses' => 'Admin\UserController@editUser'));
+    Route::post('user/delete', array('as' => 'admin.user.delete', 'uses' => 'Admin\UserController@deleteUser'));
+    Route::post('user/change-status', array('as' => 'admin.user.change.status', 'uses' => 'Admin\UserController@changeStatus'));
+---- DASHBOARD METHOD ----
+    public function getHome()
+    {
+        $user     = Auth::User();
+        if($user->user_type_id == 3){
+            $projectId = $user->project_id;
+            $project = Project::with('detailEng')
+                        ->find($projectId);
+
+            return view('project_home')
+                ->with('abs_site_url', $this->abs_site_url)
+                ->with('rel_site_url', $this->rel_site_url)
+                ->with('site_name', $this->site_name)
+                ->with('project', $project);
+        }
+        $officeId = $user->office_id;
+
+        $staff_count = Staff::where('office_id', $officeId)
+            ->where('is_deleted', '0')->count();
+        $project_count = Project::where('office_id', $officeId)
+            ->where('is_deleted', '0')->count();
+        $content_count = Content::where('office_id', $officeId)
+            ->where('is_deleted', '0')->count();
+        $notice_count = Notice::where('office_id', $officeId)
+            ->where('is_deleted', '0')->count();
+        $circular_count = Circular::where(['is_deleted'=> '0','is_active'=>'1'])->count();
+
+        return view('home')
+            ->with('abs_site_url', $this->abs_site_url)
+            ->with('rel_site_url', $this->rel_site_url)
+            ->with('staff_count', $staff_count)
+            ->with('project_count', $project_count)
+            ->with('content_count', $content_count)
+            ->with('notice_count', $notice_count)
+            ->with('circular_count', $circular_count)
+            ->with('site_name', $this->site_name);
+    }
+}
+---- PROJECT HOME VIEW FILE ----
+ls: cannot access 'resources/views/project_home.blade.php': No such file or directory
+doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && echo "---- PROJECT HOME VIEW SEARCH ----" && find resources/views -type f \( -iname '*project*home*' -o -iname '*home*project*' \) -print && echo "---- PROJECT USER VIEWS ----" && find resources/views -type f \( -path '*projects/project/*' -o -path '*users/project/*' -o -path '*layout/project/*' \) -print
+---- PROJECT HOME VIEW SEARCH ----
+---- PROJECT USER VIEWS ----
+resources/views/layout/project/alert.blade.php
+resources/views/layout/project/foot.blade.php
+resources/views/layout/project/footer.blade.php
+resources/views/layout/project/head.blade.php
+resources/views/layout/project/header.blade.php
+resources/views/layout/project/masters.blade.php
+resources/views/layout/project/sidebar.blade.php
+resources/views/projects/project/edit.blade.php
+resources/views/projects/project/index.blade.php
+resources/views/users/project/change_password.blade.php
+doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && echo "---- USER MODEL TABLE ----" && grep -nE 'class User|protected \$table|user_type_id|project_id|is_active' app/Models/User.php app/User.php 2>/dev/null && echo "---- PROJECT MODEL TABLE ----" && grep -nE 'class Project|protected \$table|function detailEng' app/Models/Project.php
+---- USER MODEL TABLE ----
+app/Models/User.php:12:class User extends Authenticatable
+app/Models/User.php:16:    protected $fillable = array('user_full_name', 'user_attachment', 'user_permanent_address', 'is_active', 'is_deleted', 'created_by', 'updated_by', 'user_temporary_address', 'user_mobile_number', 'user_contact_number', 'date_of_birth', 'user_gender', 'office_id', 'user_designation', 'user_status', 'user_office_join_date', 'user_office_leave_date', 'user_email_address');
+app/Models/User.php:18:    protected $table = 'users';
+app/Models/User.php:34:        return $this->belongsTo(UserTypeModel::class, 'user_type_id');
+app/Models/User.php:53:        $query = "Select user.id as  id,user.office_id, (select user_full_name  from pndc_user_details where user_id=user.id and language_id=" . $languageId . " ) as user_full_name,user_name,user.is_active as  is_active , user_type_name, user_email_address from pndc_users user left join pndc_user_map usermp on user.id=usermp.user_id left join pndc_usertype type on type.id=usermp.user_type_id   where user.is_deleted='0'";
+app/Models/User.php:60:        $query = "Select user.id as  id,user.office_id,user.user_attachment, (select user_full_name  from pndc_user_details where user_id=user.id and language_id=" . $languageId . " ) as user_full_name,user_name,user.is_active as  is_active , user_type_name, user_email_address from pndc_users user left join pndc_user_map usermp on user.id=usermp.user_id left join pndc_usertype type on type.id=usermp.user_type_id   where user.is_deleted='0' and user.office_id=$office_id order by 'order_position'";
+app/Models/User.php:84:                                 from pndc_language lang where is_deleted='0' andis_active='1'";
+app/Models/User.php:117:            ->where('users.is_active', '1')
+app/Models/User.php:145:            ->where('users.is_active', '1')
+app/Models/User.php:158:                                user_name, user.is_active as  is_active,
+app/Models/User.php:162:                                pndc_usertype type on type.id=usermp.user_type_i
+doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && echo "---- USER MODEL RELATIONSHIPS ----" && sed -n '1,75p' app/Models/User.php && echo "---- PROJECT MODEL ----" && sed -n '1,100p' app/Models/Project.php && echo "---- PROJECT ID REFERENCES ----" && grep -RniE 'project_id|user_type_id' app/Models app/Http/Controllers/Admin/UserController.php app/Http/Controllers/Admin/LoginController.php --include='*.php' --exclude-dir=vendor | head -100
+---- USER MODEL RELATIONSHIPS ----
+<?php
+
+namespace App\Models;
+
+use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\DB;
+use Laravel\Sanctum\HasApiTokens;
+
+class User extends Authenticatable
+{
+    use HasApiTokens, HasFactory, Notifiable;
+
+    protected $fillable = array('user_full_name', 'user_attachment', 'user_permanent_address', 'is_active', 'is_deleted', 'created_by', 'updated_by', 'user_temporary_address', 'user_mobile_number', 'user_contact_number', 'date_of_birth', 'user_gender', 'office_id', 'user_designation', 'user_status', 'user_office_join_date', 'user_office_leave_date', 'user_email_address');
+
+    protected $table = 'users';
+
+    protected $dates = ['deleted_at'];
+
+    public function office()
+    {
+        return $this->belongsTo(Office::class);
+    }
+
+    public function project()
+    {
+        return $this->belongsTo(Project::class);
+    }
+
+    public function usertype()
+    {
+        return $this->belongsTo(UserTypeModel::class, 'user_type_id');
+    }
+
+    /*
+        * get office id of user from user id
+        * @param int $userId
+        * @return int
+        */
+    public static function getOfficeId($userId)
+    {
+        return User::where('is_deleted', '0')
+            ->where('id', $userId)
+            ->pluck('office_id')
+            ->first();
+    }
+
+    public static function getUndeletedUsers()
+    {
+        $languageId = Language::getIdFromCode('en');
+        $query = "Select user.id as  id,user.office_id, (select user_full_name  from pndc_user_details where user_id=user.id and language_id=" . $languageId . " ) as user_full_name,user_name,user.is_active as  is_active , user_type_name, user_email_address from pndc_users user left join pndc_user_map usermp on user.id=usermp.user_id left join pndc_usertype type on type.id=usermp.user_type_id   where user.is_deleted='0'";
+        return DB::select($query);
+    }
+    /*get undeleted users acccording to office id*/
+    public static function getUndeletedUsersByoffice($office_id)
+    {
+        $languageId = Language::getIdFromCode('en');
+        $query = "Select user.id as  id,user.office_id,user.user_attachment, (select user_full_name  from pndc_user_details where user_id=user.id and language_id=" . $languageId . " ) as user_full_name,user_name,user.is_active as  is_active , user_type_name, user_email_address from pndc_users user left join pndc_user_map usermp on user.id=usermp.user_id left join pndc_usertype type on type.id=usermp.user_type_id   where user.is_deleted='0' and user.office_id=$office_id order by 'order_position'";
+        return DB::select($query);
+    }
+
+    public static function getUserDetailsByIdForUpdate($id)
+    {
+        $query = "Select lang.language_code, lang.language_name ,
+                                        (select user_full_name         from pndc_user_details where user_id=$id and language_id=lang.id) as user_full_name,
+                                        (select user_permanent_address from pndc_user_details where user_id=$id and language_id=lang.id) as user_permanent_address,
+                                        (select user_temporary_address from pndc_user_details where user_id=$id and language_id=lang.id) as user_temporary_address,
+                                        (select user_mobile_number     from pndc_user_details where user_id=$id and language_id=lang.id) as user_mobile_number,
+                                        (select user_contact_number    from pndc_user_details where user_id=$id and language_id=lang.id) as user_contact_number,
+                                        (select user_designation       from pndc_user_details where user_id=$id and language_id=lang.id) as user_designation,
+                                        (select user_label       from pndc_user_details where user_id=$id and language_id=lang.id) as user_label,
+                                        (select user_service       from pndc_user_details where user_id=$id and language_id=lang.id) as user_service,
+                                        (select user_group       from pndc_user_details where user_id=$id and language_id=lang.id) as user_group,
+---- PROJECT MODEL ----
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+
+class Project extends Model
+{
+    public $languageId;
+
+    /**
+     * The database table used by the model.
+     *
+     * @var string
+     */
+
+    protected $fillable = array('is_active', 'is_deleted', 'created_by', 'updated_by');
+
+    protected $table    = 'project';
+
+    public function details()
+    {
+        return $this->hasMany(Projectdetail::class, 'project_id');
+    }
+
+    public function detailEng()
+    {
+        return $this->details()->where('language_id', 2);
+    }
+
+    public function detailNep()
+    {
+        return $this->details()->where('language_id', 1);
+    }
+
+    /**
+     * get all undeleted projects
+     * @return object
+     */
+    public static function getUndeletedProjects()
+    {
+        $languageId = Language::getIdFromCode('en');
+        $query      = "Select t1.id,t1.project_url,date_format( t1.updated_at, '%d %b, %Y' ) AS updated_on,
+                                                t1.is_active,t2.project_heading
+                                                from pndc_project t1
+                                                join pndc_project_detail t2 on t1.id=t2.project_id
+                                                where t1.is_deleted='0' and t2.language_id = '$languageId' ";
+
+        return DB::select($query);
+    }
+
+    public static function getPublishedProjects(){
+        $languageId = Language::getIdFromCode('en');
+
+        $query      = "Select t1.id,t1.project_url,date_format( t1.updated_at, '%d %b, %Y' ) AS updated_on,
+                        t1.is_active,t2.project_heading
+                        from pndc_project t1
+                        join pndc_project_detail t2 on t1.id=t2.project_id
+                        where t1.is_deleted='0' and t1.is_active = '1' and t2.language_id = '$languageId' ";
+
+        return DB::select($query);
+    }
+
+    /**
+     * get all undeleted projects office wise
+     * @param int $officeId
+     * @return object
+     */
+    public static function getUndeletedProjectsByOffice($officeId)
+    {
+        $languageId = Language::getIdFromCode('en');
+        $query      = "Select t1.id,t1.project_url,date_format( t1.updated_at, '%d %b, %Y' ) AS updated_on,
+                                                t1.is_active,t2.project_heading
+                                                from pndc_project t1
+                                                join pndc_project_detail t2 on t1.id=t2.project_id
+                                                where t1.is_deleted='0' and t2.language_id = '$languageId' and t1.office_id='$officeId' ";
+
+        return DB::select($query);
+    }
+
+    /**
+     * check whether url exist or not for individual office
+     * @param  string $url
+     * @param  int $officeId
+     * @return int
+     */
+    public static function checkExist($url, $officeId)
+    {
+        return Project::where('is_deleted', '0')
+            ->where('project_url', $url)
+            ->where('office_id', $officeId)
+            ->pluck('id')
+            ->first();
+    }
+
+    /**
+     * get project detail with languages
+     * @param  int $id
+     * @return object
+---- PROJECT ID REFERENCES ----
+app/Models/AccessControlModel.php:10:    protected $fillable = array('module_id', 'user_type_id', 'access_add', 'access_delete', 'access_update', 'access_publish', 'access_view', 'access_upload', 'access_download');
+app/Models/AccessControlModel.php:13:    public static function getAccessListByUserTypeId($user_type_id)
+app/Models/AccessControlModel.php:30:                                           where user_type_id= $user_type_id and is_deleted='0' ";
+app/Models/AccessControlModel.php:36:        $query = "Select id from pndc_group_access_list where module_id=$module_id and user_type_id=$usertype";
+app/Models/AccessControlModel.php:50:            ->where('user_type_id', $usertype)
+app/Models/AccessControlModel.php:63:            ->where('user_type_id', $usertype)
+app/Models/AccessControlModel.php:76:            ->where('user_type_id', $usertype)
+app/Models/AccessControlModel.php:89:            ->where('user_type_id', $usertype)
+app/Models/AccessControlModel.php:102:            ->where('user_type_id', $usertype)
+app/Models/AccessControlModel.php:117:            ->where('user_type_id', $usertype)
+app/Models/AccessControlModel.php:132:            ->where('user_type_id', $usertype)
+app/Models/AccessControlModel.php:147:            ->where('user_type_id', $usertype)
+app/Models/AccessControlModel.php:162:            ->where('user_type_id', $usertype)
+app/Models/AccessControlModel.php:177:            ->where('user_type_id', $usertype)
+app/Models/IpMapping.php:10:    protected $fillable = array('user_id', 'user_type_id', 'office_id', 'username', 'agent', 'login_ts', 'logout_ts', 'ip_address');
+app/Models/Project.php:24:      return $this->hasMany(Projectdetail::class, 'project_id');
+app/Models/Project.php:47:                                              join pndc_project_detail t2 on t1.id=t2.project_id
+app/Models/Project.php:59:                        join pndc_project_detail t2 on t1.id=t2.project_id
+app/Models/Project.php:76:                                              join pndc_project_detail t2 on t1.id=t2.project_id
+app/Models/Project.php:105:                                     (select t2.id from pndc_project t2 where t2.id='$id') as project_id,
+app/Models/Project.php:107:                                                     on t2.id=t3.project_id where t3.language_id=t1.id and t2.id='$id') as project_heading,
+app/Models/Project.php:109:                                                     on t2.id=t3.project_id where t3.language_id=t1.id and t2.id='$id') as project_description,
+app/Models/Project.php:111:                                                     on t2.id=t3.project_id where t3.language_id=t1.id and t2.id='$id') as project_page_title,
+app/Models/Project.php:113:                                                     on t2.id=t3.project_id where t3.language_id=t1.id and t2.id='$id') as project_detail_id
+app/Models/Project.php:131:        return Project::join('project_detail', 'project.id', '=', 'project_detail.project_id')
+app/Models/Project.php:154:        $result = Project::join('project_detail', 'project.id', '=', 'project_detail.project_id')
+app/Models/User.php:34:        return $this->belongsTo(UserTypeModel::class, 'user_type_id');
+app/Models/User.php:53:        $query = "Select user.id as  id,user.office_id, (select user_full_name  from pndc_user_details where user_id=user.id and language_id=" . $languageId . " ) as user_full_name,user_name,user.is_active as  is_active , user_type_name, user_email_address from pndc_users user left join pndc_user_map usermp on user.id=usermp.user_id left join pndc_usertype type on type.id=usermp.user_type_id   where user.is_deleted='0'";
+app/Models/User.php:60:        $query = "Select user.id as  id,user.office_id,user.user_attachment, (select user_full_name  from pndc_user_details where user_id=user.id and language_id=" . $languageId . " ) as user_full_name,user_name,user.is_active as  is_active , user_type_name, user_email_address from pndc_users user left join pndc_user_map usermp on user.id=usermp.user_id left join pndc_usertype type on type.id=usermp.user_type_id   where user.is_deleted='0' and user.office_id=$office_id order by 'order_position'";
+app/Models/User.php:162:                                pndc_usertype type on type.id=usermp.user_type_id
+app/Models/UserAccessControlModel.php:56:            $usertype    = Auth::User()->user_type_id;
+app/Models/UserAccessControlModel.php:61:                ->where('user_type_id', $usertype)
+app/Models/UserAccessControlModel.php:140:            $usertype    = Auth::User()->user_type_id;
+app/Models/UserAccessControlModel.php:144:                ->where('user_type_id', $usertype)
+app/Models/UserAccessControlModel.php:165:            $usertype    = Auth::User()->user_type_id;
+app/Models/UserAccessControlModel.php:169:                ->where('user_type_id', $usertype)
+app/Models/UserAccessControlModel.php:190:            $usertype    = Auth::User()->user_type_id;
+app/Models/UserAccessControlModel.php:194:                ->where('user_type_id', $usertype)
+app/Models/UserAccessControlModel.php:217:            $usertype    = Auth::User()->user_type_id;
+app/Models/UserAccessControlModel.php:221:                ->where('user_type_id', $usertype)
+app/Models/UserAccessControlModel.php:242:            $usertype    = Auth::User()->user_type_id;
+app/Models/UserAccessControlModel.php:246:                ->where('user_type_id', $usertype)
+app/Models/UserAccessControlModel.php:267:            $usertype    = Auth::User()->user_type_id;
+app/Models/UserAccessControlModel.php:271:                ->where('user_type_id', $usertype)
+app/Models/UserMap.php:10:    protected $fillable = array('user_id', 'user_name', 'user_type_id', 'password', 'is_active', 'is_deleted', 'created_by', 'updated_by');
+app/Models/UserMap.php:109:        $query = "SELECT map.id,map.user_type_id,map.user_name,user.office_id,(
+app/Models/UserMap.php:123:        $query = "SELECT map.id,map.user_type_id,map.user_name,user.office_id,(
+app/Models/UserMap.php:135:        $query = "SELECT map.id,map.user_type_id,map.user_name,map.password,user.office_id,(
+app/Models/UserTypeModel.php:42:        if (Auth::user()->user_type_id == 2) {
+app/Http/Controllers/Admin/UserController.php:105:            'project_id' => 'required_if:usertype,3',
+app/Http/Controllers/Admin/UserController.php:118:        $user->project_id = $request->get('project_id');
+app/Http/Controllers/Admin/UserController.php:119:        $user->user_type_id = $request->get('usertype');
+app/Http/Controllers/Admin/UserController.php:163:            'project_id' => 'required_if:usertype,3',
+app/Http/Controllers/Admin/UserController.php:178:        $user->project_id = $request->get('project_id');
+app/Http/Controllers/Admin/UserController.php:179:        $user->user_type_id = $request->get('usertype');
+app/Http/Controllers/Admin/UserController.php:368:        if ((int) Auth::user()->user_type_id === 13) {
+app/Http/Controllers/Admin/LoginController.php:71:                    'user_type_id' => $authUser->user_type_id,
+app/Http/Controllers/Admin/LoginController.php:82:                if($authUser->user_type_id == 3){
+app/Http/Controllers/Admin/LoginController.php:180:        if($user->user_type_id == 3){
+app/Http/Controllers/Admin/LoginController.php:181:            $projectId = $user->project_id;
+doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade
