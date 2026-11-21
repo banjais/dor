@@ -1,606 +1,234 @@
-doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && echo "---- RESTRICT ADMIN ROLES MIDDLEWARE ----" && grep -Rni -A 80 -B 8 'class RestrictAdminRoles' app && echo "---- USER CONTROLLER ADD / INDEX METHODS ----" && sed -n '1,135p' app/Http/Controllers/Admin/UserController.php && echo "---- USER CONTROLLER CONSTRUCTOR ----" && grep -n -A 35 -B 5 'function __construct' app/Http/Controllers/Admin/UserController.php
----- RESTRICT ADMIN ROLES MIDDLEWARE ----
-app/Http/Middleware/RestrictAdminRoles.php-2-
-app/Http/Middleware/RestrictAdminRoles.php-3-namespace App\Http\Middleware;
-app/Http/Middleware/RestrictAdminRoles.php-4-
-app/Http/Middleware/RestrictAdminRoles.php-5-use Closure;
-app/Http/Middleware/RestrictAdminRoles.php-6-use Illuminate\Http\Request;
-app/Http/Middleware/RestrictAdminRoles.php-7-use Illuminate\Support\Facades\Auth;
-app/Http/Middleware/RestrictAdminRoles.php-8-use Symfony\Component\HttpFoundation\Response;
-app/Http/Middleware/RestrictAdminRoles.php-9-
-app/Http/Middleware/RestrictAdminRoles.php:10:class RestrictAdminRoles
-app/Http/Middleware/RestrictAdminRoles.php-11-{
-app/Http/Middleware/RestrictAdminRoles.php-12-    public function handle(Request $request, Closure $next): Response
-app/Http/Middleware/RestrictAdminRoles.php-13-    {
-app/Http/Middleware/RestrictAdminRoles.php-14-        if (!Auth::check()) {
-app/Http/Middleware/RestrictAdminRoles.php-15-            return redirect()->route('admin.login');
-app/Http/Middleware/RestrictAdminRoles.php-16-        }
-app/Http/Middleware/RestrictAdminRoles.php-17-
-app/Http/Middleware/RestrictAdminRoles.php-18-        $roleId = (int) Auth::user()->user_type_id;
-app/Http/Middleware/RestrictAdminRoles.php-19-
-app/Http/Middleware/RestrictAdminRoles.php-20-        // Super Admin and other existing roles retain their current rules.
-app/Http/Middleware/RestrictAdminRoles.php-21-        if (!in_array($roleId, [12, 13], true)) {
-app/Http/Middleware/RestrictAdminRoles.php-22-            return $next($request);
-app/Http/Middleware/RestrictAdminRoles.php-23-        }
-app/Http/Middleware/RestrictAdminRoles.php-24-
-app/Http/Middleware/RestrictAdminRoles.php-25-        $route = $request->route();
-app/Http/Middleware/RestrictAdminRoles.php-26-        $routeName = $route ? $route->getName() : null;
-app/Http/Middleware/RestrictAdminRoles.php-27-
-app/Http/Middleware/RestrictAdminRoles.php-28-        $commonAllowed = [
-app/Http/Middleware/RestrictAdminRoles.php-29-            'dashboard',
-app/Http/Middleware/RestrictAdminRoles.php-30-            'admin.logout',
-app/Http/Middleware/RestrictAdminRoles.php-31-            'admin.change.password',
-app/Http/Middleware/RestrictAdminRoles.php-32-            'admin.change.password.post',
-app/Http/Middleware/RestrictAdminRoles.php-33-            'admin.circulars',
-app/Http/Middleware/RestrictAdminRoles.php-34-            'admin.circular.view',
-app/Http/Middleware/RestrictAdminRoles.php-35-        ];
-app/Http/Middleware/RestrictAdminRoles.php-36-
-app/Http/Middleware/RestrictAdminRoles.php-37-        if (in_array($routeName, $commonAllowed, true)) {
-app/Http/Middleware/RestrictAdminRoles.php-38-            return $next($request);
-app/Http/Middleware/RestrictAdminRoles.php-39-        }
-app/Http/Middleware/RestrictAdminRoles.php-40-
-app/Http/Middleware/RestrictAdminRoles.php-41-        // Permit the unnamed /admin landing route as well.
-app/Http/Middleware/RestrictAdminRoles.php-42-        if (in_array(trim($request->path(), '/'), ['admin', 'admin/home'], true)) {
-app/Http/Middleware/RestrictAdminRoles.php-43-            return $next($request);
-app/Http/Middleware/RestrictAdminRoles.php-44-        }
-app/Http/Middleware/RestrictAdminRoles.php-45-
-app/Http/Middleware/RestrictAdminRoles.php-46-        if ($roleId === 12) {
-app/Http/Middleware/RestrictAdminRoles.php-47-            // Office Admin may manage Circular Admin accounts through dedicated routes.
-app/Http/Middleware/RestrictAdminRoles.php-48-            if ($routeName && str_starts_with($routeName, 'admin.circular-admin.')) {
-app/Http/Middleware/RestrictAdminRoles.php-49-                return $next($request);
-app/Http/Middleware/RestrictAdminRoles.php-50-            }
-app/Http/Middleware/RestrictAdminRoles.php-51-
-app/Http/Middleware/RestrictAdminRoles.php-52-            // OfficeController enforces ownership of the Office Profile.
-app/Http/Middleware/RestrictAdminRoles.php-53-            if (in_array($routeName, ['admin.office.edit', 'admin.office.update'], true)) {
-app/Http/Middleware/RestrictAdminRoles.php-54-                return $next($request);
-app/Http/Middleware/RestrictAdminRoles.php-55-            }
-app/Http/Middleware/RestrictAdminRoles.php-56-
-app/Http/Middleware/RestrictAdminRoles.php-57-            // These modules are not granted to Role 12 in group_access_list.
-app/Http/Middleware/RestrictAdminRoles.php-58-            $restrictedRoutePrefixes = [
-app/Http/Middleware/RestrictAdminRoles.php-59-                'admin.users',
-app/Http/Middleware/RestrictAdminRoles.php-60-                'admin.user.',
-app/Http/Middleware/RestrictAdminRoles.php-61-                'admin.usertypes',
-app/Http/Middleware/RestrictAdminRoles.php-62-                'admin.usertype.',
-app/Http/Middleware/RestrictAdminRoles.php-63-                'admin.offices',
-app/Http/Middleware/RestrictAdminRoles.php-64-                'admin.office.',
-app/Http/Middleware/RestrictAdminRoles.php-65-                'office.sortorder',
-app/Http/Middleware/RestrictAdminRoles.php-66-                'admin.circular.',
-app/Http/Middleware/RestrictAdminRoles.php-67-                'admin.website-theme.',
-app/Http/Middleware/RestrictAdminRoles.php-68-                'admin.website-identity.',
-app/Http/Middleware/RestrictAdminRoles.php-69-                'admin.access.',
-app/Http/Middleware/RestrictAdminRoles.php-70-                'admin.module.',
-app/Http/Middleware/RestrictAdminRoles.php-71-            ];
-app/Http/Middleware/RestrictAdminRoles.php-72-
-app/Http/Middleware/RestrictAdminRoles.php-73-            foreach ($restrictedRoutePrefixes as $prefix) {
-app/Http/Middleware/RestrictAdminRoles.php-74-                if ($routeName && str_starts_with($routeName, $prefix)) {
-app/Http/Middleware/RestrictAdminRoles.php-75-                    abort(403, 'You are not authorized to access this administrative section.');
-app/Http/Middleware/RestrictAdminRoles.php-76-                }
-app/Http/Middleware/RestrictAdminRoles.php-77-            }
-app/Http/Middleware/RestrictAdminRoles.php-78-
-app/Http/Middleware/RestrictAdminRoles.php-79-            // Also protect ACL routes that do not have route names.
-app/Http/Middleware/RestrictAdminRoles.php-80-            $adminPath = trim($request->path(), '/');
-app/Http/Middleware/RestrictAdminRoles.php-81-            foreach ([
-app/Http/Middleware/RestrictAdminRoles.php-82-                'admin/access-control',
-app/Http/Middleware/RestrictAdminRoles.php-83-                'admin/access-control-user',
-app/Http/Middleware/RestrictAdminRoles.php-84-                'admin/acess-control',
-app/Http/Middleware/RestrictAdminRoles.php-85-                'admin/acess-control-user',
-app/Http/Middleware/RestrictAdminRoles.php-86-                'admin/module/',
-app/Http/Middleware/RestrictAdminRoles.php-87-            ] as $restrictedPath) {
-app/Http/Middleware/RestrictAdminRoles.php-88-                if ($adminPath === $restrictedPath ||
-app/Http/Middleware/RestrictAdminRoles.php-89-                    str_starts_with($adminPath, $restrictedPath . '/') ||
-app/Http/Middleware/RestrictAdminRoles.php-90-                    str_starts_with($adminPath, $restrictedPath)) {
---
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-2-
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-3-namespace App\Http\Middleware;
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-4-
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-5-use Closure;
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-6-use Illuminate\Http\Request;
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-7-use Illuminate\Support\Facades\Auth;
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-8-use Symfony\Component\HttpFoundation\Response;
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-9-
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816:10:class RestrictAdminRoles
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-11-{
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-12-    public function handle(Request $request, Closure $next): Response
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-13-    {
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-14-        if (!Auth::check()) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-15-            return redirect()->route('admin.login');
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-16-        }
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-17-
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-18-        $roleId = (int) Auth::user()->user_type_id;
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-19-
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-20-        // Super Admin and other existing roles retain their current rules.
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-21-        if (!in_array($roleId, [12, 13], true)) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-22-            return $next($request);
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-23-        }
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-24-
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-25-        $route = $request->route();
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-26-        $routeName = $route ? $route->getName() : null;
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-27-
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-28-        $commonAllowed = [
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-29-            'dashboard',
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-30-            'admin.logout',
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-31-            'admin.change.password',
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-32-            'admin.change.password.post',
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-33-            'admin.circulars',
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-34-            'admin.circular.view',
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-35-        ];
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-36-
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-37-        if (in_array($routeName, $commonAllowed, true)) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-38-            return $next($request);
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-39-        }
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-40-
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-41-        // Permit the unnamed /admin landing route as well.
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-42-        if (in_array(trim($request->path(), '/'), ['admin', 'admin/home'], true)) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-43-            return $next($request);
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-44-        }
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-45-
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-46-        if ($roleId === 12) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-47-            // Office Admin may manage Circular Admin accounts through dedicated routes.
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-48-            if ($routeName && str_starts_with($routeName, 'admin.circular-admin.')) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-49-                return $next($request);
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-50-            }
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-51-
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-52-            // OfficeController enforces ownership of the Office Profile.
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-53-            if (in_array($routeName, ['admin.office.edit', 'admin.office.update'], true)) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-54-                return $next($request);
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-55-            }
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-56-
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-57-            // These modules are not granted to Role 12 in group_access_list.
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-58-            $restrictedRoutePrefixes = [
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-59-                'admin.users',
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-60-                'admin.user.',
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-61-                'admin.usertypes',
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-62-                'admin.usertype.',
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-63-                'admin.offices',
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-64-                'admin.office.',
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-65-                'office.sortorder',
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-66-                'admin.access.',
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-67-                'admin.module.',
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-68-            ];
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-69-
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-70-            foreach ($restrictedRoutePrefixes as $prefix) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-71-                if ($routeName && str_starts_with($routeName, $prefix)) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-72-                    abort(403, 'You are not authorized to access this administrative section.');
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-73-                }
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-74-            }
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-75-
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-76-            // Also protect ACL routes that do not have route names.
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-77-            $adminPath = trim($request->path(), '/');
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-78-            foreach ([
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-79-                'admin/access-control',
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-80-                'admin/access-control-user',
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-81-                'admin/acess-control',
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-82-                'admin/acess-control-user',
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-83-                'admin/module/',
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-84-            ] as $restrictedPath) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-85-                if ($adminPath === $restrictedPath ||
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-86-                    str_starts_with($adminPath, $restrictedPath . '/') ||
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-87-                    str_starts_with($adminPath, $restrictedPath)) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-88-                    abort(403, 'You are not authorized to access this administrative section.');
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-89-                }
-app/Http/Middleware/RestrictAdminRoles.php.bak-circular-add-restriction-20261116-195816-90-            }
---
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-2-
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-3-namespace App\Http\Middleware;
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-4-
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-5-use Closure;
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-6-use Illuminate\Http\Request;
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-7-use Illuminate\Support\Facades\Auth;
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-8-use Symfony\Component\HttpFoundation\Response;
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-9-
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912:10:class RestrictAdminRoles
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-11-{
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-12-    public function handle(Request $request, Closure $next): Response
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-13-    {
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-14-        if (!Auth::check()) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-15-            return redirect()->route('admin.login');
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-16-        }
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-17-
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-18-        $roleId = (int) Auth::user()->user_type_id;
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-19-
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-20-        // Super Admin and other existing roles retain their current rules.
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-21-        if (!in_array($roleId, [12, 13], true)) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-22-            return $next($request);
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-23-        }
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-24-
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-25-        $route = $request->route();
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-26-        $routeName = $route ? $route->getName() : null;
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-27-
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-28-        $commonAllowed = [
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-29-            'dashboard',
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-30-            'admin.logout',
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-31-            'admin.change.password',
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-32-            'admin.change.password.post',
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-33-            'admin.circulars',
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-34-            'admin.circular.view',
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-35-        ];
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-36-
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-37-        if (in_array($routeName, $commonAllowed, true)) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-38-            return $next($request);
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-39-        }
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-40-
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-41-        // Permit the unnamed /admin landing route as well.
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-42-        if (in_array(trim($request->path(), '/'), ['admin', 'admin/home'], true)) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-43-            return $next($request);
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-44-        }
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-45-
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-46-        if ($roleId === 12) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-47-            // Office Admin may manage Circular Admin accounts through dedicated routes.
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-48-            if ($routeName && str_starts_with($routeName, 'admin.circular-admin.')) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-49-                return $next($request);
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-50-            }
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-51-
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-52-            // OfficeController enforces ownership of the Office Profile.
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-53-            if (in_array($routeName, ['admin.office.edit', 'admin.office.update'], true)) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-54-                return $next($request);
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-55-            }
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-56-
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-57-            // These modules are not granted to Role 12 in group_access_list.
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-58-            $restrictedRoutePrefixes = [
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-59-                'admin.users',
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-60-                'admin.user.',
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-61-                'admin.usertypes',
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-62-                'admin.usertype.',
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-63-                'admin.offices',
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-64-                'admin.office.',
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-65-                'office.sortorder',
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-66-                'admin.circular.',
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-67-                'admin.access.',
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-68-                'admin.module.',
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-69-            ];
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-70-
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-71-            foreach ($restrictedRoutePrefixes as $prefix) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-72-                if ($routeName && str_starts_with($routeName, $prefix)) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-73-                    abort(403, 'You are not authorized to access this administrative section.');
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-74-                }
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-75-            }
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-76-
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-77-            // Also protect ACL routes that do not have route names.
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-78-            $adminPath = trim($request->path(), '/');
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-79-            foreach ([
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-80-                'admin/access-control',
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-81-                'admin/access-control-user',
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-82-                'admin/acess-control',
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-83-                'admin/acess-control-user',
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-84-                'admin/module/',
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-85-            ] as $restrictedPath) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-86-                if ($adminPath === $restrictedPath ||
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-87-                    str_starts_with($adminPath, $restrictedPath . '/') ||
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-88-                    str_starts_with($adminPath, $restrictedPath)) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-89-                    abort(403, 'You are not authorized to access this administrative section.');
-app/Http/Middleware/RestrictAdminRoles.php.bak-global-settings-restriction-20261116-195912-90-                }
---
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-2-
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-3-namespace App\Http\Middleware;
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-4-
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-5-use Closure;
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-6-use Illuminate\Http\Request;
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-7-use Illuminate\Support\Facades\Auth;
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-8-use Symfony\Component\HttpFoundation\Response;
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-9-
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718:10:class RestrictAdminRoles
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-11-{
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-12-    public function handle(Request $request, Closure $next): Response
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-13-    {
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-14-        if (!Auth::check()) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-15-            return redirect()->route('admin.login');
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-16-        }
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-17-
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-18-        $roleId = (int) Auth::user()->user_type_id;
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-19-
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-20-        // Super Admin and other existing roles retain their current rules.
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-21-        if (!in_array($roleId, [12, 13], true)) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-22-            return $next($request);
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-23-        }
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-24-
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-25-        $route = $request->route();
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-26-        $routeName = $route ? $route->getName() : null;
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-27-
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-28-        $commonAllowed = [
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-29-            'dashboard',
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-30-            'admin.logout',
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-31-            'admin.change.password',
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-32-            'admin.change.password.post',
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-33-            'admin.circulars',
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-34-            'admin.circular.view',
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-35-        ];
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-36-
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-37-        if (in_array($routeName, $commonAllowed, true)) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-38-            return $next($request);
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-39-        }
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-40-
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-41-        // Permit the unnamed /admin landing route as well.
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-42-        if (in_array(trim($request->path(), '/'), ['admin', 'admin/home'], true)) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-43-            return $next($request);
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-44-        }
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-45-
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-46-        if ($roleId === 12) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-47-            // Office Admin may manage Circular Admin accounts through dedicated routes.
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-48-            if ($routeName && str_starts_with($routeName, 'admin.circular-admin.')) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-49-                return $next($request);
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-50-            }
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-51-
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-52-            // OfficeController enforces ownership of the Office Profile.
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-53-            if (in_array($routeName, ['admin.office.edit', 'admin.office.update'], true)) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-54-                return $next($request);
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-55-            }
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-56-
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-57-            // These modules are not granted to Role 12 in group_access_list.
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-58-            $restrictedRoutePrefixes = [
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-59-                'admin.users',
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-60-                'admin.user.',
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-61-                'admin.usertypes',
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-62-                'admin.usertype.',
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-63-                'admin.offices',
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-64-                'admin.office.',
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-65-                'admin.access.',
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-66-                'admin.module.',
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-67-            ];
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-68-
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-69-            foreach ($restrictedRoutePrefixes as $prefix) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-70-                if ($routeName && str_starts_with($routeName, $prefix)) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-71-                    abort(403, 'You are not authorized to access this administrative section.');
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-72-                }
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-73-            }
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-74-
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-75-            // Also protect ACL routes that do not have route names.
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-76-            $adminPath = trim($request->path(), '/');
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-77-            foreach ([
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-78-                'admin/access-control',
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-79-                'admin/access-control-user',
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-80-                'admin/acess-control',
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-81-                'admin/acess-control-user',
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-82-                'admin/module/',
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-83-            ] as $restrictedPath) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-84-                if ($adminPath === $restrictedPath ||
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-85-                    str_starts_with($adminPath, $restrictedPath . '/') ||
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-86-                    str_starts_with($adminPath, $restrictedPath)) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-87-                    abort(403, 'You are not authorized to access this administrative section.');
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-88-                }
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-89-            }
-app/Http/Middleware/RestrictAdminRoles.php.bak-office-sortorder-20261116-195718-90-
---
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-2-
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-3-namespace App\Http\Middleware;
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-4-
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-5-use Closure;
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-6-use Illuminate\Http\Request;
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-7-use Illuminate\Support\Facades\Auth;
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-8-use Symfony\Component\HttpFoundation\Response;
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-9-
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651:10:class RestrictAdminRoles
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-11-{
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-12-    public function handle(Request $request, Closure $next): Response
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-13-    {
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-14-        if (!Auth::check()) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-15-            return redirect()->route('admin.login');
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-16-        }
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-17-
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-18-        $roleId = (int) Auth::user()->user_type_id;
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-19-
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-20-        // Super Admin and other existing roles retain their current rules.
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-21-        if (!in_array($roleId, [12, 13], true)) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-22-            return $next($request);
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-23-        }
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-24-
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-25-        $route = $request->route();
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-26-        $routeName = $route ? $route->getName() : null;
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-27-
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-28-        $commonAllowed = [
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-29-            'dashboard',
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-30-            'admin.logout',
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-31-            'admin.change.password',
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-32-            'admin.change.password.post',
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-33-            'admin.circulars',
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-34-            'admin.circular.view',
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-35-        ];
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-36-
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-37-        if (in_array($routeName, $commonAllowed, true)) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-38-            return $next($request);
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-39-        }
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-40-
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-41-        // Permit the unnamed /admin landing route as well.
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-42-        if (in_array(trim($request->path(), '/'), ['admin', 'admin/home'], true)) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-43-            return $next($request);
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-44-        }
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-45-
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-46-        if ($roleId === 12) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-47-            // Office Admin may manage Circular Admin accounts through dedicated routes.
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-48-            if ($routeName && str_starts_with($routeName, 'admin.circular-admin.')) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-49-                return $next($request);
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-50-            }
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-51-
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-52-            // OfficeController enforces ownership of the Office Profile.
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-53-            if (in_array($routeName, ['admin.office.edit', 'admin.office.update'], true)) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-54-                return $next($request);
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-55-            }
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-56-
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-57-            // These modules are not granted to Role 12 in group_access_list.
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-58-            $restrictedRoutePrefixes = [
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-59-                'admin.users',
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-60-                'admin.user.',
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-61-                'admin.usertypes',
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-62-                'admin.usertype.',
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-63-                'admin.offices',
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-64-                'admin.office.',
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-65-                'admin.access.',
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-66-                'admin.module.',
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-67-            ];
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-68-
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-69-            foreach ($restrictedRoutePrefixes as $prefix) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-70-                if ($routeName && str_starts_with($routeName, $prefix)) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-71-                    abort(403, 'You are not authorized to access this administrative section.');
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-72-                }
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-73-            }
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-74-
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-75-            // Also protect ACL routes that do not have route names.
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-76-            $adminPath = trim($request->path(), '/');
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-77-            foreach ([
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-78-                'admin/access-control',
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-79-                'admin/access-control-user',
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-80-                'admin/acess-control',
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-81-                'admin/acess-control-user',
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-82-                'admin/module/',
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-83-            ] as $restrictedPath) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-84-                if ($adminPath === $restrictedPath ||
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-85-                    str_starts_with($adminPath, $restrictedPath . '/') ||
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-86-                    str_starts_with($adminPath, $restrictedPath)) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-87-                    abort(403, 'You are not authorized to access this administrative section.');
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-88-                }
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-89-            }
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-content-access-20261116-195651-90-        }
---
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-2-
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-3-namespace App\Http\Middleware;
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-4-
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-5-use Closure;
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-6-use Illuminate\Http\Request;
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-7-use Illuminate\Support\Facades\Auth;
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-8-use Symfony\Component\HttpFoundation\Response;
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-9-
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512:10:class RestrictAdminRoles
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-11-{
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-12-    public function handle(Request $request, Closure $next): Response
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-13-    {
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-14-        if (!Auth::check()) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-15-            return redirect()->route('admin.login');
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-16-        }
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-17-
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-18-        $roleId = (int) Auth::user()->user_type_id;
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-19-
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-20-        // Restore Office Admin's previous authenticated admin route access.
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-21-        if ($roleId === 12) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-22-            return $next($request);
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-23-        }
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-24-
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-25-        // Super Admin, Project Admin and other existing roles retain their current rules.
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-26-        if (!in_array($roleId, [12, 13], true)) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-27-            return $next($request);
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-28-        }
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-29-
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-30-        $route = $request->route();
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-31-        $routeName = $route ? $route->getName() : null;
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-32-
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-33-        $commonAllowed = [
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-34-            'dashboard',
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-35-            'admin.logout',
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-36-            'admin.change.password',
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-37-            'admin.change.password.post',
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-38-            'admin.circulars',
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-39-            'admin.circular.view',
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-40-        ];
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-41-
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-42-        if (in_array($routeName, $commonAllowed, true)) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-43-            return $next($request);
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-44-        }
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-45-
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-46-        // Permit the unnamed /admin landing route as well.
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-47-        if (in_array(trim($request->path(), '/'), ['admin', 'admin/home'], true)) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-48-            return $next($request);
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-49-        }
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-50-
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-51-        if ($roleId === 12) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-52-            // Office Admin may manage Circular Admin accounts through dedicated routes.
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-53-            if ($routeName && str_starts_with($routeName, 'admin.circular-admin.')) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-54-                return $next($request);
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-55-            }
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-56-
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-57-            // OfficeController separately enforces ownership of the Office Profile.
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-58-            if (in_array($routeName, ['admin.office.edit', 'admin.office.update'], true)) {
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-59-                return $next($request);
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-60-            }
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-61-        }
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-62-
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-63-        abort(403, 'You are not authorized to access this administrative section.');
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-64-    }
-app/Http/Middleware/RestrictAdminRoles.php.bak-role12-scope-20261116-195512-65-}
---
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-2-
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-3-namespace App\Http\Middleware;
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-4-
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-5-use Closure;
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-6-use Illuminate\Http\Request;
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-7-use Illuminate\Support\Facades\Auth;
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-8-use Symfony\Component\HttpFoundation\Response;
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-9-
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final:10:class RestrictAdminRoles
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-11-{
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-12-    public function handle(Request $request, Closure $next): Response
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-13-    {
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-14-        if (!Auth::check()) {
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-15-            return redirect()->route('admin.login');
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-16-        }
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-17-
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-18-        $roleId = (int) Auth::user()->user_type_id;
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-19-
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-20-        // Super Admin, Project Admin and other existing roles retain their current rules.
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-21-        if (!in_array($roleId, [12, 13], true)) {
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-22-            return $next($request);
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-23-        }
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-24-
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-25-        $route = $request->route();
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-26-        $routeName = $route ? $route->getName() : null;
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-27-
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-28-        $commonAllowed = [
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-29-            'dashboard',
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-30-            'admin.logout',
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-31-            'admin.change.password',
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-32-            'admin.change.password.post',
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-33-            'admin.circulars',
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-34-            'admin.circular.view',
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-35-        ];
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-36-
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-37-        if (in_array($routeName, $commonAllowed, true)) {
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-38-            return $next($request);
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-39-        }
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-40-
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-41-        // Permit the unnamed /admin landing route as well.
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-42-        if (in_array(trim($request->path(), '/'), ['admin', 'admin/home'], true)) {
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-43-            return $next($request);
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-44-        }
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-45-
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-46-        if ($roleId === 12) {
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-47-            // Office Admin may manage Circular Admin accounts through dedicated routes.
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-48-            if ($routeName && str_starts_with($routeName, 'admin.circular-admin.')) {
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-49-                return $next($request);
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-50-            }
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-51-
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-52-            // OfficeController separately enforces ownership of the Office Profile.
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-53-            if (in_array($routeName, ['admin.office.edit', 'admin.office.update'], true)) {
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-54-                return $next($request);
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-55-            }
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-56-        }
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-57-
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-58-        abort(403, 'You are not authorized to access this administrative section.');
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-59-    }
-app/Http/Middleware/RestrictAdminRoles.php.before-role12-restore-final-60-}
----- USER CONTROLLER ADD / INDEX METHODS ----
+doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$ cd /mnt/d/DoR-Website-Backup/Laravel13-Upgrade && echo "---- LOGIN CONTROLLER ----" && sed -n '1,220p' app/Http/Controllers/Admin/LoginController.php && echo "---- PROJECT AUTH CONTROLLER ----" && sed -n '1,130p' app/Http/Controllers/Project/ProjectController.php
+---- LOGIN CONTROLLER ----
 <?php
 
 /**
  * Project Name: Department of Road(DOR)
- * @author Veshraj Joshi | Sunil Adhikari
+ * @author    Veshraj Joshi
  * @copytop 2015 Peace Nepal DOT Com
  */
 
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\ConfigurationController;
-use App\Models\Configuration;
-use App\Models\Language;
-use App\Models\Office;
+use App\Models\Circular;
+use App\Models\Content;
+use App\Models\IpMapping;
+use App\Models\Notice;
 use App\Models\Project;
+use App\Models\Staff;
 use App\Models\User;
-use App\Models\UserAccessControlModel;
-use App\Models\UserTypeModel;
-use Helper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
 
-class UserController extends ConfigurationController
+class LoginController extends ConfigurationController
+{
+    public $rel_site_url;
+    public $abs_site_url;
+    public $site_name;
+
+    public function __construct()
+    {
+        $this->abs_site_url = ConfigurationController::abs_site_url();
+        $this->rel_site_url = ConfigurationController::rel_site_url();
+        $this->site_name    = ConfigurationController::site_name();
+    }
+
+    public function getLogin()
+    {
+        $log_id = Session::get('log_id');
+        if ($log_id) {
+            return Redirect::to('/admin/home');
+        }
+        return view('users.login')->with('rel_site_url', $this->rel_site_url)
+            ->with('abs_site_url', $this->abs_site_url)
+            ->with('site_name', $this->site_name)
+            ->with('error_message', '');
+    }
+
+    public function postLogin(Request $request)
+    {
+        $rules = array(
+            'username' => 'Required',
+            'password' => 'Required');
+
+        $v = Validator::make($request->all(), $rules);
+        if (!$v->fails()) {
+            $auth = Auth::attempt(array(
+                'username'   => $request->get('username'),
+                'password'   => $request->get('password'),
+                'is_active'  => '1'));
+            // print_r($request->all());
+
+            if ($auth) {
+                $authUser = Auth::User();
+
+                $data = array(
+                    'user_id'      => $authUser->id,
+                    'user_type_id' => $authUser->user_type_id,
+                    'office_id'    => $authUser->office_id,
+                    'username'     => $authUser->username,
+                    'ip_address'   => $_SERVER['REMOTE_ADDR'],
+                    'login_ts'     => date('Y-m-d H:i:s'),
+                    'agent'        => $_SERVER['HTTP_USER_AGENT'],
+                );
+                $user       = IpMapping::create($data);
+                $insertedId = $user->id;
+                Session::put('log_id', $insertedId);
+
+                if($authUser->user_type_id == 3){
+                    return Redirect::route('project.admin.dashboard');
+                } else{
+                   return Redirect::route('dashboard');
+                }
+            } else {
+
+                return view('users.login')->with('error_message', 'Invalid username or password')
+                    ->with('rel_site_url', $this->rel_site_url)
+                    ->with('abs_site_url', $this->abs_site_url)
+                    ->with('site_name', $this->site_name);
+            }
+        } else {
+            return view('users.login')->with('error_message', 'Either username or password is empty.')
+                ->with('rel_site_url', $this->rel_site_url)
+                ->with('abs_site_url', $this->abs_site_url)
+                ->with('site_name', $this->site_name);
+        }
+    }
+    public function logoutUser()
+    {
+        $log_id = Session::get('log_id');
+
+        if ($log_id) {
+            $user = IpMapping::find($log_id);
+
+            if ($user) {
+                $user->logout_ts = date('Y-m-d H:i:s');
+                $user->save();
+            }
+        }
+
+        Auth::logout();
+        Session::flush();
+
+        return Redirect::route('admin.login');
+    }
+//==================================================================================================================================
+    public function getChangePasswordOwn()
+    {
+        return view('users.changepassword')->with('abs_site_url', $this->abs_site_url)
+            ->with('rel_site_url', $this->rel_site_url)
+            ->with('site_name', $this->site_name);
+
+    }
+//==================================================================================================================================
+    public function changePasswordOwn(Request $request)
+    {
+        $rule = array('newpassword' => 'required|min:6',
+            'conpassword'               => 'required|same:newpassword');
+        $v = Validator::make($request->all(), $rule);
+        if ($v->fails()) {
+            $feedback['type']    = 'validationerror';
+            $feedback['message'] = $v->getMessageBag();
+            exit(json_encode($feedback));
+        }
+        $user           = User::find(Auth::User()->id);
+        $user->password = Hash::make($request->get('newpassword'));
+        $user->save();
+        $feedback['type']    = 'success';
+        $feedback['message'] = 'Your password has been changed successfully';
+        exit(json_encode($feedback));
+
+    }
+//==================================================================================================================================
+    public function getChangePasswordByAdmin()
+    {
+        return view('users.changepasswordadmin')->with('abs_site_url', $this->abs_site_url)
+            ->with('rel_site_url', $this->rel_site_url)
+            ->with('site_name', $this->site_name);
+    }
+//==================================================================================================================================
+    public function changePasswordByAdmin(Request $request)
+    {
+        $rule = array('username' => 'required',
+            'newpassword'            => 'required|min:6',
+            'conpassword'            => 'required');
+        $v = Validator::make($request->all(), $rule);
+        if ($v->fails()) {
+            $feedback['type']    = 'validationerror';
+            $feedback['message'] = $v->getMessageBag();
+            exit(json_encode($feedback));
+        }
+        $rec = DB::table('users')->where('username', $request->get('username'))->update(array('password' => Hash::make($request->get('newpassword'))));
+        if ($rec) {
+            $feedback['type']    = 'success';
+            $feedback['message'] = 'Update Successfully.';
+            exit(json_encode($feedback));
+        }
+        $feedback['type']    = 'error';
+        $feedback['message'] = 'Such username doesnot exist in the database.';
+        exit(json_encode($feedback));
+
+    }
+
+    public function getHome()
+    {
+        $user     = Auth::User();
+        if($user->user_type_id == 3){
+            $projectId = $user->project_id;
+            $project = Project::with('detailEng')
+                        ->find($projectId);
+
+            return view('project_home')
+                ->with('abs_site_url', $this->abs_site_url)
+                ->with('rel_site_url', $this->rel_site_url)
+                ->with('site_name', $this->site_name)
+                ->with('project', $project);
+        }
+        $officeId = $user->office_id;
+
+        $staff_count = Staff::where('office_id', $officeId)
+            ->where('is_deleted', '0')->count();
+        $project_count = Project::where('office_id', $officeId)
+            ->where('is_deleted', '0')->count();
+        $content_count = Content::where('office_id', $officeId)
+            ->where('is_deleted', '0')->count();
+        $notice_count = Notice::where('office_id', $officeId)
+            ->where('is_deleted', '0')->count();
+        $circular_count = Circular::where(['is_deleted'=> '0','is_active'=>'1'])->count();
+
+        return view('home')
+            ->with('abs_site_url', $this->abs_site_url)
+            ->with('rel_site_url', $this->rel_site_url)
+            ->with('staff_count', $staff_count)
+            ->with('project_count', $project_count)
+            ->with('content_count', $content_count)
+            ->with('notice_count', $notice_count)
+            ->with('circular_count', $circular_count)
+            ->with('site_name', $this->site_name);
+    }
+}
+---- PROJECT AUTH CONTROLLER ----
+<?php
+
+namespace App\Http\Controllers\Project;
+
+use App\Http\Controllers\ConfigurationController;
+use App\Models\Language;
+use App\Models\Project as ProjectModel;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Validator;
+use Throwable;
+
+class ProjectController extends ConfigurationController
 {
     public $abs_site_url;
     public $rel_site_url;
@@ -610,146 +238,110 @@ class UserController extends ConfigurationController
     {
         $this->abs_site_url = ConfigurationController::abs_site_url();
         $this->rel_site_url = ConfigurationController::rel_site_url();
-        $this->site_name    = ConfigurationController::site_name();
+        $this->site_name = ConfigurationController::site_name();
     }
+
+    private function errorView()
+    {
+        return view('error')
+            ->with('abs_site_url', $this->abs_site_url)
+            ->with('rel_site_url', $this->rel_site_url)
+            ->with('site_name', $this->site_name);
+    }
+
+    private function projectUser()
+    {
+        $user = Auth::user();
+
+        if (!$user || (int) $user->user_type_id !== 3 || empty($user->project_id)) {
+            abort(403);
+        }
+
+        return $user;
+    }
+
     /**
-     * This method is used to get the list of undeleted users(both active and deactive)
-     *
-     * @param array $array - no paramenter
-     * @param string $blah - none
-     * @return view(users::users..users)
+     * Project User Dashboard
      */
     public function getIndex()
     {
-        $officeId = Auth::user()->office_id;
-        $authUserId = Auth::user()->id;
-        $users = User::with(['office.details' => function ($query) {
-            $query->where('language_id', 2);
-        }, 'usertype'])->get();
+        try {
+            $user = $this->projectUser();
 
-        $addAccess     = UserAccessControlModel::getAccessAddByModuleAndUserMapId(5, $authUserId);
-        $editAccess    = UserAccessControlModel::getAccessUpdateByModuleAndUserMapId(5, $authUserId);
-        $publishAccess = UserAccessControlModel::getAccessPublishByModuleAndUserMapId(5, $authUserId);
-        $deleteAccess  = UserAccessControlModel::getAccessDeleteByModuleAndUserMapId(5, $authUserId);
+            $project = ProjectModel::with(['detailEng', 'detailNep'])
+                ->where('id', $user->project_id)
+                ->where('is_deleted', '0')
+                ->first();
 
-        return view('users.users.users')
-            ->with('users', $users)
-            ->with('addAccess', $addAccess)
-            ->with('editAccess', $editAccess)
-            ->with('publishAccess', $publishAccess)
-            ->with('deleteAccess', $deleteAccess)
-            ->with('site_name', $this->site_name)
-            ->with('abs_site_url', $this->abs_site_url);
-    }
-    /**
-     * This method is used to get the view part of the add user
-     *
-     * @param array $array - no paramenter
-     * @param string
-     * @return view(users::users..adduser)
-     */
-    public function getAddUser()
-    {
-        $officeId = Auth::user()->office_id;
+            if (!$project) {
+                return $this->errorView();
+            }
 
-        return view('users.users.adduser')
-            ->with('abs_site_url', $this->abs_site_url)
-            ->with('rel_site_url', $this->rel_site_url)
-            ->with('site_name', $this->site_name)
-            ->with('usertypelist', $this->getUserTypeList())
-            ->with('officelist', $this->getOfficeList())
-            ->with('projectlist', $this->getProjectList())
-            ->with('officeId', $officeId)
-            ->with('languages', Language::getActiveLanguages());
-    }
+            return view('projects.project.index')
+                ->with('project', $project)
+                ->with('abs_site_url', $this->abs_site_url)
+                ->with('rel_site_url', $this->rel_site_url)
+                ->with('site_name', $this->site_name);
+        } catch (Throwable $e) {
+            if ($e instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface) {
+                throw $e;
+            }
 
-    /**
-     * This method is used add  the user
-     *
-     * @param array $array - no paramenter
-     * @param string  - none
-     * @return json_message_string_array
-     */
-    public function addUser(Request $request)
-    {
-        $rules = [
-            'usertype' => 'required',
-            'username' => 'required|email|unique:users,username',
-            'email_address' => 'required|email|max:254|unique:users,email_address',
-            'password' => 'required',
-            'confirm_password' => 'required|same:password',
-            'office_id' => 'required_unless:usertype,3',
-            'project_id' => 'required_if:usertype,3',
-        ];
-
-        $validator = Validator::make($request->all(), $rules);
-        if ($validator->fails()) {
-            return Redirect::back()->withInput()->withErrors($validator);
+            report($e);
+            return $this->errorView();
         }
-
-        $user = new User();
-        $user->username = trim($request->get('username'));
-        $user->email_address = mb_strtolower(trim($request->get('email_address')));
-        $user->password = Hash::make($request->get('password'));
-        $user->office_id = $request->get('office_id');
-        $user->project_id = $request->get('project_id');
-        $user->user_type_id = $request->get('usertype');
-        $user->is_active = $request->get('is_active');
-        $user->created_by = Auth::user()->id;
-        $user->save();
-
-        return Redirect::route('admin.users')
-            ->with('message', "User added successfully.");
     }
+
     /**
-     * This method is used add  the user
-     *
-     * @param int - $id
-     * @return Illuminate\View\View
+     * Project User Edit Form
      */
-    public function getEditUser($id)
+    public function getEditProject($id)
     {
-        $user       = User::find($id);
----- USER CONTROLLER CONSTRUCTOR ----
-27-{
-28-    public $abs_site_url;
-29-    public $rel_site_url;
-30-    public $site_name;
-31-
-32:    public function __construct()
-33-    {
-34-        $this->abs_site_url = ConfigurationController::abs_site_url();
-35-        $this->rel_site_url = ConfigurationController::rel_site_url();
-36-        $this->site_name    = ConfigurationController::site_name();
-37-    }
-38-    /**
-39-     * This method is used to get the list of undeleted users(both active and deactive)
-40-     *
-41-     * @param array $array - no paramenter
-42-     * @param string $blah - none
-43-     * @return view(users::users..users)
-44-     */
-45-    public function getIndex()
-46-    {
-47-        $officeId = Auth::user()->office_id;
-48-        $authUserId = Auth::user()->id;
-49-        $users = User::with(['office.details' => function ($query) {
-50-            $query->where('language_id', 2);
-51-        }, 'usertype'])->get();
-52-
-53-        $addAccess     = UserAccessControlModel::getAccessAddByModuleAndUserMapId(5, $authUserId);
-54-        $editAccess    = UserAccessControlModel::getAccessUpdateByModuleAndUserMapId(5, $authUserId);
-55-        $publishAccess = UserAccessControlModel::getAccessPublishByModuleAndUserMapId(5, $authUserId);
-56-        $deleteAccess  = UserAccessControlModel::getAccessDeleteByModuleAndUserMapId(5, $authUserId);
-57-
-58-        return view('users.users.users')
-59-            ->with('users', $users)
-60-            ->with('addAccess', $addAccess)
-61-            ->with('editAccess', $editAccess)
-62-            ->with('publishAccess', $publishAccess)
-63-            ->with('deleteAccess', $deleteAccess)
-64-            ->with('site_name', $this->site_name)
-65-            ->with('abs_site_url', $this->abs_site_url);
-66-    }
-67-    /**
+        try {
+            $user = $this->projectUser();
+
+            // A Project User can edit only their own assigned project.
+            if ((int) $id !== (int) $user->project_id) {
+                abort(403);
+            }
+
+            $projectData = ProjectModel::where('id', $user->project_id)
+                ->where('is_deleted', '0')
+                ->first();
+
+            if (!$projectData) {
+                return $this->errorView();
+            }
+
+            $languages = Language::getActiveLanguages();
+
+            // Include every active language, even if its detail row is missing.
+            $projects = DB::table('language')
+                ->leftJoin('project_detail', function ($join) use ($id) {
+                    $join->on('project_detail.language_id', '=', 'language.id')
+                        ->where('project_detail.project_id', '=', $id);
+                })
+                ->where('language.is_active', '1')
+                ->where('language.is_deleted', '0')
+                ->select(
+                    'language.id as language_id',
+                    'language.language_name',
+                    DB::raw((int) $id . ' as project_id'),
+                    'project_detail.id as project_detail_id',
+                    'project_detail.project_heading',
+                    'project_detail.project_description',
+                    'project_detail.project_page_title'
+                )
+                ->orderBy('language.id')
+                ->get();
+
+            return view('projects.project.edit')
+                ->with('projects', $projects)
+                ->with('projectData', $projectData)
+                ->with('languages', $languages)
+                ->with('abs_site_url', $this->abs_site_url)
+                ->with('rel_site_url', $this->rel_site_url)
+                ->with('site_name', $this->site_name);
+        } catch (Throwable $e) {
+            if ($e instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface) {
 doradmin@HMIS-ICT-SDE:/mnt/d/DoR-Website-Backup/Laravel13-Upgrade$
