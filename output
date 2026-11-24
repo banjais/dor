@@ -1,1673 +1,580 @@
-root@dorweb:/var/www/dor# cd /var/www/dor && echo "=== WWW-DATA WRITE ACCESS ===" && for d in storage/framework/cache/data storage/framework/views storage/framework/sessions storage/app/private/flash-board/previews storage/app/private/flash-board/originals public/uploads/ckfiles/flash; do sudo -u www-data test -w "$d" && echo "PASS $d" || echo "FAIL $d"; done && echo "=== AUTOMATED TESTS (SQLITE MEMORY) ===" && php artisan test --no-coverage
-=== WWW-DATA WRITE ACCESS ===
-PASS storage/framework/cache/data
-PASS storage/framework/views
-PASS storage/framework/sessions
-PASS storage/app/private/flash-board/previews
-PASS storage/app/private/flash-board/originals
-PASS public/uploads/ckfiles/flash
-=== AUTOMATED TESTS (SQLITE MEMORY) ===
-
-   WARN  Your XML configuration validates against a deprecated schema. Migrate your XML configuration using "--migrate-configuration"!
-
-   PASS  Tests\Unit\CircularAdminControllerAuthorizationTest
-  ✓ super admin can manage circular admin accounts                                                                  0.14s
-  ✓ office admin with assigned office can manage accounts                                                           0.01s
-  ✓ office admin without assigned office is blocked                                                                 0.01s
-  ✓ circular admin is blocked from account management                                                               0.01s
-
-   PASS  Tests\Unit\ExampleTest
-  ✓ example                                                                                                         0.01s
-
-   PASS  Tests\Unit\RestrictAdminRolesTest
-  ✓ office admin can access circular admin management                                                               0.02s
-  ✓ circular admin cannot access account management                                                                 0.01s
-  ✓ circular admin can view circulars                                                                               0.02s
-  ✓ office admin cannot access generic user management                                                              0.01s
-  ✓ office admin can access office profile                                                                          0.01s
-  ✓ super admin retains existing route access                                                                       0.01s
-
-   PASS  Tests\Feature\ChatbotDocumentExtractorTest
-  ✓ docx extracts english and nepali text                                                                           0.02s
-  ✓ xlsx extracts shared and inline cell values                                                                     0.01s
-  ✓ pptx extracts slide text in order                                                                               0.01s
-  ✓ suspicious zip compression ratio is rejected                                                                    0.05s
-  ✓ digital pdf extracts english and nepali text                                                                    0.05s
-  ✓ scanned pdf uses english and nepali ocr                                                                         0.95s
-  ✓ unsupported legacy doc is not processed                                                                         0.02s
-  ✓ unapproved storage disk is rejected                                                                             0.01s
-  ✓ missing document returns safe failure                                                                           0.01s
-
-   FAIL  Tests\Feature\ChatbotInternalProviderAccessTest
-  ⨯ role 12 and role 13 cannot access internal provider management
-  ⨯ guest is redirected to admin login
-  ⨯ super admin can create internal provider with encrypted api key
-
-   FAIL  Tests\Feature\ChatbotKnowledgeControllerQueueTest
-  ⨯ super admin upload queues file for indexing
-  ⨯ super admin reindex queues existing file
-  ⨯ role 12 cannot reindex knowledge source
-
-   FAIL  Tests\Feature\ChatbotKnowledgeIndexerTest
-  ⨯ document is extracted and indexed into chunks
-  ⨯ identical document is not indexed twice
-  ⨯ updated document replaces old chunks
-  ⨯ failed extraction preserves previous successful index
-  ⨯ chunking preserves nepali unicode and splits long text
-  ⨯ source office is authoritative when indexing
-  ⨯ source office mismatch is rejected
-  ⨯ disabled source cannot be indexed
-  ⨯ missing required fields are rejected
-  ⨯ retriever returns public indexed content with source citation
-  ⨯ retriever includes general public source for any office
-  ⨯ retriever includes other active offices as fallback
-  ⨯ retriever excludes private disabled unindexed and inactive content
-  ⨯ retriever prioritizes current office and marks fallback correctly
-  ⨯ retriever excludes content when its office becomes inactive
-  ⨯ retriever never returns circular sources even if marked public
-  ⨯ circular source is rejected before document extraction
-
-   FAIL  Tests\Feature\ChatbotProviderTest
-  ⨯ external api off blocks request before http
-  ⨯ internal ai off blocks request before http
-  ⨯ external provider returns successful response when enabled
-  ⨯ registry skips rate limited provider until quota reset
-  ⨯ router fails over after rate limit and logs without api key
-  ⨯ internal provider does not hide legacy external gemini
-  ⨯ gpu provider is preferred and cpu is fallback
-  ⨯ gpu failure falls back to cpu provider
-  ⨯ gpu disabled excludes gpu provider even in gpu mode
-  ⨯ auto mode routes complex questions to gpu and simple questions to cpu
-  ⨯ internal success does not call external provider
-  ⨯ internal failure uses external only when super admin enabled it
-  ⨯ internal failure does not call external when super admin disabled it
-
-   PASS  Tests\Feature\ChatbotQueueJobsTest
-  ✓ all chatbot jobs use the chatbot queue                                                                          0.02s
-  ✓ all chatbot jobs have three attempts and long timeout                                                           0.01s
-  ✓ office sync job has office specific unique id                                                                   0.01s
-  ✓ knowledge source job has source specific unique id                                                              0.01s
-  ✓ global website job runs full index                                                                              0.02s
-  ✓ global website job fails when records fail                                                                      0.01s
-  ✓ office sync job runs only the requested office                                                                  0.01s
-
-   FAIL  Tests\Feature\ChatbotWebsiteIndexerTest
-  ⨯ office sync only reconciles documents for that office
-  ⨯ inactive office sync deactivates its documents
-  ⨯ empty scan does not deactivate existing documents
-  ⨯ failed scan does not deactivate existing documents
-  ⨯ successful scan deactivates documents missing from website
-
-   FAIL  Tests\Feature\CircularAdminManagementTest
-  ⨯ super admin can create circular admin for selected office
-  ⨯ office admin can create account only for own office
-  ⨯ office admin cannot submit another office id
-  ⨯ office admin cannot edit another offices account
-  ⨯ office admin cannot change status of another offices account
-  ⨯ super admin can edit and change account status
-  ⨯ office admin sees only circular admin accounts from own office
-  ⨯ circular admin rejects duplicate account email
-  ⨯ circular admin cannot access circular admin account management
-
-   FAIL  Tests\Feature\ContactEmailRoutingTest
-  ⨯ contact form routes to current office with selected cc and bcc
-  ⨯ disabled grms bcc is excluded while selected dg bcc is sent
-  ⨯ no bcc is sent when no contact bcc option is selected
-  ⨯ contact form test mode sends only to configured test recipient
-  ⨯ contact form shows failure when mailer returns null
-  ⨯ contact form shows failure when mail transport throws exception
-  ⨯ contact form does not send when office primary email is empty
-  ⨯ contact form does not send when office primary email is invalid
-
-   FAIL  Tests\Feature\ExampleTest
-  ⨯ root redirects to admin home                                                                                    0.02s
-
-   FAIL  Tests\Feature\OfficeProfileEmailSyncTest
-  ⨯ primary email is synchronized to office admin login
-  ⨯ alternative email is used when primary email is blank
-  ⨯ existing login email is preserved when both profile emails are blank
-  ⨯ duplicate active account email rejects and rolls back profile update
-  ⨯ only authenticated office admin account is synchronized
-
-   FAIL  Tests\Feature\PasswordResetOtpTest
-  ⨯ super admin office admin and circular admin can request otp
-  ⨯ test mode without valid recipient blocks otp delivery
-  ⨯ test mode sends otp only to configured test recipient
-  ⨯ failed email delivery preserves previous otp
-  ⨯ successful resend invalidates previous otp
-  ⨯ inactive and deleted accounts cannot request otp
-  ⨯ email lookup is case insensitive
-  ⨯ project admin cannot request otp
-  ⨯ valid otp resets password and invalidates otp
-  ⨯ expired otp cannot reset password
-  ⨯ five invalid attempts lock the otp
-
-   FAIL  Tests\Feature\PublicChatbotControllerTest
-  ⨯ no source matches does not call any ai or cache
-  ⨯ cache hit returns answer without calling ai
-  ⨯ source match uses internal first router and caches answer
-  ⨯ inactive office subdomain is rejected before search
-  ⨯ circular questions are blocked before retrieval cache or ai
-
-   FAIL  Tests\Feature\UserAccountEmailTest
-  ⨯ super admin can create user with separate account email
-  ⨯ add user rejects duplicate account email
-  ⨯ edit user can keep own account email and change username
-  ⨯ edit user rejects another accounts email
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ChatbotInternalProviderAccessTest > role 12 and role 13 cannot access internal…  QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "users" ("id" integer primary key autoincrement not null, "name" varchar, "email" varchar, "email_address" varchar, "username" varchar not null, "password" varchar not null, "office_id" integer, "project_id" integer, "user_type_id" integer not null, "is_active" tinyint(1) not null default '1', "is_deleted" tinyint(1) not null default '0', "created_by" integer, "updated_by" integer, "deleted_at" datetime, "created_at" datetime, "updated_at" datetime))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/ChatbotInternalProviderAccessTest.php:18
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ChatbotInternalProviderAccessTest > guest is redirected to admin login           QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "users" ("id" integer primary key autoincrement not null, "name" varchar, "email" varchar, "email_address" varchar, "username" varchar not null, "password" varchar not null, "office_id" integer, "project_id" integer, "user_type_id" integer not null, "is_active" tinyint(1) not null default '1', "is_deleted" tinyint(1) not null default '0', "created_by" integer, "updated_by" integer, "deleted_at" datetime, "created_at" datetime, "updated_at" datetime))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/ChatbotInternalProviderAccessTest.php:18
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ChatbotInternalProviderAccessTest > super admin can create internal provider w…  QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "users" ("id" integer primary key autoincrement not null, "name" varchar, "email" varchar, "email_address" varchar, "username" varchar not null, "password" varchar not null, "office_id" integer, "project_id" integer, "user_type_id" integer not null, "is_active" tinyint(1) not null default '1', "is_deleted" tinyint(1) not null default '0', "created_by" integer, "updated_by" integer, "deleted_at" datetime, "created_at" datetime, "updated_at" datetime))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/ChatbotInternalProviderAccessTest.php:18
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ChatbotKnowledgeControllerQueueTest > super admin upload queues file for index…  QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "users" ("id" integer primary key autoincrement not null, "name" varchar, "email" varchar, "email_address" varchar, "username" varchar not null, "password" varchar not null, "office_id" integer, "project_id" integer, "user_type_id" integer not null, "is_active" tinyint(1) not null default '1', "is_deleted" tinyint(1) not null default '0', "created_by" integer, "updated_by" integer, "deleted_at" datetime, "created_at" datetime, "updated_at" datetime))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/ChatbotKnowledgeControllerQueueTest.php:20
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ChatbotKnowledgeControllerQueueTest > super admin reindex queues existing file   QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "users" ("id" integer primary key autoincrement not null, "name" varchar, "email" varchar, "email_address" varchar, "username" varchar not null, "password" varchar not null, "office_id" integer, "project_id" integer, "user_type_id" integer not null, "is_active" tinyint(1) not null default '1', "is_deleted" tinyint(1) not null default '0', "created_by" integer, "updated_by" integer, "deleted_at" datetime, "created_at" datetime, "updated_at" datetime))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/ChatbotKnowledgeControllerQueueTest.php:20
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ChatbotKnowledgeControllerQueueTest > role 12 cannot reindex knowledge source    QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "users" ("id" integer primary key autoincrement not null, "name" varchar, "email" varchar, "email_address" varchar, "username" varchar not null, "password" varchar not null, "office_id" integer, "project_id" integer, "user_type_id" integer not null, "is_active" tinyint(1) not null default '1', "is_deleted" tinyint(1) not null default '0', "created_by" integer, "updated_by" integer, "deleted_at" datetime, "created_at" datetime, "updated_at" datetime))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/ChatbotKnowledgeControllerQueueTest.php:20
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ChatbotKnowledgeIndexerTest > document is extracted and indexed into chunks        PDOException
-  could not find driver
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:67
-     63▕     protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options)
-     64▕     {
-     65▕         return version_compare(PHP_VERSION, '8.4.0', '<')
-     66▕             ? new PDO($dsn, $username, $password, $options)
-  ➜  67▕             : PDO::connect($dsn, $username, $password, $options); /** @phpstan-ignore staticMethod.notFound (PHP 8.4) */
-     68▕     }
-     69▕
-     70▕     /**
-     71▕      * Handle an exception that occurred during connect execution.
-
-      +14 vendor frames
-  15  tests/Feature/ChatbotKnowledgeIndexerTest.php:23
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ChatbotKnowledgeIndexerTest > identical document is not indexed twice              PDOException
-  could not find driver
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:67
-     63▕     protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options)
-     64▕     {
-     65▕         return version_compare(PHP_VERSION, '8.4.0', '<')
-     66▕             ? new PDO($dsn, $username, $password, $options)
-  ➜  67▕             : PDO::connect($dsn, $username, $password, $options); /** @phpstan-ignore staticMethod.notFound (PHP 8.4) */
-     68▕     }
-     69▕
-     70▕     /**
-     71▕      * Handle an exception that occurred during connect execution.
-
-      +14 vendor frames
-  15  tests/Feature/ChatbotKnowledgeIndexerTest.php:23
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ChatbotKnowledgeIndexerTest > updated document replaces old chunks                 PDOException
-  could not find driver
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:67
-     63▕     protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options)
-     64▕     {
-     65▕         return version_compare(PHP_VERSION, '8.4.0', '<')
-     66▕             ? new PDO($dsn, $username, $password, $options)
-  ➜  67▕             : PDO::connect($dsn, $username, $password, $options); /** @phpstan-ignore staticMethod.notFound (PHP 8.4) */
-     68▕     }
-     69▕
-     70▕     /**
-     71▕      * Handle an exception that occurred during connect execution.
-
-      +14 vendor frames
-  15  tests/Feature/ChatbotKnowledgeIndexerTest.php:23
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ChatbotKnowledgeIndexerTest > failed extraction preserves previous successful in…  PDOException
-  could not find driver
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:67
-     63▕     protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options)
-     64▕     {
-     65▕         return version_compare(PHP_VERSION, '8.4.0', '<')
-     66▕             ? new PDO($dsn, $username, $password, $options)
-  ➜  67▕             : PDO::connect($dsn, $username, $password, $options); /** @phpstan-ignore staticMethod.notFound (PHP 8.4) */
-     68▕     }
-     69▕
-     70▕     /**
-     71▕      * Handle an exception that occurred during connect execution.
-
-      +14 vendor frames
-  15  tests/Feature/ChatbotKnowledgeIndexerTest.php:23
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ChatbotKnowledgeIndexerTest > chunking preserves nepali unicode and splits long…   PDOException
-  could not find driver
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:67
-     63▕     protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options)
-     64▕     {
-     65▕         return version_compare(PHP_VERSION, '8.4.0', '<')
-     66▕             ? new PDO($dsn, $username, $password, $options)
-  ➜  67▕             : PDO::connect($dsn, $username, $password, $options); /** @phpstan-ignore staticMethod.notFound (PHP 8.4) */
-     68▕     }
-     69▕
-     70▕     /**
-     71▕      * Handle an exception that occurred during connect execution.
-
-      +14 vendor frames
-  15  tests/Feature/ChatbotKnowledgeIndexerTest.php:23
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ChatbotKnowledgeIndexerTest > source office is authoritative when indexing         PDOException
-  could not find driver
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:67
-     63▕     protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options)
-     64▕     {
-     65▕         return version_compare(PHP_VERSION, '8.4.0', '<')
-     66▕             ? new PDO($dsn, $username, $password, $options)
-  ➜  67▕             : PDO::connect($dsn, $username, $password, $options); /** @phpstan-ignore staticMethod.notFound (PHP 8.4) */
-     68▕     }
-     69▕
-     70▕     /**
-     71▕      * Handle an exception that occurred during connect execution.
-
-      +14 vendor frames
-  15  tests/Feature/ChatbotKnowledgeIndexerTest.php:23
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ChatbotKnowledgeIndexerTest > source office mismatch is rejected                   PDOException
-  could not find driver
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:67
-     63▕     protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options)
-     64▕     {
-     65▕         return version_compare(PHP_VERSION, '8.4.0', '<')
-     66▕             ? new PDO($dsn, $username, $password, $options)
-  ➜  67▕             : PDO::connect($dsn, $username, $password, $options); /** @phpstan-ignore staticMethod.notFound (PHP 8.4) */
-     68▕     }
-     69▕
-     70▕     /**
-     71▕      * Handle an exception that occurred during connect execution.
-
-      +14 vendor frames
-  15  tests/Feature/ChatbotKnowledgeIndexerTest.php:23
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ChatbotKnowledgeIndexerTest > disabled source cannot be indexed                    PDOException
-  could not find driver
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:67
-     63▕     protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options)
-     64▕     {
-     65▕         return version_compare(PHP_VERSION, '8.4.0', '<')
-     66▕             ? new PDO($dsn, $username, $password, $options)
-  ➜  67▕             : PDO::connect($dsn, $username, $password, $options); /** @phpstan-ignore staticMethod.notFound (PHP 8.4) */
-     68▕     }
-     69▕
-     70▕     /**
-     71▕      * Handle an exception that occurred during connect execution.
-
-      +14 vendor frames
-  15  tests/Feature/ChatbotKnowledgeIndexerTest.php:23
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ChatbotKnowledgeIndexerTest > missing required fields are rejected                 PDOException
-  could not find driver
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:67
-     63▕     protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options)
-     64▕     {
-     65▕         return version_compare(PHP_VERSION, '8.4.0', '<')
-     66▕             ? new PDO($dsn, $username, $password, $options)
-  ➜  67▕             : PDO::connect($dsn, $username, $password, $options); /** @phpstan-ignore staticMethod.notFound (PHP 8.4) */
-     68▕     }
-     69▕
-     70▕     /**
-     71▕      * Handle an exception that occurred during connect execution.
-
-      +14 vendor frames
-  15  tests/Feature/ChatbotKnowledgeIndexerTest.php:23
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ChatbotKnowledgeIndexerTest > retriever returns public indexed content with sour…  PDOException
-  could not find driver
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:67
-     63▕     protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options)
-     64▕     {
-     65▕         return version_compare(PHP_VERSION, '8.4.0', '<')
-     66▕             ? new PDO($dsn, $username, $password, $options)
-  ➜  67▕             : PDO::connect($dsn, $username, $password, $options); /** @phpstan-ignore staticMethod.notFound (PHP 8.4) */
-     68▕     }
-     69▕
-     70▕     /**
-     71▕      * Handle an exception that occurred during connect execution.
-
-      +14 vendor frames
-  15  tests/Feature/ChatbotKnowledgeIndexerTest.php:23
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ChatbotKnowledgeIndexerTest > retriever includes general public source for any o…  PDOException
-  could not find driver
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:67
-     63▕     protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options)
-     64▕     {
-     65▕         return version_compare(PHP_VERSION, '8.4.0', '<')
-     66▕             ? new PDO($dsn, $username, $password, $options)
-  ➜  67▕             : PDO::connect($dsn, $username, $password, $options); /** @phpstan-ignore staticMethod.notFound (PHP 8.4) */
-     68▕     }
-     69▕
-     70▕     /**
-     71▕      * Handle an exception that occurred during connect execution.
-
-      +14 vendor frames
-  15  tests/Feature/ChatbotKnowledgeIndexerTest.php:23
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ChatbotKnowledgeIndexerTest > retriever includes other active offices as fallbac…  PDOException
-  could not find driver
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:67
-     63▕     protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options)
-     64▕     {
-     65▕         return version_compare(PHP_VERSION, '8.4.0', '<')
-     66▕             ? new PDO($dsn, $username, $password, $options)
-  ➜  67▕             : PDO::connect($dsn, $username, $password, $options); /** @phpstan-ignore staticMethod.notFound (PHP 8.4) */
-     68▕     }
-     69▕
-     70▕     /**
-     71▕      * Handle an exception that occurred during connect execution.
-
-      +14 vendor frames
-  15  tests/Feature/ChatbotKnowledgeIndexerTest.php:23
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ChatbotKnowledgeIndexerTest > retriever excludes private disabled unindexed and…   PDOException
-  could not find driver
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:67
-     63▕     protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options)
-     64▕     {
-     65▕         return version_compare(PHP_VERSION, '8.4.0', '<')
-     66▕             ? new PDO($dsn, $username, $password, $options)
-  ➜  67▕             : PDO::connect($dsn, $username, $password, $options); /** @phpstan-ignore staticMethod.notFound (PHP 8.4) */
-     68▕     }
-     69▕
-     70▕     /**
-     71▕      * Handle an exception that occurred during connect execution.
-
-      +14 vendor frames
-  15  tests/Feature/ChatbotKnowledgeIndexerTest.php:23
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ChatbotKnowledgeIndexerTest > retriever prioritizes current office and marks fal…  PDOException
-  could not find driver
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:67
-     63▕     protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options)
-     64▕     {
-     65▕         return version_compare(PHP_VERSION, '8.4.0', '<')
-     66▕             ? new PDO($dsn, $username, $password, $options)
-  ➜  67▕             : PDO::connect($dsn, $username, $password, $options); /** @phpstan-ignore staticMethod.notFound (PHP 8.4) */
-     68▕     }
-     69▕
-     70▕     /**
-     71▕      * Handle an exception that occurred during connect execution.
-
-      +14 vendor frames
-  15  tests/Feature/ChatbotKnowledgeIndexerTest.php:23
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ChatbotKnowledgeIndexerTest > retriever excludes content when its office becomes…  PDOException
-  could not find driver
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:67
-     63▕     protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options)
-     64▕     {
-     65▕         return version_compare(PHP_VERSION, '8.4.0', '<')
-     66▕             ? new PDO($dsn, $username, $password, $options)
-  ➜  67▕             : PDO::connect($dsn, $username, $password, $options); /** @phpstan-ignore staticMethod.notFound (PHP 8.4) */
-     68▕     }
-     69▕
-     70▕     /**
-     71▕      * Handle an exception that occurred during connect execution.
-
-      +14 vendor frames
-  15  tests/Feature/ChatbotKnowledgeIndexerTest.php:23
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ChatbotKnowledgeIndexerTest > retriever never returns circular sources even if m…  PDOException
-  could not find driver
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:67
-     63▕     protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options)
-     64▕     {
-     65▕         return version_compare(PHP_VERSION, '8.4.0', '<')
-     66▕             ? new PDO($dsn, $username, $password, $options)
-  ➜  67▕             : PDO::connect($dsn, $username, $password, $options); /** @phpstan-ignore staticMethod.notFound (PHP 8.4) */
-     68▕     }
-     69▕
-     70▕     /**
-     71▕      * Handle an exception that occurred during connect execution.
-
-      +14 vendor frames
-  15  tests/Feature/ChatbotKnowledgeIndexerTest.php:23
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ChatbotKnowledgeIndexerTest > circular source is rejected before document extrac…  PDOException
-  could not find driver
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:67
-     63▕     protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options)
-     64▕     {
-     65▕         return version_compare(PHP_VERSION, '8.4.0', '<')
-     66▕             ? new PDO($dsn, $username, $password, $options)
-  ➜  67▕             : PDO::connect($dsn, $username, $password, $options); /** @phpstan-ignore staticMethod.notFound (PHP 8.4) */
-     68▕     }
-     69▕
-     70▕     /**
-     71▕      * Handle an exception that occurred during connect execution.
-
-      +14 vendor frames
-  15  tests/Feature/ChatbotKnowledgeIndexerTest.php:23
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ChatbotProviderTest > external api off blocks request before http                  PDOException
-  could not find driver
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:67
-     63▕     protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options)
-     64▕     {
-     65▕         return version_compare(PHP_VERSION, '8.4.0', '<')
-     66▕             ? new PDO($dsn, $username, $password, $options)
-  ➜  67▕             : PDO::connect($dsn, $username, $password, $options); /** @phpstan-ignore staticMethod.notFound (PHP 8.4) */
-     68▕     }
-     69▕
-     70▕     /**
-     71▕      * Handle an exception that occurred during connect execution.
-
-      +14 vendor frames
-  15  tests/Feature/ChatbotProviderTest.php:22
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ChatbotProviderTest > internal ai off blocks request before http                   PDOException
-  could not find driver
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:67
-     63▕     protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options)
-     64▕     {
-     65▕         return version_compare(PHP_VERSION, '8.4.0', '<')
-     66▕             ? new PDO($dsn, $username, $password, $options)
-  ➜  67▕             : PDO::connect($dsn, $username, $password, $options); /** @phpstan-ignore staticMethod.notFound (PHP 8.4) */
-     68▕     }
-     69▕
-     70▕     /**
-     71▕      * Handle an exception that occurred during connect execution.
-
-      +14 vendor frames
-  15  tests/Feature/ChatbotProviderTest.php:22
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ChatbotProviderTest > external provider returns successful response when enabled   PDOException
-  could not find driver
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:67
-     63▕     protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options)
-     64▕     {
-     65▕         return version_compare(PHP_VERSION, '8.4.0', '<')
-     66▕             ? new PDO($dsn, $username, $password, $options)
-  ➜  67▕             : PDO::connect($dsn, $username, $password, $options); /** @phpstan-ignore staticMethod.notFound (PHP 8.4) */
-     68▕     }
-     69▕
-     70▕     /**
-     71▕      * Handle an exception that occurred during connect execution.
-
-      +14 vendor frames
-  15  tests/Feature/ChatbotProviderTest.php:22
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ChatbotProviderTest > registry skips rate limited provider until quota reset       PDOException
-  could not find driver
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:67
-     63▕     protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options)
-     64▕     {
-     65▕         return version_compare(PHP_VERSION, '8.4.0', '<')
-     66▕             ? new PDO($dsn, $username, $password, $options)
-  ➜  67▕             : PDO::connect($dsn, $username, $password, $options); /** @phpstan-ignore staticMethod.notFound (PHP 8.4) */
-     68▕     }
-     69▕
-     70▕     /**
-     71▕      * Handle an exception that occurred during connect execution.
-
-      +14 vendor frames
-  15  tests/Feature/ChatbotProviderTest.php:22
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ChatbotProviderTest > router fails over after rate limit and logs without api ke…  PDOException
-  could not find driver
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:67
-     63▕     protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options)
-     64▕     {
-     65▕         return version_compare(PHP_VERSION, '8.4.0', '<')
-     66▕             ? new PDO($dsn, $username, $password, $options)
-  ➜  67▕             : PDO::connect($dsn, $username, $password, $options); /** @phpstan-ignore staticMethod.notFound (PHP 8.4) */
-     68▕     }
-     69▕
-     70▕     /**
-     71▕      * Handle an exception that occurred during connect execution.
-
-      +14 vendor frames
-  15  tests/Feature/ChatbotProviderTest.php:22
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ChatbotProviderTest > internal provider does not hide legacy external gemini       PDOException
-  could not find driver
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:67
-     63▕     protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options)
-     64▕     {
-     65▕         return version_compare(PHP_VERSION, '8.4.0', '<')
-     66▕             ? new PDO($dsn, $username, $password, $options)
-  ➜  67▕             : PDO::connect($dsn, $username, $password, $options); /** @phpstan-ignore staticMethod.notFound (PHP 8.4) */
-     68▕     }
-     69▕
-     70▕     /**
-     71▕      * Handle an exception that occurred during connect execution.
-
-      +14 vendor frames
-  15  tests/Feature/ChatbotProviderTest.php:22
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ChatbotProviderTest > gpu provider is preferred and cpu is fallback                PDOException
-  could not find driver
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:67
-     63▕     protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options)
-     64▕     {
-     65▕         return version_compare(PHP_VERSION, '8.4.0', '<')
-     66▕             ? new PDO($dsn, $username, $password, $options)
-  ➜  67▕             : PDO::connect($dsn, $username, $password, $options); /** @phpstan-ignore staticMethod.notFound (PHP 8.4) */
-     68▕     }
-     69▕
-     70▕     /**
-     71▕      * Handle an exception that occurred during connect execution.
-
-      +14 vendor frames
-  15  tests/Feature/ChatbotProviderTest.php:22
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ChatbotProviderTest > gpu failure falls back to cpu provider                       PDOException
-  could not find driver
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:67
-     63▕     protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options)
-     64▕     {
-     65▕         return version_compare(PHP_VERSION, '8.4.0', '<')
-     66▕             ? new PDO($dsn, $username, $password, $options)
-  ➜  67▕             : PDO::connect($dsn, $username, $password, $options); /** @phpstan-ignore staticMethod.notFound (PHP 8.4) */
-     68▕     }
-     69▕
-     70▕     /**
-     71▕      * Handle an exception that occurred during connect execution.
-
-      +14 vendor frames
-  15  tests/Feature/ChatbotProviderTest.php:22
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ChatbotProviderTest > gpu disabled excludes gpu provider even in gpu mode          PDOException
-  could not find driver
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:67
-     63▕     protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options)
-     64▕     {
-     65▕         return version_compare(PHP_VERSION, '8.4.0', '<')
-     66▕             ? new PDO($dsn, $username, $password, $options)
-  ➜  67▕             : PDO::connect($dsn, $username, $password, $options); /** @phpstan-ignore staticMethod.notFound (PHP 8.4) */
-     68▕     }
-     69▕
-     70▕     /**
-     71▕      * Handle an exception that occurred during connect execution.
-
-      +14 vendor frames
-  15  tests/Feature/ChatbotProviderTest.php:22
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ChatbotProviderTest > auto mode routes complex questions to gpu and simple quest…  PDOException
-  could not find driver
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:67
-     63▕     protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options)
-     64▕     {
-     65▕         return version_compare(PHP_VERSION, '8.4.0', '<')
-     66▕             ? new PDO($dsn, $username, $password, $options)
-  ➜  67▕             : PDO::connect($dsn, $username, $password, $options); /** @phpstan-ignore staticMethod.notFound (PHP 8.4) */
-     68▕     }
-     69▕
-     70▕     /**
-     71▕      * Handle an exception that occurred during connect execution.
-
-      +14 vendor frames
-  15  tests/Feature/ChatbotProviderTest.php:22
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ChatbotProviderTest > internal success does not call external provider             PDOException
-  could not find driver
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:67
-     63▕     protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options)
-     64▕     {
-     65▕         return version_compare(PHP_VERSION, '8.4.0', '<')
-     66▕             ? new PDO($dsn, $username, $password, $options)
-  ➜  67▕             : PDO::connect($dsn, $username, $password, $options); /** @phpstan-ignore staticMethod.notFound (PHP 8.4) */
-     68▕     }
-     69▕
-     70▕     /**
-     71▕      * Handle an exception that occurred during connect execution.
-
-      +14 vendor frames
-  15  tests/Feature/ChatbotProviderTest.php:22
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ChatbotProviderTest > internal failure uses external only when super admin enabl…  PDOException
-  could not find driver
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:67
-     63▕     protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options)
-     64▕     {
-     65▕         return version_compare(PHP_VERSION, '8.4.0', '<')
-     66▕             ? new PDO($dsn, $username, $password, $options)
-  ➜  67▕             : PDO::connect($dsn, $username, $password, $options); /** @phpstan-ignore staticMethod.notFound (PHP 8.4) */
-     68▕     }
-     69▕
-     70▕     /**
-     71▕      * Handle an exception that occurred during connect execution.
-
-      +14 vendor frames
-  15  tests/Feature/ChatbotProviderTest.php:22
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ChatbotProviderTest > internal failure does not call external when super admin d…  PDOException
-  could not find driver
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:67
-     63▕     protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options)
-     64▕     {
-     65▕         return version_compare(PHP_VERSION, '8.4.0', '<')
-     66▕             ? new PDO($dsn, $username, $password, $options)
-  ➜  67▕             : PDO::connect($dsn, $username, $password, $options); /** @phpstan-ignore staticMethod.notFound (PHP 8.4) */
-     68▕     }
-     69▕
-     70▕     /**
-     71▕      * Handle an exception that occurred during connect execution.
-
-      +14 vendor frames
-  15  tests/Feature/ChatbotProviderTest.php:22
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ChatbotWebsiteIndexerTest > office sync only reconciles documents for that offic…  PDOException
-  could not find driver
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:67
-     63▕     protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options)
-     64▕     {
-     65▕         return version_compare(PHP_VERSION, '8.4.0', '<')
-     66▕             ? new PDO($dsn, $username, $password, $options)
-  ➜  67▕             : PDO::connect($dsn, $username, $password, $options); /** @phpstan-ignore staticMethod.notFound (PHP 8.4) */
-     68▕     }
-     69▕
-     70▕     /**
-     71▕      * Handle an exception that occurred during connect execution.
-
-      +14 vendor frames
-  15  tests/Feature/ChatbotWebsiteIndexerTest.php:76
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ChatbotWebsiteIndexerTest > inactive office sync deactivates its documents         PDOException
-  could not find driver
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:67
-     63▕     protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options)
-     64▕     {
-     65▕         return version_compare(PHP_VERSION, '8.4.0', '<')
-     66▕             ? new PDO($dsn, $username, $password, $options)
-  ➜  67▕             : PDO::connect($dsn, $username, $password, $options); /** @phpstan-ignore staticMethod.notFound (PHP 8.4) */
-     68▕     }
-     69▕
-     70▕     /**
-     71▕      * Handle an exception that occurred during connect execution.
-
-      +14 vendor frames
-  15  tests/Feature/ChatbotWebsiteIndexerTest.php:76
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ChatbotWebsiteIndexerTest > empty scan does not deactivate existing documents      PDOException
-  could not find driver
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:67
-     63▕     protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options)
-     64▕     {
-     65▕         return version_compare(PHP_VERSION, '8.4.0', '<')
-     66▕             ? new PDO($dsn, $username, $password, $options)
-  ➜  67▕             : PDO::connect($dsn, $username, $password, $options); /** @phpstan-ignore staticMethod.notFound (PHP 8.4) */
-     68▕     }
-     69▕
-     70▕     /**
-     71▕      * Handle an exception that occurred during connect execution.
-
-      +14 vendor frames
-  15  tests/Feature/ChatbotWebsiteIndexerTest.php:76
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ChatbotWebsiteIndexerTest > failed scan does not deactivate existing documents     PDOException
-  could not find driver
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:67
-     63▕     protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options)
-     64▕     {
-     65▕         return version_compare(PHP_VERSION, '8.4.0', '<')
-     66▕             ? new PDO($dsn, $username, $password, $options)
-  ➜  67▕             : PDO::connect($dsn, $username, $password, $options); /** @phpstan-ignore staticMethod.notFound (PHP 8.4) */
-     68▕     }
-     69▕
-     70▕     /**
-     71▕      * Handle an exception that occurred during connect execution.
-
-      +14 vendor frames
-  15  tests/Feature/ChatbotWebsiteIndexerTest.php:76
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ChatbotWebsiteIndexerTest > successful scan deactivates documents missing from w…  PDOException
-  could not find driver
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:67
-     63▕     protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options)
-     64▕     {
-     65▕         return version_compare(PHP_VERSION, '8.4.0', '<')
-     66▕             ? new PDO($dsn, $username, $password, $options)
-  ➜  67▕             : PDO::connect($dsn, $username, $password, $options); /** @phpstan-ignore staticMethod.notFound (PHP 8.4) */
-     68▕     }
-     69▕
-     70▕     /**
-     71▕      * Handle an exception that occurred during connect execution.
-
-      +14 vendor frames
-  15  tests/Feature/ChatbotWebsiteIndexerTest.php:76
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\CircularAdminManagementTest > super admin can create circular admin for select…  QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "configuration" ("id" integer primary key autoincrement not null, "configuration_name" varchar not null, "configuration_value" text))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/CircularAdminManagementTest.php:21
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\CircularAdminManagementTest > office admin can create account only for own off…  QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "configuration" ("id" integer primary key autoincrement not null, "configuration_name" varchar not null, "configuration_value" text))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/CircularAdminManagementTest.php:21
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\CircularAdminManagementTest > office admin cannot submit another office id       QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "configuration" ("id" integer primary key autoincrement not null, "configuration_name" varchar not null, "configuration_value" text))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/CircularAdminManagementTest.php:21
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\CircularAdminManagementTest > office admin cannot edit another offices account   QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "configuration" ("id" integer primary key autoincrement not null, "configuration_name" varchar not null, "configuration_value" text))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/CircularAdminManagementTest.php:21
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\CircularAdminManagementTest > office admin cannot change status of another off…  QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "configuration" ("id" integer primary key autoincrement not null, "configuration_name" varchar not null, "configuration_value" text))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/CircularAdminManagementTest.php:21
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\CircularAdminManagementTest > super admin can edit and change account status     QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "configuration" ("id" integer primary key autoincrement not null, "configuration_name" varchar not null, "configuration_value" text))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/CircularAdminManagementTest.php:21
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\CircularAdminManagementTest > office admin sees only circular admin accounts f…  QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "configuration" ("id" integer primary key autoincrement not null, "configuration_name" varchar not null, "configuration_value" text))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/CircularAdminManagementTest.php:21
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\CircularAdminManagementTest > circular admin rejects duplicate account email     QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "configuration" ("id" integer primary key autoincrement not null, "configuration_name" varchar not null, "configuration_value" text))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/CircularAdminManagementTest.php:21
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\CircularAdminManagementTest > circular admin cannot access circular admin acco…  QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "configuration" ("id" integer primary key autoincrement not null, "configuration_name" varchar not null, "configuration_value" text))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/CircularAdminManagementTest.php:21
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ContactEmailRoutingTest > contact form routes to current office with selected…   QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "configuration" ("id" integer primary key autoincrement not null, "configuration_name" varchar not null, "configuration_value" text))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/ContactEmailRoutingTest.php:22
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ContactEmailRoutingTest > disabled grms bcc is excluded while selected dg bcc…   QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "configuration" ("id" integer primary key autoincrement not null, "configuration_name" varchar not null, "configuration_value" text))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/ContactEmailRoutingTest.php:22
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ContactEmailRoutingTest > no bcc is sent when no contact bcc option is selecte…  QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "configuration" ("id" integer primary key autoincrement not null, "configuration_name" varchar not null, "configuration_value" text))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/ContactEmailRoutingTest.php:22
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ContactEmailRoutingTest > contact form test mode sends only to configured test…  QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "configuration" ("id" integer primary key autoincrement not null, "configuration_name" varchar not null, "configuration_value" text))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/ContactEmailRoutingTest.php:22
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ContactEmailRoutingTest > contact form shows failure when mailer returns null    QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "configuration" ("id" integer primary key autoincrement not null, "configuration_name" varchar not null, "configuration_value" text))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/ContactEmailRoutingTest.php:22
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ContactEmailRoutingTest > contact form shows failure when mail transport throw…  QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "configuration" ("id" integer primary key autoincrement not null, "configuration_name" varchar not null, "configuration_value" text))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/ContactEmailRoutingTest.php:22
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ContactEmailRoutingTest > contact form does not send when office primary email…  QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "configuration" ("id" integer primary key autoincrement not null, "configuration_name" varchar not null, "configuration_value" text))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/ContactEmailRoutingTest.php:22
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ContactEmailRoutingTest > contact form does not send when office primary email…  QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "configuration" ("id" integer primary key autoincrement not null, "configuration_name" varchar not null, "configuration_value" text))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/ContactEmailRoutingTest.php:22
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\ExampleTest > root redirects to admin home                                       QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "configuration" ("id" integer primary key autoincrement not null, "configuration_name" varchar not null, "configuration_value" text))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/ExampleTest.php:14
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\OfficeProfileEmailSyncTest > primary email is synchronized to office admin log…  QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "configuration" ("id" integer primary key autoincrement not null, "configuration_name" varchar not null, "configuration_value" text))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/OfficeProfileEmailSyncTest.php:21
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\OfficeProfileEmailSyncTest > alternative email is used when primary email is b…  QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "configuration" ("id" integer primary key autoincrement not null, "configuration_name" varchar not null, "configuration_value" text))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/OfficeProfileEmailSyncTest.php:21
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\OfficeProfileEmailSyncTest > existing login email is preserved when both profi…  QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "configuration" ("id" integer primary key autoincrement not null, "configuration_name" varchar not null, "configuration_value" text))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/OfficeProfileEmailSyncTest.php:21
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\OfficeProfileEmailSyncTest > duplicate active account email rejects and rolls…   QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "configuration" ("id" integer primary key autoincrement not null, "configuration_name" varchar not null, "configuration_value" text))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/OfficeProfileEmailSyncTest.php:21
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\OfficeProfileEmailSyncTest > only authenticated office admin account is synchr…  QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "configuration" ("id" integer primary key autoincrement not null, "configuration_name" varchar not null, "configuration_value" text))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/OfficeProfileEmailSyncTest.php:21
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\PasswordResetOtpTest > super admin office admin and circular admin can request…  QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "configuration" ("id" integer primary key autoincrement not null, "configuration_name" varchar not null, "configuration_value" text))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/PasswordResetOtpTest.php:24
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\PasswordResetOtpTest > test mode without valid recipient blocks otp delivery     QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "configuration" ("id" integer primary key autoincrement not null, "configuration_name" varchar not null, "configuration_value" text))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/PasswordResetOtpTest.php:24
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\PasswordResetOtpTest > test mode sends otp only to configured test recipient     QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "configuration" ("id" integer primary key autoincrement not null, "configuration_name" varchar not null, "configuration_value" text))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/PasswordResetOtpTest.php:24
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\PasswordResetOtpTest > failed email delivery preserves previous otp              QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "configuration" ("id" integer primary key autoincrement not null, "configuration_name" varchar not null, "configuration_value" text))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/PasswordResetOtpTest.php:24
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\PasswordResetOtpTest > successful resend invalidates previous otp                QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "configuration" ("id" integer primary key autoincrement not null, "configuration_name" varchar not null, "configuration_value" text))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/PasswordResetOtpTest.php:24
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\PasswordResetOtpTest > inactive and deleted accounts cannot request otp          QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "configuration" ("id" integer primary key autoincrement not null, "configuration_name" varchar not null, "configuration_value" text))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/PasswordResetOtpTest.php:24
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\PasswordResetOtpTest > email lookup is case insensitive                          QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "configuration" ("id" integer primary key autoincrement not null, "configuration_name" varchar not null, "configuration_value" text))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/PasswordResetOtpTest.php:24
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\PasswordResetOtpTest > project admin cannot request otp                          QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "configuration" ("id" integer primary key autoincrement not null, "configuration_name" varchar not null, "configuration_value" text))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/PasswordResetOtpTest.php:24
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\PasswordResetOtpTest > valid otp resets password and invalidates otp             QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "configuration" ("id" integer primary key autoincrement not null, "configuration_name" varchar not null, "configuration_value" text))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/PasswordResetOtpTest.php:24
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\PasswordResetOtpTest > expired otp cannot reset password                         QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "configuration" ("id" integer primary key autoincrement not null, "configuration_name" varchar not null, "configuration_value" text))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/PasswordResetOtpTest.php:24
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\PasswordResetOtpTest > five invalid attempts lock the otp                        QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "configuration" ("id" integer primary key autoincrement not null, "configuration_name" varchar not null, "configuration_value" text))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/PasswordResetOtpTest.php:24
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\PublicChatbotControllerTest > no source matches does not call any ai or cache      PDOException
-  could not find driver
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:67
-     63▕     protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options)
-     64▕     {
-     65▕         return version_compare(PHP_VERSION, '8.4.0', '<')
-     66▕             ? new PDO($dsn, $username, $password, $options)
-  ➜  67▕             : PDO::connect($dsn, $username, $password, $options); /** @phpstan-ignore staticMethod.notFound (PHP 8.4) */
-     68▕     }
-     69▕
-     70▕     /**
-     71▕      * Handle an exception that occurred during connect execution.
-
-      +14 vendor frames
-  15  tests/Feature/PublicChatbotControllerTest.php:21
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\PublicChatbotControllerTest > cache hit returns answer without calling ai          PDOException
-  could not find driver
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:67
-     63▕     protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options)
-     64▕     {
-     65▕         return version_compare(PHP_VERSION, '8.4.0', '<')
-     66▕             ? new PDO($dsn, $username, $password, $options)
-  ➜  67▕             : PDO::connect($dsn, $username, $password, $options); /** @phpstan-ignore staticMethod.notFound (PHP 8.4) */
-     68▕     }
-     69▕
-     70▕     /**
-     71▕      * Handle an exception that occurred during connect execution.
-
-      +14 vendor frames
-  15  tests/Feature/PublicChatbotControllerTest.php:21
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\PublicChatbotControllerTest > source match uses internal first router and caches…  PDOException
-  could not find driver
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:67
-     63▕     protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options)
-     64▕     {
-     65▕         return version_compare(PHP_VERSION, '8.4.0', '<')
-     66▕             ? new PDO($dsn, $username, $password, $options)
-  ➜  67▕             : PDO::connect($dsn, $username, $password, $options); /** @phpstan-ignore staticMethod.notFound (PHP 8.4) */
-     68▕     }
-     69▕
-     70▕     /**
-     71▕      * Handle an exception that occurred during connect execution.
-
-      +14 vendor frames
-  15  tests/Feature/PublicChatbotControllerTest.php:21
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\PublicChatbotControllerTest > inactive office subdomain is rejected before searc…  PDOException
-  could not find driver
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:67
-     63▕     protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options)
-     64▕     {
-     65▕         return version_compare(PHP_VERSION, '8.4.0', '<')
-     66▕             ? new PDO($dsn, $username, $password, $options)
-  ➜  67▕             : PDO::connect($dsn, $username, $password, $options); /** @phpstan-ignore staticMethod.notFound (PHP 8.4) */
-     68▕     }
-     69▕
-     70▕     /**
-     71▕      * Handle an exception that occurred during connect execution.
-
-      +14 vendor frames
-  15  tests/Feature/PublicChatbotControllerTest.php:21
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\PublicChatbotControllerTest > circular questions are blocked before retrieval ca…  PDOException
-  could not find driver
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:67
-     63▕     protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options)
-     64▕     {
-     65▕         return version_compare(PHP_VERSION, '8.4.0', '<')
-     66▕             ? new PDO($dsn, $username, $password, $options)
-  ➜  67▕             : PDO::connect($dsn, $username, $password, $options); /** @phpstan-ignore staticMethod.notFound (PHP 8.4) */
-     68▕     }
-     69▕
-     70▕     /**
-     71▕      * Handle an exception that occurred during connect execution.
-
-      +14 vendor frames
-  15  tests/Feature/PublicChatbotControllerTest.php:21
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\UserAccountEmailTest > super admin can create user with separate account email   QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "configuration" ("id" integer primary key autoincrement not null, "configuration_name" varchar not null, "configuration_value" text))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/UserAccountEmailTest.php:21
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\UserAccountEmailTest > add user rejects duplicate account email                  QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "configuration" ("id" integer primary key autoincrement not null, "configuration_name" varchar not null, "configuration_value" text))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/UserAccountEmailTest.php:21
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\UserAccountEmailTest > edit user can keep own account email and change usernam…  QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "configuration" ("id" integer primary key autoincrement not null, "configuration_name" varchar not null, "configuration_value" text))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/UserAccountEmailTest.php:21
-
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   FAILED  Tests\Feature\UserAccountEmailTest > edit user rejects another accounts email                  QueryException
-  could not find driver (Connection: sqlite, Database: :memory:, SQL: create table "configuration" ("id" integer primary key autoincrement not null, "configuration_name" varchar not null, "configuration_value" text))
-
-  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
-    860▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    861▕                 ? UniqueConstraintViolationException::class
-    862▕                 : QueryException::class;
-    863▕
-  ➜ 864▕             $exception = new $exceptionType(
-    865▕                 $this->getNameWithReadWriteType(),
-    866▕                 $query,
-    867▕                 $this->prepareBindings($bindings),
-    868▕                 $e,
-
-      +15 vendor frames
-  16  tests/Feature/UserAccountEmailTest.php:21
-
-
-  Tests:    84 failed, 27 passed (81 assertions)
-  Duration: 2.90s
-
+root@dorweb:/var/www/dor# cd /var/www/dor && echo "===== ROUTE DEFINITIONS =====" && grep -RniE "staffs|gallery|photogallery|albums" routes app/Providers && echo "===== STAFF CONTROLLER / METHODS =====" && grep -RniE "function.*staff|function.*gallery|function.*album|staffs|photogallery" app/Http/Controllers
+===== ROUTE DEFINITIONS =====
+routes/web.php.before-album-fix:271://admin - albums
+routes/web.php.before-album-fix:273:    Route::get('albums',  array('as' => 'admin.albums', 'uses' => 'Admin\AlbumController@getIndex'));
+routes/web.php.before-album-fix:281:    Route::get('album/viewgallery/{id}', array('as' => 'admin.album.view.gallery', 'uses' => 'Admin\GalleryController@getIndex'));
+routes/web.php.before-album-fix:282:    Route::get('album/addgallery/{id}', array('as' => 'admin.album.add.gallery', 'uses' => 'Admin\GalleryController@getAddGallery'));
+routes/web.php.before-album-fix:283:    Route::post('album/addgallery/{id}', array('as' => 'admin.album.store.gallery', 'uses' => 'Admin\GalleryController@addGallery'));
+routes/web.php.before-album-fix:284:    Route::get('gallery/edit/{id}', array('as' => 'admin.gallery.edit', 'uses' => 'Admin\GalleryController@getEditGallery'));
+routes/web.php.before-album-fix:285:    Route::post('gallery/edit/{id}', array('as' => 'admin.gallery.update', 'uses' => 'Admin\GalleryController@editGallery'));
+routes/web.php.before-album-fix:286:    Route::post('gallery/change-status', array('as' => 'admin.gallery.change.status', 'uses' => 'Admin\GalleryController@changeStatus'));
+routes/web.php.before-album-fix:287:    Route::post('gallery/delete', array('as' => 'admin.gallery.delete', 'uses' => 'Admin\GalleryController@deleteGallery'));
+routes/web.php.before-album-fix:290://admin - staffs
+routes/web.php.before-album-fix:292:    Route::get('staffs',  array('as' => 'admin.staffs', 'uses' => 'Admin\StaffController@getIndex'));
+routes/web.php.before-album-fix:295:    Route::get('staff/sort_staffs',  array('as' => 'admin.staffs.sortorder', 'uses' => 'Admin\StaffController@getsortStaff'));
+routes/web.php.before-album-fix:296:    Route::post('staff/sort_staffs',  array('as' => 'admin.staffs.sortorder.update', 'uses' => 'Admin\StaffController@sortStaff'));
+routes/web.php.before-album-fix:494:Route::get('{subdomain}/staffs',  'StaffController@getStaffLists');
+routes/web.php.before-album-fix:495:Route::get('{subdomain}/staffsOld',  'StaffController@getStaffListsOld');
+routes/web.php.before-album-fix:511:Route::get('{subdomain}/gallery', 'AlbumController@getActiveAlbums');
+routes/web.php.before-album-fix:512:Route::get('{subdomain}/photogallery/{url}', 'GalleryController@getActiveGalleries');
+routes/web.php.bak-grms-routes-20261117:299://admin - albums
+routes/web.php.bak-grms-routes-20261117:301:    Route::get('albums',  array('as' => 'admin.albums', 'uses' => 'Admin\AlbumController@getIndex'));
+routes/web.php.bak-grms-routes-20261117:309:    Route::get('album/viewgallery/{id}', array('as' => 'admin.album.view.gallery', 'uses' => 'Admin\GalleryController@getIndex'));
+routes/web.php.bak-grms-routes-20261117:310:    Route::get('album/addgallery/{id}', array('as' => 'admin.album.add.gallery', 'uses' => 'Admin\GalleryController@getAddGallery'));
+routes/web.php.bak-grms-routes-20261117:311:    Route::post('album/addgallery/{id}', array('as' => 'admin.album.store.gallery', 'uses' => 'Admin\GalleryController@addGallery'));
+routes/web.php.bak-grms-routes-20261117:312:    Route::get('gallery/edit/{id}', array('as' => 'admin.gallery.edit', 'uses' => 'Admin\GalleryController@getEditGallery'));
+routes/web.php.bak-grms-routes-20261117:313:    Route::post('gallery/edit/{id}', array('as' => 'admin.gallery.update', 'uses' => 'Admin\GalleryController@editGallery'));
+routes/web.php.bak-grms-routes-20261117:314:    Route::post('gallery/change-status', array('as' => 'admin.gallery.change.status', 'uses' => 'Admin\GalleryController@changeStatus'));
+routes/web.php.bak-grms-routes-20261117:315:    Route::post('gallery/delete', array('as' => 'admin.gallery.delete', 'uses' => 'Admin\GalleryController@deleteGallery'));
+routes/web.php.bak-grms-routes-20261117:318://admin - staffs
+routes/web.php.bak-grms-routes-20261117:320:    Route::get('staffs',  array('as' => 'admin.staffs', 'uses' => 'Admin\StaffController@getIndex'));
+routes/web.php.bak-grms-routes-20261117:323:    Route::get('staff/sort_staffs',  array('as' => 'admin.staffs.sortorder', 'uses' => 'Admin\StaffController@getsortStaff'));
+routes/web.php.bak-grms-routes-20261117:324:    Route::post('staff/sort_staffs',  array('as' => 'admin.staffs.sortorder.update', 'uses' => 'Admin\StaffController@sortStaff'));
+routes/web.php.bak-grms-routes-20261117:541:Route::get('{subdomain}/staffs',  'StaffController@getStaffLists');
+routes/web.php.bak-grms-routes-20261117:542:Route::get('{subdomain}/staffsOld',  'StaffController@getStaffListsOld');
+routes/web.php.bak-grms-routes-20261117:558:Route::get('{subdomain}/gallery', 'AlbumController@getActiveAlbums');
+routes/web.php.bak-grms-routes-20261117:559:Route::get('{subdomain}/photogallery/{url}', 'GalleryController@getActiveGalleries');
+routes/web.php.bak-flash-tabs-20261116-224537:287://admin - albums
+routes/web.php.bak-flash-tabs-20261116-224537:289:    Route::get('albums',  array('as' => 'admin.albums', 'uses' => 'Admin\AlbumController@getIndex'));
+routes/web.php.bak-flash-tabs-20261116-224537:297:    Route::get('album/viewgallery/{id}', array('as' => 'admin.album.view.gallery', 'uses' => 'Admin\GalleryController@getIndex'));
+routes/web.php.bak-flash-tabs-20261116-224537:298:    Route::get('album/addgallery/{id}', array('as' => 'admin.album.add.gallery', 'uses' => 'Admin\GalleryController@getAddGallery'));
+routes/web.php.bak-flash-tabs-20261116-224537:299:    Route::post('album/addgallery/{id}', array('as' => 'admin.album.store.gallery', 'uses' => 'Admin\GalleryController@addGallery'));
+routes/web.php.bak-flash-tabs-20261116-224537:300:    Route::get('gallery/edit/{id}', array('as' => 'admin.gallery.edit', 'uses' => 'Admin\GalleryController@getEditGallery'));
+routes/web.php.bak-flash-tabs-20261116-224537:301:    Route::post('gallery/edit/{id}', array('as' => 'admin.gallery.update', 'uses' => 'Admin\GalleryController@editGallery'));
+routes/web.php.bak-flash-tabs-20261116-224537:302:    Route::post('gallery/change-status', array('as' => 'admin.gallery.change.status', 'uses' => 'Admin\GalleryController@changeStatus'));
+routes/web.php.bak-flash-tabs-20261116-224537:303:    Route::post('gallery/delete', array('as' => 'admin.gallery.delete', 'uses' => 'Admin\GalleryController@deleteGallery'));
+routes/web.php.bak-flash-tabs-20261116-224537:306://admin - staffs
+routes/web.php.bak-flash-tabs-20261116-224537:308:    Route::get('staffs',  array('as' => 'admin.staffs', 'uses' => 'Admin\StaffController@getIndex'));
+routes/web.php.bak-flash-tabs-20261116-224537:311:    Route::get('staff/sort_staffs',  array('as' => 'admin.staffs.sortorder', 'uses' => 'Admin\StaffController@getsortStaff'));
+routes/web.php.bak-flash-tabs-20261116-224537:312:    Route::post('staff/sort_staffs',  array('as' => 'admin.staffs.sortorder.update', 'uses' => 'Admin\StaffController@sortStaff'));
+routes/web.php.bak-flash-tabs-20261116-224537:529:Route::get('{subdomain}/staffs',  'StaffController@getStaffLists');
+routes/web.php.bak-flash-tabs-20261116-224537:530:Route::get('{subdomain}/staffsOld',  'StaffController@getStaffListsOld');
+routes/web.php.bak-flash-tabs-20261116-224537:546:Route::get('{subdomain}/gallery', 'AlbumController@getActiveAlbums');
+routes/web.php.bak-flash-tabs-20261116-224537:547:Route::get('{subdomain}/photogallery/{url}', 'GalleryController@getActiveGalleries');
+routes/web.php.bak-ticker-sort-20261123-221638:403://admin - albums
+routes/web.php.bak-ticker-sort-20261123-221638:405:    Route::get('albums',  array('as' => 'admin.albums', 'uses' => 'Admin\AlbumController@getIndex'));
+routes/web.php.bak-ticker-sort-20261123-221638:413:    Route::get('album/viewgallery/{id}', array('as' => 'admin.album.view.gallery', 'uses' => 'Admin\GalleryController@getIndex'));
+routes/web.php.bak-ticker-sort-20261123-221638:414:    Route::get('album/addgallery/{id}', array('as' => 'admin.album.add.gallery', 'uses' => 'Admin\GalleryController@getAddGallery'));
+routes/web.php.bak-ticker-sort-20261123-221638:415:    Route::post('album/addgallery/{id}', array('as' => 'admin.album.store.gallery', 'uses' => 'Admin\GalleryController@addGallery'));
+routes/web.php.bak-ticker-sort-20261123-221638:416:    Route::get('gallery/edit/{id}', array('as' => 'admin.gallery.edit', 'uses' => 'Admin\GalleryController@getEditGallery'));
+routes/web.php.bak-ticker-sort-20261123-221638:417:    Route::post('gallery/edit/{id}', array('as' => 'admin.gallery.update', 'uses' => 'Admin\GalleryController@editGallery'));
+routes/web.php.bak-ticker-sort-20261123-221638:418:    Route::post('gallery/change-status', array('as' => 'admin.gallery.change.status', 'uses' => 'Admin\GalleryController@changeStatus'));
+routes/web.php.bak-ticker-sort-20261123-221638:419:    Route::post('gallery/delete', array('as' => 'admin.gallery.delete', 'uses' => 'Admin\GalleryController@deleteGallery'));
+routes/web.php.bak-ticker-sort-20261123-221638:422://admin - staffs
+routes/web.php.bak-ticker-sort-20261123-221638:424:    Route::get('staffs',  array('as' => 'admin.staffs', 'uses' => 'Admin\StaffController@getIndex'));
+routes/web.php.bak-ticker-sort-20261123-221638:427:    Route::get('staff/sort_staffs',  array('as' => 'admin.staffs.sortorder', 'uses' => 'Admin\StaffController@getsortStaff'));
+routes/web.php.bak-ticker-sort-20261123-221638:428:    Route::post('staff/sort_staffs',  array('as' => 'admin.staffs.sortorder.update', 'uses' => 'Admin\StaffController@sortStaff'));
+routes/web.php.bak-ticker-sort-20261123-221638:659:Route::get('{subdomain}/staffs',  'StaffController@getStaffLists');
+routes/web.php.bak-ticker-sort-20261123-221638:660:Route::get('{subdomain}/staffsOld',  'StaffController@getStaffListsOld');
+routes/web.php.bak-ticker-sort-20261123-221638:676:Route::get('{subdomain}/gallery', 'AlbumController@getActiveAlbums');
+routes/web.php.bak-ticker-sort-20261123-221638:677:Route::get('{subdomain}/photogallery/{url}', 'GalleryController@getActiveGalleries');
+routes/web.php.before-login-rate-limit:271://admin - albums
+routes/web.php.before-login-rate-limit:273:    Route::get('albums',  array('as' => 'admin.albums', 'uses' => 'Admin\AlbumController@getIndex'));
+routes/web.php.before-login-rate-limit:281:    Route::get('album/viewgallery/{id}', array('as' => 'admin.album.view.gallery', 'uses' => 'Admin\GalleryController@getIndex'));
+routes/web.php.before-login-rate-limit:282:    Route::get('album/addgallery/{id}', array('as' => 'admin.album.add.gallery', 'uses' => 'Admin\GalleryController@getAddGallery'));
+routes/web.php.before-login-rate-limit:283:    Route::post('album/addgallery/{id}', array('as' => 'admin.album.store.gallery', 'uses' => 'Admin\GalleryController@addGallery'));
+routes/web.php.before-login-rate-limit:284:    Route::get('gallery/edit/{id}', array('as' => 'admin.gallery.edit', 'uses' => 'Admin\GalleryController@getEditGallery'));
+routes/web.php.before-login-rate-limit:285:    Route::post('gallery/edit/{id}', array('as' => 'admin.gallery.update', 'uses' => 'Admin\GalleryController@editGallery'));
+routes/web.php.before-login-rate-limit:286:    Route::post('gallery/change-status', array('as' => 'admin.gallery.change.status', 'uses' => 'Admin\GalleryController@changeStatus'));
+routes/web.php.before-login-rate-limit:287:    Route::post('gallery/delete', array('as' => 'admin.gallery.delete', 'uses' => 'Admin\GalleryController@deleteGallery'));
+routes/web.php.before-login-rate-limit:290://admin - staffs
+routes/web.php.before-login-rate-limit:292:    Route::get('staffs',  array('as' => 'admin.staffs', 'uses' => 'Admin\StaffController@getIndex'));
+routes/web.php.before-login-rate-limit:295:    Route::get('staff/sort_staffs',  array('as' => 'admin.staffs.sortorder', 'uses' => 'Admin\StaffController@getsortStaff'));
+routes/web.php.before-login-rate-limit:296:    Route::post('staff/sort_staffs',  array('as' => 'admin.staffs.sortorder.update', 'uses' => 'Admin\StaffController@sortStaff'));
+routes/web.php.before-login-rate-limit:494:Route::get('{subdomain}/staffs',  'StaffController@getStaffLists');
+routes/web.php.before-login-rate-limit:495:Route::get('{subdomain}/staffsOld',  'StaffController@getStaffListsOld');
+routes/web.php.before-login-rate-limit:511:Route::get('{subdomain}/gallery', 'AlbumController@getActiveAlbums');
+routes/web.php.before-login-rate-limit:512:Route::get('{subdomain}/photogallery/{url}', 'GalleryController@getActiveGalleries');
+routes/web.php.backup-appsheet:402://admin - albums
+routes/web.php.backup-appsheet:404:    Route::get('albums',  array('as' => 'admin.albums', 'uses' => 'Admin\AlbumController@getIndex'));
+routes/web.php.backup-appsheet:412:    Route::get('album/viewgallery/{id}', array('as' => 'admin.album.view.gallery', 'uses' => 'Admin\GalleryController@getIndex'));
+routes/web.php.backup-appsheet:413:    Route::get('album/addgallery/{id}', array('as' => 'admin.album.add.gallery', 'uses' => 'Admin\GalleryController@getAddGallery'));
+routes/web.php.backup-appsheet:414:    Route::post('album/addgallery/{id}', array('as' => 'admin.album.store.gallery', 'uses' => 'Admin\GalleryController@addGallery'));
+routes/web.php.backup-appsheet:415:    Route::get('gallery/edit/{id}', array('as' => 'admin.gallery.edit', 'uses' => 'Admin\GalleryController@getEditGallery'));
+routes/web.php.backup-appsheet:416:    Route::post('gallery/edit/{id}', array('as' => 'admin.gallery.update', 'uses' => 'Admin\GalleryController@editGallery'));
+routes/web.php.backup-appsheet:417:    Route::post('gallery/change-status', array('as' => 'admin.gallery.change.status', 'uses' => 'Admin\GalleryController@changeStatus'));
+routes/web.php.backup-appsheet:418:    Route::post('gallery/delete', array('as' => 'admin.gallery.delete', 'uses' => 'Admin\GalleryController@deleteGallery'));
+routes/web.php.backup-appsheet:421://admin - staffs
+routes/web.php.backup-appsheet:423:    Route::get('staffs',  array('as' => 'admin.staffs', 'uses' => 'Admin\StaffController@getIndex'));
+routes/web.php.backup-appsheet:426:    Route::get('staff/sort_staffs',  array('as' => 'admin.staffs.sortorder', 'uses' => 'Admin\StaffController@getsortStaff'));
+routes/web.php.backup-appsheet:427:    Route::post('staff/sort_staffs',  array('as' => 'admin.staffs.sortorder.update', 'uses' => 'Admin\StaffController@sortStaff'));
+routes/web.php.backup-appsheet:658:Route::get('{subdomain}/staffs',  'StaffController@getStaffLists');
+routes/web.php.backup-appsheet:659:Route::get('{subdomain}/staffsOld',  'StaffController@getStaffListsOld');
+routes/web.php.backup-appsheet:675:Route::get('{subdomain}/gallery', 'AlbumController@getActiveAlbums');
+routes/web.php.backup-appsheet:676:Route::get('{subdomain}/photogallery/{url}', 'GalleryController@getActiveGalleries');
+routes/web.php.pre-flash-box-settings-20261117-080141:289://admin - albums
+routes/web.php.pre-flash-box-settings-20261117-080141:291:    Route::get('albums',  array('as' => 'admin.albums', 'uses' => 'Admin\AlbumController@getIndex'));
+routes/web.php.pre-flash-box-settings-20261117-080141:299:    Route::get('album/viewgallery/{id}', array('as' => 'admin.album.view.gallery', 'uses' => 'Admin\GalleryController@getIndex'));
+routes/web.php.pre-flash-box-settings-20261117-080141:300:    Route::get('album/addgallery/{id}', array('as' => 'admin.album.add.gallery', 'uses' => 'Admin\GalleryController@getAddGallery'));
+routes/web.php.pre-flash-box-settings-20261117-080141:301:    Route::post('album/addgallery/{id}', array('as' => 'admin.album.store.gallery', 'uses' => 'Admin\GalleryController@addGallery'));
+routes/web.php.pre-flash-box-settings-20261117-080141:302:    Route::get('gallery/edit/{id}', array('as' => 'admin.gallery.edit', 'uses' => 'Admin\GalleryController@getEditGallery'));
+routes/web.php.pre-flash-box-settings-20261117-080141:303:    Route::post('gallery/edit/{id}', array('as' => 'admin.gallery.update', 'uses' => 'Admin\GalleryController@editGallery'));
+routes/web.php.pre-flash-box-settings-20261117-080141:304:    Route::post('gallery/change-status', array('as' => 'admin.gallery.change.status', 'uses' => 'Admin\GalleryController@changeStatus'));
+routes/web.php.pre-flash-box-settings-20261117-080141:305:    Route::post('gallery/delete', array('as' => 'admin.gallery.delete', 'uses' => 'Admin\GalleryController@deleteGallery'));
+routes/web.php.pre-flash-box-settings-20261117-080141:308://admin - staffs
+routes/web.php.pre-flash-box-settings-20261117-080141:310:    Route::get('staffs',  array('as' => 'admin.staffs', 'uses' => 'Admin\StaffController@getIndex'));
+routes/web.php.pre-flash-box-settings-20261117-080141:313:    Route::get('staff/sort_staffs',  array('as' => 'admin.staffs.sortorder', 'uses' => 'Admin\StaffController@getsortStaff'));
+routes/web.php.pre-flash-box-settings-20261117-080141:314:    Route::post('staff/sort_staffs',  array('as' => 'admin.staffs.sortorder.update', 'uses' => 'Admin\StaffController@sortStaff'));
+routes/web.php.pre-flash-box-settings-20261117-080141:531:Route::get('{subdomain}/staffs',  'StaffController@getStaffLists');
+routes/web.php.pre-flash-box-settings-20261117-080141:532:Route::get('{subdomain}/staffsOld',  'StaffController@getStaffListsOld');
+routes/web.php.pre-flash-box-settings-20261117-080141:548:Route::get('{subdomain}/gallery', 'AlbumController@getActiveAlbums');
+routes/web.php.pre-flash-box-settings-20261117-080141:549:Route::get('{subdomain}/photogallery/{url}', 'GalleryController@getActiveGalleries');
+routes/web.php:408://admin - albums
+routes/web.php:410:    Route::get('albums',  array('as' => 'admin.albums', 'uses' => 'Admin\AlbumController@getIndex'));
+routes/web.php:418:    Route::get('album/viewgallery/{id}', array('as' => 'admin.album.view.gallery', 'uses' => 'Admin\GalleryController@getIndex'));
+routes/web.php:419:    Route::get('album/addgallery/{id}', array('as' => 'admin.album.add.gallery', 'uses' => 'Admin\GalleryController@getAddGallery'));
+routes/web.php:420:    Route::post('album/addgallery/{id}', array('as' => 'admin.album.store.gallery', 'uses' => 'Admin\GalleryController@addGallery'));
+routes/web.php:421:    Route::get('gallery/edit/{id}', array('as' => 'admin.gallery.edit', 'uses' => 'Admin\GalleryController@getEditGallery'));
+routes/web.php:422:    Route::post('gallery/edit/{id}', array('as' => 'admin.gallery.update', 'uses' => 'Admin\GalleryController@editGallery'));
+routes/web.php:423:    Route::post('gallery/change-status', array('as' => 'admin.gallery.change.status', 'uses' => 'Admin\GalleryController@changeStatus'));
+routes/web.php:424:    Route::post('gallery/delete', array('as' => 'admin.gallery.delete', 'uses' => 'Admin\GalleryController@deleteGallery'));
+routes/web.php:427://admin - staffs
+routes/web.php:429:    Route::get('staffs',  array('as' => 'admin.staffs', 'uses' => 'Admin\StaffController@getIndex'));
+routes/web.php:432:    Route::get('staff/sort_staffs',  array('as' => 'admin.staffs.sortorder', 'uses' => 'Admin\StaffController@getsortStaff'));
+routes/web.php:433:    Route::post('staff/sort_staffs',  array('as' => 'admin.staffs.sortorder.update', 'uses' => 'Admin\StaffController@sortStaff'));
+routes/web.php:664:Route::get('{subdomain}/staffs',  'StaffController@getStaffLists');
+routes/web.php:665:Route::get('{subdomain}/staffsOld',  'StaffController@getStaffListsOld');
+routes/web.php:681:Route::get('{subdomain}/gallery', 'AlbumController@getActiveAlbums');
+routes/web.php:682:Route::get('{subdomain}/photogallery/{url}', 'GalleryController@getActiveGalleries');
+routes/web.php.before-document-search-20261118-093902:315://admin - albums
+routes/web.php.before-document-search-20261118-093902:317:    Route::get('albums',  array('as' => 'admin.albums', 'uses' => 'Admin\AlbumController@getIndex'));
+routes/web.php.before-document-search-20261118-093902:325:    Route::get('album/viewgallery/{id}', array('as' => 'admin.album.view.gallery', 'uses' => 'Admin\GalleryController@getIndex'));
+routes/web.php.before-document-search-20261118-093902:326:    Route::get('album/addgallery/{id}', array('as' => 'admin.album.add.gallery', 'uses' => 'Admin\GalleryController@getAddGallery'));
+routes/web.php.before-document-search-20261118-093902:327:    Route::post('album/addgallery/{id}', array('as' => 'admin.album.store.gallery', 'uses' => 'Admin\GalleryController@addGallery'));
+routes/web.php.before-document-search-20261118-093902:328:    Route::get('gallery/edit/{id}', array('as' => 'admin.gallery.edit', 'uses' => 'Admin\GalleryController@getEditGallery'));
+routes/web.php.before-document-search-20261118-093902:329:    Route::post('gallery/edit/{id}', array('as' => 'admin.gallery.update', 'uses' => 'Admin\GalleryController@editGallery'));
+routes/web.php.before-document-search-20261118-093902:330:    Route::post('gallery/change-status', array('as' => 'admin.gallery.change.status', 'uses' => 'Admin\GalleryController@changeStatus'));
+routes/web.php.before-document-search-20261118-093902:331:    Route::post('gallery/delete', array('as' => 'admin.gallery.delete', 'uses' => 'Admin\GalleryController@deleteGallery'));
+routes/web.php.before-document-search-20261118-093902:334://admin - staffs
+routes/web.php.before-document-search-20261118-093902:336:    Route::get('staffs',  array('as' => 'admin.staffs', 'uses' => 'Admin\StaffController@getIndex'));
+routes/web.php.before-document-search-20261118-093902:339:    Route::get('staff/sort_staffs',  array('as' => 'admin.staffs.sortorder', 'uses' => 'Admin\StaffController@getsortStaff'));
+routes/web.php.before-document-search-20261118-093902:340:    Route::post('staff/sort_staffs',  array('as' => 'admin.staffs.sortorder.update', 'uses' => 'Admin\StaffController@sortStaff'));
+routes/web.php.before-document-search-20261118-093902:558:Route::get('{subdomain}/staffs',  'StaffController@getStaffLists');
+routes/web.php.before-document-search-20261118-093902:559:Route::get('{subdomain}/staffsOld',  'StaffController@getStaffListsOld');
+routes/web.php.before-document-search-20261118-093902:575:Route::get('{subdomain}/gallery', 'AlbumController@getActiveAlbums');
+routes/web.php.before-document-search-20261118-093902:576:Route::get('{subdomain}/photogallery/{url}', 'GalleryController@getActiveGalleries');
+routes/web.php.before-calendar-routes:315://admin - albums
+routes/web.php.before-calendar-routes:317:    Route::get('albums',  array('as' => 'admin.albums', 'uses' => 'Admin\AlbumController@getIndex'));
+routes/web.php.before-calendar-routes:325:    Route::get('album/viewgallery/{id}', array('as' => 'admin.album.view.gallery', 'uses' => 'Admin\GalleryController@getIndex'));
+routes/web.php.before-calendar-routes:326:    Route::get('album/addgallery/{id}', array('as' => 'admin.album.add.gallery', 'uses' => 'Admin\GalleryController@getAddGallery'));
+routes/web.php.before-calendar-routes:327:    Route::post('album/addgallery/{id}', array('as' => 'admin.album.store.gallery', 'uses' => 'Admin\GalleryController@addGallery'));
+routes/web.php.before-calendar-routes:328:    Route::get('gallery/edit/{id}', array('as' => 'admin.gallery.edit', 'uses' => 'Admin\GalleryController@getEditGallery'));
+routes/web.php.before-calendar-routes:329:    Route::post('gallery/edit/{id}', array('as' => 'admin.gallery.update', 'uses' => 'Admin\GalleryController@editGallery'));
+routes/web.php.before-calendar-routes:330:    Route::post('gallery/change-status', array('as' => 'admin.gallery.change.status', 'uses' => 'Admin\GalleryController@changeStatus'));
+routes/web.php.before-calendar-routes:331:    Route::post('gallery/delete', array('as' => 'admin.gallery.delete', 'uses' => 'Admin\GalleryController@deleteGallery'));
+routes/web.php.before-calendar-routes:334://admin - staffs
+routes/web.php.before-calendar-routes:336:    Route::get('staffs',  array('as' => 'admin.staffs', 'uses' => 'Admin\StaffController@getIndex'));
+routes/web.php.before-calendar-routes:339:    Route::get('staff/sort_staffs',  array('as' => 'admin.staffs.sortorder', 'uses' => 'Admin\StaffController@getsortStaff'));
+routes/web.php.before-calendar-routes:340:    Route::post('staff/sort_staffs',  array('as' => 'admin.staffs.sortorder.update', 'uses' => 'Admin\StaffController@sortStaff'));
+routes/web.php.before-calendar-routes:557:Route::get('{subdomain}/staffs',  'StaffController@getStaffLists');
+routes/web.php.before-calendar-routes:558:Route::get('{subdomain}/staffsOld',  'StaffController@getStaffListsOld');
+routes/web.php.before-calendar-routes:574:Route::get('{subdomain}/gallery', 'AlbumController@getActiveAlbums');
+routes/web.php.before-calendar-routes:575:Route::get('{subdomain}/photogallery/{url}', 'GalleryController@getActiveGalleries');
+routes/web.php.bak-download-20261116-150141:287://admin - albums
+routes/web.php.bak-download-20261116-150141:289:    Route::get('albums',  array('as' => 'admin.albums', 'uses' => 'Admin\AlbumController@getIndex'));
+routes/web.php.bak-download-20261116-150141:297:    Route::get('album/viewgallery/{id}', array('as' => 'admin.album.view.gallery', 'uses' => 'Admin\GalleryController@getIndex'));
+routes/web.php.bak-download-20261116-150141:298:    Route::get('album/addgallery/{id}', array('as' => 'admin.album.add.gallery', 'uses' => 'Admin\GalleryController@getAddGallery'));
+routes/web.php.bak-download-20261116-150141:299:    Route::post('album/addgallery/{id}', array('as' => 'admin.album.store.gallery', 'uses' => 'Admin\GalleryController@addGallery'));
+routes/web.php.bak-download-20261116-150141:300:    Route::get('gallery/edit/{id}', array('as' => 'admin.gallery.edit', 'uses' => 'Admin\GalleryController@getEditGallery'));
+routes/web.php.bak-download-20261116-150141:301:    Route::post('gallery/edit/{id}', array('as' => 'admin.gallery.update', 'uses' => 'Admin\GalleryController@editGallery'));
+routes/web.php.bak-download-20261116-150141:302:    Route::post('gallery/change-status', array('as' => 'admin.gallery.change.status', 'uses' => 'Admin\GalleryController@changeStatus'));
+routes/web.php.bak-download-20261116-150141:303:    Route::post('gallery/delete', array('as' => 'admin.gallery.delete', 'uses' => 'Admin\GalleryController@deleteGallery'));
+routes/web.php.bak-download-20261116-150141:306://admin - staffs
+routes/web.php.bak-download-20261116-150141:308:    Route::get('staffs',  array('as' => 'admin.staffs', 'uses' => 'Admin\StaffController@getIndex'));
+routes/web.php.bak-download-20261116-150141:311:    Route::get('staff/sort_staffs',  array('as' => 'admin.staffs.sortorder', 'uses' => 'Admin\StaffController@getsortStaff'));
+routes/web.php.bak-download-20261116-150141:312:    Route::post('staff/sort_staffs',  array('as' => 'admin.staffs.sortorder.update', 'uses' => 'Admin\StaffController@sortStaff'));
+routes/web.php.bak-download-20261116-150141:525:Route::get('{subdomain}/staffs',  'StaffController@getStaffLists');
+routes/web.php.bak-download-20261116-150141:526:Route::get('{subdomain}/staffsOld',  'StaffController@getStaffListsOld');
+routes/web.php.bak-download-20261116-150141:542:Route::get('{subdomain}/gallery', 'AlbumController@getActiveAlbums');
+routes/web.php.bak-download-20261116-150141:543:Route::get('{subdomain}/photogallery/{url}', 'GalleryController@getActiveGalleries');
+routes/web.php.before-document-search-20261118-094635:315://admin - albums
+routes/web.php.before-document-search-20261118-094635:317:    Route::get('albums',  array('as' => 'admin.albums', 'uses' => 'Admin\AlbumController@getIndex'));
+routes/web.php.before-document-search-20261118-094635:325:    Route::get('album/viewgallery/{id}', array('as' => 'admin.album.view.gallery', 'uses' => 'Admin\GalleryController@getIndex'));
+routes/web.php.before-document-search-20261118-094635:326:    Route::get('album/addgallery/{id}', array('as' => 'admin.album.add.gallery', 'uses' => 'Admin\GalleryController@getAddGallery'));
+routes/web.php.before-document-search-20261118-094635:327:    Route::post('album/addgallery/{id}', array('as' => 'admin.album.store.gallery', 'uses' => 'Admin\GalleryController@addGallery'));
+routes/web.php.before-document-search-20261118-094635:328:    Route::get('gallery/edit/{id}', array('as' => 'admin.gallery.edit', 'uses' => 'Admin\GalleryController@getEditGallery'));
+routes/web.php.before-document-search-20261118-094635:329:    Route::post('gallery/edit/{id}', array('as' => 'admin.gallery.update', 'uses' => 'Admin\GalleryController@editGallery'));
+routes/web.php.before-document-search-20261118-094635:330:    Route::post('gallery/change-status', array('as' => 'admin.gallery.change.status', 'uses' => 'Admin\GalleryController@changeStatus'));
+routes/web.php.before-document-search-20261118-094635:331:    Route::post('gallery/delete', array('as' => 'admin.gallery.delete', 'uses' => 'Admin\GalleryController@deleteGallery'));
+routes/web.php.before-document-search-20261118-094635:334://admin - staffs
+routes/web.php.before-document-search-20261118-094635:336:    Route::get('staffs',  array('as' => 'admin.staffs', 'uses' => 'Admin\StaffController@getIndex'));
+routes/web.php.before-document-search-20261118-094635:339:    Route::get('staff/sort_staffs',  array('as' => 'admin.staffs.sortorder', 'uses' => 'Admin\StaffController@getsortStaff'));
+routes/web.php.before-document-search-20261118-094635:340:    Route::post('staff/sort_staffs',  array('as' => 'admin.staffs.sortorder.update', 'uses' => 'Admin\StaffController@sortStaff'));
+routes/web.php.before-document-search-20261118-094635:558:Route::get('{subdomain}/staffs',  'StaffController@getStaffLists');
+routes/web.php.before-document-search-20261118-094635:559:Route::get('{subdomain}/staffsOld',  'StaffController@getStaffListsOld');
+routes/web.php.before-document-search-20261118-094635:575:Route::get('{subdomain}/gallery', 'AlbumController@getActiveAlbums');
+routes/web.php.before-document-search-20261118-094635:576:Route::get('{subdomain}/photogallery/{url}', 'GalleryController@getActiveGalleries');
+routes/web.php.bak-flash-control-20261117:309://admin - albums
+routes/web.php.bak-flash-control-20261117:311:    Route::get('albums',  array('as' => 'admin.albums', 'uses' => 'Admin\AlbumController@getIndex'));
+routes/web.php.bak-flash-control-20261117:319:    Route::get('album/viewgallery/{id}', array('as' => 'admin.album.view.gallery', 'uses' => 'Admin\GalleryController@getIndex'));
+routes/web.php.bak-flash-control-20261117:320:    Route::get('album/addgallery/{id}', array('as' => 'admin.album.add.gallery', 'uses' => 'Admin\GalleryController@getAddGallery'));
+routes/web.php.bak-flash-control-20261117:321:    Route::post('album/addgallery/{id}', array('as' => 'admin.album.store.gallery', 'uses' => 'Admin\GalleryController@addGallery'));
+routes/web.php.bak-flash-control-20261117:322:    Route::get('gallery/edit/{id}', array('as' => 'admin.gallery.edit', 'uses' => 'Admin\GalleryController@getEditGallery'));
+routes/web.php.bak-flash-control-20261117:323:    Route::post('gallery/edit/{id}', array('as' => 'admin.gallery.update', 'uses' => 'Admin\GalleryController@editGallery'));
+routes/web.php.bak-flash-control-20261117:324:    Route::post('gallery/change-status', array('as' => 'admin.gallery.change.status', 'uses' => 'Admin\GalleryController@changeStatus'));
+routes/web.php.bak-flash-control-20261117:325:    Route::post('gallery/delete', array('as' => 'admin.gallery.delete', 'uses' => 'Admin\GalleryController@deleteGallery'));
+routes/web.php.bak-flash-control-20261117:328://admin - staffs
+routes/web.php.bak-flash-control-20261117:330:    Route::get('staffs',  array('as' => 'admin.staffs', 'uses' => 'Admin\StaffController@getIndex'));
+routes/web.php.bak-flash-control-20261117:333:    Route::get('staff/sort_staffs',  array('as' => 'admin.staffs.sortorder', 'uses' => 'Admin\StaffController@getsortStaff'));
+routes/web.php.bak-flash-control-20261117:334:    Route::post('staff/sort_staffs',  array('as' => 'admin.staffs.sortorder.update', 'uses' => 'Admin\StaffController@sortStaff'));
+routes/web.php.bak-flash-control-20261117:551:Route::get('{subdomain}/staffs',  'StaffController@getStaffLists');
+routes/web.php.bak-flash-control-20261117:552:Route::get('{subdomain}/staffsOld',  'StaffController@getStaffListsOld');
+routes/web.php.bak-flash-control-20261117:568:Route::get('{subdomain}/gallery', 'AlbumController@getActiveAlbums');
+routes/web.php.bak-flash-control-20261117:569:Route::get('{subdomain}/photogallery/{url}', 'GalleryController@getActiveGalleries');
+routes/web.php.bak-before-circular-email-otp-20261116-185939:287://admin - albums
+routes/web.php.bak-before-circular-email-otp-20261116-185939:289:    Route::get('albums',  array('as' => 'admin.albums', 'uses' => 'Admin\AlbumController@getIndex'));
+routes/web.php.bak-before-circular-email-otp-20261116-185939:297:    Route::get('album/viewgallery/{id}', array('as' => 'admin.album.view.gallery', 'uses' => 'Admin\GalleryController@getIndex'));
+routes/web.php.bak-before-circular-email-otp-20261116-185939:298:    Route::get('album/addgallery/{id}', array('as' => 'admin.album.add.gallery', 'uses' => 'Admin\GalleryController@getAddGallery'));
+routes/web.php.bak-before-circular-email-otp-20261116-185939:299:    Route::post('album/addgallery/{id}', array('as' => 'admin.album.store.gallery', 'uses' => 'Admin\GalleryController@addGallery'));
+routes/web.php.bak-before-circular-email-otp-20261116-185939:300:    Route::get('gallery/edit/{id}', array('as' => 'admin.gallery.edit', 'uses' => 'Admin\GalleryController@getEditGallery'));
+routes/web.php.bak-before-circular-email-otp-20261116-185939:301:    Route::post('gallery/edit/{id}', array('as' => 'admin.gallery.update', 'uses' => 'Admin\GalleryController@editGallery'));
+routes/web.php.bak-before-circular-email-otp-20261116-185939:302:    Route::post('gallery/change-status', array('as' => 'admin.gallery.change.status', 'uses' => 'Admin\GalleryController@changeStatus'));
+routes/web.php.bak-before-circular-email-otp-20261116-185939:303:    Route::post('gallery/delete', array('as' => 'admin.gallery.delete', 'uses' => 'Admin\GalleryController@deleteGallery'));
+routes/web.php.bak-before-circular-email-otp-20261116-185939:306://admin - staffs
+routes/web.php.bak-before-circular-email-otp-20261116-185939:308:    Route::get('staffs',  array('as' => 'admin.staffs', 'uses' => 'Admin\StaffController@getIndex'));
+routes/web.php.bak-before-circular-email-otp-20261116-185939:311:    Route::get('staff/sort_staffs',  array('as' => 'admin.staffs.sortorder', 'uses' => 'Admin\StaffController@getsortStaff'));
+routes/web.php.bak-before-circular-email-otp-20261116-185939:312:    Route::post('staff/sort_staffs',  array('as' => 'admin.staffs.sortorder.update', 'uses' => 'Admin\StaffController@sortStaff'));
+routes/web.php.bak-before-circular-email-otp-20261116-185939:529:Route::get('{subdomain}/staffs',  'StaffController@getStaffLists');
+routes/web.php.bak-before-circular-email-otp-20261116-185939:530:Route::get('{subdomain}/staffsOld',  'StaffController@getStaffListsOld');
+routes/web.php.bak-before-circular-email-otp-20261116-185939:546:Route::get('{subdomain}/gallery', 'AlbumController@getActiveAlbums');
+routes/web.php.bak-before-circular-email-otp-20261116-185939:547:Route::get('{subdomain}/photogallery/{url}', 'GalleryController@getActiveGalleries');
+routes/web.php.bak-contact-bcc-20261117:299://admin - albums
+routes/web.php.bak-contact-bcc-20261117:301:    Route::get('albums',  array('as' => 'admin.albums', 'uses' => 'Admin\AlbumController@getIndex'));
+routes/web.php.bak-contact-bcc-20261117:309:    Route::get('album/viewgallery/{id}', array('as' => 'admin.album.view.gallery', 'uses' => 'Admin\GalleryController@getIndex'));
+routes/web.php.bak-contact-bcc-20261117:310:    Route::get('album/addgallery/{id}', array('as' => 'admin.album.add.gallery', 'uses' => 'Admin\GalleryController@getAddGallery'));
+routes/web.php.bak-contact-bcc-20261117:311:    Route::post('album/addgallery/{id}', array('as' => 'admin.album.store.gallery', 'uses' => 'Admin\GalleryController@addGallery'));
+routes/web.php.bak-contact-bcc-20261117:312:    Route::get('gallery/edit/{id}', array('as' => 'admin.gallery.edit', 'uses' => 'Admin\GalleryController@getEditGallery'));
+routes/web.php.bak-contact-bcc-20261117:313:    Route::post('gallery/edit/{id}', array('as' => 'admin.gallery.update', 'uses' => 'Admin\GalleryController@editGallery'));
+routes/web.php.bak-contact-bcc-20261117:314:    Route::post('gallery/change-status', array('as' => 'admin.gallery.change.status', 'uses' => 'Admin\GalleryController@changeStatus'));
+routes/web.php.bak-contact-bcc-20261117:315:    Route::post('gallery/delete', array('as' => 'admin.gallery.delete', 'uses' => 'Admin\GalleryController@deleteGallery'));
+routes/web.php.bak-contact-bcc-20261117:318://admin - staffs
+routes/web.php.bak-contact-bcc-20261117:320:    Route::get('staffs',  array('as' => 'admin.staffs', 'uses' => 'Admin\StaffController@getIndex'));
+routes/web.php.bak-contact-bcc-20261117:323:    Route::get('staff/sort_staffs',  array('as' => 'admin.staffs.sortorder', 'uses' => 'Admin\StaffController@getsortStaff'));
+routes/web.php.bak-contact-bcc-20261117:324:    Route::post('staff/sort_staffs',  array('as' => 'admin.staffs.sortorder.update', 'uses' => 'Admin\StaffController@sortStaff'));
+routes/web.php.bak-contact-bcc-20261117:541:Route::get('{subdomain}/staffs',  'StaffController@getStaffLists');
+routes/web.php.bak-contact-bcc-20261117:542:Route::get('{subdomain}/staffsOld',  'StaffController@getStaffListsOld');
+routes/web.php.bak-contact-bcc-20261117:558:Route::get('{subdomain}/gallery', 'AlbumController@getActiveAlbums');
+routes/web.php.bak-contact-bcc-20261117:559:Route::get('{subdomain}/photogallery/{url}', 'GalleryController@getActiveGalleries');
+routes/web.php.backup-remove-appsheet:407://admin - albums
+routes/web.php.backup-remove-appsheet:409:    Route::get('albums',  array('as' => 'admin.albums', 'uses' => 'Admin\AlbumController@getIndex'));
+routes/web.php.backup-remove-appsheet:417:    Route::get('album/viewgallery/{id}', array('as' => 'admin.album.view.gallery', 'uses' => 'Admin\GalleryController@getIndex'));
+routes/web.php.backup-remove-appsheet:418:    Route::get('album/addgallery/{id}', array('as' => 'admin.album.add.gallery', 'uses' => 'Admin\GalleryController@getAddGallery'));
+routes/web.php.backup-remove-appsheet:419:    Route::post('album/addgallery/{id}', array('as' => 'admin.album.store.gallery', 'uses' => 'Admin\GalleryController@addGallery'));
+routes/web.php.backup-remove-appsheet:420:    Route::get('gallery/edit/{id}', array('as' => 'admin.gallery.edit', 'uses' => 'Admin\GalleryController@getEditGallery'));
+routes/web.php.backup-remove-appsheet:421:    Route::post('gallery/edit/{id}', array('as' => 'admin.gallery.update', 'uses' => 'Admin\GalleryController@editGallery'));
+routes/web.php.backup-remove-appsheet:422:    Route::post('gallery/change-status', array('as' => 'admin.gallery.change.status', 'uses' => 'Admin\GalleryController@changeStatus'));
+routes/web.php.backup-remove-appsheet:423:    Route::post('gallery/delete', array('as' => 'admin.gallery.delete', 'uses' => 'Admin\GalleryController@deleteGallery'));
+routes/web.php.backup-remove-appsheet:426://admin - staffs
+routes/web.php.backup-remove-appsheet:428:    Route::get('staffs',  array('as' => 'admin.staffs', 'uses' => 'Admin\StaffController@getIndex'));
+routes/web.php.backup-remove-appsheet:431:    Route::get('staff/sort_staffs',  array('as' => 'admin.staffs.sortorder', 'uses' => 'Admin\StaffController@getsortStaff'));
+routes/web.php.backup-remove-appsheet:432:    Route::post('staff/sort_staffs',  array('as' => 'admin.staffs.sortorder.update', 'uses' => 'Admin\StaffController@sortStaff'));
+routes/web.php.backup-remove-appsheet:663:Route::get('{subdomain}/staffs',  'StaffController@getStaffLists');
+routes/web.php.backup-remove-appsheet:664:Route::get('{subdomain}/staffsOld',  'StaffController@getStaffListsOld');
+routes/web.php.backup-remove-appsheet:680:Route::get('{subdomain}/gallery', 'AlbumController@getActiveAlbums');
+routes/web.php.backup-remove-appsheet:681:Route::get('{subdomain}/photogallery/{url}', 'GalleryController@getActiveGalleries');
+===== STAFF CONTROLLER / METHODS =====
+app/Http/Controllers/OfficeChiefController.php:36:    public function getStaffLists($subdomain)
+app/Http/Controllers/OfficeChiefController.php:46:            // $staffs    = Staff::getActiveStaffs($officeId, $sessionLangId);
+app/Http/Controllers/OfficeChiefController.php:48:            $staffs = OfficeChief::with([
+app/Http/Controllers/OfficeChiefController.php:64:                    'office_chiefs.staffs',
+app/Http/Controllers/OfficeChiefController.php:73:                        'staffs'          => $staffs,
+app/Http/Controllers/StaffController.php:35:    public function getStaffLists($subdomain)
+app/Http/Controllers/StaffController.php:45:            // $staffs    = Staff::getActiveStaffs($officeId, $sessionLangId);
+app/Http/Controllers/StaffController.php:47:            $staffs = Staff::with([
+app/Http/Controllers/StaffController.php:60:            $seoDetail = Seo::getSeoDetailsByPageNameAndLanguage('staffs', $sessionLangId);
+app/Http/Controllers/StaffController.php:64:                    'staff.staffs',
+app/Http/Controllers/StaffController.php:73:                        'staffs'          => $staffs,
+app/Http/Controllers/StaffController.php:114:    public function getStaffListsOld($subdomain)
+app/Http/Controllers/StaffController.php:122:            // $staffs    = Staff::getActiveStaffs($officeId, $sessionLangId);
+app/Http/Controllers/StaffController.php:123:            $staffs = Staff::with([
+app/Http/Controllers/StaffController.php:134:                    'staff.staffsOld',
+app/Http/Controllers/StaffController.php:143:                        'staffs'          => $staffs,
+app/Http/Controllers/StaffController.php:184:    public function getStaffDetail($subdomain, $id)
+app/Http/Controllers/AlbumController.php:31:    public function getActiveAlbums($subdomain)
+app/Http/Controllers/UserController.php:41:            $staffs    = User::getActiveStaffs($officeId, $sessionLangId);
+app/Http/Controllers/UserController.php:42:            // echo "<pre>";print_r($staffs);exit;
+app/Http/Controllers/UserController.php:43:            //var_dump($staffs);die();
+app/Http/Controllers/UserController.php:49:                    'users.staffs',
+app/Http/Controllers/UserController.php:58:                        'staffs' => $staffs
+app/Http/Controllers/Admin/OfficeChiefController.php:28:use App\Models\StaffService;
+app/Http/Controllers/Admin/OfficeChiefController.php:29:use App\Models\StaffSubgroup;
+app/Http/Controllers/Admin/OfficeChiefController.php:53:        $staffs     = OfficeChief::with(['details' => function ($query) {
+app/Http/Controllers/Admin/OfficeChiefController.php:66:        return view('office_chief.admin.staffs')
+app/Http/Controllers/Admin/OfficeChiefController.php:67:            ->with('staffs', $staffs)
+app/Http/Controllers/Admin/OfficeChiefController.php:77:    public function getAddStaff()
+app/Http/Controllers/Admin/OfficeChiefController.php:235:    public function addStaff(Request $request, PhotoStudioService $photoStudio)
+app/Http/Controllers/Admin/OfficeChiefController.php:374:    public function getEditStaff($id)
+app/Http/Controllers/Admin/OfficeChiefController.php:407:    public function editStaff($id, Request $request, PhotoStudioService $photoStudio)
+app/Http/Controllers/Admin/OfficeChiefController.php:564:    public function deleteStaff(Request $request)
+app/Http/Controllers/Admin/OfficeChiefController.php:601:    public function getsortStaff()
+app/Http/Controllers/Admin/OfficeChiefController.php:606:        $staffs     = OfficeChief::with(['details' => function ($query) {
+app/Http/Controllers/Admin/OfficeChiefController.php:616:        return view('office_chief.admin.sort_staffs')
+app/Http/Controllers/Admin/OfficeChiefController.php:618:            ->with('staffs', $staffs)
+app/Http/Controllers/Admin/OfficeChiefController.php:625:    public function sortStaff(Request $request)
+app/Http/Controllers/Admin/OfficeChiefController.php:628:        $staffs      = $request->get('staff');
+app/Http/Controllers/Admin/OfficeChiefController.php:631:        foreach ($staffs as $staffId) {
+app/Http/Controllers/Admin/OfficeChiefController.php:637:        $returnArray = array('type' => 'success', 'staffs' => $staffs, 'message' => 'Records are sorted successfully.');
+app/Http/Controllers/Admin/StaffController.php.before-square-photo-validation:24:use App\Models\StaffService;
+app/Http/Controllers/Admin/StaffController.php.before-square-photo-validation:25:use App\Models\StaffSubgroup;
+app/Http/Controllers/Admin/StaffController.php.before-square-photo-validation:46:     * This method is used to get the list of undeleted staffs(both active and deactive)
+app/Http/Controllers/Admin/StaffController.php.before-square-photo-validation:55:        $staffs     = Staff::with(['designation', 'details' => function ($query) {
+app/Http/Controllers/Admin/StaffController.php.before-square-photo-validation:68:        return view('staff.staffs.staffs')
+app/Http/Controllers/Admin/StaffController.php.before-square-photo-validation:69:            ->with('staffs', $staffs)
+app/Http/Controllers/Admin/StaffController.php.before-square-photo-validation:84:    public function getAddStaff()
+app/Http/Controllers/Admin/StaffController.php.before-square-photo-validation:90:            return view('staff.staffs.addstaff')
+app/Http/Controllers/Admin/StaffController.php.before-square-photo-validation:97:                ->with('services', StaffService::get())
+app/Http/Controllers/Admin/StaffController.php.before-square-photo-validation:100:                ->with('subgroups', StaffSubgroup::get());
+app/Http/Controllers/Admin/StaffController.php.before-square-photo-validation:115:    public function addStaff(Request $request)
+app/Http/Controllers/Admin/StaffController.php.before-square-photo-validation:120:            return redirect()->route('admin.staffs');
+app/Http/Controllers/Admin/StaffController.php.before-square-photo-validation:158:                $destinationPath = public_path('uploads/staffs');
+app/Http/Controllers/Admin/StaffController.php.before-square-photo-validation:233:        return Redirect::route('admin.staffs')
+app/Http/Controllers/Admin/StaffController.php.before-square-photo-validation:246:    public function getEditStaff($id)
+app/Http/Controllers/Admin/StaffController.php.before-square-photo-validation:265:        return view('staff.staffs.editstaff')
+app/Http/Controllers/Admin/StaffController.php.before-square-photo-validation:273:            ->with('services', StaffService::get())
+app/Http/Controllers/Admin/StaffController.php.before-square-photo-validation:276:            ->with('subgroups', StaffSubgroup::get());
+app/Http/Controllers/Admin/StaffController.php.before-square-photo-validation:285:    public function editStaff($id, Request $request)
+app/Http/Controllers/Admin/StaffController.php.before-square-photo-validation:333:        $destinationPath = public_path('uploads/staffs');
+app/Http/Controllers/Admin/StaffController.php.before-square-photo-validation:354:                $photoStillInUse = DB::table('staffs')
+app/Http/Controllers/Admin/StaffController.php.before-square-photo-validation:360:                    $oldPhotoPath = public_path('uploads/staffs/' . basename($oldPhoto));
+app/Http/Controllers/Admin/StaffController.php.before-square-photo-validation:401:            return Redirect::route('admin.staffs')
+app/Http/Controllers/Admin/StaffController.php.before-square-photo-validation:416:    public function deleteStaff(Request $request)
+app/Http/Controllers/Admin/StaffController.php.before-square-photo-validation:491:    public function getsortStaff()
+app/Http/Controllers/Admin/StaffController.php.before-square-photo-validation:496:        $staffs     = Staff::with(['details' => function ($query) {
+app/Http/Controllers/Admin/StaffController.php.before-square-photo-validation:506:        return view('staff.staffs.sort_staffs')
+app/Http/Controllers/Admin/StaffController.php.before-square-photo-validation:508:            ->with('staffs', $staffs)
+app/Http/Controllers/Admin/StaffController.php.before-square-photo-validation:515:    public function sortStaff(Request $request)
+app/Http/Controllers/Admin/StaffController.php.before-square-photo-validation:518:        $staffs      = $request->get('staff');
+app/Http/Controllers/Admin/StaffController.php.before-square-photo-validation:521:        foreach ($staffs as $staffId) {
+app/Http/Controllers/Admin/StaffController.php.before-square-photo-validation:527:        $returnArray = array('type' => 'success', 'staffs' => $staffs, 'message' => 'Staffs are sorted successfully.');
+app/Http/Controllers/Admin/StaffController.php.before-square-photo-validation:537:        return view('staffs.staffs.emailrequest')->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/GalleryController.php.bak-cleanup-20261116-165732:54:    private function albumForUser($albumId, $user): ?Album
+app/Http/Controllers/Admin/GalleryController.php.bak-cleanup-20261116-165732:66:    private function galleryForUser($galleryId, $user): ?Gallery
+app/Http/Controllers/Admin/GalleryController.php.bak-cleanup-20261116-165732:93:    private function uploadGalleryImage($imageFile, $user): string
+app/Http/Controllers/Admin/GalleryController.php.bak-cleanup-20261116-165732:120:    public function getIndex($albumId)
+app/Http/Controllers/Admin/GalleryController.php.bak-cleanup-20261116-165732:154:    public function getAddGallery($albumId)
+app/Http/Controllers/Admin/GalleryController.php.bak-cleanup-20261116-165732:171:    public function addGallery($albumId, Request $request)
+app/Http/Controllers/Admin/GalleryController.php.bak-cleanup-20261116-165732:204:            DB::transaction(function () use ($request, $languages, $album, $user, $newFilename) {
+app/Http/Controllers/Admin/GalleryController.php.bak-cleanup-20261116-165732:251:    public function getEditGallery($id)
+app/Http/Controllers/Admin/GalleryController.php.bak-cleanup-20261116-165732:275:    public function editGallery(Request $request, $id)
+app/Http/Controllers/Admin/GalleryController.php.bak-cleanup-20261116-165732:313:            DB::transaction(function () use ($request, $languages, $gallery, $user, $newFilename) {
+app/Http/Controllers/Admin/GalleryController.php.bak-cleanup-20261116-165732:362:    public function deleteGallery(Request $request)
+app/Http/Controllers/Admin/StaffController.php.before-white-photo-background:24:use App\Models\StaffService;
+app/Http/Controllers/Admin/StaffController.php.before-white-photo-background:25:use App\Models\StaffSubgroup;
+app/Http/Controllers/Admin/StaffController.php.before-white-photo-background:46:     * This method is used to get the list of undeleted staffs(both active and deactive)
+app/Http/Controllers/Admin/StaffController.php.before-white-photo-background:55:        $staffs     = Staff::with(['designation', 'details' => function ($query) {
+app/Http/Controllers/Admin/StaffController.php.before-white-photo-background:68:        return view('staff.staffs.staffs')
+app/Http/Controllers/Admin/StaffController.php.before-white-photo-background:69:            ->with('staffs', $staffs)
+app/Http/Controllers/Admin/StaffController.php.before-white-photo-background:84:    public function getAddStaff()
+app/Http/Controllers/Admin/StaffController.php.before-white-photo-background:90:            return view('staff.staffs.addstaff')
+app/Http/Controllers/Admin/StaffController.php.before-white-photo-background:97:                ->with('services', StaffService::get())
+app/Http/Controllers/Admin/StaffController.php.before-white-photo-background:100:                ->with('subgroups', StaffSubgroup::get());
+app/Http/Controllers/Admin/StaffController.php.before-white-photo-background:120:    private function storeNormalizedStaffPhoto($imageFile, $destinationPath, $photoName)
+app/Http/Controllers/Admin/StaffController.php.before-white-photo-background:248:    public function addStaff(Request $request)
+app/Http/Controllers/Admin/StaffController.php.before-white-photo-background:253:            return redirect()->route('admin.staffs');
+app/Http/Controllers/Admin/StaffController.php.before-white-photo-background:291:                $destinationPath = public_path('uploads/staffs');
+app/Http/Controllers/Admin/StaffController.php.before-white-photo-background:369:        return Redirect::route('admin.staffs')
+app/Http/Controllers/Admin/StaffController.php.before-white-photo-background:382:    public function getEditStaff($id)
+app/Http/Controllers/Admin/StaffController.php.before-white-photo-background:401:        return view('staff.staffs.editstaff')
+app/Http/Controllers/Admin/StaffController.php.before-white-photo-background:409:            ->with('services', StaffService::get())
+app/Http/Controllers/Admin/StaffController.php.before-white-photo-background:412:            ->with('subgroups', StaffSubgroup::get());
+app/Http/Controllers/Admin/StaffController.php.before-white-photo-background:421:    public function editStaff($id, Request $request)
+app/Http/Controllers/Admin/StaffController.php.before-white-photo-background:469:        $destinationPath = public_path('uploads/staffs');
+app/Http/Controllers/Admin/StaffController.php.before-white-photo-background:493:                $photoStillInUse = DB::table('staffs')
+app/Http/Controllers/Admin/StaffController.php.before-white-photo-background:499:                    $oldPhotoPath = public_path('uploads/staffs/' . basename($oldPhoto));
+app/Http/Controllers/Admin/StaffController.php.before-white-photo-background:540:            return Redirect::route('admin.staffs')
+app/Http/Controllers/Admin/StaffController.php.before-white-photo-background:555:    public function deleteStaff(Request $request)
+app/Http/Controllers/Admin/StaffController.php.before-white-photo-background:630:    public function getsortStaff()
+app/Http/Controllers/Admin/StaffController.php.before-white-photo-background:635:        $staffs     = Staff::with(['details' => function ($query) {
+app/Http/Controllers/Admin/StaffController.php.before-white-photo-background:645:        return view('staff.staffs.sort_staffs')
+app/Http/Controllers/Admin/StaffController.php.before-white-photo-background:647:            ->with('staffs', $staffs)
+app/Http/Controllers/Admin/StaffController.php.before-white-photo-background:654:    public function sortStaff(Request $request)
+app/Http/Controllers/Admin/StaffController.php.before-white-photo-background:657:        $staffs      = $request->get('staff');
+app/Http/Controllers/Admin/StaffController.php.before-white-photo-background:660:        foreach ($staffs as $staffId) {
+app/Http/Controllers/Admin/StaffController.php.before-white-photo-background:666:        $returnArray = array('type' => 'success', 'staffs' => $staffs, 'message' => 'Staffs are sorted successfully.');
+app/Http/Controllers/Admin/StaffController.php.before-white-photo-background:676:        return view('staffs.staffs.emailrequest')->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/StaffController.php:26:use App\Models\StaffService;
+app/Http/Controllers/Admin/StaffController.php:27:use App\Models\StaffSubgroup;
+app/Http/Controllers/Admin/StaffController.php:48:     * This method is used to get the list of undeleted staffs(both active and deactive)
+app/Http/Controllers/Admin/StaffController.php:57:        $staffs     = Staff::with(['designation', 'details' => function ($query) {
+app/Http/Controllers/Admin/StaffController.php:70:        return view('staff.staffs.staffs')
+app/Http/Controllers/Admin/StaffController.php:71:            ->with('staffs', $staffs)
+app/Http/Controllers/Admin/StaffController.php:86:    public function getAddStaff()
+app/Http/Controllers/Admin/StaffController.php:92:            return view('staff.staffs.addstaff')
+app/Http/Controllers/Admin/StaffController.php:99:                ->with('services', StaffService::get())
+app/Http/Controllers/Admin/StaffController.php:102:                ->with('subgroups', StaffSubgroup::get());
+app/Http/Controllers/Admin/StaffController.php:122:    private function storeNormalizedStaffPhoto($imageFile, $destinationPath, $photoName)
+app/Http/Controllers/Admin/StaffController.php:250:    public function addStaff(Request $request, PhotoStudioService $photoStudio)
+app/Http/Controllers/Admin/StaffController.php:255:            return redirect()->route('admin.staffs');
+app/Http/Controllers/Admin/StaffController.php:312:                $destinationPath = public_path('uploads/staffs');
+app/Http/Controllers/Admin/StaffController.php:402:        return Redirect::route('admin.staffs')
+app/Http/Controllers/Admin/StaffController.php:415:    public function getEditStaff($id)
+app/Http/Controllers/Admin/StaffController.php:434:        return view('staff.staffs.editstaff')
+app/Http/Controllers/Admin/StaffController.php:442:            ->with('services', StaffService::get())
+app/Http/Controllers/Admin/StaffController.php:445:            ->with('subgroups', StaffSubgroup::get());
+app/Http/Controllers/Admin/StaffController.php:454:    public function editStaff($id, Request $request)
+app/Http/Controllers/Admin/StaffController.php:502:        $destinationPath = public_path('uploads/staffs');
+app/Http/Controllers/Admin/StaffController.php:526:                $photoStillInUse = DB::table('staffs')
+app/Http/Controllers/Admin/StaffController.php:532:                    $oldPhotoPath = public_path('uploads/staffs/' . basename($oldPhoto));
+app/Http/Controllers/Admin/StaffController.php:573:            return Redirect::route('admin.staffs')
+app/Http/Controllers/Admin/StaffController.php:588:    public function deleteStaff(Request $request)
+app/Http/Controllers/Admin/StaffController.php:663:    public function getsortStaff()
+app/Http/Controllers/Admin/StaffController.php:668:        $staffs     = Staff::with(['details' => function ($query) {
+app/Http/Controllers/Admin/StaffController.php:678:        return view('staff.staffs.sort_staffs')
+app/Http/Controllers/Admin/StaffController.php:680:            ->with('staffs', $staffs)
+app/Http/Controllers/Admin/StaffController.php:687:    public function sortStaff(Request $request)
+app/Http/Controllers/Admin/StaffController.php:690:        $staffs      = $request->get('staff');
+app/Http/Controllers/Admin/StaffController.php:693:        foreach ($staffs as $staffId) {
+app/Http/Controllers/Admin/StaffController.php:699:        $returnArray = array('type' => 'success', 'staffs' => $staffs, 'message' => 'Staffs are sorted successfully.');
+app/Http/Controllers/Admin/StaffController.php:709:        return view('staffs.staffs.emailrequest')->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/StaffController.php.before-auto-square-normalization:24:use App\Models\StaffService;
+app/Http/Controllers/Admin/StaffController.php.before-auto-square-normalization:25:use App\Models\StaffSubgroup;
+app/Http/Controllers/Admin/StaffController.php.before-auto-square-normalization:46:     * This method is used to get the list of undeleted staffs(both active and deactive)
+app/Http/Controllers/Admin/StaffController.php.before-auto-square-normalization:55:        $staffs     = Staff::with(['designation', 'details' => function ($query) {
+app/Http/Controllers/Admin/StaffController.php.before-auto-square-normalization:68:        return view('staff.staffs.staffs')
+app/Http/Controllers/Admin/StaffController.php.before-auto-square-normalization:69:            ->with('staffs', $staffs)
+app/Http/Controllers/Admin/StaffController.php.before-auto-square-normalization:84:    public function getAddStaff()
+app/Http/Controllers/Admin/StaffController.php.before-auto-square-normalization:90:            return view('staff.staffs.addstaff')
+app/Http/Controllers/Admin/StaffController.php.before-auto-square-normalization:97:                ->with('services', StaffService::get())
+app/Http/Controllers/Admin/StaffController.php.before-auto-square-normalization:100:                ->with('subgroups', StaffSubgroup::get());
+app/Http/Controllers/Admin/StaffController.php.before-auto-square-normalization:115:    public function addStaff(Request $request)
+app/Http/Controllers/Admin/StaffController.php.before-auto-square-normalization:120:            return redirect()->route('admin.staffs');
+app/Http/Controllers/Admin/StaffController.php.before-auto-square-normalization:158:                $destinationPath = public_path('uploads/staffs');
+app/Http/Controllers/Admin/StaffController.php.before-auto-square-normalization:233:        return Redirect::route('admin.staffs')
+app/Http/Controllers/Admin/StaffController.php.before-auto-square-normalization:246:    public function getEditStaff($id)
+app/Http/Controllers/Admin/StaffController.php.before-auto-square-normalization:265:        return view('staff.staffs.editstaff')
+app/Http/Controllers/Admin/StaffController.php.before-auto-square-normalization:273:            ->with('services', StaffService::get())
+app/Http/Controllers/Admin/StaffController.php.before-auto-square-normalization:276:            ->with('subgroups', StaffSubgroup::get());
+app/Http/Controllers/Admin/StaffController.php.before-auto-square-normalization:285:    public function editStaff($id, Request $request)
+app/Http/Controllers/Admin/StaffController.php.before-auto-square-normalization:333:        $destinationPath = public_path('uploads/staffs');
+app/Http/Controllers/Admin/StaffController.php.before-auto-square-normalization:354:                $photoStillInUse = DB::table('staffs')
+app/Http/Controllers/Admin/StaffController.php.before-auto-square-normalization:360:                    $oldPhotoPath = public_path('uploads/staffs/' . basename($oldPhoto));
+app/Http/Controllers/Admin/StaffController.php.before-auto-square-normalization:401:            return Redirect::route('admin.staffs')
+app/Http/Controllers/Admin/StaffController.php.before-auto-square-normalization:416:    public function deleteStaff(Request $request)
+app/Http/Controllers/Admin/StaffController.php.before-auto-square-normalization:491:    public function getsortStaff()
+app/Http/Controllers/Admin/StaffController.php.before-auto-square-normalization:496:        $staffs     = Staff::with(['details' => function ($query) {
+app/Http/Controllers/Admin/StaffController.php.before-auto-square-normalization:506:        return view('staff.staffs.sort_staffs')
+app/Http/Controllers/Admin/StaffController.php.before-auto-square-normalization:508:            ->with('staffs', $staffs)
+app/Http/Controllers/Admin/StaffController.php.before-auto-square-normalization:515:    public function sortStaff(Request $request)
+app/Http/Controllers/Admin/StaffController.php.before-auto-square-normalization:518:        $staffs      = $request->get('staff');
+app/Http/Controllers/Admin/StaffController.php.before-auto-square-normalization:521:        foreach ($staffs as $staffId) {
+app/Http/Controllers/Admin/StaffController.php.before-auto-square-normalization:527:        $returnArray = array('type' => 'success', 'staffs' => $staffs, 'message' => 'Staffs are sorted successfully.');
+app/Http/Controllers/Admin/StaffController.php.before-auto-square-normalization:537:        return view('staffs.staffs.emailrequest')->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/EmailRequestController.php:50:            return view('staff.staffs.listforms')
+app/Http/Controllers/Admin/EmailRequestController.php:69:            return view('staff.staffs.emailrequest')
+app/Http/Controllers/Admin/OfficeChiefController.php.before-white-photo-background:26:use App\Models\StaffService;
+app/Http/Controllers/Admin/OfficeChiefController.php.before-white-photo-background:27:use App\Models\StaffSubgroup;
+app/Http/Controllers/Admin/OfficeChiefController.php.before-white-photo-background:51:        $staffs     = OfficeChief::with(['details' => function ($query) {
+app/Http/Controllers/Admin/OfficeChiefController.php.before-white-photo-background:64:        return view('office_chief.admin.staffs')
+app/Http/Controllers/Admin/OfficeChiefController.php.before-white-photo-background:65:            ->with('staffs', $staffs)
+app/Http/Controllers/Admin/OfficeChiefController.php.before-white-photo-background:75:    public function getAddStaff()
+app/Http/Controllers/Admin/OfficeChiefController.php.before-white-photo-background:233:    public function addStaff(Request $request)
+app/Http/Controllers/Admin/OfficeChiefController.php.before-white-photo-background:328:    public function getEditStaff($id)
+app/Http/Controllers/Admin/OfficeChiefController.php.before-white-photo-background:347:    public function editStaff($id, Request $request)
+app/Http/Controllers/Admin/OfficeChiefController.php.before-white-photo-background:486:    public function deleteStaff(Request $request)
+app/Http/Controllers/Admin/OfficeChiefController.php.before-white-photo-background:523:    public function getsortStaff()
+app/Http/Controllers/Admin/OfficeChiefController.php.before-white-photo-background:528:        $staffs     = OfficeChief::with(['details' => function ($query) {
+app/Http/Controllers/Admin/OfficeChiefController.php.before-white-photo-background:538:        return view('office_chief.admin.sort_staffs')
+app/Http/Controllers/Admin/OfficeChiefController.php.before-white-photo-background:540:            ->with('staffs', $staffs)
+app/Http/Controllers/Admin/OfficeChiefController.php.before-white-photo-background:547:    public function sortStaff(Request $request)
+app/Http/Controllers/Admin/OfficeChiefController.php.before-white-photo-background:550:        $staffs      = $request->get('staff');
+app/Http/Controllers/Admin/OfficeChiefController.php.before-white-photo-background:553:        foreach ($staffs as $staffId) {
+app/Http/Controllers/Admin/OfficeChiefController.php.before-white-photo-background:559:        $returnArray = array('type' => 'success', 'staffs' => $staffs, 'message' => 'Records are sorted successfully.');
+app/Http/Controllers/Admin/AlbumController.php.before-album-fix:82:    public function getAddAlbum()
+app/Http/Controllers/Admin/AlbumController.php.before-album-fix:105:    public function addAlbum(Request $request)
+app/Http/Controllers/Admin/AlbumController.php.before-album-fix:194:    public function getEditAlbum($id)
+app/Http/Controllers/Admin/AlbumController.php.before-album-fix:234:    public function editAlbum(Request $request)
+app/Http/Controllers/Admin/AlbumController.php.before-album-fix:346:    public function deleteAlbum(Request $request)
+app/Http/Controllers/Admin/GalleryController.php.bak-auto-image-20261116-165242:53:    private function albumForUser($albumId, $user): ?Album
+app/Http/Controllers/Admin/GalleryController.php.bak-auto-image-20261116-165242:65:    private function galleryForUser($galleryId, $user): ?Gallery
+app/Http/Controllers/Admin/GalleryController.php.bak-auto-image-20261116-165242:92:    private function uploadGalleryImage($imageFile, $user): string
+app/Http/Controllers/Admin/GalleryController.php.bak-auto-image-20261116-165242:114:    public function getIndex($albumId)
+app/Http/Controllers/Admin/GalleryController.php.bak-auto-image-20261116-165242:148:    public function getAddGallery($albumId)
+app/Http/Controllers/Admin/GalleryController.php.bak-auto-image-20261116-165242:165:    public function addGallery($albumId, Request $request)
+app/Http/Controllers/Admin/GalleryController.php.bak-auto-image-20261116-165242:198:            DB::transaction(function () use ($request, $languages, $album, $user, $newFilename) {
+app/Http/Controllers/Admin/GalleryController.php.bak-auto-image-20261116-165242:245:    public function getEditGallery($id)
+app/Http/Controllers/Admin/GalleryController.php.bak-auto-image-20261116-165242:269:    public function editGallery(Request $request, $id)
+app/Http/Controllers/Admin/GalleryController.php.bak-auto-image-20261116-165242:307:            DB::transaction(function () use ($request, $languages, $gallery, $user, $newFilename) {
+app/Http/Controllers/Admin/GalleryController.php.bak-auto-image-20261116-165242:356:    public function deleteGallery(Request $request)
+app/Http/Controllers/Admin/StaffController.php.before-staff-photo-fix:24:use App\Models\StaffService;
+app/Http/Controllers/Admin/StaffController.php.before-staff-photo-fix:25:use App\Models\StaffSubgroup;
+app/Http/Controllers/Admin/StaffController.php.before-staff-photo-fix:46:     * This method is used to get the list of undeleted staffs(both active and deactive)
+app/Http/Controllers/Admin/StaffController.php.before-staff-photo-fix:55:        $staffs     = Staff::with(['designation', 'details' => function ($query) {
+app/Http/Controllers/Admin/StaffController.php.before-staff-photo-fix:68:        return view('staff.staffs.staffs')
+app/Http/Controllers/Admin/StaffController.php.before-staff-photo-fix:69:            ->with('staffs', $staffs)
+app/Http/Controllers/Admin/StaffController.php.before-staff-photo-fix:84:    public function getAddStaff()
+app/Http/Controllers/Admin/StaffController.php.before-staff-photo-fix:89:            return view('staff.staffs.addstaff')
+app/Http/Controllers/Admin/StaffController.php.before-staff-photo-fix:96:                ->with('services', StaffService::get())
+app/Http/Controllers/Admin/StaffController.php.before-staff-photo-fix:99:                ->with('subgroups', StaffSubgroup::get());
+app/Http/Controllers/Admin/StaffController.php.before-staff-photo-fix:114:    public function addStaff(Request $request)
+app/Http/Controllers/Admin/StaffController.php.before-staff-photo-fix:138:        $destinationPath  = 'uploads/staffs/';
+app/Http/Controllers/Admin/StaffController.php.before-staff-photo-fix:178:        //     $destinationPath = base_path() . '/uploads/staffs/';
+app/Http/Controllers/Admin/StaffController.php.before-staff-photo-fix:206:        return Redirect::route('admin.staffs')
+app/Http/Controllers/Admin/StaffController.php.before-staff-photo-fix:218:    public function getEditStaff($id)
+app/Http/Controllers/Admin/StaffController.php.before-staff-photo-fix:226:        return view('staff.staffs.editstaff')
+app/Http/Controllers/Admin/StaffController.php.before-staff-photo-fix:234:            ->with('services', StaffService::get())
+app/Http/Controllers/Admin/StaffController.php.before-staff-photo-fix:237:            ->with('subgroups', StaffSubgroup::get());
+app/Http/Controllers/Admin/StaffController.php.before-staff-photo-fix:246:    public function editStaff($id, Request $request)
+app/Http/Controllers/Admin/StaffController.php.before-staff-photo-fix:284:        $destinationPath  = 'uploads/staffs/';
+app/Http/Controllers/Admin/StaffController.php.before-staff-photo-fix:308:            if (file_exists("uploads/staffs/" . $staff->photo)) {
+app/Http/Controllers/Admin/StaffController.php.before-staff-photo-fix:309:                unlink('uploads/staffs/' . $staff->photo);
+app/Http/Controllers/Admin/StaffController.php.before-staff-photo-fix:313:            if (file_exists("uploads/staffs/" . $staff->photo)) {
+app/Http/Controllers/Admin/StaffController.php.before-staff-photo-fix:314:                unlink('uploads/staffs/' . $staff->photo);
+app/Http/Controllers/Admin/StaffController.php.before-staff-photo-fix:351:            return Redirect::route('admin.staffs')
+app/Http/Controllers/Admin/StaffController.php.before-staff-photo-fix:366:    public function deleteStaff(Request $request)
+app/Http/Controllers/Admin/StaffController.php.before-staff-photo-fix:403:    public function getsortStaff()
+app/Http/Controllers/Admin/StaffController.php.before-staff-photo-fix:408:        $staffs     = Staff::with(['details' => function ($query) {
+app/Http/Controllers/Admin/StaffController.php.before-staff-photo-fix:418:        return view('staff.staffs.sort_staffs')
+app/Http/Controllers/Admin/StaffController.php.before-staff-photo-fix:420:            ->with('staffs', $staffs)
+app/Http/Controllers/Admin/StaffController.php.before-staff-photo-fix:427:    public function sortStaff(Request $request)
+app/Http/Controllers/Admin/StaffController.php.before-staff-photo-fix:430:        $staffs      = $request->get('staff');
+app/Http/Controllers/Admin/StaffController.php.before-staff-photo-fix:433:        foreach ($staffs as $staffId) {
+app/Http/Controllers/Admin/StaffController.php.before-staff-photo-fix:439:        $returnArray = array('type' => 'success', 'staffs' => $staffs, 'message' => 'Staffs are sorted successfully.');
+app/Http/Controllers/Admin/StaffController.php.before-staff-photo-fix:449:        return view('staffs.staffs.emailrequest')->with('abs_site_url', $this->abs_site_url)
+app/Http/Controllers/Admin/AlbumController.php:51:    private function albumForUser($albumId, $user): ?Album
+app/Http/Controllers/Admin/AlbumController.php:71:    private function uploadAlbumImage($imageFile, $user): string
+app/Http/Controllers/Admin/AlbumController.php:94:    private function albumListViewData($user): array
+app/Http/Controllers/Admin/AlbumController.php:128:    public function getAddAlbum()
+app/Http/Controllers/Admin/AlbumController.php:143:    public function addAlbum(Request $request)
+app/Http/Controllers/Admin/AlbumController.php:184:            DB::transaction(function () use ($request, $languages, $user, $albumUrl, $newImage) {
+app/Http/Controllers/Admin/AlbumController.php:231:    public function getEditAlbum($id)
+app/Http/Controllers/Admin/AlbumController.php:265:    public function editAlbum(Request $request, $id)
+app/Http/Controllers/Admin/AlbumController.php:322:            DB::transaction(function () use ($request, $languages, $user, $album, $albumUrl, $newImage) {
+app/Http/Controllers/Admin/AlbumController.php:371:    public function deleteAlbum(Request $request)
+app/Http/Controllers/Admin/OfficeChiefController.php.before-auto-photo-normalization:26:use App\Models\StaffService;
+app/Http/Controllers/Admin/OfficeChiefController.php.before-auto-photo-normalization:27:use App\Models\StaffSubgroup;
+app/Http/Controllers/Admin/OfficeChiefController.php.before-auto-photo-normalization:51:        $staffs     = OfficeChief::with(['details' => function ($query) {
+app/Http/Controllers/Admin/OfficeChiefController.php.before-auto-photo-normalization:64:        return view('office_chief.admin.staffs')
+app/Http/Controllers/Admin/OfficeChiefController.php.before-auto-photo-normalization:65:            ->with('staffs', $staffs)
+app/Http/Controllers/Admin/OfficeChiefController.php.before-auto-photo-normalization:75:    public function getAddStaff()
+app/Http/Controllers/Admin/OfficeChiefController.php.before-auto-photo-normalization:99:    public function addStaff(Request $request)
+app/Http/Controllers/Admin/OfficeChiefController.php.before-auto-photo-normalization:184:    public function getEditStaff($id)
+app/Http/Controllers/Admin/OfficeChiefController.php.before-auto-photo-normalization:203:    public function editStaff($id, Request $request)
+app/Http/Controllers/Admin/OfficeChiefController.php.before-auto-photo-normalization:310:    public function deleteStaff(Request $request)
+app/Http/Controllers/Admin/OfficeChiefController.php.before-auto-photo-normalization:347:    public function getsortStaff()
+app/Http/Controllers/Admin/OfficeChiefController.php.before-auto-photo-normalization:352:        $staffs     = OfficeChief::with(['details' => function ($query) {
+app/Http/Controllers/Admin/OfficeChiefController.php.before-auto-photo-normalization:362:        return view('office_chief.admin.sort_staffs')
+app/Http/Controllers/Admin/OfficeChiefController.php.before-auto-photo-normalization:364:            ->with('staffs', $staffs)
+app/Http/Controllers/Admin/OfficeChiefController.php.before-auto-photo-normalization:371:    public function sortStaff(Request $request)
+app/Http/Controllers/Admin/OfficeChiefController.php.before-auto-photo-normalization:374:        $staffs      = $request->get('staff');
+app/Http/Controllers/Admin/OfficeChiefController.php.before-auto-photo-normalization:377:        foreach ($staffs as $staffId) {
+app/Http/Controllers/Admin/OfficeChiefController.php.before-auto-photo-normalization:383:        $returnArray = array('type' => 'success', 'staffs' => $staffs, 'message' => 'Records are sorted successfully.');
+app/Http/Controllers/Admin/GalleryController.php:33:    private function removeUnreferencedGalleryFiles(?string $filename): void
+app/Http/Controllers/Admin/GalleryController.php:68:    private function albumForUser($albumId, $user): ?Album
+app/Http/Controllers/Admin/GalleryController.php:80:    private function galleryForUser($galleryId, $user): ?Gallery
+app/Http/Controllers/Admin/GalleryController.php:107:    private function uploadGalleryImage($imageFile, $user): string
+app/Http/Controllers/Admin/GalleryController.php:134:    public function getIndex($albumId)
+app/Http/Controllers/Admin/GalleryController.php:168:    public function getAddGallery($albumId)
+app/Http/Controllers/Admin/GalleryController.php:185:    public function addGallery($albumId, Request $request)
+app/Http/Controllers/Admin/GalleryController.php:218:            DB::transaction(function () use ($request, $languages, $album, $user, $newFilename) {
+app/Http/Controllers/Admin/GalleryController.php:260:    public function getEditGallery($id)
+app/Http/Controllers/Admin/GalleryController.php:284:    public function editGallery(Request $request, $id)
+app/Http/Controllers/Admin/GalleryController.php:322:            DB::transaction(function () use ($request, $languages, $gallery, $user, $newFilename) {
+app/Http/Controllers/Admin/GalleryController.php:366:    public function deleteGallery(Request $request)
+app/Http/Controllers/Admin/GalleryController.php.before-gallery-fix:42:    public function getIndex($albumId)
+app/Http/Controllers/Admin/GalleryController.php.before-gallery-fix:83:    public function getAddGallery($albumId)
+app/Http/Controllers/Admin/GalleryController.php.before-gallery-fix:107:    public function addGallery($albumId, Request $request)
+app/Http/Controllers/Admin/GalleryController.php.before-gallery-fix:187:    public function getEditGallery($id)
+app/Http/Controllers/Admin/GalleryController.php.before-gallery-fix:229:    public function editGallery(Request $request)
+app/Http/Controllers/Admin/GalleryController.php.before-gallery-fix:332:    public function deleteGallery(Request $request)
+app/Http/Controllers/GalleryController.php:47:                'album.photogallery',
 root@dorweb:/var/www/dor#
