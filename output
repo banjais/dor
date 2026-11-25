@@ -1,328 +1,1172 @@
-root@dorweb:~# cd /var/www/dor && echo "===== EXISTING FONT SIZE CONTROL =====" && sed -n '75,115p' resources/views/layout/client/foot_2021.blade.php && sed -n '150,185p' resources/views/layout/client/foot_2021.blade.php && echo "===== FONT SCALE CSS =====" && grep -n -A 12 -B 3 -E 'body_92|body_96|body_100|body_104|body_108' public/assets/css_2021/style.css public/assets/css_2021/website-theme.css && echo "===== BANNER HEIGHT RULES =====" && grep -n -B 5 -A 10 -E 'slider-fig|home-banner-officers-row|home-officers-panel|home-officers-column' public/assets/css_2021/style.css public/assets/css_2021/website-theme.css && echo "===== FOOTER QUOTE AND APP REFERENCES =====" && grep -n -B 6 -A 16 -E 'office-quote-section|footer-install-app-trigger|dorAppPopover|footer-app-item' resources/views/layout/client/footer_2021.blade.php resources/views/layout/client/header_2021.blade.php && echo "===== ADMIN CONFIGURATION JAVASCRIPT =====" && grep -n -A 100 -B 15 -E 'data-settings-tab|website-theme-panel|website-identity-panel' resources/views/website_theme/admin/index.blade.php
-===== EXISTING FONT SIZE CONTROL =====
-                    alert('Error occurred.');
-                }
-            });
-        });
+root@dorweb:/var/www/dor# ^C
+root@dorweb:/var/www/dor# ^C
+root@dorweb:/var/www/dor# cd /var/www/dor && \
+echo "===== THEME CONTROLLER =====" && sed -n '1,260p' app/Http/Controllers/Admin/WebsiteThemeSettingController.php && \
+echo "===== IDENTITY CONTROLLER =====" && sed -n '1,260p' app/Http/Controllers/Admin/WebsiteIdentitySettingController.php && \
+echo "===== APP SERVICE PROVIDER =====" && grep -n -B 5 -A 16 -E 'websiteTheme|websiteIdentity|View::composer' app/Providers/AppServiceProvider.php && \
+echo "===== CONFIGURATION ROUTES =====" && grep -n -B 5 -A 12 -E 'website-theme|website-identity' routes/web.php && \
+echo "===== HEADER / MENU / FOOTER CSS SELECTORS =====" && grep -n -E 'logo-title|government-name|ministry-name|department-name|other-office-header|navbar-nav|main-menu|submenu|footer|office-quote-section|slider-fig|home-officers-panel|other-office-officers-frame' public/assets/css_2021/website-theme.css public/assets/css_2021/style.css | tail -180
+===== THEME CONTROLLER =====
+<?php
 
-        // One-click font-size cycle: 100 -> 104 -> 108 -> 100 -> 96 -> 92 -> 100.
-        $('#fontSizeToggle').on('click', function() {
-            if (is_changing_font) return;
+namespace App\Http\Controllers\Admin;
 
-            is_changing_font = true;
+use App\Http\Controllers\Controller;
+use App\Http\Controllers\ConfigurationController;
+use App\Models\WebsiteThemeSetting;
+use App\Models\WebsiteIdentitySetting;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
-            const currentClass = ['body_92', 'body_96', 'body_100', 'body_104', 'body_108']
-                .find(function(className) {
-                    return $('body').hasClass(className);
-                }) || 'body_100';
-
-            const fontCycle = ['body_100', 'body_104', 'body_108', 'body_96', 'body_92'];
-            const currentIndex = fontCycle.indexOf(currentClass);
-            const nextClass = fontCycle[(currentIndex + 1) % fontCycle.length];
-
-            const fontCodes = {
-                body_100: 'a',
-                body_104: 'a-plus',
-                body_108: 'a-plus-2',
-                body_96: 'a-minus',
-                body_92: 'a-minus-2'
-            };
-
-            const fontSizeCode = fontCodes[nextClass];
-
-            $.ajax({
-                data: 'font_size_code=' + fontSizeCode,
-                url: '/change_font_size',
-                type: 'POST',
-                success: function() {
-                    setFontSize(fontSizeCode);
-                    is_changing_font = false;
-                },
-                error: function() {
-                    is_changing_font = false;
-                    alert('Error occurred.');
-        $('#a-home-download-scroll').click(function() {
-            var someTabTriggerEl = $('#tab12-tab');
-            var tab = new bootstrap.Tab(someTabTriggerEl);
-            tab.show();
-
-            $('html, body').animate({
-                scrollTop: $("#download-tabs-section").offset().top
-            }, 100);
-        });
-
-    });
-
-    function goTool(url) {
-        window.open(url);
+class WebsiteThemeSettingController extends Controller
+{
+    private function ensureSuperAdmin(): void
+    {
+        abort_unless(
+            Auth::check() && (int) Auth::user()->user_type_id === 2,
+            403
+        );
     }
 
-    function setFontSize(font_size_code) {
-        var body_class = 'body_100';
+    public function index()
+    {
+        $this->ensureSuperAdmin();
 
-        if (font_size_code == 'a-minus-2') body_class = 'body_92';
-        else if (font_size_code == 'a-minus') body_class = 'body_96';
-        else if (font_size_code == 'a-plus') body_class = 'body_104';
-        else if (font_size_code == 'a-plus-2') body_class = 'body_108';
+        $theme = WebsiteThemeSetting::current();
+        $identity = WebsiteIdentitySetting::current();
 
-        $('body').removeClass().addClass(body_class);
+        $site_name = ConfigurationController::site_name();
+        $abs_site_url = ConfigurationController::abs_site_url();
+
+        return view('website_theme.admin.index', compact('theme', 'identity', 'site_name', 'abs_site_url'));
     }
 
-    document.addEventListener('DOMContentLoaded', function () {
-        const appItem = document.querySelector('.footer-app-item');
-        const appTrigger = appItem?.querySelector('.footer-install-app-trigger');
-        const qrDownload = appItem?.querySelector('.footer-qr-download');
-        const expandButton = appItem?.querySelector('.footer-qr-expand');
-        const isStandaloneApp = window.matchMedia('(display-mode: standalone)').matches
-            || window.navigator.standalone === true;
+    public function update(Request $request)
+    {
+        $this->ensureSuperAdmin();
 
-        if (appItem && isStandaloneApp) {
-===== FONT SCALE CSS =====
-public/assets/css_2021/style.css-1208-
-public/assets/css_2021/style.css-1209-/********** for decreased size ********/
-public/assets/css_2021/style.css-1210-
-public/assets/css_2021/style.css:1211:.body_96 {}
-public/assets/css_2021/style.css-1212-
-public/assets/css_2021/style.css:1213:body.body_96 {
-public/assets/css_2021/style.css-1214-    font-size: 10px;
-public/assets/css_2021/style.css-1215-}
-public/assets/css_2021/style.css-1216-
+        $validated = $request->validate([
+            'page_background' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
+            'card_background' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
+            'header_background' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
+            'nav_background' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
+            'accent_color' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
+            'footer_background' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
+            'text_color' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
+            'border_color' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
+        ]);
+
+        $theme = WebsiteThemeSetting::current();
+        $theme->fill($validated);
+        $theme->updated_by = Auth::id();
+        $theme->save();
+
+        Cache::forget('website_theme_global');
+
+        return redirect()
+            ->route('admin.website-theme.index')
+            ->with('message', 'Website theme settings have been saved successfully.')
+            ->with('type', 'success');
+    }
+
+    public function reset()
+    {
+        $this->ensureSuperAdmin();
+
+        WebsiteThemeSetting::resetToDefaults(Auth::id());
+        Cache::forget('website_theme_global');
+
+        return redirect()
+            ->route('admin.website-theme.index')
+            ->with('message', 'Website theme has been reset to the default colours.')
+            ->with('type', 'success');
+    }
+}
+===== IDENTITY CONTROLLER =====
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\WebsiteIdentitySetting;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+
+class WebsiteIdentitySettingController extends Controller
+{
+    private function ensureSuperAdmin(): void
+    {
+        abort_unless(
+            Auth::check() && (int) Auth::user()->user_type_id === 2,
+            403
+        );
+    }
+
+    public function update(Request $request)
+    {
+        $this->ensureSuperAdmin();
+
+        $validated = $request->validate([
+            'government_name_np' => ['required', 'string', 'max:255'],
+            'government_name_en' => ['required', 'string', 'max:255'],
+            'ministry_name_np' => ['required', 'string', 'max:255'],
+            'ministry_name_en' => ['required', 'string', 'max:255'],
+            'department_name_np' => ['required', 'string', 'max:255'],
+            'department_name_en' => ['required', 'string', 'max:255'],
+            'other_office_name_font_size_desktop' => ['required', 'integer', 'min:9', 'max:24'],
+            'other_office_name_font_size_mobile' => ['required', 'integer', 'min:9', 'max:20'],
+            'other_office_name_line_height' => ['required', 'numeric', 'min:1', 'max:2.5'],
+            'other_office_name_font_weight' => ['required', 'in:400,500,600,700,800'],
+        ]);
+
+        $identity = WebsiteIdentitySetting::current();
+        $identity->fill($validated);
+        $identity->updated_by = Auth::id();
+        $identity->save();
+
+        Cache::forget('website_identity_global');
+
+        return redirect()
+            ->route('admin.website-theme.index')
+            ->with('message', 'Government identity settings have been saved successfully.')
+            ->with('type', 'success');
+    }
+}
+===== APP SERVICE PROVIDER =====
+28-     */
+29-    public function boot()
+30-    {
+31-        Paginator::useBootstrap();
+32-
+33:        View::composer(
+34-            [
+35-                'layout.client.head',
+36-                'layout.client.head_2021',
+37-            ],
+38-            function ($view) {
+39-                $themeSettings = Cache::rememberForever(
+40-                    'website_theme_global',
+41-                    fn () => WebsiteThemeSetting::current()->toArray()
+42-                );
+43-
+44:                $view->with('websiteTheme', $themeSettings);
+45-            }
+46-        );
+47-
+48-
+49:        View::composer(
+50-            'layout.client.header_2021',
+51-            function ($view) {
+52-                $identitySettings = Cache::rememberForever(
+53-                    'website_identity_global',
+54-                    fn () => WebsiteIdentitySetting::current()->toArray()
+55-                );
+56-
+57:                $view->with('websiteIdentity', $identitySettings);
+58-
+59-                $languageId = session('language_id', 1);
+60-                $view->with(
+61-                    'nepalSambat',
+62-                    \App\Services\NepalSambatService::today($languageId)
+63-                );
+64-            }
+65-        );
+66-    }
+67-}
+===== CONFIGURATION ROUTES =====
+20-    Route::get('/logout', array('as' => 'admin.logout', 'uses' => 'Admin\LoginController@logoutUser'));
+21-
+22-
+23-    Route::get('/home', array('as' => 'dashboard', 'uses' => 'Admin\LoginController@getHome'));
+24-    // Global website appearance settings (Super Admin only)
+25:    Route::get('website-theme', array(
+26:        'as' => 'admin.website-theme.index',
+27-        'uses' => 'Admin\WebsiteThemeSettingController@index'
+28-    ));
+29:    Route::post('website-theme', array(
+30:        'as' => 'admin.website-theme.update',
+31-        'uses' => 'Admin\WebsiteThemeSettingController@update'
+32-    ));
+33:    Route::post('website-theme/reset', array(
+34:        'as' => 'admin.website-theme.reset',
+35-        'uses' => 'Admin\WebsiteThemeSettingController@reset'
+36-    ));
+37-
+38-    // Flash Box animation settings (Super Admin only)
+39-    Route::get('flash-box-settings', [
+40-        'as' => 'admin.flash-box-settings.index',
+41-        'uses' => 'Admin\\FlashBoxSettingController@index'
+42-    ]);
+43-    Route::post('flash-box-settings', [
+44-        'as' => 'admin.flash-box-settings.update',
+45-        'uses' => 'Admin\\FlashBoxSettingController@update'
+46-    ]);
+--
+147-        'uses' => 'Admin\\ChatbotSettingController@testIntegration'
+148-    ]);
+149-
+150-
+151-    // Government identity settings (Super Admin only)
+152:    Route::post('website-identity', array(
+153:        'as' => 'admin.website-identity.update',
+154-        'uses' => 'Admin\WebsiteIdentitySettingController@update'
+155-    ));
+156-
+157-    Route::get('/', array('uses' => 'Admin\LoginController@getHome'));
+158-
+159-    Route::get('users',  array('as' => 'admin.users', 'uses' => 'Admin\UserController@getIndex'));
+160-    Route::get('user/add',  array('as' => 'admin.users.add', 'uses' => 'Admin\UserController@getAddUser'));
+161-    Route::post('user/add',  array('as' => 'admin.users.store', 'uses' => 'Admin\UserController@addUser'));
+162-    Route::get('user/edit/{id}',  array('as' => 'admin.users.edit', 'uses' => 'Admin\UserController@getEditUser'));
+163-    Route::post('user/edit/{id}',  array('as' => 'admin.users.update', 'uses' => 'Admin\UserController@editUser'));
+164-    Route::post('user/delete', array('as' => 'admin.user.delete', 'uses' => 'Admin\UserController@deleteUser'));
+165-    Route::post('user/change-status', array('as' => 'admin.user.change.status', 'uses' => 'Admin\UserController@changeStatus'));
+===== HEADER / MENU / FOOTER CSS SELECTORS =====
+public/assets/css_2021/website-theme.css:5142:    .home-officers-panel > .person-block.other-office-officers-frame {
+public/assets/css_2021/website-theme.css:5152:    .other-office-officers-frame > .media-block {
+public/assets/css_2021/website-theme.css:5160:    .other-office-officers-frame .rounded-fig-wrap {
+public/assets/css_2021/website-theme.css:5171:    .home-officers-panel > .person-block.other-office-officers-frame {
+public/assets/css_2021/website-theme.css:5177:    .other-office-officers-frame > .media-block {
+public/assets/css_2021/website-theme.css:5196:.other-office-officers-frame .media-desc h5 {
+public/assets/css_2021/website-theme.css:5199:.other-office-officers-frame .media-desc p {
+public/assets/css_2021/website-theme.css:5204:    .other-office-officers-frame .media-desc h5 {
+public/assets/css_2021/website-theme.css:5208:    .other-office-officers-frame .media-desc p {
+public/assets/css_2021/website-theme.css:5222:.other-office-officers-frame .media-desc h5 {
+public/assets/css_2021/website-theme.css:5229:.other-office-officers-frame .media-desc .other-officer-position {
+public/assets/css_2021/website-theme.css:5236:.other-office-officers-frame .media-desc p:not(.other-officer-position) {
+public/assets/css_2021/website-theme.css:5244:.other-office-officers-frame .media-desc > a {
+public/assets/css_2021/website-theme.css:5251:.other-office-officers-frame .media-desc h5 { order: 1 !important; }
+public/assets/css_2021/website-theme.css:5252:.other-office-officers-frame .media-desc .other-officer-position { order: 2 !important; }
+public/assets/css_2021/website-theme.css:5253:.other-office-officers-frame .media-desc p:not(.other-officer-position) { order: 3 !important; }
+public/assets/css_2021/website-theme.css:5254:.other-office-officers-frame .media-desc {
+public/assets/css_2021/website-theme.css:5261:    .home-officers-panel > .person-block.other-office-officers-frame {
+public/assets/css_2021/website-theme.css:5269:    .other-office-officers-frame > .media-block {
+public/assets/css_2021/website-theme.css:5280:    .other-office-officers-frame > .media-block:last-child {
+public/assets/css_2021/website-theme.css:5283:    .other-office-officers-frame > .media-block:only-child {
+public/assets/css_2021/website-theme.css:5287:    .other-office-officers-frame .rounded-fig-wrap {
+public/assets/css_2021/website-theme.css:5311:    .home-officers-panel > .person-block.other-office-officers-frame {
+public/assets/css_2021/website-theme.css:5315:    .other-office-officers-frame > .media-block {
+public/assets/css_2021/website-theme.css:5321:    .other-office-officers-frame > .media-block:last-child {
+public/assets/css_2021/website-theme.css:5324:    .other-office-officers-frame > .media-block:only-child {
+public/assets/css_2021/website-theme.css:5331:.other-office-officers-frame .rounded-fig-wrap a {
+public/assets/css_2021/website-theme.css:5338:.other-office-officers-frame .rounded-fig-wrap a::after {
+public/assets/css_2021/website-theme.css:5355:.other-office-officers-frame .rounded-fig-wrap a:hover::after,
+public/assets/css_2021/website-theme.css:5356:.other-office-officers-frame .rounded-fig-wrap a:focus-visible::after {
+public/assets/css_2021/website-theme.css:5393:.nav-wrap .navbar-nav .dropdown-menu .dropdown-item {
+public/assets/css_2021/website-theme.css:5399:.nav-wrap .navbar-nav .submenu .dropdown-item {
+public/assets/css_2021/website-theme.css:5405:.nav-wrap .navbar-nav .submenu .submenu .dropdown-item {
+public/assets/css_2021/website-theme.css:5409:    .nav-wrap .navbar-nav .has-sub { position: relative !important; }
+public/assets/css_2021/website-theme.css:5410:    .nav-wrap .navbar-nav .has-sub > .submenu {
+public/assets/css_2021/website-theme.css:5419:    .nav-wrap .navbar-nav .has-sub.submenu-open-left > .submenu {
+public/assets/css_2021/website-theme.css:5425:    .nav-wrap .navbar-nav { max-height: 65vh !important; overflow-y: auto !important; }
+public/assets/css_2021/website-theme.css:5426:    .nav-wrap .navbar-nav .dropdown-menu .dropdown-item { padding: 7px 28px 7px 12px !important; }
+public/assets/css_2021/website-theme.css:5427:    .nav-wrap .navbar-nav .has-sub > .submenu {
+public/assets/css_2021/website-theme.css:5440:    .nav-wrap .navbar-nav .has-sub.submenu-expanded > .submenu { display: block !important; }
+public/assets/css_2021/website-theme.css:5441:    .nav-wrap .navbar-nav .has-sub.submenu-expanded:after { transform: rotate(90deg); }
+public/assets/css_2021/website-theme.css:5442:    .nav-wrap .navbar-nav .has-sub:after { transition: transform .15s ease; }
+public/assets/css_2021/website-theme.css:5446:    .nav-wrap .navbar-nav {
+public/assets/css_2021/website-theme.css:5453:.nav-wrap .navbar-nav .dropdown-menu .dropdown-item {
+public/assets/css_2021/website-theme.css:5459:.nav-wrap .navbar-nav .submenu .dropdown-item {
+public/assets/css_2021/website-theme.css:5462:.nav-wrap .navbar-nav .submenu .submenu .dropdown-item {
+public/assets/css_2021/style.css:65:.logo-title {
+public/assets/css_2021/style.css:69:.logo-title a {
+public/assets/css_2021/style.css:73:.logo-title a:hover {
+public/assets/css_2021/style.css:78:.logo-title strong {
+public/assets/css_2021/style.css:85:.logo-title small {
+public/assets/css_2021/style.css:92:.logo-title span {
+public/assets/css_2021/style.css:255:.nav-wrap .navbar-expand-lg .navbar-nav .nav-link {
+public/assets/css_2021/style.css:262:.nav-wrap .navbar-expand-lg .navbar-nav .nav-link:hover,
+public/assets/css_2021/style.css:268:.nav-wrap .navbar-nav .dropdown-menu {
+public/assets/css_2021/style.css:323:.nav-wrap .navbar-nav .dropdown-menu li {
+public/assets/css_2021/style.css:327:.nav-wrap .dropdown-menu .submenu {
+public/assets/css_2021/style.css:332:.nav-wrap .dropdown-menu>li:hover>.submenu {
+public/assets/css_2021/style.css:336:.nav-wrap .navbar-nav .dropdown:hover>.dropdown-menu {
+public/assets/css_2021/style.css:340:.nav-wrap .navbar-nav {
+public/assets/css_2021/style.css:890:.main-footer {}
+public/assets/css_2021/style.css:892:.top-footer {
+public/assets/css_2021/style.css:901:.top-footer p {
+public/assets/css_2021/style.css:905:.mid-footer {
+public/assets/css_2021/style.css:910:.mid-footer h4 {
+public/assets/css_2021/style.css:917:.footer-list,
+public/assets/css_2021/style.css:920:.footer-list ul,
+public/assets/css_2021/style.css:926:.footer-list ul li,
+public/assets/css_2021/style.css:935:.footer-list ul li a,
+public/assets/css_2021/style.css:940:.footer-list ul li a:hover,
+public/assets/css_2021/style.css:951:.bottom-footer {
+public/assets/css_2021/style.css:957:.bottom-footer .divider-list ul li a {
+public/assets/css_2021/style.css:961:.bottom-footer .divider-list ul li {
+public/assets/css_2021/style.css:966:.bottom-footer .divider-list ul li a:hover {
+public/assets/css_2021/style.css:970:.bottom-footer p {
 public/assets/css_2021/style.css:1217:.body_96 .logo-title strong {
-public/assets/css_2021/style.css-1218-    font-size: 18px;
-public/assets/css_2021/style.css-1219-}
-public/assets/css_2021/style.css-1220-
-public/assets/css_2021/style.css:1221:.body_96 .block-title h2 {
-public/assets/css_2021/style.css-1222-    font-size: 16px;
-public/assets/css_2021/style.css-1223-}
-public/assets/css_2021/style.css-1224-
 public/assets/css_2021/style.css:1225:.body_96 .logo-title span,
 public/assets/css_2021/style.css:1226:.body_96 .mid-footer h4 {
-public/assets/css_2021/style.css-1227-    font-size: 14px;
-public/assets/css_2021/style.css-1228-}
-public/assets/css_2021/style.css-1229-
-public/assets/css_2021/style.css:1230:.body_96 .media-desc h5,
-public/assets/css_2021/style.css:1231:.body_96 .more-btn,
-public/assets/css_2021/style.css:1232:.body_96 .tab-wrap .nav-tabs .nav-link,
-public/assets/css_2021/style.css:1233:.body_96 .bulleted-list h3,
 public/assets/css_2021/style.css:1234:.body_96 .top-footer,
-public/assets/css_2021/style.css:1235:.body_96 .go-btn {
-public/assets/css_2021/style.css-1236-    font-size: 12px;
-public/assets/css_2021/style.css-1237-}
-public/assets/css_2021/style.css-1238-
 public/assets/css_2021/style.css:1239:.body_96 .logo-title small,
-public/assets/css_2021/style.css:1240:.body_96 .top-inline-items ul li,
-public/assets/css_2021/style.css:1241:.body_96 .white-round-btn.big-round-btn,
-public/assets/css_2021/style.css:1242:.body_96 .divider-list ul li,
 public/assets/css_2021/style.css:1243:.body_96 .nav-wrap .navbar-expand-lg .navbar-nav .nav-link,
-public/assets/css_2021/style.css:1244:.body_96 .nav-wrap .dropdown-item,
-public/assets/css_2021/style.css:1245:.body_96 .news-ticker-box,
-public/assets/css_2021/style.css:1246:.body_96 .slider-caption p,
-public/assets/css_2021/style.css:1247:.body_96 .person-header p,
-public/assets/css_2021/style.css:1248:.body_96 .welcome-block p,
-public/assets/css_2021/style.css:1249:.body_96 .bulleted-list p,
 public/assets/css_2021/style.css:1250:.body_96 .footer-list ul li,
-public/assets/css_2021/style.css:1251:.body_96 .address-list ul li,
 public/assets/css_2021/style.css:1252:.body_96 .bottom-footer p {
-public/assets/css_2021/style.css-1253-    font-size: 10px;
-public/assets/css_2021/style.css-1254-}
-public/assets/css_2021/style.css-1255-
-public/assets/css_2021/style.css:1256:.body_96 .media-desc p,
-public/assets/css_2021/style.css:1257:.body_96 .small,
-public/assets/css_2021/style.css:1258:.body_96 small {
-public/assets/css_2021/style.css-1259-    font-size: 8px;
-public/assets/css_2021/style.css-1260-}
-public/assets/css_2021/style.css-1261-
-public/assets/css_2021/style.css-1262-
-public/assets/css_2021/style.css-1263-/********** for decreased size ********/
-public/assets/css_2021/style.css-1264-
-public/assets/css_2021/style.css-1265-
-public/assets/css_2021/style.css-1266-/********** for original size ********/
-public/assets/css_2021/style.css-1267-
-public/assets/css_2021/style.css:1268:.body_100 {}
-public/assets/css_2021/style.css-1269-
-public/assets/css_2021/style.css:1270:body.body_100 {
-public/assets/css_2021/style.css-1271-    font-size: 12px;
-public/assets/css_2021/style.css-1272-}
-public/assets/css_2021/style.css-1273-
 public/assets/css_2021/style.css:1274:.body_100 .logo-title strong {
-public/assets/css_2021/style.css-1275-    font-size: 20px;
-public/assets/css_2021/style.css-1276-}
-public/assets/css_2021/style.css-1277-
-public/assets/css_2021/style.css:1278:.body_100 .block-title h2 {
-public/assets/css_2021/style.css-1279-    font-size: 18px;
-public/assets/css_2021/style.css-1280-}
-public/assets/css_2021/style.css-1281-
 public/assets/css_2021/style.css:1282:.body_100 .logo-title span,
 public/assets/css_2021/style.css:1283:.body_100 .mid-footer h4 {
-public/assets/css_2021/style.css-1284-    font-size: 16px;
-public/assets/css_2021/style.css-1285-}
-public/assets/css_2021/style.css-1286-
-public/assets/css_2021/style.css:1287:.body_100 .media-desc h5,
-public/assets/css_2021/style.css:1288:.body_100 .more-btn,
-public/assets/css_2021/style.css:1289:.body_100 .tab-wrap .nav-tabs .nav-link,
-public/assets/css_2021/style.css:1290:.body_100 .bulleted-list h3,
 public/assets/css_2021/style.css:1291:.body_100 .top-footer {
-public/assets/css_2021/style.css-1292-    font-size: 14px;
-public/assets/css_2021/style.css-1293-}
-public/assets/css_2021/style.css-1294-
 public/assets/css_2021/style.css:1295:.body_100 .logo-title small,
-public/assets/css_2021/style.css:1296:.body_100 .top-inline-items ul li,
-public/assets/css_2021/style.css:1297:.body_100 .white-round-btn.big-round-btn,
-public/assets/css_2021/style.css:1298:.body_100 .divider-list ul li,
 public/assets/css_2021/style.css:1299:.body_100 .nav-wrap .navbar-expand-lg .navbar-nav .nav-link,
-public/assets/css_2021/style.css:1300:.body_100 .nav-wrap .dropdown-item,
-public/assets/css_2021/style.css:1301:.body_100 .news-ticker-box,
-public/assets/css_2021/style.css:1302:.body_100 .slider-caption p,
-public/assets/css_2021/style.css:1303:.body_100 .person-header p,
-public/assets/css_2021/style.css:1304:.body_100 .welcome-block p,
-public/assets/css_2021/style.css:1305:.body_100 .bulleted-list p,
 public/assets/css_2021/style.css:1306:.body_100 .footer-list ul li,
-public/assets/css_2021/style.css:1307:.body_100 .address-list ul li,
 public/assets/css_2021/style.css:1308:.body_100 .bottom-footer p,
-public/assets/css_2021/style.css:1309:.body_100 .go-btn {
-public/assets/css_2021/style.css-1310-    font-size: 12px;
-public/assets/css_2021/style.css-1311-}
-public/assets/css_2021/style.css-1312-
-public/assets/css_2021/style.css:1313:.body_100 .media-desc p,
-public/assets/css_2021/style.css:1314:.body_100 .small,
-public/assets/css_2021/style.css:1315:.body_100 small {
-public/assets/css_2021/style.css-1316-    font-size: 10px;
-public/assets/css_2021/style.css-1317-}
-public/assets/css_2021/style.css-1318-
-public/assets/css_2021/style.css-1319-
-public/assets/css_2021/style.css-1320-/********** for original size ********/
-public/assets/css_2021/style.css-1321-
-public/assets/css_2021/style.css-1322-
-public/assets/css_2021/style.css-1323-/********** for increaded size ********/
-public/assets/css_2021/style.css-1324-
-public/assets/css_2021/style.css:1325:.body_104 {}
-public/assets/css_2021/style.css-1326-
-public/assets/css_2021/style.css:1327:body.body_104 {
-public/assets/css_2021/style.css-1328-    font-size: 14px;
-public/assets/css_2021/style.css-1329-}
-public/assets/css_2021/style.css-1330-
 public/assets/css_2021/style.css:1331:.body_104 .logo-title strong {
-public/assets/css_2021/style.css-1332-    font-size: 22px;
-public/assets/css_2021/style.css-1333-}
-public/assets/css_2021/style.css-1334-
-public/assets/css_2021/style.css:1335:.body_104 .block-title h2 {
-public/assets/css_2021/style.css-1336-    font-size: 20px;
-public/assets/css_2021/style.css-1337-}
-public/assets/css_2021/style.css-1338-
 public/assets/css_2021/style.css:1339:.body_104 .logo-title span,
 public/assets/css_2021/style.css:1340:.body_104 .mid-footer h4 {
-public/assets/css_2021/style.css-1341-    font-size: 18px;
-public/assets/css_2021/style.css-1342-}
-public/assets/css_2021/style.css-1343-
-public/assets/css_2021/style.css:1344:.body_104 .media-desc h5,
-public/assets/css_2021/style.css:1345:.body_104 .more-btn,
-public/assets/css_2021/style.css:1346:.body_104 .tab-wrap .nav-tabs .nav-link,
-public/assets/css_2021/style.css:1347:.body_104 .bulleted-list h3,
 public/assets/css_2021/style.css:1348:.body_104 .top-footer {
-public/assets/css_2021/style.css-1349-    font-size: 16px;
-public/assets/css_2021/style.css-1350-}
-public/assets/css_2021/style.css-1351-
 public/assets/css_2021/style.css:1352:.body_104 .logo-title small,
-public/assets/css_2021/style.css:1353:.body_104 .top-inline-items ul li,
-public/assets/css_2021/style.css:1354:.body_104 .white-round-btn.big-round-btn,
-public/assets/css_2021/style.css:1355:.body_104 .divider-list ul li,
 public/assets/css_2021/style.css:1356:.body_104 .nav-wrap .navbar-expand-lg .navbar-nav .nav-link,
-public/assets/css_2021/style.css:1357:.body_104 .nav-wrap .dropdown-item,
-public/assets/css_2021/style.css:1358:.body_104 .news-ticker-box,
-public/assets/css_2021/style.css:1359:.body_104 .slider-caption p,
-public/assets/css_2021/style.css:1360:.body_104 .person-header p,
-public/assets/css_2021/style.css:1361:.body_104 .welcome-block p,
-public/assets/css_2021/style.css:1362:.body_104 .bulleted-list p,
 public/assets/css_2021/style.css:1363:.body_104 .footer-list ul li,
-public/assets/css_2021/style.css:1364:.body_104 .address-list ul li,
 public/assets/css_2021/style.css:1365:.body_104 .bottom-footer p {
-public/assets/css_2021/style.css-1366-    font-size: 14px;
-public/assets/css_2021/style.css-1367-}
-public/assets/css_2021/style.css-1368-
-public/assets/css_2021/style.css:1369:.body_104 .media-desc p,
-public/assets/css_2021/style.css:1370:.body_104 .small,
-public/assets/css_2021/style.css:1371:.body_104 small,
-public/assets/css_2021/style.css:1372:.body_104 .go-btn {
-public/assets/css_2021/style.css-1373-    font-size: 12px;
-public/assets/css_2021/style.css-1374-}
-public/assets/css_2021/style.css-1375-
-public/assets/css_2021/style.css-1376-
-public/assets/css_2021/style.css-1377-/* Additional font-size levels for one-click accessibility cycle */
-public/assets/css_2021/style.css:1378:body.body_92 {
-public/assets/css_2021/style.css-1379-    font-size: 8px;
-public/assets/css_2021/style.css-1380-}
 public/assets/css_2021/style.css:1381:.body_92 .logo-title strong { font-size: 16px; }
-public/assets/css_2021/style.css:1382:.body_92 .block-title h2 { font-size: 14px; }
 public/assets/css_2021/style.css:1383:.body_92 .logo-title span,
 public/assets/css_2021/style.css:1384:.body_92 .mid-footer h4 { font-size: 12px; }
-public/assets/css_2021/style.css:1385:.body_92 .media-desc h5,
-public/assets/css_2021/style.css:1386:.body_92 .more-btn,
-public/assets/css_2021/style.css:1387:.body_92 .tab-wrap .nav-tabs .nav-link,
-public/assets/css_2021/style.css:1388:.body_92 .bulleted-list h3,
 public/assets/css_2021/style.css:1389:.body_92 .top-footer,
-public/assets/css_2021/style.css:1390:.body_92 .go-btn { font-size: 10px; }
 public/assets/css_2021/style.css:1391:.body_92 .logo-title small,
-public/assets/css_2021/style.css:1392:.body_92 .top-inline-items ul li,
-public/assets/css_2021/style.css:1393:.body_92 .white-round-btn.big-round-btn,
-public/assets/css_2021/style.css:1394:.body_92 .divider-list ul li,
 public/assets/css_2021/style.css:1395:.body_92 .nav-wrap .navbar-expand-lg .navbar-nav .nav-link,
-public/assets/css_2021/style.css:1396:.body_92 .nav-wrap .dropdown-item,
-public/assets/css_2021/style.css:1397:.body_92 .news-ticker-box,
-public/assets/css_2021/style.css:1398:.body_92 .slider-caption p,
-public/assets/css_2021/style.css:1399:.body_92 .person-header p,
-public/assets/css_2021/style.css:1400:.body_92 .welcome-block p,
-public/assets/css_2021/style.css:1401:.body_92 .bulleted-list p,
 public/assets/css_2021/style.css:1402:.body_92 .footer-list ul li,
-public/assets/css_2021/style.css:1403:.body_92 .address-list ul li,
 public/assets/css_2021/style.css:1404:.body_92 .bottom-footer p { font-size: 8px; }
-public/assets/css_2021/style.css:1405:.body_92 .media-desc p,
-public/assets/css_2021/style.css:1406:.body_92 .small,
-public/assets/css_2021/style.css:1407:.body_92 small { font-size: 7px; }
-public/assets/css_2021/style.css-1408-
-public/assets/css_2021/style.css:1409:body.body_108 {
-public/assets/css_2021/style.css-1410-    font-size: 16px;
-public/assets/css_2021/style.css-1411-}
 public/assets/css_2021/style.css:1412:.body_108 .logo-title strong { font-size: 24px; }
-public/assets/css_2021/style.css:1413:.body_108 .block-title h2 { font-size: 22px; }
 public/assets/css_2021/style.css:1414:.body_108 .logo-title span,
 public/assets/css_2021/style.css:1415:.body_108 .mid-footer h4 { font-size: 20px; }
-public/assets/css_2021/style.css:1416:.body_108 .media-desc h5,
-public/assets/css_2021/style.css:1417:.body_108 .more-btn,
-public/assets/css_2021/style.css:1418:.body_108 .tab-wrap .nav-tabs .nav-link,
-public/assets/css_2021/style.css:1419:.body_108 .bulleted-list h3,
 public/assets/css_2021/style.css:1420:.body_108 .top-footer { font-size: 18px; }
 public/assets/css_2021/style.css:1421:.body_108 .logo-title small,
-public/assets/css_2021/style.css:1422:.body_108 .top-inline-items ul li,
-public/assets/css_2021/style.css:1423:.body_108 .white-round-btn.big-round-btn,
-public/assets/css_2021/style.css:1424:.body_108 .divider-list ul li,
 public/assets/css_2021/style.css:1425:.body_108 .nav-wrap .navbar-expand-lg .navbar-nav .nav-link,
-public/assets/css_2021/style.css:1426:.body_108 .nav-wrap .dropdown-item,
-public/assets/css_2021/style.css:1427:.body_108 .news-ticker-box,
-public/assets/css_2021/style.css:1428:.body_108 .slider-caption p,
-public/assets/css_2021/style.css:1429:.body_108 .person-header p,
-public/assets/css_2021/style.css:1430:.body_108 .welcome-block p,
-public/assets/css_2021/style.css:1431:.body_108 .bulleted-list p,
 public/assets/css_2021/style.css:1432:.body_108 .footer-list ul li,
-public/assets/css_2021/style.css:1433:.body_108 .address-list ul li,
 public/assets/css_2021/style.css:1434:.body_108 .bottom-footer p,
-public/assets/css_2021/style.css:1435:.body_108 .go-btn { font-size: 16px; }
-public/assets/css_2021/style.css:1436:.body_108 .media-desc p,
-public/assets/css_2021/style.css:1437:.body_108 .small,
-public/assets/css_2021/style.css:1438:.body_108 small { font-size: 14px; }
-public/assets/css_2021/style.css-1439-
-public/assets/css_2021/style.css-1440-.video-block .slider-wrap .slick-prev,
-public/assets/css_2021/style.css-1441-.video-block .slider-wrap .slick-next {
-public/assets/css_2021/style.css-1442-    width: 30px;
-public/assets/css_2021/style.css-1443-    height: 30px;
-public/assets/css_2021/style.css-1444-}
-public/assets/css_2021/style.css-1445-
-public/assets/css_2021/style.css-1446-.video-block .slider-wrap .slick-prev:before,
-public/assets/css_2021/style.css-1447-.video-block .slider-wrap .slick-next:before {
-public/assets/css_2021/style.css-1448-    font-size: 16px;
-public/assets/css_2021/style.css-1449-}
-public/assets/css_2021/style.css-1450-
-===== BANNER HEIGHT RULES =====
-public/assets/css_2021/style.css-1713-    color: #00ADF7 !important;
+public/assets/css_2021/style.css:1582:.bottom-footer .divider-list ul {
+public/assets/css_2021/style.css:1589:.bottom-footer .divider-list ul li {
+public/assets/css_2021/style.css:1597:.bottom-footer .footer-meta {
+public/assets/css_2021/style.css:1602:.bottom-footer .footer-meta p {
+public/assets/css_2021/style.css:1607:.bottom-footer .visitor-no {
+public/assets/css_2021/style.css:1618:.bottom-footer .visitor-no:hover {
+public/assets/css_2021/style.css:1622:.bottom-footer .visitor-no img.statcounter {
+public/assets/css_2021/style.css:1629:    .bottom-footer .divider-list ul {
+public/assets/css_2021/style.css:1633:    .bottom-footer .footer-meta {
+public/assets/css_2021/style.css:1639:.bottom-footer .divider-list ul li a,
+public/assets/css_2021/style.css:1640:.bottom-footer .divider-list ul li a:hover {
+public/assets/css_2021/style.css:1643:.bottom-footer .footer-meta,
+public/assets/css_2021/style.css:1644:.bottom-footer .footer-meta p,
+public/assets/css_2021/style.css:1645:.bottom-footer .footer-meta .visitor-no,
+public/assets/css_2021/style.css:1646:.bottom-footer .footer-meta .visitor-no a {
+public/assets/css_2021/style.css:1651:.bottom-footer .footer-meta p {
+public/assets/css_2021/style.css:1654:.bottom-footer .footer-meta .visitor-no {
+public/assets/css_2021/style.css:1658:.bottom-footer .divider-list ul li,
+public/assets/css_2021/style.css:1659:.bottom-footer .divider-list ul li a {
+public/assets/css_2021/style.css:1663:/* Final compact footer typography */
+public/assets/css_2021/style.css:1664:.bottom-footer,
+public/assets/css_2021/style.css:1665:.bottom-footer * {
+public/assets/css_2021/style.css:1671:.bottom-footer .divider-list ul li,
+public/assets/css_2021/style.css:1672:.bottom-footer .divider-list ul li a,
+public/assets/css_2021/style.css:1673:.bottom-footer .divider-list ul li a:hover {
+public/assets/css_2021/style.css:1680:.bottom-footer .footer-meta .visitor-no > span {
+public/assets/css_2021/style.css:1684:.bottom-footer .footer-meta .visitor-no a,
+public/assets/css_2021/style.css:1685:.bottom-footer .footer-meta .visitor-no a span,
+public/assets/css_2021/style.css:1686:.bottom-footer .footer-meta .visitor-no a:hover,
+public/assets/css_2021/style.css:1687:.bottom-footer .footer-meta .visitor-no a:hover span {
+public/assets/css_2021/style.css:1691:/* Final footer text sizing and colors */
+public/assets/css_2021/style.css:1692:.bottom-footer .footer-meta,
+public/assets/css_2021/style.css:1693:.bottom-footer .footer-meta p,
+public/assets/css_2021/style.css:1694:.bottom-footer .footer-meta .visitor-no,
+public/assets/css_2021/style.css:1695:.bottom-footer .footer-meta .visitor-no > span,
+public/assets/css_2021/style.css:1696:.bottom-footer .footer-meta .visitor-no a,
+public/assets/css_2021/style.css:1697:.bottom-footer .footer-meta .visitor-no a span {
+public/assets/css_2021/style.css:1703:.bottom-footer .footer-meta,
+public/assets/css_2021/style.css:1704:.bottom-footer .footer-meta p,
+public/assets/css_2021/style.css:1705:.bottom-footer .footer-meta .visitor-no > span {
+public/assets/css_2021/style.css:1709:.bottom-footer .footer-meta .visitor-no a,
+public/assets/css_2021/style.css:1710:.bottom-footer .footer-meta .visitor-no a span,
+public/assets/css_2021/style.css:1711:.bottom-footer .divider-list ul li a,
+public/assets/css_2021/style.css:1712:.bottom-footer .divider-list ul li a:hover {
+public/assets/css_2021/style.css:1726:.home-officers-panel {
+public/assets/css_2021/style.css:1731:.home-officers-panel .person-block {
+public/assets/css_2021/style.css:1745:.home-officers-panel .person-block:hover {
+public/assets/css_2021/style.css:1750:.home-officers-panel .person-header {
+public/assets/css_2021/style.css:1754:.home-officers-panel .media-block {
+public/assets/css_2021/style.css:1762:.home-officers-panel .media-block:last-child {
+public/assets/css_2021/style.css:1766:.home-officers-panel .rounded-fig-wrap {
+public/assets/css_2021/style.css:1776:.home-officers-panel .rounded-fig-wrap img {
+public/assets/css_2021/style.css:1783:.home-officers-panel .media-desc h5 {
+public/assets/css_2021/style.css:1790:.home-officers-panel .media-desc p {
+public/assets/css_2021/style.css:1797:.home-officers-panel .media-desc a {
+public/assets/css_2021/style.css:1802:.home-officers-panel .media-desc a:hover {
+public/assets/css_2021/style.css:1812:    .home-officers-panel .person-block {
+public/assets/css_2021/style.css:1816:    .home-officers-panel .media-block {
+public/assets/css_2021/style.css:1833:/* Mobile footer spacing refinement - 2026-11-16 */
+public/assets/css_2021/style.css:1835:    .mid-footer {
+public/assets/css_2021/style.css:1839:    .mid-footer > .container > .row > [class*="col-"] {
+public/assets/css_2021/style.css:1843:    .mid-footer > .container > .row > [class*="col-"]:last-child {
+public/assets/css_2021/style.css:1847:    .mid-footer h4 {
+public/assets/css_2021/style.css:1852:    .mid-footer .footer-list ul li,
+public/assets/css_2021/style.css:1853:    .mid-footer .address-list ul li {
+root@dorweb:/var/www/dor# root@dorweb:/var/www/dor# cd /var/www/dor && \
+echo "===== THEME CONTROLLER =====" && sed -n '1,260p' app/Http/Controllers/Admin/WebsiteThemeSettingController.php && \
+echo "===== IDENTITY CONTROLLER =====" && sed -n '1,260p' app/Http/Controllers/Admin/WebsiteIdentitySettingController.php && \
+echo "===== APP SERVICE PROVIDER =====" && grep -n -B 5 -A 16 -E 'websiteTheme|websiteIdentity|View::composer' app/Providers/AppServiceProvider.php && \
+echo "===== CONFIGURATION ROUTES =====" && grep -n -B 5 -A 12 -E 'website-theme|website-identity' routes/web.php && \
+echo "===== HEADER / MENU / FOOTER CSS SELECTORS =====" && grep -n -E 'logo-title|government-name|ministry-name|department-name|other-office-header|navbar-nav|main-menu|submenu|footer|office-quote-section|slider-fig|home-officers-panel|other-office-officers-frame' public/assets/css_2021/website-theme.css public/assets/css_2021/style.css | tail -180
+===== THEME CONTROLLER =====
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Http\Controllers\ConfigurationController;
+use App\Models\WebsiteThemeSetting;
+use App\Models\WebsiteIdentitySetting;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+
+class WebsiteThemeSettingController extends Controller
+{
+    private function ensureSuperAdmin(): void
+    {
+        abort_unless(
+            Auth::check() && (int) Auth::user()->user_type_id === 2,
+            403
+        );
+    }
+
+    public function index()
+    {
+        $this->ensureSuperAdmin();
+
+        $theme = WebsiteThemeSetting::current();
+        $identity = WebsiteIdentitySetting::current();
+
+        $site_name = ConfigurationController::site_name();
+        $abs_site_url = ConfigurationController::abs_site_url();
+
+        return view('website_theme.admin.index', compact('theme', 'identity', 'site_name', 'abs_site_url'));
+    }
+
+    public function update(Request $request)
+    {
+        $this->ensureSuperAdmin();
+
+        $validated = $request->validate([
+            'page_background' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
+            'card_background' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
+            'header_background' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
+            'nav_background' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
+            'accent_color' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
+            'footer_background' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
+^Cot@dorweb:/var/www/dor#yle.css:1853:    .mid-footer .address-list ul li { [cla
+root@dorweb:/var/www/dor# ^C
+root@dorweb:/var/www/dor# ^C
+root@dorweb:/var/www/dor# ^C
+root@dorweb:/var/www/dor# cd /var/www/dor && \
+echo "===== IDENTITY MODEL DEFAULTS =====" && sed -n '1,220p' app/Models/WebsiteIdentitySetting.php && \
+echo "===== THEME MODEL DEFAULTS =====" && sed -n '1,200p' app/Models/WebsiteThemeSetting.php && \
+echo "===== HEADER IDENTITY CSS =====" && sed -n '60,115p' public/assets/css_2021/style.css && sed -n '4600,4685p' public/assets/css_2021/website-theme.css && \
+echo "===== MENU CSS =====" && sed -n '245,355p' public/assets/css_2021/style.css && sed -n '5380,5480p' public/assets/css_2021/website-theme.css && \
+echo "===== FOOTER CSS =====" && sed -n '885,980p' public/assets/css_2021/style.css && sed -n '1830,1870p' public/assets/css_2021/style.css && \
+echo "===== BANNER AND OFFICER HEIGHT CSS =====" && grep -n -B 4 -A 9 -E 'slider-fig|home-banner-officers-row|home-officers-panel|other-office-officers-frame' public/assets/css_2021/website-theme.css public/assets/css_2021/style.css | tail -240 && \
+echo "===== FONT MAGNIFICATION IMPLEMENTATION =====" && grep -Rni -E 'change_font_size|font_size_code|function setFontSize|body_92|body_108' app routes resources/views/layout/client/container_2021.blade.php resources/views/layout/client/foot_2021.blade.php | head -100
+===== IDENTITY MODEL DEFAULTS =====
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class WebsiteIdentitySetting extends Model
+{
+    protected $table = 'website_identity_settings';
+
+    protected $fillable = [
+        'government_name_np',
+        'government_name_en',
+        'ministry_name_np',
+        'ministry_name_en',
+        'department_name_np',
+        'department_name_en',
+        'other_office_name_font_size_desktop',
+        'other_office_name_font_size_mobile',
+        'other_office_name_line_height',
+        'other_office_name_font_weight',
+        'updated_by',
+    ];
+
+    public const DEFAULTS = [
+        'government_name_np' => 'नेपाल सरकार',
+        'government_name_en' => 'Government of Nepal',
+        'ministry_name_np' => 'पूर्वाधार विकास मन्त्रालय',
+        'ministry_name_en' => 'Ministry of Infrastructure Development',
+        'department_name_np' => 'सडक विभाग',
+        'department_name_en' => 'Department of Roads',
+        'other_office_name_font_size_desktop' => 13,
+        'other_office_name_font_size_mobile' => 11,
+        'other_office_name_line_height' => 1.25,
+        'other_office_name_font_weight' => 600,
+    ];
+
+    public static function current(): self
+    {
+        return static::firstOrCreate(
+            ['scope' => 'global'],
+            self::DEFAULTS
+        );
+    }
+}
+===== THEME MODEL DEFAULTS =====
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class WebsiteThemeSetting extends Model
+{
+    protected $table = 'website_theme_settings';
+
+    protected $fillable = [
+        'page_background',
+        'card_background',
+        'header_background',
+        'nav_background',
+        'accent_color',
+        'footer_background',
+        'text_color',
+        'border_color',
+        'updated_by',
+    ];
+
+    public const DEFAULTS = [
+        'page_background' => '#F5F6F4',
+        'card_background' => '#FFFFFF',
+        'header_background' => '#142D4E',
+        'nav_background' => '#1769AA',
+        'accent_color' => '#8B2635',
+        'footer_background' => '#263746',
+        'text_color' => '#263238',
+        'border_color' => '#E5E8E6',
+    ];
+
+    /**
+     * Return the single global website theme.
+     */
+    public static function current(): self
+    {
+        return static::firstOrCreate(
+            ['scope' => 'global'],
+            self::DEFAULTS
+        );
+    }
+
+    /**
+     * Restore the global theme to its default colours.
+     */
+    public static function resetToDefaults(?int $updatedBy = null): self
+    {
+        $theme = static::current();
+
+        $theme->fill(self::DEFAULTS);
+        $theme->updated_by = $updatedBy;
+        $theme->save();
+
+        return $theme;
+    }
+}
+===== HEADER IDENTITY CSS =====
+    width: 73px;
+    float: left;
+    margin-right: 10px;
+}
+
+.logo-title {
+    float: left;
+}
+
+.logo-title a {
+    color: #0099DA;
+}
+
+.logo-title a:hover {
+    color: #000;
+    text-decoration: underline;
+}
+
+.logo-title strong {
+    display: block;
+    font-size: 20px;
+    line-height: 26px;
+    font-weight: 600;
+}
+
+.logo-title small {
+    display: block;
+    font-size: 12px;
+    line-height: 18px;
+    font-weight: 600;
+}
+
+.logo-title span {
+    display: block;
+    font-size: 16px;
+    line-height: 22px;
+    font-weight: 600;
+}
+
+.top-inline-items {}
+
+.top-inline-items ul {
+    margin: 0;
+    padding: 0;
+}
+
+.top-inline-items ul li {
+    list-style-type: none;
+    display: inline-block;
+    margin: 0 0 5px 5px;
+    vertical-align: text-top;
+    font-weight: 600;
+    color: #000;
+}
+
+.top-inline-items ul li:first-child {
+.main-footer .footer-social-links > a i {
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+.main-footer .footer-social-links > a:hover {
+    color: #142D4E;
+}
+
+/* Responsive footer layout */
+@media (max-width: 767.98px) {
+    .main-footer .address-list,
+    .main-footer .footer-list {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .main-footer .address-list ul > li {
+        min-width: 0;
+    }
+
+    .main-footer .bottom-footer .divider-list ul {
+        flex-wrap: wrap;
+    }
+}
+
+
+/* Other Office header: four-line, responsive identity */
+.logo-title.other-office-header .department-name {
+    font-size: 14px !important;
+    line-height: 1.3 !important;
+    font-weight: 500 !important;
+    white-space: nowrap;
+}
+
+.logo-title.other-office-header .office-name {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    font-size: var(--other-office-name-size, 13px) !important;
+    line-height: var(--other-office-name-line-height, 1.25) !important;
+    font-weight: var(--other-office-name-weight, 600) !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    overflow-wrap: anywhere;
+    word-break: normal;
+}
+
+@media (max-width: 991.98px) {
+    .logo-title.other-office-header .department-name {
+        font-size: 13px !important;
+    }
+
+    .logo-title.other-office-header .office-name {
+        font-size: var(--other-office-name-mobile-size, 11px) !important;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .logo-title.other-office-header .department-name {
+        font-size: 12px !important;
+    }
+
+    .logo-title.other-office-header .office-name {
+        font-size: var(--other-office-name-mobile-size, 11px) !important;
+    }
+}
+
+/* Head Office ticker: dedicated smooth animation */
+#dor-home-ticker .news-ticker {
+    height: 36px !important;
+    min-height: 36px !important;
+    overflow: hidden !important;
+}
+
+#dor-home-ticker .news-ticker-box {
+    position: relative !important;
+    height: 36px !important;
+    min-width: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+
+#dor-home-ticker .news-ticker-list {
+===== MENU CSS =====
+
+.nav-wrap .navbar>.container,
+.nav-wrap .navbar>.container-fluid {
+    padding: 0;
+}
+
+.nav-wrap .navbar {
+    padding: 0;
+}
+
+.nav-wrap .navbar-expand-lg .navbar-nav .nav-link {
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 18px 5px;
+}
+
+.nav-wrap .navbar-expand-lg .navbar-nav .nav-link:hover,
+.nav-wrap .nav-link.dropdown-toggle.show {
+    background: #0074A6;
+    color: #fff;
+}
+
+.nav-wrap .navbar-nav .dropdown-menu {
+    background: #0099DA;
+    padding: 0;
+    min-width: 220px;
+    border: none;
+    margin: 0;
+    border-radius: 0;
+    -webkit-border-radius: 0;
+    -moz-border-radius: 0;
+    -ms-border-radius: 0;
+    -o-border-radius: 0;
+}
+
+.nav-wrap .dropdown-item {
+    color: #fff;
+    font-size: 12px;
+    font-weight: 400;
+    padding: 8px 10px;
+    padding-right: 30px;
+    line-height: 24px;
+}
+
+.nav-wrap .has-sub {
+    position: relative;
+}
+
+.nav-wrap .has-sub:after {
+    position: absolute;
+    right: 15px;
+    top: 13px;
+    font-size: 12px;
+    font-weight: 900;
+    content: '\f0da';
+    font-family: "Font Awesome 5 Free";
+    color: #fff;
+    transition: .3s all linear;
+    -webkit-transition: .3s all linear;
+    -moz-transition: .3s all linear;
+    -ms-transition: .3s all linear;
+    -o-transition: .3s all linear;
+}
+
+.nav-wrap .dropdown-item:focus,
+.nav-wrap .dropdown-item:hover,
+.nav-wrap .dropdown-item.active,
+.nav-wrap .dropdown-item:active,
+.nav-wrap .has-sub:hover>.dropdown-item {
+    background: #fff;
+    color: #000;
+}
+
+.nav-wrap .has-sub:hover:after {
+    color: #000;
+}
+
+.nav-wrap .navbar-nav .dropdown-menu li {
+    position: relative;
+}
+
+.nav-wrap .dropdown-menu .submenu {
+    left: 100%;
+    top: 0;
+}
+
+.nav-wrap .dropdown-menu>li:hover>.submenu {
+    display: block;
+}
+
+.nav-wrap .navbar-nav .dropdown:hover>.dropdown-menu {
+    display: block;
+}
+
+.nav-wrap .navbar-nav {
+    max-height: 370px;
+    overflow-y: scroll;
+}
+
+.news-ticker-block {
+    background: #F5F7F8;
+}
+
+.news-ticker {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 44px;
+    gap: 16px;
+    overflow: hidden;
+    #dor-home-ticker .news-ticker-box,
+    #dor-home-ticker .news-ticker-list {
+        height: 28px !important;
+        min-height: 28px !important;
+    }
+    .news-ticker-list ul li a {
+        font-size: 10px !important;
+        font-weight: 400 !important;
+        line-height: 28px !important;
+    }
+}
+
+/* Main navigation: compact dropdown typography and responsive nested menus */
+.nav-wrap .navbar-nav .dropdown-menu .dropdown-item {
+    font-size: 11px !important;
+    line-height: 1.35 !important;
+    padding: 6px 28px 6px 10px !important;
+    white-space: normal !important;
+}
+.nav-wrap .navbar-nav .submenu .dropdown-item {
+    font-size: 10.5px !important;
+    line-height: 1.3 !important;
+    padding-top: 5px !important;
+    padding-bottom: 5px !important;
+}
+.nav-wrap .navbar-nav .submenu .submenu .dropdown-item {
+    font-size: 10px !important;
+}
+@media (min-width: 992px) {
+    .nav-wrap .navbar-nav .has-sub { position: relative !important; }
+    .nav-wrap .navbar-nav .has-sub > .submenu {
+        top: 0 !important;
+        left: 100% !important;
+        right: auto !important;
+        min-width: 210px;
+        max-width: min(280px, 42vw);
+        margin: 0 !important;
+        z-index: 1055;
+    }
+    .nav-wrap .navbar-nav .has-sub.submenu-open-left > .submenu {
+        left: auto !important;
+        right: 100% !important;
+    }
+}
+@media (max-width: 991.98px) {
+    .nav-wrap .navbar-nav { max-height: 65vh !important; overflow-y: auto !important; }
+    .nav-wrap .navbar-nav .dropdown-menu .dropdown-item { padding: 7px 28px 7px 12px !important; }
+    .nav-wrap .navbar-nav .has-sub > .submenu {
+        position: static !important;
+        inset: auto !important;
+        float: none !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 0 0 12px !important;
+        border: 0 !important;
+        box-shadow: none !important;
+        display: none !important;
+    }
+    .nav-wrap .navbar-nav .has-sub.submenu-expanded > .submenu { display: block !important; }
+    .nav-wrap .navbar-nav .has-sub.submenu-expanded:after { transform: rotate(90deg); }
+    .nav-wrap .navbar-nav .has-sub:after { transition: transform .15s ease; }
+}
+
+@media (min-width: 992px) {
+    .nav-wrap .navbar-nav {
+        max-height: none !important;
+        overflow: visible !important;
+    }
+}
+
+/* Further reduce all main navigation dropdown text */
+.nav-wrap .navbar-nav .dropdown-menu .dropdown-item {
+    font-size: 10px !important;
+    line-height: 1.3 !important;
+    padding-top: 5px !important;
+    padding-bottom: 5px !important;
+}
+.nav-wrap .navbar-nav .submenu .dropdown-item {
+    font-size: 9.5px !important;
+}
+.nav-wrap .navbar-nav .submenu .submenu .dropdown-item {
+    font-size: 9px !important;
+}
+===== FOOTER CSS =====
+
+.bulleted-list p span {
+    color: #0099DA;
+}
+
+.main-footer {}
+
+.top-footer {
+    background: #0073a4;
+    text-align: center;
+    color: #ffe108;
+    line-height: 20px;
+    font-size: 14px;
+    padding: 10px 0;
+}
+
+.top-footer p {
+    margin: 0;
+}
+
+.mid-footer {
+    background: #444444;
+    padding: 25px 0;
+}
+
+.mid-footer h4 {
+    color: #00ADF7;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 20px;
+}
+
+.footer-list,
+.address-list {}
+
+.footer-list ul,
+.address-list ul {
+    margin: 0;
+    padding: 0;
+}
+
+.footer-list ul li,
+.address-list ul li {
+    list-style-type: none;
+    display: block;
+    line-height: 24px;
+    color: #fff;
+    position: relative;
+}
+
+.footer-list ul li a,
+.address-list li a {
+    color: #fff;
+}
+
+.footer-list ul li a:hover,
+.address-list ul li a:hover {
+    color: #00ADF7;
+}
+
+.icon-wrap {
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+.bottom-footer {
+    color: #fff;
+    background: #333333;
+    padding: 15px 0;
+}
+
+.bottom-footer .divider-list ul li a {
+    color: #fff;
+}
+
+.bottom-footer .divider-list ul li {
+    border-color: #fff;
+    margin-bottom: 8px;
+}
+
+.bottom-footer .divider-list ul li a:hover {
+    color: #00ADF7;
+}
+
+.bottom-footer p {
+    margin: 0 0 5px;
+}
+
+.visitor-no {
+    display: inline-block;
+    background: #fff;
+    color: #0099DA;
+    padding: 8px 15px;
+    border-radius: 4px;
+    -webkit-border-radius: 4px;
+}
+
+
+/* Mobile footer spacing refinement - 2026-11-16 */
+@media (max-width: 575.98px) {
+    .mid-footer {
+        padding: 24px 0 8px;
+    }
+
+    .mid-footer > .container > .row > [class*="col-"] {
+        margin-bottom: 22px;
+    }
+
+    .mid-footer > .container > .row > [class*="col-"]:last-child {
+        margin-bottom: 0;
+    }
+
+    .mid-footer h4 {
+        margin: 0 0 12px;
+        line-height: 1.4;
+    }
+
+    .mid-footer .footer-list ul li,
+    .mid-footer .address-list ul li {
+        line-height: 1.55;
+    }
+}
+===== BANNER AND OFFICER HEIGHT CSS =====
+public/assets/css_2021/website-theme.css-5228-.head-office-contact-officers .head-office-officer-designation,
+public/assets/css_2021/website-theme.css:5229:.other-office-officers-frame .media-desc .other-officer-position {
+public/assets/css_2021/website-theme.css-5230-    font-size: 9px !important;
+public/assets/css_2021/website-theme.css-5231-    font-weight: 500 !important;
+public/assets/css_2021/website-theme.css-5232-    line-height: 1.2 !important;
+public/assets/css_2021/website-theme.css-5233-    margin: 0 0 2px !important;
+public/assets/css_2021/website-theme.css-5234-}
+public/assets/css_2021/website-theme.css-5235-.head-office-contact-officers .head-office-officer-contact,
+public/assets/css_2021/website-theme.css:5236:.other-office-officers-frame .media-desc p:not(.other-officer-position) {
+public/assets/css_2021/website-theme.css-5237-    font-size: 8px !important;
+public/assets/css_2021/website-theme.css-5238-    font-weight: 400 !important;
+public/assets/css_2021/website-theme.css-5239-    line-height: 1.2 !important;
+public/assets/css_2021/website-theme.css-5240-    overflow-wrap: anywhere !important;
+public/assets/css_2021/website-theme.css-5241-}
+public/assets/css_2021/website-theme.css-5242-
+public/assets/css_2021/website-theme.css-5243-/* Display Other Office name first, designation second, then phone/email */
+public/assets/css_2021/website-theme.css:5244:.other-office-officers-frame .media-desc > a {
+public/assets/css_2021/website-theme.css-5245-    display: flex !important;
+public/assets/css_2021/website-theme.css-5246-    flex-direction: column !important;
+public/assets/css_2021/website-theme.css-5247-    min-width: 0 !important;
+public/assets/css_2021/website-theme.css-5248-    text-decoration: none !important;
+public/assets/css_2021/website-theme.css-5249-    color: inherit !important;
+public/assets/css_2021/website-theme.css-5250-}
+public/assets/css_2021/website-theme.css:5251:.other-office-officers-frame .media-desc h5 { order: 1 !important; }
+public/assets/css_2021/website-theme.css:5252:.other-office-officers-frame .media-desc .other-officer-position { order: 2 !important; }
+public/assets/css_2021/website-theme.css:5253:.other-office-officers-frame .media-desc p:not(.other-officer-position) { order: 3 !important; }
+public/assets/css_2021/website-theme.css:5254:.other-office-officers-frame .media-desc {
+public/assets/css_2021/website-theme.css-5255-    min-width: 0 !important;
+public/assets/css_2021/website-theme.css-5256-    overflow-wrap: anywhere !important;
+public/assets/css_2021/website-theme.css-5257-}
+public/assets/css_2021/website-theme.css-5258-
+public/assets/css_2021/website-theme.css-5259-/* Desktop: automatically distribute 2, 3 or 4 officers in the available panel */
+public/assets/css_2021/website-theme.css-5260-@media (min-width: 768px) {
+public/assets/css_2021/website-theme.css:5261:    .home-officers-panel > .person-block.other-office-officers-frame {
+public/assets/css_2021/website-theme.css-5262-        display: flex !important;
+public/assets/css_2021/website-theme.css-5263-        flex-direction: column !important;
+public/assets/css_2021/website-theme.css-5264-        justify-content: space-between !important;
+public/assets/css_2021/website-theme.css-5265-        box-sizing: border-box !important;
+public/assets/css_2021/website-theme.css-5266-        padding: 10px 10px 6px !important;
+public/assets/css_2021/website-theme.css-5267-        overflow: hidden !important;
+public/assets/css_2021/website-theme.css-5268-    }
+public/assets/css_2021/website-theme.css:5269:    .other-office-officers-frame > .media-block {
+public/assets/css_2021/website-theme.css-5270-        position: relative !important;
+public/assets/css_2021/website-theme.css-5271-        display: flex !important;
+public/assets/css_2021/website-theme.css-5272-        flex: 1 1 0 !important;
+public/assets/css_2021/website-theme.css-5273-        align-items: center !important;
+public/assets/css_2021/website-theme.css-5274-        min-height: 0 !important;
+public/assets/css_2021/website-theme.css-5275-        margin: 0 !important;
+public/assets/css_2021/website-theme.css-5276-        padding: 3px 3px 3px 55px !important;
+public/assets/css_2021/website-theme.css-5277-        box-sizing: border-box !important;
+public/assets/css_2021/website-theme.css-5278-        border-bottom: 1px solid #edf1f5 !important;
+public/assets/css_2021/website-theme.css-5279-    }
+public/assets/css_2021/website-theme.css:5280:    .other-office-officers-frame > .media-block:last-child {
+public/assets/css_2021/website-theme.css-5281-        border-bottom: 0 !important;
+public/assets/css_2021/website-theme.css-5282-    }
+public/assets/css_2021/website-theme.css:5283:    .other-office-officers-frame > .media-block:only-child {
+public/assets/css_2021/website-theme.css-5284-        flex: 0 0 62px !important;
+public/assets/css_2021/website-theme.css-5285-        margin-top: 14px !important;
+public/assets/css_2021/website-theme.css-5286-    }
+public/assets/css_2021/website-theme.css:5287:    .other-office-officers-frame .rounded-fig-wrap {
+public/assets/css_2021/website-theme.css-5288-        position: absolute !important;
+public/assets/css_2021/website-theme.css-5289-        top: 50% !important;
+public/assets/css_2021/website-theme.css-5290-        left: 0 !important;
+public/assets/css_2021/website-theme.css-5291-        width: 44px !important;
+public/assets/css_2021/website-theme.css-5292-        height: 44px !important;
+public/assets/css_2021/website-theme.css-5293-        transform: translateY(-50%) !important;
+public/assets/css_2021/website-theme.css-5294-    }
+public/assets/css_2021/website-theme.css-5295-}
+public/assets/css_2021/website-theme.css-5296-
+--
+public/assets/css_2021/website-theme.css-5307-}
+public/assets/css_2021/website-theme.css-5308-
+public/assets/css_2021/website-theme.css-5309-/* Other Office: natural officer rows, do not stretch to fill panel */
+public/assets/css_2021/website-theme.css-5310-@media (min-width: 768px) {
+public/assets/css_2021/website-theme.css:5311:    .home-officers-panel > .person-block.other-office-officers-frame {
+public/assets/css_2021/website-theme.css-5312-        justify-content: flex-start !important;
+public/assets/css_2021/website-theme.css-5313-        align-items: stretch !important;
+public/assets/css_2021/website-theme.css-5314-    }
+public/assets/css_2021/website-theme.css:5315:    .other-office-officers-frame > .media-block {
+public/assets/css_2021/website-theme.css-5316-        flex: 0 0 auto !important;
+public/assets/css_2021/website-theme.css-5317-        min-height: 54px !important;
+public/assets/css_2021/website-theme.css-5318-        height: auto !important;
+public/assets/css_2021/website-theme.css-5319-        margin: 0 0 8px 0 !important;
+public/assets/css_2021/website-theme.css-5320-    }
+public/assets/css_2021/website-theme.css:5321:    .other-office-officers-frame > .media-block:last-child {
+public/assets/css_2021/website-theme.css-5322-        margin-bottom: 0 !important;
+public/assets/css_2021/website-theme.css-5323-    }
+public/assets/css_2021/website-theme.css:5324:    .other-office-officers-frame > .media-block:only-child {
+public/assets/css_2021/website-theme.css-5325-        flex: 0 0 auto !important;
+public/assets/css_2021/website-theme.css-5326-        margin-top: 14px !important;
+public/assets/css_2021/website-theme.css-5327-    }
+public/assets/css_2021/website-theme.css-5328-}
+public/assets/css_2021/website-theme.css-5329-
+public/assets/css_2021/website-theme.css-5330-/* Match Head Office photo hover effect in Other Offices */
+public/assets/css_2021/website-theme.css:5331:.other-office-officers-frame .rounded-fig-wrap a {
+public/assets/css_2021/website-theme.css-5332-    position: relative !important;
+public/assets/css_2021/website-theme.css-5333-    display: block !important;
+public/assets/css_2021/website-theme.css-5334-    width: 100% !important;
+public/assets/css_2021/website-theme.css-5335-    height: 100% !important;
+public/assets/css_2021/website-theme.css-5336-    overflow: hidden !important;
+public/assets/css_2021/website-theme.css-5337-}
+public/assets/css_2021/website-theme.css:5338:.other-office-officers-frame .rounded-fig-wrap a::after {
+public/assets/css_2021/website-theme.css-5339-    content: "+" !important;
+public/assets/css_2021/website-theme.css-5340-    position: absolute !important;
+public/assets/css_2021/website-theme.css-5341-    inset: 0 !important;
+public/assets/css_2021/website-theme.css-5342-    display: flex !important;
+public/assets/css_2021/website-theme.css-5343-    align-items: center !important;
+public/assets/css_2021/website-theme.css-5344-    justify-content: center !important;
+public/assets/css_2021/website-theme.css-5345-    border-radius: 50% !important;
+public/assets/css_2021/website-theme.css-5346-    background: rgba(20, 45, 78, 0.68) !important;
+public/assets/css_2021/website-theme.css-5347-    color: #fff !important;
+--
+public/assets/css_2021/website-theme.css-5351-    opacity: 0 !important;
+public/assets/css_2021/website-theme.css-5352-    transition: opacity 0.18s ease !important;
+public/assets/css_2021/website-theme.css-5353-    pointer-events: none !important;
+public/assets/css_2021/website-theme.css-5354-}
+public/assets/css_2021/website-theme.css:5355:.other-office-officers-frame .rounded-fig-wrap a:hover::after,
+public/assets/css_2021/website-theme.css:5356:.other-office-officers-frame .rounded-fig-wrap a:focus-visible::after {
+public/assets/css_2021/website-theme.css-5357-    opacity: 1 !important;
+public/assets/css_2021/website-theme.css-5358-}
+public/assets/css_2021/website-theme.css-5359-
+public/assets/css_2021/website-theme.css-5360-/* Compact ticker height and text */
+public/assets/css_2021/website-theme.css-5361-.news-ticker,
+public/assets/css_2021/website-theme.css-5362-.news-ticker-box,
+public/assets/css_2021/website-theme.css-5363-.news-ticker-list,
+public/assets/css_2021/website-theme.css-5364-#dor-home-ticker .news-ticker,
+public/assets/css_2021/website-theme.css-5365-#dor-home-ticker .news-ticker-box,
+--
 public/assets/css_2021/style.css-1714-}
 public/assets/css_2021/style.css-1715-
 public/assets/css_2021/style.css-1716-
@@ -331,7 +1175,7 @@ public/assets/css_2021/style.css:1718:.home-banner-officers-row {
 public/assets/css_2021/style.css-1719-    align-items: stretch;
 public/assets/css_2021/style.css-1720-}
 public/assets/css_2021/style.css-1721-
-public/assets/css_2021/style.css:1722:.home-officers-column {
+public/assets/css_2021/style.css-1722-.home-officers-column {
 public/assets/css_2021/style.css-1723-    display: flex;
 public/assets/css_2021/style.css-1724-}
 public/assets/css_2021/style.css-1725-
@@ -417,7 +1261,7 @@ public/assets/css_2021/style.css-1804-    text-decoration: none;
 public/assets/css_2021/style.css-1805-}
 public/assets/css_2021/style.css-1806-
 public/assets/css_2021/style.css-1807-@media (max-width: 767px) {
-public/assets/css_2021/style.css:1808:    .home-officers-column {
+public/assets/css_2021/style.css-1808-    .home-officers-column {
 public/assets/css_2021/style.css-1809-        margin-top: 12px;
 public/assets/css_2021/style.css-1810-    }
 public/assets/css_2021/style.css-1811-
@@ -435,739 +1279,42 @@ public/assets/css_2021/style.css-1822-/* Office Head round photos */
 public/assets/css_2021/style.css-1823-#chiefs .fig-holder img {
 public/assets/css_2021/style.css-1824-    width: 120px;
 public/assets/css_2021/style.css-1825-    height: 120px;
-public/assets/css_2021/style.css-1826-    display: inline-block;
---
-public/assets/css_2021/website-theme.css-158-
-public/assets/css_2021/website-theme.css-159-
-public/assets/css_2021/website-theme.css-160-/* HOME PAGE SCALE REFINEMENT
-public/assets/css_2021/website-theme.css-161-   Keep header and mobile layout unchanged. */
-public/assets/css_2021/website-theme.css-162-@media (min-width: 992px) {
-public/assets/css_2021/website-theme.css:163:    .banner-block .slider-fig {
-public/assets/css_2021/website-theme.css-164-        height: 320px;
-public/assets/css_2021/website-theme.css-165-    }
-public/assets/css_2021/website-theme.css-166-
-public/assets/css_2021/website-theme.css-167-    .utilities-block {
-public/assets/css_2021/website-theme.css-168-        padding-top: 12px;
-public/assets/css_2021/website-theme.css-169-        padding-bottom: 12px;
-public/assets/css_2021/website-theme.css-170-    }
-public/assets/css_2021/website-theme.css-171-}
-public/assets/css_2021/website-theme.css-172-
-public/assets/css_2021/website-theme.css-173-@media (min-width: 768px) and (max-width: 991.98px) {
-public/assets/css_2021/website-theme.css:174:    .banner-block .slider-fig {
-public/assets/css_2021/website-theme.css-175-        height: 280px;
-public/assets/css_2021/website-theme.css-176-    }
-public/assets/css_2021/website-theme.css-177-
-public/assets/css_2021/website-theme.css-178-    .utilities-block {
-public/assets/css_2021/website-theme.css-179-        padding-top: 12px;
-public/assets/css_2021/website-theme.css-180-        padding-bottom: 12px;
-public/assets/css_2021/website-theme.css-181-    }
-public/assets/css_2021/website-theme.css-182-}
-public/assets/css_2021/website-theme.css-183-
-public/assets/css_2021/website-theme.css-184-
---
-public/assets/css_2021/website-theme.css-2034-    overflow: hidden;
-public/assets/css_2021/website-theme.css-2035-    background: #f5f6f4;
-public/assets/css_2021/website-theme.css-2036-}
-public/assets/css_2021/website-theme.css-2037-
-public/assets/css_2021/website-theme.css-2038-.slider-img-holder img,
-public/assets/css_2021/website-theme.css:2039:.slider-fig img {
-public/assets/css_2021/website-theme.css-2040-    display: block;
-public/assets/css_2021/website-theme.css-2041-    width: 100%;
-public/assets/css_2021/website-theme.css-2042-    height: 100%;
-public/assets/css_2021/website-theme.css-2043-    object-fit: contain;
-public/assets/css_2021/website-theme.css-2044-    object-position: center;
-public/assets/css_2021/website-theme.css-2045-}
-public/assets/css_2021/website-theme.css-2046-
-public/assets/css_2021/website-theme.css-2047-/* Main Office and Other Office gallery */
-public/assets/css_2021/website-theme.css-2048-.fig-wrap {
-public/assets/css_2021/website-theme.css-2049-    display: flex;
---
-public/assets/css_2021/website-theme.css-2517-
-public/assets/css_2021/website-theme.css-2518-
-public/assets/css_2021/website-theme.css-2519-
-public/assets/css_2021/website-theme.css-2520-/* Mobile homepage banner: compact height without cropping images */
-public/assets/css_2021/website-theme.css-2521-@media (max-width: 767.98px) {
-public/assets/css_2021/website-theme.css:2522:    .banner-block .slider-fig {
-public/assets/css_2021/website-theme.css-2523-        height: clamp(150px, 42vw, 180px);
-public/assets/css_2021/website-theme.css-2524-        box-sizing: border-box;
-public/assets/css_2021/website-theme.css-2525-    }
-public/assets/css_2021/website-theme.css-2526-
-public/assets/css_2021/website-theme.css-2527-    .banner-block .slider-img-holder {
-public/assets/css_2021/website-theme.css-2528-        overflow: hidden;
-public/assets/css_2021/website-theme.css-2529-    }
-public/assets/css_2021/website-theme.css-2530-
-public/assets/css_2021/website-theme.css-2531-    .banner-block .slider-caption {
-public/assets/css_2021/website-theme.css-2532-        padding: 6px 8px;
---
-public/assets/css_2021/website-theme.css-2551-
-public/assets/css_2021/website-theme.css-2552-
-public/assets/css_2021/website-theme.css-2553-/* Unified Head Office and Other Office officer panel layout */
-public/assets/css_2021/website-theme.css-2554-
-public/assets/css_2021/website-theme.css-2555-/* Desktop and tablet: both panels fill the same stretched homepage row */
-public/assets/css_2021/website-theme.css:2556:.home-officers-column {
-public/assets/css_2021/website-theme.css-2557-    display: flex;
-public/assets/css_2021/website-theme.css-2558-    align-items: stretch;
-public/assets/css_2021/website-theme.css-2559-}
-public/assets/css_2021/website-theme.css-2560-
-public/assets/css_2021/website-theme.css:2561:.home-officers-panel {
-public/assets/css_2021/website-theme.css-2562-    width: 100%;
-public/assets/css_2021/website-theme.css-2563-    display: flex;
-public/assets/css_2021/website-theme.css-2564-    align-items: stretch;
-public/assets/css_2021/website-theme.css-2565-}
-public/assets/css_2021/website-theme.css-2566-
-public/assets/css_2021/website-theme.css:2567:.home-officers-panel > .person-block {
-public/assets/css_2021/website-theme.css-2568-    width: 100%;
-public/assets/css_2021/website-theme.css-2569-    height: 100% !important;
-public/assets/css_2021/website-theme.css-2570-    min-height: 100% !important;
-public/assets/css_2021/website-theme.css-2571-    box-sizing: border-box !important;
-public/assets/css_2021/website-theme.css-2572-    display: flex !important;
-public/assets/css_2021/website-theme.css-2573-    flex-direction: column !important;
-public/assets/css_2021/website-theme.css-2574-}
-public/assets/css_2021/website-theme.css-2575-
-public/assets/css_2021/website-theme.css-2576-.head-office-contact-officers,
-public/assets/css_2021/website-theme.css-2577-.other-office-officers-frame {
---
-public/assets/css_2021/website-theme.css-2637-    background: #e5ebf0 !important;
-public/assets/css_2021/website-theme.css-2638-}
-public/assets/css_2021/website-theme.css-2639-
-public/assets/css_2021/website-theme.css-2640-/* Mobile: let content determine height to avoid clipping */
-public/assets/css_2021/website-theme.css-2641-@media (max-width: 767.98px) {
-public/assets/css_2021/website-theme.css:2642:    .home-officers-panel > .person-block,
-public/assets/css_2021/website-theme.css-2643-    .head-office-contact-officers,
-public/assets/css_2021/website-theme.css-2644-    .other-office-officers-frame {
-public/assets/css_2021/website-theme.css-2645-        height: auto !important;
-public/assets/css_2021/website-theme.css-2646-        min-height: 0 !important;
-public/assets/css_2021/website-theme.css-2647-        max-height: none !important;
-public/assets/css_2021/website-theme.css-2648-    }
-public/assets/css_2021/website-theme.css-2649-
-public/assets/css_2021/website-theme.css-2650-    .head-office-contact-officers > .media-block,
-public/assets/css_2021/website-theme.css-2651-    .other-office-officers-frame > .media-block {
-public/assets/css_2021/website-theme.css-2652-        flex: 0 0 auto !important;
---
-public/assets/css_2021/website-theme.css-3499-    }
-public/assets/css_2021/website-theme.css-3500-}
-public/assets/css_2021/website-theme.css-3501-
-public/assets/css_2021/website-theme.css-3502-/* Desktop homepage: compact banner and external tools spacing */
-public/assets/css_2021/website-theme.css-3503-@media (min-width: 992px) {
-public/assets/css_2021/website-theme.css:3504:    .banner-block .slider-fig {
-public/assets/css_2021/website-theme.css-3505-        height: 280px !important;
-public/assets/css_2021/website-theme.css-3506-    }
-public/assets/css_2021/website-theme.css-3507-
-public/assets/css_2021/website-theme.css-3508-    .banner-block .slider-wrap {
-public/assets/css_2021/website-theme.css-3509-        margin-bottom: 0 !important;
-public/assets/css_2021/website-theme.css-3510-    }
-public/assets/css_2021/website-theme.css-3511-
-public/assets/css_2021/website-theme.css-3512-    .banner-block {
-public/assets/css_2021/website-theme.css-3513-        padding-bottom: 0 !important;
-public/assets/css_2021/website-theme.css-3514-        margin-bottom: 0 !important;
---
-public/assets/css_2021/website-theme.css-3970-    }
-public/assets/css_2021/website-theme.css-3971-}
-public/assets/css_2021/website-theme.css-3972-
-public/assets/css_2021/website-theme.css-3973-/* Final: Other Office officer panel height follows actual officer count */
-public/assets/css_2021/website-theme.css-3974-@media (min-width: 992px) {
-public/assets/css_2021/website-theme.css:3975:    .home-officers-panel > .person-block.other-office-officers-frame {
-public/assets/css_2021/website-theme.css-3976-        height: calc(52px + var(--officer-count, 4) * 79px) !important;
-public/assets/css_2021/website-theme.css-3977-        min-height: calc(52px + var(--officer-count, 4) * 79px) !important;
-public/assets/css_2021/website-theme.css-3978-        max-height: calc(52px + var(--officer-count, 4) * 79px) !important;
-public/assets/css_2021/website-theme.css-3979-        flex: 0 0 auto !important;
-public/assets/css_2021/website-theme.css-3980-        box-sizing: border-box !important;
-public/assets/css_2021/website-theme.css-3981-    }
-public/assets/css_2021/website-theme.css-3982-
-public/assets/css_2021/website-theme.css-3983-    .other-office-officers-frame > .media-block {
-public/assets/css_2021/website-theme.css-3984-        flex: 0 0 79px !important;
-public/assets/css_2021/website-theme.css-3985-        height: 79px !important;
---
-public/assets/css_2021/website-theme.css-3987-        box-sizing: border-box !important;
-public/assets/css_2021/website-theme.css-3988-    }
-public/assets/css_2021/website-theme.css-3989-}
-public/assets/css_2021/website-theme.css-3990-
-public/assets/css_2021/website-theme.css-3991-@media (min-width: 768px) and (max-width: 991.98px) {
-public/assets/css_2021/website-theme.css:3992:    .home-officers-panel > .person-block.other-office-officers-frame {
-public/assets/css_2021/website-theme.css-3993-        height: calc(52px + var(--officer-count, 4) * 69px) !important;
-public/assets/css_2021/website-theme.css-3994-        min-height: calc(52px + var(--officer-count, 4) * 69px) !important;
-public/assets/css_2021/website-theme.css-3995-        max-height: calc(52px + var(--officer-count, 4) * 69px) !important;
-public/assets/css_2021/website-theme.css-3996-        flex: 0 0 auto !important;
-public/assets/css_2021/website-theme.css-3997-        box-sizing: border-box !important;
-public/assets/css_2021/website-theme.css-3998-    }
-public/assets/css_2021/website-theme.css-3999-
-public/assets/css_2021/website-theme.css-4000-    .other-office-officers-frame > .media-block {
-public/assets/css_2021/website-theme.css-4001-        flex: 0 0 69px !important;
-public/assets/css_2021/website-theme.css-4002-        height: 69px !important;
---
-public/assets/css_2021/website-theme.css-4005-    }
-public/assets/css_2021/website-theme.css-4006-}
-public/assets/css_2021/website-theme.css-4007-
-public/assets/css_2021/website-theme.css-4008-/* Mobile: retain natural content height */
-public/assets/css_2021/website-theme.css-4009-@media (max-width: 767.98px) {
-public/assets/css_2021/website-theme.css:4010:    .home-officers-panel > .person-block.other-office-officers-frame {
-public/assets/css_2021/website-theme.css-4011-        height: auto !important;
-public/assets/css_2021/website-theme.css-4012-        min-height: 0 !important;
-public/assets/css_2021/website-theme.css-4013-        max-height: none !important;
-public/assets/css_2021/website-theme.css-4014-    }
-public/assets/css_2021/website-theme.css-4015-
-public/assets/css_2021/website-theme.css-4016-    .other-office-officers-frame > .media-block {
-public/assets/css_2021/website-theme.css-4017-        flex: 0 0 auto !important;
-public/assets/css_2021/website-theme.css-4018-        height: auto !important;
-public/assets/css_2021/website-theme.css-4019-        min-height: 76px !important;
-public/assets/css_2021/website-theme.css-4020-    }
---
-public/assets/css_2021/website-theme.css-4915-}
-public/assets/css_2021/website-theme.css-4916-
-public/assets/css_2021/website-theme.css-4917-
-public/assets/css_2021/website-theme.css-4918-/* Head Office homepage officers: match desktop banner height */
-public/assets/css_2021/website-theme.css-4919-@media (min-width: 992px) {
-public/assets/css_2021/website-theme.css:4920:    .home-officers-panel > .person-block.head-office-contact-officers {
-public/assets/css_2021/website-theme.css-4921-        height: 280px !important;
-public/assets/css_2021/website-theme.css-4922-        min-height: 280px !important;
-public/assets/css_2021/website-theme.css-4923-        max-height: 280px !important;
-public/assets/css_2021/website-theme.css-4924-        flex: 0 0 280px !important;
-public/assets/css_2021/website-theme.css-4925-        overflow: hidden !important;
-public/assets/css_2021/website-theme.css-4926-        box-sizing: border-box !important;
-public/assets/css_2021/website-theme.css-4927-    }
-public/assets/css_2021/website-theme.css-4928-
-public/assets/css_2021/website-theme.css:4929:    .home-officers-panel > .head-office-contact-officers > .person-header {
-public/assets/css_2021/website-theme.css-4930-        flex: 0 0 0 !important;
-public/assets/css_2021/website-theme.css-4931-        height: 0 !important;
-public/assets/css_2021/website-theme.css-4932-        min-height: 0 !important;
-public/assets/css_2021/website-theme.css-4933-        margin: 0 !important;
-public/assets/css_2021/website-theme.css-4934-        padding: 0 !important;
-public/assets/css_2021/website-theme.css-4935-        border: 0 !important;
-public/assets/css_2021/website-theme.css-4936-        overflow: hidden !important;
-public/assets/css_2021/website-theme.css-4937-    }
-public/assets/css_2021/website-theme.css-4938-
-public/assets/css_2021/website-theme.css:4939:    .home-officers-panel > .head-office-contact-officers > .media-block {
-public/assets/css_2021/website-theme.css-4940-        flex: 1 1 0 !important;
-public/assets/css_2021/website-theme.css-4941-        height: auto !important;
-public/assets/css_2021/website-theme.css-4942-        min-height: 0 !important;
-public/assets/css_2021/website-theme.css-4943-        padding: 3px 0 3px 55px !important;
-public/assets/css_2021/website-theme.css-4944-        margin: 0 !important;
-public/assets/css_2021/website-theme.css-4945-        box-sizing: border-box !important;
-public/assets/css_2021/website-theme.css-4946-    }
-public/assets/css_2021/website-theme.css-4947-
-public/assets/css_2021/website-theme.css:4948:    .home-officers-panel .head-office-contact-officers .rounded-fig-wrap {
-public/assets/css_2021/website-theme.css-4949-        width: 44px !important;
-public/assets/css_2021/website-theme.css-4950-        height: 44px !important;
-public/assets/css_2021/website-theme.css-4951-        left: 0 !important;
-public/assets/css_2021/website-theme.css-4952-    }
-public/assets/css_2021/website-theme.css-4953-
-public/assets/css_2021/website-theme.css:4954:    .home-officers-panel .head-office-contact-officers .media-desc {
-public/assets/css_2021/website-theme.css-4955-        line-height: 1.15 !important;
-public/assets/css_2021/website-theme.css-4956-    }
-public/assets/css_2021/website-theme.css-4957-
-public/assets/css_2021/website-theme.css:4958:    .home-officers-panel .head-office-contact-officers .head-office-officer-name {
-public/assets/css_2021/website-theme.css-4959-        font-size: 9px !important;
-public/assets/css_2021/website-theme.css-4960-        line-height: 1.15 !important;
-public/assets/css_2021/website-theme.css-4961-        margin-bottom: 1px !important;
-public/assets/css_2021/website-theme.css-4962-    }
-public/assets/css_2021/website-theme.css-4963-
-public/assets/css_2021/website-theme.css:4964:    .home-officers-panel .head-office-contact-officers .head-office-officer-designation {
-public/assets/css_2021/website-theme.css-4965-        font-size: 9px !important;
-public/assets/css_2021/website-theme.css-4966-        line-height: 1.15 !important;
-public/assets/css_2021/website-theme.css-4967-        margin-bottom: 1px !important;
-public/assets/css_2021/website-theme.css-4968-    }
-public/assets/css_2021/website-theme.css-4969-
-public/assets/css_2021/website-theme.css:4970:    .home-officers-panel .head-office-contact-officers .head-office-officer-contact {
-public/assets/css_2021/website-theme.css-4971-        margin: 1px 0 !important;
-public/assets/css_2021/website-theme.css-4972-        line-height: 1.15 !important;
-public/assets/css_2021/website-theme.css-4973-    }
-public/assets/css_2021/website-theme.css-4974-}
-public/assets/css_2021/website-theme.css-4975-
-public/assets/css_2021/website-theme.css-4976-
-public/assets/css_2021/website-theme.css-4977-
-public/assets/css_2021/website-theme.css-4978-/* Shared Banner Caption: single-line responsive display */
-public/assets/css_2021/website-theme.css-4979-.banner-block .slider-caption {
-public/assets/css_2021/website-theme.css-4980-    height: 34px !important;
---
-public/assets/css_2021/website-theme.css-5048-
-public/assets/css_2021/website-theme.css-5049-
-public/assets/css_2021/website-theme.css-5050-
-public/assets/css_2021/website-theme.css-5051-/* Other Office Contact Officers: consistent banner-height layout */
-public/assets/css_2021/website-theme.css-5052-@media (min-width: 768px) {
-public/assets/css_2021/website-theme.css:5053:    .home-banner-officers-row .home-officers-column > .home-officers-panel {
-public/assets/css_2021/website-theme.css-5054-        height: 280px !important;
-public/assets/css_2021/website-theme.css-5055-        min-height: 280px !important;
-public/assets/css_2021/website-theme.css-5056-        align-items: stretch !important;
-public/assets/css_2021/website-theme.css-5057-    }
-public/assets/css_2021/website-theme.css-5058-
-public/assets/css_2021/website-theme.css:5059:    .home-officers-panel > .person-block.other-office-officers-frame {
-public/assets/css_2021/website-theme.css-5060-        width: 100% !important;
-public/assets/css_2021/website-theme.css-5061-        height: 280px !important;
-public/assets/css_2021/website-theme.css-5062-        min-height: 280px !important;
-public/assets/css_2021/website-theme.css-5063-        max-height: 280px !important;
-public/assets/css_2021/website-theme.css-5064-        flex: 0 0 280px !important;
-public/assets/css_2021/website-theme.css-5065-        display: flex !important;
-public/assets/css_2021/website-theme.css-5066-        flex-direction: column !important;
-public/assets/css_2021/website-theme.css-5067-        justify-content: space-evenly !important;
-public/assets/css_2021/website-theme.css-5068-        box-sizing: border-box !important;
-public/assets/css_2021/website-theme.css-5069-        padding: 10px 12px !important;
---
-public/assets/css_2021/website-theme.css-5132-    }
-public/assets/css_2021/website-theme.css-5133-}
-public/assets/css_2021/website-theme.css-5134-
-public/assets/css_2021/website-theme.css-5135-/* Mobile and small screens: let actual officer content determine height */
-public/assets/css_2021/website-theme.css-5136-@media (max-width: 767.98px) {
-public/assets/css_2021/website-theme.css:5137:    .home-banner-officers-row .home-officers-column > .home-officers-panel {
-public/assets/css_2021/website-theme.css-5138-        height: auto !important;
-public/assets/css_2021/website-theme.css-5139-        min-height: 0 !important;
-public/assets/css_2021/website-theme.css-5140-    }
-public/assets/css_2021/website-theme.css-5141-
-public/assets/css_2021/website-theme.css:5142:    .home-officers-panel > .person-block.other-office-officers-frame {
-public/assets/css_2021/website-theme.css-5143-        height: auto !important;
-public/assets/css_2021/website-theme.css-5144-        min-height: 0 !important;
-public/assets/css_2021/website-theme.css-5145-        max-height: none !important;
-public/assets/css_2021/website-theme.css-5146-        flex: 0 0 auto !important;
-public/assets/css_2021/website-theme.css-5147-        justify-content: flex-start !important;
-public/assets/css_2021/website-theme.css-5148-        overflow: visible !important;
-public/assets/css_2021/website-theme.css-5149-        padding: 12px !important;
-public/assets/css_2021/website-theme.css-5150-    }
-public/assets/css_2021/website-theme.css-5151-
-public/assets/css_2021/website-theme.css-5152-    .other-office-officers-frame > .media-block {
---
-public/assets/css_2021/website-theme.css-5166-}
-public/assets/css_2021/website-theme.css-5167-
-public/assets/css_2021/website-theme.css-5168-
-public/assets/css_2021/website-theme.css-5169-/* Other Office officers: fixed row positions, no stretching */
-public/assets/css_2021/website-theme.css-5170-@media (min-width: 768px) {
-public/assets/css_2021/website-theme.css:5171:    .home-officers-panel > .person-block.other-office-officers-frame {
-public/assets/css_2021/website-theme.css-5172-        justify-content: flex-start !important;
-public/assets/css_2021/website-theme.css-5173-        align-content: flex-start !important;
-public/assets/css_2021/website-theme.css-5174-        gap: 0 !important;
-public/assets/css_2021/website-theme.css-5175-    }
-public/assets/css_2021/website-theme.css-5176-
-public/assets/css_2021/website-theme.css-5177-    .other-office-officers-frame > .media-block {
-public/assets/css_2021/website-theme.css-5178-        flex: 0 0 auto !important;
-public/assets/css_2021/website-theme.css-5179-        min-height: 64px !important;
-public/assets/css_2021/website-theme.css-5180-        height: auto !important;
-public/assets/css_2021/website-theme.css-5181-        padding-top: 7px !important;
---
-public/assets/css_2021/website-theme.css-5256-    overflow-wrap: anywhere !important;
-public/assets/css_2021/website-theme.css-5257-}
-public/assets/css_2021/website-theme.css-5258-
-public/assets/css_2021/website-theme.css-5259-/* Desktop: automatically distribute 2, 3 or 4 officers in the available panel */
-public/assets/css_2021/website-theme.css-5260-@media (min-width: 768px) {
-public/assets/css_2021/website-theme.css:5261:    .home-officers-panel > .person-block.other-office-officers-frame {
-public/assets/css_2021/website-theme.css-5262-        display: flex !important;
-public/assets/css_2021/website-theme.css-5263-        flex-direction: column !important;
-public/assets/css_2021/website-theme.css-5264-        justify-content: space-between !important;
-public/assets/css_2021/website-theme.css-5265-        box-sizing: border-box !important;
-public/assets/css_2021/website-theme.css-5266-        padding: 10px 10px 6px !important;
-public/assets/css_2021/website-theme.css-5267-        overflow: hidden !important;
-public/assets/css_2021/website-theme.css-5268-    }
-public/assets/css_2021/website-theme.css-5269-    .other-office-officers-frame > .media-block {
-public/assets/css_2021/website-theme.css-5270-        position: relative !important;
-public/assets/css_2021/website-theme.css-5271-        display: flex !important;
---
-public/assets/css_2021/website-theme.css-5306-    }
-public/assets/css_2021/website-theme.css-5307-}
-public/assets/css_2021/website-theme.css-5308-
-public/assets/css_2021/website-theme.css-5309-/* Other Office: natural officer rows, do not stretch to fill panel */
-public/assets/css_2021/website-theme.css-5310-@media (min-width: 768px) {
-public/assets/css_2021/website-theme.css:5311:    .home-officers-panel > .person-block.other-office-officers-frame {
-public/assets/css_2021/website-theme.css-5312-        justify-content: flex-start !important;
-public/assets/css_2021/website-theme.css-5313-        align-items: stretch !important;
-public/assets/css_2021/website-theme.css-5314-    }
-public/assets/css_2021/website-theme.css-5315-    .other-office-officers-frame > .media-block {
-public/assets/css_2021/website-theme.css-5316-        flex: 0 0 auto !important;
-public/assets/css_2021/website-theme.css-5317-        min-height: 54px !important;
-public/assets/css_2021/website-theme.css-5318-        height: auto !important;
-public/assets/css_2021/website-theme.css-5319-        margin: 0 0 8px 0 !important;
-public/assets/css_2021/website-theme.css-5320-    }
-public/assets/css_2021/website-theme.css-5321-    .other-office-officers-frame > .media-block:last-child {
-===== FOOTER QUOTE AND APP REFERENCES =====
-resources/views/layout/client/footer_2021.blade.php-38-$footer_col_2 = Home::getHomeDetail($mainOfficeId, 'footer-section-2', $sessionLangId);
-resources/views/layout/client/footer_2021.blade.php-39-$footer_col_3 = Home::getHomeDetail($mainOfficeId, 'footer-section-3', $sessionLangId);
-resources/views/layout/client/footer_2021.blade.php-40-$footer_quote = Home::getHomeDetail($officeId, 'footer-quote', $sessionLangId);
-resources/views/layout/client/footer_2021.blade.php-41-// dd($footer_col_2);
-resources/views/layout/client/footer_2021.blade.php-42-@endphp
-resources/views/layout/client/footer_2021.blade.php-43-<!-- Office quote: displayed between main content and footer -->
-resources/views/layout/client/footer_2021.blade.php:44:<section class="office-quote-section">
-resources/views/layout/client/footer_2021.blade.php-45-    <div class="container">
-resources/views/layout/client/footer_2021.blade.php-46-        <p>“{{ $footer_quote && $footer_quote->home_description && $footer_quote->home_description != '--' ? trim(html_entity_decode(strip_tags($footer_quote->home_description))) : ($sessionLangId == 1 ? 'राष्ट्रिय सम्पर्क सञ्जाल र सामाजिक–आर्थिक समृद्धिका लागि सुरक्षित, भरपर्दो तथा दिगो सडक सञ्जालको विकास।' : 'Developing a Safe, Reliable and Sustainable Road Network for National Connectivity and Socio-Economic Prosperity.') }}”</p>
-resources/views/layout/client/footer_2021.blade.php-47-    </div>
-resources/views/layout/client/footer_2021.blade.php-48-</section>
-resources/views/layout/client/footer_2021.blade.php-49-<!--footer-->
-resources/views/layout/client/footer_2021.blade.php-50-<footer class="main-footer">
-resources/views/layout/client/footer_2021.blade.php-51-    <div class="mid-footer">
-resources/views/layout/client/footer_2021.blade.php-52-        <div class="container">
-resources/views/layout/client/footer_2021.blade.php-53-            <div class="row">
-resources/views/layout/client/footer_2021.blade.php-54-
-resources/views/layout/client/footer_2021.blade.php-55-<div class="col-md-3 col-sm-6">
-resources/views/layout/client/footer_2021.blade.php-56-    <h4>{{ $sessionLangId == 1 ? 'आन्तरिक लिंकहरु' : 'Internal Links' }}</h4>
-resources/views/layout/client/footer_2021.blade.php-57-    <div class="footer-list footer-internal-links">
-resources/views/layout/client/footer_2021.blade.php-58-        @if ($officeId == $mainOfficeId && $footer_col_1 && $footer_col_1->home_description && $footer_col_1->home_description != '--')
-resources/views/layout/client/footer_2021.blade.php-59-            {!! \Helper::normalizeFooterLinks($footer_col_1->home_description) !!}
-resources/views/layout/client/footer_2021.blade.php-60-        @else
---
-resources/views/layout/client/header_2021.blade.php-219-                                    </li>
-resources/views/layout/client/header_2021.blade.php-220-                                    <li>
-resources/views/layout/client/header_2021.blade.php-221-                                        <a href="{{ '/' . $subdomain . '/contact' }}">
-resources/views/layout/client/header_2021.blade.php-222-                                            {{ $languageId == 1 ? 'सम्पर्क' : 'Contact' }}
-resources/views/layout/client/header_2021.blade.php-223-                                        </a>
-resources/views/layout/client/header_2021.blade.php-224-                                    </li>
-resources/views/layout/client/header_2021.blade.php:225:                            <li class="footer-app-item">
-resources/views/layout/client/header_2021.blade.php:226:                                <button type="button" class="footer-install-app-trigger"
-resources/views/layout/client/header_2021.blade.php:227:                                    aria-expanded="false" aria-controls="dorAppPopover"
-resources/views/layout/client/header_2021.blade.php-228-                                    title="DoR App">
-resources/views/layout/client/header_2021.blade.php-229-                                    <i class="fa fa-mobile footer-app-mobile-icon" aria-hidden="true"></i>
-resources/views/layout/client/header_2021.blade.php-230-                                    <i class="fa fa-qrcode footer-app-qr-icon" aria-hidden="true"></i>
-resources/views/layout/client/header_2021.blade.php-231-                                    <span class="footer-app-label">{{ $languageId == 1 ? 'डोर एप' : 'DoR App' }}</span>
-resources/views/layout/client/header_2021.blade.php-232-                                </button>
-resources/views/layout/client/header_2021.blade.php:233:                                <div class="footer-app-popover" id="dorAppPopover">
-resources/views/layout/client/header_2021.blade.php-234-                                    <img src="{{ asset('assets/pwa/dor-website-qr.png') }}?v={{ filemtime(public_path('assets/pwa/dor-website-qr.png')) }}"
-resources/views/layout/client/header_2021.blade.php-235-                                        alt="DoR App QR Code" width="140" height="140">
-resources/views/layout/client/header_2021.blade.php-236-                                    <div class="footer-share-links">
-resources/views/layout/client/header_2021.blade.php-237-                                        <a class="footer-qr-download"
-resources/views/layout/client/header_2021.blade.php-238-                                           href="{{ asset('assets/pwa/dor-website-qr.png') }}"
-resources/views/layout/client/header_2021.blade.php-239-                                           download="DoR-Website-QR.png"
-resources/views/layout/client/header_2021.blade.php-240-                                           aria-label="Download QR" title="Download QR">
-resources/views/layout/client/header_2021.blade.php-241-                                            <i class="fa fa-download" aria-hidden="true"></i>
-resources/views/layout/client/header_2021.blade.php-242-                                        </a>
-resources/views/layout/client/header_2021.blade.php-243-                                        <button type="button" class="footer-native-share"
-resources/views/layout/client/header_2021.blade.php-244-                                            aria-label="Share DoR website" title="Share">
-resources/views/layout/client/header_2021.blade.php-245-                                            <svg viewBox="0 0 24 24" width="19" height="19"
-resources/views/layout/client/header_2021.blade.php-246-                                                aria-hidden="true" focusable="false"
-resources/views/layout/client/header_2021.blade.php-247-                                                fill="none" stroke="currentColor"
-resources/views/layout/client/header_2021.blade.php-248-                                                stroke-width="2" stroke-linecap="round"
-resources/views/layout/client/header_2021.blade.php-249-                                                stroke-linejoin="round">
-===== ADMIN CONFIGURATION JAVASCRIPT =====
-22-        @php
-23-            $identityFields = [
-24-                'government_name_np', 'government_name_en',
-25-                'ministry_name_np', 'ministry_name_en',
-26-                'department_name_np', 'department_name_en',
-27-                'other_office_name_font_size_desktop',
-28-                'other_office_name_font_size_mobile',
-29-                'other_office_name_line_height',
-30-                'other_office_name_font_weight',
-31-                        ];
-32-            $identityHasErrors = $errors->hasAny($identityFields);
-33-        @endphp
-34-
-35-        <ul class="nav nav-tabs" style="margin-bottom:20px;">
-36-            <li class="{{ $identityHasErrors ? '' : 'active' }}">
-37:                <a href="#" data-settings-tab="theme"><i class="icon-tint"></i> Website Appearance</a>
-38-            </li>
-39-            <li class="{{ $identityHasErrors ? 'active' : '' }}">
-40:                <a href="#" data-settings-tab="identity"><i class="icon-globe"></i> Government Identity</a>
-41-            </li>
-42-        </ul>
-43-
-44:        <div id="website-theme-panel" style="{{ $identityHasErrors ? 'display:none;' : '' }}">
-45-        <div class="row-fluid">
-46-            <div class="span12">
-47-                <div class="widget">
-48-                    <div class="widget-title">
-49-                        <h4><i class="icon-tint"></i> Global Colour Palette</h4>
-50-                    </div>
-51-
-52-                    <div class="widget-body form">
-53-                        @include('layout.admin.alert')
-54-
-55-                        <div class="alert alert-info">
-56-                            Changes apply globally to the public website, including all sub-offices.
-57-                            The Admin Control Panel appearance is not affected.
-58-                            Use Preview to inspect changes before saving.
-59-                        </div>
-60-
-61-                        @php
-62-                            $colourFields = [
-63-                                'page_background' => 'Page Background',
-64-                                'card_background' => 'Card Background',
-65-                                'header_background' => 'Header Background',
-66-                                'nav_background' => 'Navigation Background',
-67-                                'accent_color' => 'Accent Colour',
-68-                                'footer_background' => 'Footer Background',
-69-                                'text_color' => 'Text Colour',
-70-                                'border_color' => 'Border Colour',
-71-                            ];
-72-                        @endphp
-73-
-74-                        <form action="{{ route('admin.website-theme.update') }}"
-75-                              method="POST" id="website-theme-form"
-76-                              class="form-horizontal">
-77-                            @csrf
-78-
-79-                            @foreach ($colourFields as $field => $label)
-80-                                <div class="control-group">
-81-                                    <label class="control-label" for="{{ $field }}">
-82-                                        {{ $label }}
-83-                                    </label>
-84-                                    <div class="controls">
-85-                                        <input type="color"
-86-                                               id="{{ $field }}_picker"
-87-                                               class="theme-picker"
-88-                                               data-target="{{ $field }}"
-89-                                               value="{{ $theme->{$field} }}"
-90-                                               style="width:55px;height:35px;padding:2px;vertical-align:middle;">
-91-                                        <input type="text"
-92-                                               id="{{ $field }}"
-93-                                               name="{{ $field }}"
-94-                                               class="span3 theme-hex"
-95-                                               value="{{ $theme->{$field} }}"
-96-                                               pattern="^#[0-9A-Fa-f]{6}$"
-97-                                               maxlength="7"
-98-                                               required
-99-                                               autocomplete="off">
-100-                                        @error($field)
-101-                                            <span class="help-inline" style="color:#b94a48;">{{ $message }}</span>
-102-                                        @enderror
-103-                                    </div>
-104-                                </div>
-105-                            @endforeach
-106-
-107-                            <div class="control-group">
-108-                                <label class="control-label">Live Preview</label>
-109-                                <div class="controls">
-110-                                    <div id="theme-preview" style="border:1px solid #ddd;border-radius:5px;overflow:hidden;max-width:650px;">
-111-                                        <div id="preview-header" style="padding:18px;font-weight:bold;">
-112-                                            Department of Roads — Website Header
-113-                                        </div>
-114-                                        <div id="preview-nav" style="padding:10px 18px;color:white;">
-115-                                            Home　 About Us　 Divisions　 Contact
-116-                                        </div>
-117-                                        <div id="preview-body" style="padding:22px;">
-118-                                            <div id="preview-card" style="padding:18px;border:1px solid;border-radius:4px;">
-119-                                                <strong>Website Content Preview</strong>
-120-                                                <p style="margin:10px 0;">This is an example of a public website content card.</p>
-121-                                                <span id="preview-accent" style="font-weight:bold;">Accent Colour</span>
-122-                                            </div>
-123-                                        </div>
-124-                                        <div id="preview-footer" style="padding:16px;color:white;">
-125-                                            Department of Roads — Website Footer
-126-                                        </div>
-127-                                    </div>
-128-                                    <p class="help-block">Preview is temporary. Save Theme to apply the colours across the website.</p>
-129-                                </div>
-130-                            </div>
-131-
-132-                            <div class="form-actions">
-133-                                <button type="submit" class="btn btn-primary">
-134-                                    <i class="icon-ok-sign"></i> Save Theme
-135-                                </button>
-136-                                <button type="button" id="reset-theme" class="btn btn-danger">
-137-                                    <i class="icon-refresh"></i> Reset to Default
-138-                                </button>
-139-                                <a href="{{ route('dashboard') }}" class="btn">
-140-                                    <i class="icon-remove-sign"></i> Cancel
-141-                                </a>
-142-                            </div>
-143-                        </form>
-144-
-145-                        <form action="{{ route('admin.website-theme.reset') }}"
-146-                              method="POST" id="reset-theme-form" style="display:none;">
-147-                            @csrf
-148-                        </form>
-149-                    </div>
-150-                </div>
-151-            </div>
-152-        </div>
-153-        </div>
-154-
-155:        <div id="website-identity-panel" style="{{ $identityHasErrors ? '' : 'display:none;' }}">
-156-            <div class="row-fluid">
-157-                <div class="span12">
-158-                    <div class="widget">
-159-                        <div class="widget-title">
-160-                            <h4><i class="icon-globe"></i> Government Identity Settings</h4>
-161-                        </div>
-162-                        <div class="widget-body form">
-163-                            <div class="alert alert-info">
-164-                                Manage the official Government, Ministry and Department names displayed
-165-                                in the public website header. Office names remain separate.
-166-                            </div>
-167-
-168-                            <form action="{{ route('admin.website-identity.update') }}"
-169-                                  method="POST" class="form-horizontal">
-170-                                @csrf
-171-
-172-                                @php
-173-                                    $identityLabels = [
-174-                                        'government_name_np' => 'Government Name (नेपाली)',
-175-                                        'government_name_en' => 'Government Name (English)',
-176-                                        'ministry_name_np' => 'Ministry Name (नेपाली)',
-177-                                        'ministry_name_en' => 'Ministry Name (English)',
-178-                                        'department_name_np' => 'Department Name (नेपाली)',
-179-                                        'department_name_en' => 'Department Name (English)',
-180-                                    ];
-181-                                @endphp
-182-
-183-                                @foreach ($identityLabels as $field => $label)
-184-                                    <div class="control-group">
-185-                                        <label class="control-label" for="{{ $field }}">{{ $label }}</label>
-186-                                        <div class="controls">
-187-                                            <input type="text"
-188-                                                   id="{{ $field }}"
-189-                                                   name="{{ $field }}"
-190-                                                   class="span6"
-191-                                                   value="{{ old($field, $identity->{$field}) }}"
-192-                                                   maxlength="255"
-193-                                                   required>
-194-                                            @error($field)
-195-                                                <span class="help-inline" style="color:#b94a48;">{{ $message }}</span>
-196-                                            @enderror
-197-                                        </div>
-198-                                    </div>
-199-                                @endforeach
-200-
-201-                                <hr>
-202-                                <h4>Other Office Header Typography</h4>
-203-                                <p class="alert alert-info">
-204-                                    These settings control only the fourth line (Office Name) on other-office headers.
-205-                                    Head Office typography remains unchanged.
-206-                                </p>
-207-
-208-                                @php
-209-                                    $officeHeaderFields = [
-210-                                        'other_office_name_font_size_desktop' => ['Desktop font size (px)', 'number', 9, 24, 1],
-211-                                        'other_office_name_font_size_mobile' => ['Mobile font size (px)', 'number', 9, 20, 1],
-212-                                        'other_office_name_line_height' => ['Line height', 'number', 1, 2.5, 0.05],
-213-                                        'other_office_name_font_weight' => ['Font weight', 'select', null, null, null],
-214-                                    ];
-215-                                @endphp
-216-
-217-                                @foreach ($officeHeaderFields as $field => $config)
-218-                                    <div class="control-group">
-219-                                        <label class="control-label" for="{{ $field }}">{{ $config[0] }}</label>
-220-                                        <div class="controls">
-221-                                            @if ($config[1] === 'select')
-222-                                                <select id="{{ $field }}" name="{{ $field }}" class="span2" required>
-223-                                                    @foreach ([400, 500, 600, 700, 800] as $weight)
-224-                                                        <option value="{{ $weight }}" {{ (string) old($field, $identity->{$field}) === (string) $weight ? 'selected' : '' }}>{{ $weight }}</option>
-225-                                                    @endforeach
-226-                                                </select>
-227-                                            @else
-228-                                                <input type="{{ $config[1] }}"
-229-                                                       id="{{ $field }}"
-230-                                                       name="{{ $field }}"
-231-                                                       class="{{ $config[1] === 'color' ? '' : 'span2' }}"
-232-                                                       value="{{ old($field, $identity->{$field}) }}"
-233-                                                       @if ($config[2] !== null) min="{{ $config[2] }}" max="{{ $config[3] }}" step="{{ $config[4] }}" @endif
-234-                                                       required>
-235-                                            @endif
-236-                                            @error($field)
-237-                                                <span class="help-inline" style="color:#b94a48;">{{ $message }}</span>
-238-                                            @enderror
-239-                                        </div>
-240-                                    </div>
-241-                                @endforeach
-242-
-243-                                <div class="form-actions">
-244-                                    <button type="submit" class="btn btn-primary">
-245-                                        <i class="icon-ok-sign"></i> Save Government Identity
-246-                                    </button>
-247-                                    <a href="{{ route('dashboard') }}" class="btn">
-248-                                        <i class="icon-remove-sign"></i> Cancel
-249-                                    </a>
-250-                                </div>
-251-                            </form>
-252-                        </div>
-253-                    </div>
-254-                </div>
-255-            </div>
-256-        </div>
-257-    </div>
-258-    </div>
-259-</div>
-260-@endsection
-261-
-262-@section('footer_js')
-263-<script>
-264-(function () {
-265-    'use strict';
-266-
-267:    document.querySelectorAll('[data-settings-tab]').forEach(function (tab) {
-268-        tab.addEventListener('click', function (event) {
-269-            event.preventDefault();
-270:            var selected = tab.getAttribute('data-settings-tab');
-271-
-272:            document.getElementById('website-theme-panel').style.display =
-273-                selected === 'theme' ? '' : 'none';
-274:            document.getElementById('website-identity-panel').style.display =
-275-                selected === 'identity' ? '' : 'none';
-276-
-277:            document.querySelectorAll('[data-settings-tab]').forEach(function (item) {
-278-                item.parentElement.classList.toggle(
-279-                    'active',
-280:                    item.getAttribute('data-settings-tab') === selected
-281-                );
-282-            });
-283-        });
-284-    });
-285-
-286-
-287-    var fields = [
-288-        'page_background',
-289-        'card_background',
-290-        'header_background',
-291-        'nav_background',
-292-        'accent_color',
-293-        'footer_background',
-294-        'text_color',
-295-        'border_color'
-296-    ];
-297-
-298-    function validHex(value) {
-299-        return /^#[0-9A-Fa-f]{6}$/.test(value);
-300-    }
-301-
-302-    function updatePreview() {
-303-        var values = {};
-304-
-305-        fields.forEach(function (field) {
-306-            var input = document.getElementById(field);
-307-            values[field] = input.value;
-308-            input.setCustomValidity(
-309-                validHex(input.value) ? '' : 'Enter a valid HEX colour, e.g. #142D4E.'
-310-            );
-311-        });
-312-
-313-        if (!fields.every(function (field) { return validHex(values[field]); })) {
-314-            return;
-315-        }
-316-
-317-        document.getElementById('preview-header').style.backgroundColor = values.header_background;
-318-        document.getElementById('preview-header').style.color = '#FFFFFF';
-319-
-320-        document.getElementById('preview-nav').style.backgroundColor = values.nav_background;
-321-
-322-        document.getElementById('preview-body').style.backgroundColor = values.page_background;
-323-        document.getElementById('preview-body').style.color = values.text_color;
-324-
-325-        document.getElementById('preview-card').style.backgroundColor = values.card_background;
-326-        document.getElementById('preview-card').style.borderColor = values.border_color;
-327-        document.getElementById('preview-card').style.color = values.text_color;
-328-
-329-        document.getElementById('preview-accent').style.color = values.accent_color;
-330-
-331-        document.getElementById('preview-footer').style.backgroundColor = values.footer_background;
-332-    }
-333-
-334-    fields.forEach(function (field) {
-335-        var textInput = document.getElementById(field);
-336-        var picker = document.getElementById(field + '_picker');
-337-
-338-        picker.addEventListener('input', function () {
-339-            textInput.value = picker.value.toUpperCase();
-340-            updatePreview();
-341-        });
-342-
-343-        textInput.addEventListener('input', function () {
-344-            if (validHex(textInput.value)) {
-345-                picker.value = textInput.value;
-346-            }
-347-            updatePreview();
-348-        });
-349-    });
-350-
-351-    document.getElementById('reset-theme').addEventListener('click', function () {
-352-        if (window.confirm('Reset all website colours to the default palette?')) {
-353-            document.getElementById('reset-theme-form').submit();
-354-        }
-355-    });
-356-
-357-    updatePreview();
-358-})();
-359-</script>
-360-@endsection
+===== FONT MAGNIFICATION IMPLEMENTATION =====
+app/Http/Controllers/ConfigurationController.php.bak-font-cycle-20261116-222819:94:        $fontSizeCode = $request->get('font_size_code');
+app/Http/Controllers/ConfigurationController.php.bak-font-cycle-20261116-222819:95:        Session::put('font_size_code', $fontSizeCode);
+app/Http/Controllers/ConfigurationController.php.bak-font-cycle-20261116-222819:97:        $returnArray['font_size_code'] = $fontSizeCode;
+app/Http/Controllers/ConfigurationController.php:94:        $fontSizeCode = $request->get('font_size_code');
+app/Http/Controllers/ConfigurationController.php:101:        Session::put('font_size_code', $fontSizeCode);
+app/Http/Controllers/ConfigurationController.php:103:        $returnArray['font_size_code'] = $fontSizeCode;
+routes/web.php.before-album-fix:538:Route::post('change_font_size', 'ConfigurationController@changeFontSize');
+routes/web.php.bak-grms-routes-20261117:585:Route::post('change_font_size', 'ConfigurationController@changeFontSize');
+routes/web.php.bak-flash-tabs-20261116-224537:573:Route::post('change_font_size', 'ConfigurationController@changeFontSize');
+routes/web.php.bak-ticker-sort-20261123-221638:703:Route::post('change_font_size', 'ConfigurationController@changeFontSize');
+routes/web.php.before-login-rate-limit:538:Route::post('change_font_size', 'ConfigurationController@changeFontSize');
+routes/web.php.backup-appsheet:702:Route::post('change_font_size', 'ConfigurationController@changeFontSize');
+routes/web.php.pre-flash-box-settings-20261117-080141:575:Route::post('change_font_size', 'ConfigurationController@changeFontSize');
+routes/web.php:708:Route::post('change_font_size', 'ConfigurationController@changeFontSize');
+routes/web.php.before-document-search-20261118-093902:602:Route::post('change_font_size', 'ConfigurationController@changeFontSize');
+routes/web.php.before-calendar-routes:601:Route::post('change_font_size', 'ConfigurationController@changeFontSize');
+routes/web.php.bak-download-20261116-150141:569:Route::post('change_font_size', 'ConfigurationController@changeFontSize');
+routes/web.php.before-document-search-20261118-094635:602:Route::post('change_font_size', 'ConfigurationController@changeFontSize');
+routes/web.php.bak-flash-control-20261117:595:Route::post('change_font_size', 'ConfigurationController@changeFontSize');
+routes/web.php.bak-before-circular-email-otp-20261116-185939:573:Route::post('change_font_size', 'ConfigurationController@changeFontSize');
+routes/web.php.bak-contact-bcc-20261117:585:Route::post('change_font_size', 'ConfigurationController@changeFontSize');
+routes/web.php.backup-remove-appsheet:707:Route::post('change_font_size', 'ConfigurationController@changeFontSize');
+resources/views/layout/client/container_2021.blade.php:51:$font_size_code = Session::get('font_size_code');
+resources/views/layout/client/container_2021.blade.php:53:    'a-minus-2' => 'body_92',
+resources/views/layout/client/container_2021.blade.php:57:    'a-plus-2' => 'body_108',
+resources/views/layout/client/container_2021.blade.php:59:$body_class = $font_size_classes[$font_size_code] ?? 'body_100';
+resources/views/layout/client/foot_2021.blade.php:86:            const currentClass = ['body_92', 'body_96', 'body_100', 'body_104', 'body_108']
+resources/views/layout/client/foot_2021.blade.php:91:            const fontCycle = ['body_100', 'body_104', 'body_108', 'body_96', 'body_92'];
+resources/views/layout/client/foot_2021.blade.php:98:                body_108: 'a-plus-2',
+resources/views/layout/client/foot_2021.blade.php:100:                body_92: 'a-minus-2'
+resources/views/layout/client/foot_2021.blade.php:106:                data: 'font_size_code=' + fontSizeCode,
+resources/views/layout/client/foot_2021.blade.php:107:                url: '/change_font_size',
+resources/views/layout/client/foot_2021.blade.php:166:    function setFontSize(font_size_code) {
+resources/views/layout/client/foot_2021.blade.php:169:        if (font_size_code == 'a-minus-2') body_class = 'body_92';
+resources/views/layout/client/foot_2021.blade.php:170:        else if (font_size_code == 'a-minus') body_class = 'body_96';
+resources/views/layout/client/foot_2021.blade.php:171:        else if (font_size_code == 'a-plus') body_class = 'body_104';
+resources/views/layout/client/foot_2021.blade.php:172:        else if (font_size_code == 'a-plus-2') body_class = 'body_108';
 root@dorweb:/var/www/dor#
