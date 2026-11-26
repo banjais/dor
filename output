@@ -1,411 +1,1004 @@
-root@dorweb:/var/www/dor# journalctl --since "2026-11-25 00:00:00" --until "2026-11-25 23:59:59" --no-pager | grep -Ei 'mariadb|mysql|mysqld|audit|sudo'
-Nov 25 00:13:48 dorweb sudo[115812]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/php artisan view:clear
-Nov 25 00:13:48 dorweb sudo[115812]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 00:13:49 dorweb sudo[115812]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 00:13:49 dorweb sudo[115816]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/php artisan view:cache
-Nov 25 00:13:49 dorweb sudo[115816]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 00:13:49 dorweb sudo[115816]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 00:23:43 dorweb sudo[115942]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=root ; COMMAND=/usr/bin/mariadb dor_upgrade -e 'SELECT id, module_name FROM pndc_modules WHERE id=31; SELECT user_type_id, module_id, access_view FROM pndc_group_access_list WHERE module_id=31; SELECT u.id, u.office_id, COUNT(ua.id) AS personal_permissions, SUM(CASE WHEN ua.module_id=31 THEN 1 ELSE 0 END) AS ticker_permission FROM pndc_users u LEFT JOIN pndc_user_access_list ua ON ua.user_map_id=u.id AND ua.access_view=\'1\' WHERE u.user_type_id=2 AND u.office_id<>4 GROUP BY u.id,u.office_id;'
-Nov 25 00:23:43 dorweb sudo[115942]: pam_unix(sudo:session): session opened for user root(uid=0) by root(uid=0)
-Nov 25 00:23:43 dorweb sudo[115942]: pam_unix(sudo:session): session closed for user root
-Nov 25 00:25:15 dorweb sudo[115954]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=root ; COMMAND=/usr/bin/mariadb dor_upgrade -e 'SELECT id,module_name,is_deleted FROM pndc_modules WHERE id=31; SELECT user_type_id,module_id,access_view,is_deleted FROM pndc_group_access_list WHERE user_type_id=2 AND module_id=31; SELECT id,user_type_id,office_id FROM pndc_users WHERE id IN (119,354,356);'
-Nov 25 00:25:15 dorweb sudo[115954]: pam_unix(sudo:session): session opened for user root(uid=0) by root(uid=0)
-Nov 25 00:25:15 dorweb sudo[115954]: pam_unix(sudo:session): session closed for user root
-Nov 25 00:26:01 dorweb sudo[115962]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=root ; COMMAND=/usr/bin/mariadb dor_upgrade -e 'SELECT u.id,u.user_type_id,u.office_id,(SELECT COUNT(*) FROM pndc_user_access_list ua WHERE ua.user_map_id=u.id AND ua.access_view=\'1\') AS personal_view_count,(SELECT COUNT(*) FROM pndc_group_access_list ga JOIN pndc_modules m ON m.id=ga.module_id WHERE ga.user_type_id=u.user_type_id AND ga.module_id=31 AND ga.access_view=\'1\' AND m.is_deleted=\'0\') AS group_ticker_view FROM pndc_users u WHERE u.id IN (119,354,356);'
-Nov 25 00:26:01 dorweb sudo[115962]: pam_unix(sudo:session): session opened for user root(uid=0) by root(uid=0)
-Nov 25 00:26:01 dorweb sudo[115962]: pam_unix(sudo:session): session closed for user root
-Nov 25 00:27:38 dorweb sudo[115971]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=root ; COMMAND=/usr/bin/mariadb dor_upgrade -e 'SELECT u.id,u.user_type_id,u.office_id,(SELECT COUNT(*) FROM pndc_user_access_list ua WHERE ua.user_map_id=u.id AND ua.access_view=\'1\') AS personal_view_count,(SELECT COUNT(*) FROM pndc_group_access_list ga JOIN pndc_modules m ON m.id=ga.module_id WHERE ga.user_type_id=u.user_type_id AND ga.module_id=31 AND ga.access_view=\'1\' AND m.is_deleted=\'0\') AS group_ticker_view FROM pndc_users u WHERE u.id IN (119,354,356);'
-Nov 25 00:27:38 dorweb sudo[115971]: pam_unix(sudo:session): session opened for user root(uid=0) by root(uid=0)
-Nov 25 00:27:38 dorweb sudo[115971]: pam_unix(sudo:session): session closed for user root
-Nov 25 07:14:41 dorweb sudo[117967]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=root ; COMMAND=/usr/bin/mariadb dor_upgrade -e 'SELECT id,user_type_id,module_id,access_view,access_add,access_update,access_delete,access_publish,access_upload,access_download FROM pndc_group_access_list WHERE user_type_id=12 AND module_id=31;'
-Nov 25 07:14:41 dorweb sudo[117967]: pam_unix(sudo:session): session opened for user root(uid=0) by root(uid=0)
-Nov 25 07:14:41 dorweb sudo[117967]: pam_unix(sudo:session): session closed for user root
-Nov 25 07:18:38 dorweb sudo[117993]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=root ; COMMAND=/usr/bin/mariadb dor_upgrade -e 'SELECT COUNT(*) AS role12_users, SUM(CASE WHEN EXISTS (SELECT 1 FROM pndc_user_access_list ua WHERE ua.user_map_id=u.id AND ua.access_view=\'1\') THEN 1 ELSE 0 END) AS users_with_personal_view, SUM(CASE WHEN EXISTS (SELECT 1 FROM pndc_user_access_list ua WHERE ua.user_map_id=u.id AND ua.module_id=31 AND ua.access_view=\'1\') THEN 1 ELSE 0 END) AS users_with_personal_ticker_view FROM pndc_users u WHERE u.user_type_id=12;'
-Nov 25 07:18:38 dorweb sudo[117993]: pam_unix(sudo:session): session opened for user root(uid=0) by root(uid=0)
-Nov 25 07:18:38 dorweb sudo[117993]: pam_unix(sudo:session): session closed for user root
-Nov 25 07:21:37 dorweb sudo[118007]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=root ; COMMAND=/usr/bin/mariadb dor_upgrade -e 'SELECT office_id, COUNT(*) AS admin_count FROM pndc_users WHERE user_type_id=12 GROUP BY office_id ORDER BY office_id;'
-Nov 25 07:21:37 dorweb sudo[118007]: pam_unix(sudo:session): session opened for user root(uid=0) by root(uid=0)
-Nov 25 07:21:37 dorweb sudo[118007]: pam_unix(sudo:session): session closed for user root
-Nov 25 07:24:31 dorweb sudo[118039]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=root ; COMMAND=/usr/bin/mariadb dor_upgrade -e 'SELECT COUNT(*) AS other_office_role12_users, SUM(CASE WHEN EXISTS (SELECT 1 FROM pndc_user_access_list ua WHERE ua.user_map_id=u.id AND ua.module_id=31) THEN 1 ELSE 0 END) AS users_with_personal_ticker_record FROM pndc_users u WHERE u.user_type_id=12 AND u.office_id<>4;'
-Nov 25 07:24:31 dorweb sudo[118039]: pam_unix(sudo:session): session opened for user root(uid=0) by root(uid=0)
-Nov 25 07:24:32 dorweb sudo[118039]: pam_unix(sudo:session): session closed for user root
-Nov 25 07:24:32 dorweb sudo[118042]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=root ; COMMAND=/usr/bin/mariadb dor_upgrade -e 'SELECT user_type_id,module_id,access_view,access_add,access_update,access_delete,access_publish FROM pndc_group_access_list WHERE module_id=31 ORDER BY user_type_id;'
-Nov 25 07:24:32 dorweb sudo[118042]: pam_unix(sudo:session): session opened for user root(uid=0) by root(uid=0)
-Nov 25 07:24:32 dorweb sudo[118042]: pam_unix(sudo:session): session closed for user root
-Nov 25 07:25:23 dorweb sudo[118051]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/php artisan tinker '--execute=#012use Illuminate\\Support\\Facades\\DB;#012use Illuminate\\Support\\Facades\\Auth;#012use App\\Models\\UserAccessControlModel;#012#012$cases = [#012    "OTHER_OFFICE_ROLE_12" => DB::table("users")->where("user_type_id", 12)->where("office_id", "<>", 4)->orderBy("id")->value("id"),#012    "HEAD_OFFICE_ROLE_12" => DB::table("users")->where("user_type_id", 12)->where("office_id", 4)->orderBy("id")->value("id")#012];#012#012foreach ($cases as $label => $id) {#012    if (!$id) {#012        echo $label . ": TEST USER NOT FOUND\\n";#012        continue;#012    }#012#012    Auth::logout();#012    Auth::loginUsingId((int) $id);#012#012    $list = UserAccessControlModel::getAccessViewByUserMapId((int) $id);#012    $modules = $list->pluck("module_id")->map(fn($v) => (int) $v)->all();#012#012    echo $label . " (ID " . $id . "): " . json_encode([#012
-Nov 25 07:25:23 dorweb sudo[118051]:     root : (command continued) "menu_31" => in_array(31, $modules, true),#012        "view" => (bool) UserAccessControlModel::getAccessViewByModuleAndUserMapId(31, $id),#012        "add" => (bool) UserAccessControlModel::getAccessAddByModuleAndUserMapId(31, $id),#012        "update" => (bool) UserAccessControlModel::getAccessUpdateByModuleAndUserMapId(31, $id),#012        "publish" => (bool) UserAccessControlModel::getAccessPublishByModuleAndUserMapId(31, $id),#012        "delete" => (bool) UserAccessControlModel::getAccessDeleteByModuleAndUserMapId(31, $id)#012    ]) . "\\n";#012}#012Auth::logout();#012'
-Nov 25 07:25:23 dorweb sudo[118051]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 07:25:24 dorweb sudo[118051]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 07:25:49 dorweb sudo[118055]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker --execute=dump("TINKER_OK");
-Nov 25 07:25:49 dorweb sudo[118055]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 07:25:50 dorweb sudo[118055]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 07:26:15 dorweb sudo[118059]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker '--execute=#012use Illuminate\\Support\\Facades\\DB;#012use Illuminate\\Support\\Facades\\Auth;#012use App\\Models\\UserAccessControlModel;#012#012$cases = [#012    "OTHER_OFFICE_ROLE_12" => DB::table("users")->where("user_type_id", 12)->where("office_id", "<>", 4)->orderBy("id")->value("id"),#012    "HEAD_OFFICE_ROLE_12" => DB::table("users")->where("user_type_id", 12)->where("office_id", 4)->orderBy("id")->value("id")#012];#012#012foreach ($cases as $label => $id) {#012    if (!$id) {#012        echo $label . ": TEST USER NOT FOUND\\n";#012        continue;#012    }#012#012    Auth::logout();#012    Auth::loginUsingId((int) $id);#012#012    $modules = UserAccessControlModel::getAccessViewByUserMapId((int) $id)#012        ->pluck("module_id")->map(fn($v) => (int) $v)->all();#012#012    $result = [#012        "menu_31" =>
-Nov 25 07:26:15 dorweb sudo[118059]:     root : (command continued) in_array(31, $modules, true),#012        "view" => (bool) UserAccessControlModel::getAccessViewByModuleAndUserMapId(31, $id),#012        "add" => (bool) UserAccessControlModel::getAccessAddByModuleAndUserMapId(31, $id),#012        "update" => (bool) UserAccessControlModel::getAccessUpdateByModuleAndUserMapId(31, $id),#012        "publish" => (bool) UserAccessControlModel::getAccessPublishByModuleAndUserMapId(31, $id),#012        "delete" => (bool) UserAccessControlModel::getAccessDeleteByModuleAndUserMapId(31, $id)#012    ];#012#012    echo $label . " (ID " . $id . "): " . json_encode($result) . "\\n";#012}#012Auth::logout();#012'
-Nov 25 07:26:15 dorweb sudo[118059]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 07:26:16 dorweb sudo[118059]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 07:31:32 dorweb sudo[118086]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=root ; COMMAND=/usr/bin/mariadb dor_upgrade -e 'SELECT office_id,COUNT(*) AS total_tickers,SUM(is_active=\'1\' AND is_delete=\'0\') AS active_tickers FROM pndc_ticker GROUP BY office_id HAVING COUNT(*)>0 ORDER BY office_id;'
-Nov 25 07:31:32 dorweb sudo[118086]: pam_unix(sudo:session): session opened for user root(uid=0) by root(uid=0)
-Nov 25 07:31:32 dorweb sudo[118086]: pam_unix(sudo:session): session closed for user root
-Nov 25 07:31:32 dorweb sudo[118089]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=root ; COMMAND=/usr/bin/mariadb dor_upgrade -e 'SELECT id,language_name,is_active FROM pndc_language ORDER BY id;'
-Nov 25 07:31:32 dorweb sudo[118089]: pam_unix(sudo:session): session opened for user root(uid=0) by root(uid=0)
-Nov 25 07:31:32 dorweb sudo[118089]: pam_unix(sudo:session): session closed for user root
-Nov 25 07:34:59 dorweb sudo[118098]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan route:clear
-Nov 25 07:34:59 dorweb sudo[118098]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 07:34:59 dorweb sudo[118098]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 07:34:59 dorweb sudo[118102]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan route:list --path=latest-news
-Nov 25 07:34:59 dorweb sudo[118102]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 07:35:00 dorweb sudo[118102]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 07:39:10 dorweb sudo[118172]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=root ; COMMAND=/usr/bin/mariadb dor_upgrade -N -e 'SELECT COUNT(*) FROM pndc_group_access_list WHERE user_type_id=12 AND module_id=31'
-Nov 25 07:39:10 dorweb sudo[118172]: pam_unix(sudo:session): session opened for user root(uid=0) by root(uid=0)
-Nov 25 07:39:10 dorweb sudo[118172]: pam_unix(sudo:session): session closed for user root
-Nov 25 07:39:10 dorweb sudo[118176]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=root ; COMMAND=/usr/bin/mkdir -p /var/backups/dor/news-ticker-group-acl-20261125-073910
-Nov 25 07:39:10 dorweb sudo[118176]: pam_unix(sudo:session): session opened for user root(uid=0) by root(uid=0)
-Nov 25 07:39:10 dorweb sudo[118176]: pam_unix(sudo:session): session closed for user root
-Nov 25 07:39:10 dorweb sudo[118179]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=root ; COMMAND=/usr/bin/cp -a app/Models/UserAccessControlModel.php /var/backups/dor/news-ticker-group-acl-20261125-073910/
-Nov 25 07:39:10 dorweb sudo[118179]: pam_unix(sudo:session): session opened for user root(uid=0) by root(uid=0)
-Nov 25 07:39:10 dorweb sudo[118179]: pam_unix(sudo:session): session closed for user root
-Nov 25 07:39:10 dorweb sudo[118182]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=root ; COMMAND=/usr/bin/mariadb dor_upgrade -N -e 'SELECT * FROM pndc_group_access_list WHERE user_type_id=12 AND module_id=31'
-Nov 25 07:39:10 dorweb sudo[118182]: pam_unix(sudo:session): session opened for user root(uid=0) by root(uid=0)
-Nov 25 07:39:10 dorweb sudo[118182]: pam_unix(sudo:session): session closed for user root
-Nov 25 07:39:54 dorweb sudo[118262]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=root ; COMMAND=/usr/bin/mariadb dor_upgrade -e 'SELECT user_type_id,module_id,access_view,access_add,access_update,access_publish,access_delete FROM pndc_group_access_list WHERE user_type_id=12 AND module_id=31;'
-Nov 25 07:39:54 dorweb sudo[118262]: pam_unix(sudo:session): session opened for user root(uid=0) by root(uid=0)
-Nov 25 07:39:54 dorweb sudo[118262]: pam_unix(sudo:session): session closed for user root
-Nov 25 07:42:03 dorweb sudo[118280]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=root ; COMMAND=/usr/bin/mariadb dor_upgrade --batch --raw -e 'SELECT * FROM pndc_group_access_list WHERE user_type_id=12 AND module_id=31;'
-Nov 25 07:42:03 dorweb sudo[118280]: pam_unix(sudo:session): session opened for user root(uid=0) by root(uid=0)
-Nov 25 07:42:03 dorweb sudo[118280]: pam_unix(sudo:session): session closed for user root
-Nov 25 07:42:03 dorweb sudo[118283]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=root ; COMMAND=/usr/bin/mariadb dor_upgrade -e 'UPDATE pndc_group_access_list SET access_view=\'1\', access_add=\'1\', access_update=\'1\', access_publish=\'1\', access_delete=\'1\' WHERE user_type_id=12 AND module_id=31; SELECT user_type_id,module_id,access_view,access_add,access_update,access_publish,access_delete FROM pndc_group_access_list WHERE user_type_id=12 AND module_id=31;'
-Nov 25 07:42:03 dorweb sudo[118283]: pam_unix(sudo:session): session opened for user root(uid=0) by root(uid=0)
-Nov 25 07:42:03 dorweb sudo[118283]: pam_unix(sudo:session): session closed for user root
-Nov 25 07:42:36 dorweb sudo[118288]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker '--execute=#012use Illuminate\\Support\\Facades\\DB;#012use Illuminate\\Support\\Facades\\Auth;#012use App\\Models\\UserAccessControlModel;#012#012$cases = [#012    "OTHER_OFFICE" => DB::table("users")->where("user_type_id", 12)->where("office_id", "<>", 4)->select("id", "office_id")->first(),#012    "HEAD_OFFICE" => DB::table("users")->where("user_type_id", 12)->where("office_id", 4)->select("id", "office_id")->first()#012];#012#012foreach ($cases as $label => $user) {#012    if (!$user) {#012        echo $label . ": USER NOT FOUND\\n";#012        continue;#012    }#012#012    Auth::logout();#012    Auth::loginUsingId((int) $user->id);#012#012    $modules = UserAccessControlModel::getAccessViewByUserMapId((int) $user->id)#012        ->pluck("module_id")->map(fn($v) => (int) $v)->all();#012#012    echo $label . " office="
-Nov 25 07:42:36 dorweb sudo[118288]:     root : (command continued) . $user->office_id . ": " . json_encode([#012        "menu" => in_array(31, $modules, true),#012        "view" => (bool) UserAccessControlModel::getAccessViewByModuleAndUserMapId(31, $user->id),#012        "add" => (bool) UserAccessControlModel::getAccessAddByModuleAndUserMapId(31, $user->id),#012        "update" => (bool) UserAccessControlModel::getAccessUpdateByModuleAndUserMapId(31, $user->id),#012        "publish" => (bool) UserAccessControlModel::getAccessPublishByModuleAndUserMapId(31, $user->id),#012        "delete" => (bool) UserAccessControlModel::getAccessDeleteByModuleAndUserMapId(31, $user->id)#012    ]) . "\\n";#012}#012Auth::logout();#012'
-Nov 25 07:42:36 dorweb sudo[118288]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 07:42:36 dorweb sudo[118288]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 07:45:54 dorweb sudo[118302]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=root ; COMMAND=/usr/bin/mariadb dor_upgrade -e 'SHOW TABLES LIKE \'%office%\'; SHOW COLUMNS FROM pndc_ticker; SHOW COLUMNS FROM pndc_ticker_detail;'
-Nov 25 07:45:54 dorweb sudo[118302]: pam_unix(sudo:session): session opened for user root(uid=0) by root(uid=0)
-Nov 25 07:45:54 dorweb sudo[118302]: pam_unix(sudo:session): session closed for user root
-Nov 25 07:46:42 dorweb sudo[118310]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=root ; COMMAND=/usr/bin/mariadb dor_upgrade -e 'SHOW COLUMNS FROM pndc_office;'
-Nov 25 07:46:42 dorweb sudo[118310]: pam_unix(sudo:session): session opened for user root(uid=0) by root(uid=0)
-Nov 25 07:46:42 dorweb sudo[118310]: pam_unix(sudo:session): session closed for user root
-Nov 25 07:47:33 dorweb sudo[118318]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=root ; COMMAND=/usr/bin/mariadb dor_upgrade -e 'SELECT id,office_subdomain,is_active,is_deleted FROM pndc_office WHERE id<>4 AND is_active=\'1\' AND is_deleted=\'0\' ORDER BY id; SELECT t.id,t.office_id,o.office_subdomain,t.is_active,t.is_delete,td.language_id,td.ticker_title FROM pndc_ticker t JOIN pndc_office o ON o.id=t.office_id LEFT JOIN pndc_ticker_detail td ON td.ticker_id=t.id WHERE t.id=150;'
-Nov 25 07:47:33 dorweb sudo[118318]: pam_unix(sudo:session): session opened for user root(uid=0) by root(uid=0)
-Nov 25 07:47:33 dorweb sudo[118318]: pam_unix(sudo:session): session closed for user root
-Nov 25 07:48:24 dorweb sudo[118326]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=root ; COMMAND=/usr/bin/mariadb dor_upgrade -e '#012SELECT#012 COUNT(*) AS active_other_offices,#012 SUM(EXISTS(SELECT 1 FROM pndc_users u WHERE u.office_id=o.id AND u.user_type_id IN (2,12))) AS offices_with_admin,#012 SUM(NOT EXISTS(SELECT 1 FROM pndc_users u WHERE u.office_id=o.id AND u.user_type_id IN (2,12))) AS offices_without_admin#012FROM pndc_office o#012WHERE o.id<>4 AND o.is_active=\'1\' AND o.is_deleted=\'0\';#012#012SELECT id,office_id,created_by,updated_by,sort_order#012FROM pndc_ticker WHERE id=150;#012#012SHOW CREATE TABLE pndc_ticker;#012'
-Nov 25 07:48:24 dorweb sudo[118326]: pam_unix(sudo:session): session opened for user root(uid=0) by root(uid=0)
-Nov 25 07:48:24 dorweb sudo[118326]: pam_unix(sudo:session): session closed for user root
-Nov 25 07:49:08 dorweb sudo[118334]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=root ; COMMAND=/usr/bin/mariadb dor_upgrade -e 'SELECT id,user_type_id,office_id FROM pndc_users WHERE id=155; SELECT id,language_name FROM pndc_language WHERE is_active=\'1\' ORDER BY id; SELECT ticker_id,language_id,ticker_title FROM pndc_ticker_detail WHERE ticker_id=150 ORDER BY language_id;'
-Nov 25 07:49:08 dorweb sudo[118334]: pam_unix(sudo:session): session opened for user root(uid=0) by root(uid=0)
-Nov 25 07:49:08 dorweb sudo[118334]: pam_unix(sudo:session): session closed for user root
-Nov 25 07:49:49 dorweb sudo[118342]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=root ; COMMAND=/usr/bin/mariadb dor_upgrade -e '#012SELECT#012 o.id,#012 o.office_subdomain,#012 COUNT(u.id) AS total_users,#012 GROUP_CONCAT(CONCAT(u.id, \':Role\', u.user_type_id) ORDER BY u.id) AS local_accounts#012FROM pndc_office o#012LEFT JOIN pndc_users u ON u.office_id=o.id#012WHERE o.id<>4#012  AND o.is_active=\'1\'#012  AND o.is_deleted=\'0\'#012  AND NOT EXISTS (#012    SELECT 1 FROM pndc_users a#012    WHERE a.office_id=o.id AND a.user_type_id IN (2,12)#012  )#012GROUP BY o.id,o.office_subdomain#012ORDER BY o.id;#012#012SELECT office_id,COUNT(*) AS active_tickers#012FROM pndc_ticker#012WHERE is_active=\'1\' AND is_delete=\'0\'#012GROUP BY office_id#012ORDER BY office_id;#012'
-Nov 25 07:49:49 dorweb sudo[118342]: pam_unix(sudo:session): session opened for user root(uid=0) by root(uid=0)
-Nov 25 07:49:49 dorweb sudo[118342]: pam_unix(sudo:session): session closed for user root
-Nov 25 07:50:35 dorweb sudo[118356]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=root ; COMMAND=/usr/bin/mariadb dor_upgrade -e 'SELECT id,user_type_id,office_id FROM pndc_users WHERE user_type_id=2 AND office_id=4 ORDER BY id LIMIT 5;'
-Nov 25 07:50:35 dorweb sudo[118356]: pam_unix(sudo:session): session opened for user root(uid=0) by root(uid=0)
-Nov 25 07:50:35 dorweb sudo[118356]: pam_unix(sudo:session): session closed for user root
-Nov 25 07:52:15 dorweb sudo[118365]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=root ; COMMAND=/usr/bin/mariadb-dump dor_upgrade pndc_ticker pndc_ticker_detail
-Nov 25 07:52:15 dorweb sudo[118365]: pam_unix(sudo:session): session opened for user root(uid=0) by root(uid=0)
-Nov 25 07:52:15 dorweb sudo[118365]: pam_unix(sudo:session): session closed for user root
-Nov 25 07:52:15 dorweb sudo[118368]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker '--execute=#012use Illuminate\\Support\\Facades\\DB;#012#012$languages = DB::table("language")#012    ->where("is_active", "1")#012    ->whereIn("id", [1, 2])#012    ->pluck("id")->map(fn($id) => (int) $id)->sort()->values()->all();#012#012if ($languages !== [1, 2]) {#012    throw new RuntimeException("Nepali and English active languages are required.");#012}#012#012if (!DB::table("users")->where("id", 88)->exists()) {#012    throw new RuntimeException("Fallback Super Admin account 88 was not found.");#012}#012#012$offices = DB::table("office")#012    ->where("id", "<>", 4)#012    ->where("is_active", "1")#012    ->where("is_deleted", "0")#012    ->orderBy("id")#012    ->get(["id", "office_subdomain"]);#012#012$summary = ["offices" => 0, "tickers_created" => 0, "details_created" => 0, "already_complete" =>
-Nov 25 07:52:15 dorweb sudo[118368]:     root : (command continued) 0];#012#012DB::transaction(function () use ($offices, &$summary) {#012    foreach ($offices as $office) {#012        $officeId = (int) $office->id;#012#012        $activeCount = DB::table("ticker")#012            ->where("office_id", $officeId)#012            ->where("is_active", "1")#012            ->where("is_delete", "0")#012            ->count();#012#012        $needed = max(0, 2 - $activeCount);#012#012        if ($needed === 0) {#012            $summary["already_complete"]++;#012            continue;#012        }#012#012        $creatorId = DB::table("users")#012            ->where("office_id", $officeId)#012            ->whereIn("user_type_id", [2, 12])#012            ->orderByRaw("CASE WHEN user_type_id = 12 THEN 0 ELSE 1 END")#012            ->orderBy("id")#012            ->value("id");#012#012        $creatorId = (int) ($creatorId ?: 88);#012#012        $sortOrder = (int) (DB::table("ticker")#012
-Nov 25 07:52:15 dorweb sudo[118368]:     root : (command continued) ->where("office_id", $officeId)#012            ->where("is_delete", "0")#012            ->max("sort_order") ?? 0);#012#012        for ($i = 0; $i < $needed; $i++) {#012            $position = $activeCount + $i;#012            $isWelcome = ($position === 0);#012            $now = date("Y-m-d H:i:s");#012#012            $tickerId = DB::table("ticker")->insertGetId([#012                "office_id" => $officeId,#012                "created_by" => $creatorId,#012                "updated_by" => $creatorId,#012                "is_active" => "1",#012                "is_delete" => "0",#012                "created_at" => $now,#012                "updated_at" => $now,#012                "sort_order" => ++$sortOrder#012            ]);#012#012            $details = $isWelcome#012                ? [#012                    [#012                        "ticker_id" => $tickerId,#012                        "language_id" => 1,#012
-Nov 25 07:52:15 dorweb sudo[118368]:     root : (command continued) "ticker_title" => "स्वागत छ",#012                        "ticker_des" => "यहाँ यस कार्यालयका सूचना तथा जानकारीहरू प्रकाशित गरिनेछन्।",#012                        "created_at" => $now,#012                        "updated_at" => $now#012                    ],#012                    [#012                        "ticker_id" => $tickerId,#012                        "language_id" => 2,#012                        "ticker_title" => "Welcome",#012                        "ticker_des" => "Office notices and updates will appear here.",#012                        "created_at" => $now,#012                        "updated_at" => $now#012                    ]#012                ]#012                : [#012                    [#012                        "ticker_id" => $tickerId,#012                        "language_id"
-Nov 25 07:52:15 dorweb sudo[118368]:     root : (command continued) => 1,#012                        "ticker_title" => "...",#012                        "ticker_des" => "...",#012                        "created_at" => $now,#012                        "updated_at" => $now#012                    ],#012                    [#012                        "ticker_id" => $tickerId,#012                        "language_id" => 2,#012                        "ticker_title" => "...",#012                        "ticker_des" => "...",#012                        "created_at" => $now,#012                        "updated_at" => $now#012                    ]#012                ];#012#012            DB::table("ticker_detail")->insert($details);#012#012            $summary["tickers_created"]++;#012            $summary["details_created"] += 2;#012        }#012#012        $summary["offices"]++;#012    }#012});#012#012$officeIds = $offices->pluck("id")->all();#012#012$finalCount = DB::table("ticker")#012
-Nov 25 07:52:15 dorweb sudo[118368]:     root : (command continued) ->whereIn("office_id", $officeIds)#012    ->where("is_active", "1")#012    ->where("is_delete", "0")#012    ->count();#012#012echo "RESULT: " . json_encode($summary) . "\\n";#012echo "ACTIVE OTHER-OFFICE TICKERS: " . $finalCount . "\\n";#012'
-Nov 25 07:52:15 dorweb sudo[118368]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 07:52:15 dorweb sudo[118368]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 07:52:58 dorweb sudo[118381]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=root ; COMMAND=/usr/bin/mariadb dor_upgrade -e '#012SELECT#012 COUNT(*) AS total_offices,#012 SUM(ticker_count=2) AS offices_with_exactly_two,#012 SUM(ticker_count<>2) AS offices_needing_attention#012FROM (#012 SELECT o.id, COUNT(t.id) AS ticker_count#012 FROM pndc_office o#012 LEFT JOIN pndc_ticker t#012   ON t.office_id=o.id AND t.is_active=\'1\' AND t.is_delete=\'0\'#012 WHERE o.id<>4 AND o.is_active=\'1\' AND o.is_deleted=\'0\'#012 GROUP BY o.id#012) x;#012#012SELECT COUNT(*) AS tickers_missing_nepali_or_english#012FROM (#012 SELECT t.id, COUNT(DISTINCT d.language_id) AS language_count#012 FROM pndc_ticker t#012 LEFT JOIN pndc_ticker_detail d#012   ON d.ticker_id=t.id AND d.language_id IN (1,2)#012 WHERE t.office_id<>4 AND t.is_active=\'1\' AND t.is_delete=\'0\'#012 GROUP BY t.id#012 HAVING language_count<>2#012) x;#012#012SELECT
-Nov 25 07:52:58 dorweb sudo[118381]:     root : (command continued) t.id,t.office_id,o.office_subdomain,d.language_id,d.ticker_title#012FROM pndc_ticker t#012JOIN pndc_office o ON o.id=t.office_id#012JOIN pndc_ticker_detail d ON d.ticker_id=t.id#012WHERE t.office_id=174 AND t.is_active=\'1\' AND t.is_delete=\'0\'#012ORDER BY t.sort_order,d.language_id;#012'
-Nov 25 07:52:58 dorweb sudo[118381]: pam_unix(sudo:session): session opened for user root(uid=0) by root(uid=0)
-Nov 25 07:52:58 dorweb sudo[118381]: pam_unix(sudo:session): session closed for user root
-Nov 25 07:58:26 dorweb sudo[118398]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=root ; COMMAND=/usr/bin/mariadb dor_upgrade -e '#012SELECT MIN(id) AS first_id,MAX(id) AS last_id,COUNT(*) AS records#012FROM pndc_ticker#012WHERE id>=151;#012#012SELECT t.id,t.office_id,o.office_subdomain,t.created_at,#012       GROUP_CONCAT(CONCAT(d.language_id,\':\',d.ticker_title) ORDER BY d.language_id SEPARATOR \' | \') AS titles#012FROM pndc_ticker t#012JOIN pndc_office o ON o.id=t.office_id#012LEFT JOIN pndc_ticker_detail d ON d.ticker_id=t.id#012WHERE t.id>=151#012GROUP BY t.id,t.office_id,o.office_subdomain,t.created_at#012ORDER BY t.id#012LIMIT 12;#012'
-Nov 25 07:58:26 dorweb sudo[118398]: pam_unix(sudo:session): session opened for user root(uid=0) by root(uid=0)
-Nov 25 07:58:26 dorweb sudo[118398]: pam_unix(sudo:session): session closed for user root
-Nov 25 08:00:28 dorweb sudo[118909]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=root ; COMMAND=/usr/bin/mariadb dor_upgrade -e 'SELECT office_id,id,sort_order FROM pndc_ticker WHERE office_id IN (71,174) AND is_active=\'1\' AND is_delete=\'0\' ORDER BY office_id,sort_order;'
-Nov 25 08:00:28 dorweb sudo[118909]: pam_unix(sudo:session): session opened for user root(uid=0) by root(uid=0)
-Nov 25 08:00:28 dorweb sudo[118909]: pam_unix(sudo:session): session closed for user root
-Nov 25 08:01:18 dorweb sudo[118918]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=root ; COMMAND=/usr/bin/mkdir -p /var/backups/dor/ticker-guidance-20261125-080118
-Nov 25 08:01:18 dorweb sudo[118918]: pam_unix(sudo:session): session opened for user root(uid=0) by root(uid=0)
-Nov 25 08:01:18 dorweb sudo[118918]: pam_unix(sudo:session): session closed for user root
-Nov 25 08:01:18 dorweb sudo[118921]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=root ; COMMAND=/usr/bin/mariadb-dump dor_upgrade pndc_ticker pndc_ticker_detail
-Nov 25 08:01:18 dorweb sudo[118921]: pam_unix(sudo:session): session opened for user root(uid=0) by root(uid=0)
-Nov 25 08:01:18 dorweb sudo[118921]: pam_unix(sudo:session): session closed for user root
-Nov 25 08:01:18 dorweb sudo[118924]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=root ; COMMAND=/usr/bin/cp app/Http/Controllers/Admin/OfficeController.php /var/backups/dor/ticker-guidance-20261125-080118/
-Nov 25 08:01:18 dorweb sudo[118924]: pam_unix(sudo:session): session opened for user root(uid=0) by root(uid=0)
-Nov 25 08:01:18 dorweb sudo[118924]: pam_unix(sudo:session): session closed for user root
-Nov 25 08:02:08 dorweb sudo[118932]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=root ; COMMAND=/usr/bin/mariadb dor_upgrade -e '#012UPDATE pndc_ticker_detail#012SET ticker_title=\'स्वागत छ! यहाँ कार्यालयका सूचना तथा अद्यावधिक जानकारी राख्नुहोस्।\',#012ticker_des=\'यो नमुना टिकर सन्देश हो। यसलाई कार्यालयका नयाँ सूचना, घोषणा तथा अद्यावधिक जानकारीले प्रतिस्थापन गर्नुहोस्।\'#012WHERE language_id=1 AND (ticker_id=150 OR ticker_id BETWEEN 151 AND 445);#012#012UPDATE pndc_ticker_detail#012SET ticker_title=\'Welcome! Share your office notices and updates here.\',#012ticker_des=\'This is a sample ticker message. Replace it with your office latest notices, announcements and updates.\'#012WHERE
-Nov 25 08:02:08 dorweb sudo[118932]:     root : (command continued) language_id=2 AND (ticker_id=150 OR ticker_id BETWEEN 151 AND 445);#012#012UPDATE pndc_ticker_detail#012SET ticker_title=\'Office Admin: News Ticker व्यवस्थापन गर्न Admin Panel → Information → News Ticker खोल्नुहोस्।\',#012ticker_des=\'यहाँबाट टिकर सन्देश थप्न, सम्पादन गर्न, प्रकाशित वा अप्रकाशित गर्न, मेटाउन र क्रम मिलाउन सक्नुहुन्छ।\'#012WHERE language_id=1 AND ticker_id BETWEEN 151 AND 445 AND MOD(ticker_id - 151, 2)=1;#012#012UPDATE pndc_ticker_detail#012SET ticker_title=\'Office Admin: Manage your News Ticker.\',#012ticker_des=\'Go to Admin Panel → Information → News Ticker to add, edit, publish, unpublish, delete and reorder messages.\'#012WHERE language_id=2 AND ticker_id BETWEEN 151 AND 445
-Nov 25 08:02:08 dorweb sudo[118932]:     root : (command continued) AND MOD(ticker_id - 151, 2)=1;#012#012SELECT ticker_id,language_id,ticker_title#012FROM pndc_ticker_detail#012WHERE ticker_id IN (150,151,152,153,285,445)#012ORDER BY ticker_id,language_id;#012'
-Nov 25 08:02:08 dorweb sudo[118932]: pam_unix(sudo:session): session opened for user root(uid=0) by root(uid=0)
-Nov 25 08:02:08 dorweb sudo[118932]: pam_unix(sudo:session): session closed for user root
-Nov 25 08:23:44 dorweb sudo[119073]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=root ; COMMAND=/usr/bin/mariadb-dump dor_upgrade pndc_ticker pndc_ticker_detail
-Nov 25 08:23:44 dorweb sudo[119073]: pam_unix(sudo:session): session opened for user root(uid=0) by root(uid=0)
-Nov 25 08:23:44 dorweb sudo[119073]: pam_unix(sudo:session): session closed for user root
-Nov 25 08:23:44 dorweb sudo[119076]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=root ; COMMAND=/usr/bin/mariadb dor_upgrade
-Nov 25 08:23:44 dorweb sudo[119076]: pam_unix(sudo:session): session opened for user root(uid=0) by root(uid=0)
-Nov 25 08:23:44 dorweb sudo[119076]: pam_unix(sudo:session): session closed for user root
-Nov 25 08:24:16 dorweb sudo[119082]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan view:clear
-Nov 25 08:24:16 dorweb sudo[119082]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 08:24:16 dorweb sudo[119082]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 08:24:16 dorweb sudo[119086]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan view:cache
-Nov 25 08:24:16 dorweb sudo[119086]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 08:24:17 dorweb sudo[119086]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 08:31:59 dorweb sudo[119123]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan view:clear
-Nov 25 08:31:59 dorweb sudo[119123]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 08:31:59 dorweb sudo[119123]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 08:34:21 dorweb sudo[119129]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan view:clear
-Nov 25 08:34:21 dorweb sudo[119129]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 08:34:21 dorweb sudo[119129]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 08:52:52 dorweb sudo[119245]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan view:clear
-Nov 25 08:52:52 dorweb sudo[119245]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 08:52:52 dorweb sudo[119245]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 10:04:08 dorweb sudo[120154]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan view:cache
-Nov 25 10:04:08 dorweb sudo[120154]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 10:04:08 dorweb sudo[120154]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 10:07:43 dorweb sudo[120271]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan view:cache
-Nov 25 10:07:43 dorweb sudo[120271]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 10:07:44 dorweb sudo[120271]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 10:11:25 dorweb sudo[120355]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan view:cache
-Nov 25 10:11:25 dorweb sudo[120355]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 10:11:25 dorweb sudo[120355]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 10:16:28 dorweb sudo[120392]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker '--execute=dump(DB::table(\'ticker\')->join(\'ticker_detail\',\'ticker.id\',\'=\',\'ticker_detail.ticker_id\')->where(\'ticker.is_delete\',\'0\')->whereIn(\'ticker_detail.ticker_title\',[\'...\',\'Welcome\',\'Welcome back\'])->select(\'ticker.id\',\'ticker.office_id\',\'ticker.is_active\',\'ticker_detail.language_id\',\'ticker_detail.ticker_title\')->orderBy(\'ticker.office_id\')->orderBy(\'ticker.id\')->get()->toArray());'
-Nov 25 10:16:28 dorweb sudo[120392]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 10:16:28 dorweb sudo[120392]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 10:17:55 dorweb sudo[120403]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker '--execute=dump(DB::table(\'ticker\')->join(\'ticker_detail\',\'ticker.id\',\'=\',\'ticker_detail.ticker_id\')->where(\'ticker.is_delete\',\'0\')->whereIn(\'ticker_detail.ticker_title\',[\'...\',\'Welcome\',\'Welcome back\'])->select(\'ticker.id\',\'ticker.office_id\',\'ticker.is_active\',\'ticker_detail.language_id\',\'ticker_detail.ticker_title\')->orderBy(\'ticker.office_id\')->orderBy(\'ticker.id\')->limit(10)->get()->toArray());'
-Nov 25 10:17:55 dorweb sudo[120403]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 10:17:55 dorweb sudo[120403]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 10:19:09 dorweb sudo[120414]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker --execute=dump(DB::table(\'ticker_detail\')->where(\'ticker_title\',\'...\')->select(\'ticker_id\',\'language_id\',\'ticker_title\',\'ticker_desc\')->limit(4)->get()->toArray());
-Nov 25 10:19:09 dorweb sudo[120414]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 10:19:09 dorweb sudo[120414]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 10:19:32 dorweb sudo[120418]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker '--execute=dump(DB::select(\'SHOW COLUMNS FROM pndc_ticker_detail\'));'
-Nov 25 10:19:32 dorweb sudo[120418]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 10:19:32 dorweb sudo[120418]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 10:20:00 dorweb sudo[120518]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker --execute=dump(DB::table(\'ticker_detail\')->where(\'ticker_title\',\'...\')->select(\'ticker_id\',\'language_id\',\'ticker_title\',\'ticker_des\')->limit(4)->get()->toArray());
-Nov 25 10:20:00 dorweb sudo[120518]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 10:20:00 dorweb sudo[120518]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 10:20:27 dorweb sudo[120527]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker '--execute=dump(DB::table(\'ticker_detail\')->where(\'ticker_title\',\'...\')->where(\'ticker_des\',\'This is a second sample ticker. Replace it with another office notice or update.\')->select(\'language_id\',DB::raw(\'COUNT(*) as total\'),DB::raw(\'MIN(ticker_id) as first_id\'),DB::raw(\'MAX(ticker_id) as last_id\'))->groupBy(\'language_id\')->get()->toArray());'
-Nov 25 10:20:27 dorweb sudo[120527]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 10:20:27 dorweb sudo[120527]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 10:21:00 dorweb sudo[120534]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker '--execute=$name="pndc_ticker_detail_backup_welcome_back_20261125"; if (DB::select("SHOW TABLES LIKE ?",[$name])) { dump("Backup table already exists; no changes made."); } else { DB::statement("CREATE TABLE `$name` LIKE pndc_ticker_detail"); $count=DB::affectingStatement("INSERT INTO `$name` SELECT * FROM pndc_ticker_detail WHERE ticker_title = ? AND ticker_des = ?",["...","This is a second sample ticker. Replace it with another office notice or update."]); dump(["backup_table"=>$name,"backed_up_rows"=>$count]); }'
-Nov 25 10:21:00 dorweb sudo[120534]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 10:21:01 dorweb sudo[120534]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 10:21:32 dorweb sudo[120540]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker '--execute=$name="pndc_ticker_detail_backup_welcome_back_20261125"; $exists=DB::table("information_schema.tables")->where("table_schema",DB::getDatabaseName())->where("table_name",$name)->exists(); if ($exists) { dump("Backup table already exists; no changes made."); } else { DB::statement("CREATE TABLE `$name` LIKE pndc_ticker_detail"); $count=DB::affectingStatement("INSERT INTO `$name` SELECT * FROM pndc_ticker_detail WHERE ticker_title = ? AND ticker_des = ?",["...","This is a second sample ticker. Replace it with another office notice or update."]); dump(["backup_table"=>$name,"backed_up_rows"=>$count]); }'
-Nov 25 10:21:32 dorweb sudo[120540]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 10:21:33 dorweb sudo[120540]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 10:22:05 dorweb sudo[120641]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker '--execute=$name="pndc_ticker_detail_backup_welcome_back_20261125"; $rows=DB::select("SELECT COUNT(*) AS total FROM information_schema.tables WHERE table_schema=DATABASE() AND table_name=?",[$name]); $exists=((int)$rows[0]->total)>0; if ($exists) { dump("Backup table already exists; no changes made."); } else { DB::statement("CREATE TABLE `$name` LIKE pndc_ticker_detail"); $count=DB::affectingStatement("INSERT INTO `$name` SELECT * FROM pndc_ticker_detail WHERE ticker_title = ? AND ticker_des = ?",["...","This is a second sample ticker. Replace it with another office notice or update."]); dump(["backup_table"=>$name,"backed_up_rows"=>$count]); }'
-Nov 25 10:22:05 dorweb sudo[120641]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 10:22:05 dorweb sudo[120641]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 10:22:33 dorweb sudo[120648]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker '--execute=$desc="This is a second sample ticker. Replace it with another office notice or update."; DB::transaction(function() use ($desc) { $q=DB::table("ticker_detail")->where("ticker_title","...")->where("ticker_des",$desc); $before=$q->count(); if ($before!==296) { dump(["updated"=>0,"reason"=>"Expected exactly 296 rows","found"=>$before]); return; } $updated=$q->update(["ticker_title"=>"Welcome back"]); dump(["matched_before"=>$before,"updated"=>$updated,"new_title"=>"Welcome back"]); });'
-Nov 25 10:22:33 dorweb sudo[120648]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 10:22:33 dorweb sudo[120648]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 10:22:59 dorweb sudo[120654]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker '--execute=$desc="This is a second sample ticker. Replace it with another office notice or update."; dump(["welcome_back_rows"=>DB::table("ticker_detail")->where("ticker_title","Welcome back")->where("ticker_des",$desc)->count(),"old_placeholder_rows"=>DB::table("ticker_detail")->where("ticker_title","...")->where("ticker_des",$desc)->count(),"backup_rows"=>DB::table("pndc_ticker_detail_backup_welcome_back_20261125")->count()]);'
-Nov 25 10:22:59 dorweb sudo[120654]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 10:22:59 dorweb sudo[120654]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 10:23:25 dorweb sudo[120660]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker '--execute=$desc="This is a second sample ticker. Replace it with another office notice or update."; dump(DB::select("SELECT (SELECT COUNT(*) FROM pndc_ticker_detail WHERE ticker_title=? AND ticker_des=?) AS welcome_back_rows, (SELECT COUNT(*) FROM pndc_ticker_detail WHERE ticker_title=? AND ticker_des=?) AS old_placeholder_rows, (SELECT COUNT(*) FROM pndc_ticker_detail_backup_welcome_back_20261125) AS backup_rows",["Welcome back",$desc,"...",$desc]));'
-Nov 25 10:23:25 dorweb sudo[120660]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 10:23:25 dorweb sudo[120660]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 10:27:28 dorweb sudo[120721]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker '--execute=$desc="This is a sample ticker message. Replace it with this office latest notices and updates."; dump(DB::select("SELECT ticker_title,language_id,COUNT(*) AS total FROM pndc_ticker_detail WHERE ticker_title=? AND ticker_des=? GROUP BY ticker_title,language_id",["Welcome",$desc]));'
-Nov 25 10:27:28 dorweb sudo[120721]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 10:27:29 dorweb sudo[120721]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 10:50:23 dorweb sudo[120917]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker '--execute=dump(DB::select("SELECT ticker_id,language_id,ticker_title,ticker_des FROM pndc_ticker_detail WHERE ticker_id IN (151,152,153,154) ORDER BY ticker_id,language_id"));'
-Nov 25 10:50:23 dorweb sudo[120917]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 10:50:23 dorweb sudo[120917]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 10:51:15 dorweb sudo[120925]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker '--execute=$d1="This space is for official notices, announcements and important updates from this office."; $d2="This is a second sample ticker. Replace it with another office notice or update."; $c1=(int)DB::selectOne("SELECT COUNT(*) AS n FROM pndc_ticker_detail WHERE ticker_title=? AND ticker_des=?",["Welcome",$d1])->n; $c2=(int)DB::selectOne("SELECT COUNT(*) AS n FROM pndc_ticker_detail WHERE ticker_title=? AND ticker_des=?",["Welcome back",$d2])->n; $b=(int)DB::selectOne("SELECT COUNT(*) AS n FROM pndc_ticker_detail_backup_welcome_back_20261125")->n; if($c1!==296 || $c2!==296 || $b!==296){dump(["first_matches"=>$c1,"second_matches"=>$c2,"existing_backup"=>$b,"status"=>"STOP: no changes made"]);}else{DB::statement("CREATE TABLE pndc_ticker_detail_backup_first_welcome_back_20261125 LIKE pndc_ticker_detail");
-Nov 25 10:51:15 dorweb sudo[120925]:     root : (command continued) DB::statement("INSERT INTO pndc_ticker_detail_backup_first_welcome_back_20261125 SELECT * FROM pndc_ticker_detail WHERE ticker_title=? AND ticker_des=?",["Welcome",$d1]); DB::transaction(function()use($d1,$d2){$a=DB::update("UPDATE pndc_ticker_detail SET ticker_title=? WHERE ticker_title=? AND ticker_des=?",["Welcome back","Welcome",$d1]); $b=DB::update("UPDATE pndc_ticker_detail SET ticker_title=? WHERE ticker_title=? AND ticker_des=?",["...","Welcome back",$d2]); if($a!==296 || $b!==296) throw new RuntimeException("Unexpected update count; transaction rolled back"); dump(["first_updated"=>$a,"second_updated"=>$b,"status"=>"Success"]);});}'
-Nov 25 10:51:15 dorweb sudo[120925]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 10:51:16 dorweb sudo[120925]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 11:04:55 dorweb sudo[121027]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan migrate:status
-Nov 25 11:04:55 dorweb sudo[121027]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 11:04:55 dorweb sudo[121027]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 11:04:55 dorweb sudo[121032]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan db:table website_identity_settings
-Nov 25 11:04:55 dorweb sudo[121032]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 11:04:56 dorweb sudo[121032]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 11:05:33 dorweb sudo[121041]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker '--execute=dump(["database" => DB::connection()->getDatabaseName(), "table_prefix" => DB::connection()->getTablePrefix(), "matching_tables" => DB::select("SHOW TABLES LIKE \\"%website_identity_settings\\""), "migration_tables" => DB::select("SHOW TABLES LIKE \\"%migrations\\"")]);'
-Nov 25 11:05:33 dorweb sudo[121041]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 11:05:33 dorweb sudo[121041]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 11:06:01 dorweb sudo[121163]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker '--execute=dump(DB::select("SHOW COLUMNS FROM pndc_website_identity_settings")); dump(DB::table("website_identity_settings")->get()->toArray());'
-Nov 25 11:06:01 dorweb sudo[121163]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 11:06:01 dorweb sudo[121163]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 11:06:39 dorweb sudo[121171]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker '--execute=dump(DB::select("SHOW COLUMNS FROM pndc_website_identity_settings")); dump(DB::table("website_identity_settings")->get()->toArray());'
-Nov 25 11:06:39 dorweb sudo[121171]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 11:06:39 dorweb sudo[121171]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 11:07:55 dorweb sudo[121187]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan make:migration add_header_typography_to_website_identity_settings_table
-Nov 25 11:07:55 dorweb sudo[121187]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 11:07:55 dorweb sudo[121187]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 11:15:15 dorweb sudo[121311]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan migrate:status
-Nov 25 11:15:15 dorweb sudo[121311]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 11:15:15 dorweb sudo[121311]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 11:16:06 dorweb sudo[121321]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan migrate --force
-Nov 25 11:16:06 dorweb sudo[121321]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 11:16:07 dorweb sudo[121321]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 11:16:42 dorweb sudo[121330]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan migrate:status
-Nov 25 11:16:42 dorweb sudo[121330]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 11:16:42 dorweb sudo[121330]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 11:23:58 dorweb sudo[121380]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker '--execute=$row = DB::table("website_identity_settings")->where("scope", "global")->first(["other_office_name_font_size_desktop", "other_office_name_font_size_mobile", "other_office_name_line_height", "other_office_name_font_weight"]); print_r($row); Cache::forget("website_identity_global"); echo "Website identity cache refreshed.\\n";'
-Nov 25 11:23:58 dorweb sudo[121380]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 11:23:58 dorweb sudo[121380]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 12:38:17 dorweb sudo[122197]:     root : TTY=pts/1 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan migrate:status
-Nov 25 12:38:17 dorweb sudo[122197]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 12:38:17 dorweb sudo[122197]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 12:38:17 dorweb sudo[122202]:     root : TTY=pts/1 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker --execute=dump(\\Illuminate\\Support\\Facades\\Schema::getColumnListing(\'website_theme_settings\'));
-Nov 25 12:38:17 dorweb sudo[122202]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 12:38:18 dorweb sudo[122202]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 12:38:18 dorweb sudo[122206]:     root : TTY=pts/1 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker --execute=dump(\\Illuminate\\Support\\Facades\\Schema::getColumnListing(\'website_identity_settings\'));
-Nov 25 12:38:18 dorweb sudo[122206]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 12:38:18 dorweb sudo[122206]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 12:42:44 dorweb sudo[122312]:     root : TTY=pts/1 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker '--execute=dump(DB::select("SELECT TABLE_NAME,COLUMN_NAME,COLUMN_TYPE,COLUMN_DEFAULT FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME IN (\'pndc_website_theme_settings\',\'pndc_website_identity_settings\') ORDER BY TABLE_NAME,ORDINAL_POSITION")); dump(DB::select("SELECT migration,batch FROM pndc_migrations WHERE migration LIKE \'%website_theme%\' OR migration LIKE \'%website_identity%\' ORDER BY id"));'
-Nov 25 12:42:44 dorweb sudo[122312]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 12:42:44 dorweb sudo[122312]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 13:37:38 dorweb sudo[122948]:     root : TTY=pts/1 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan route:list --name=admin.notice.calendar
-Nov 25 13:37:38 dorweb sudo[122948]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 13:37:39 dorweb sudo[122948]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 14:53:50 dorweb sudo[123679]:     root : TTY=pts/1 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan view:clear
-Nov 25 14:53:50 dorweb sudo[123679]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 14:53:51 dorweb sudo[123679]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 15:10:45 dorweb mariadbd[67759]: 2026-11-25  9:25:45 100643 [Warning] Aborted connection 100643 to db: 'dor_upgrade' user: 'dor_app' host: 'localhost' (Got an error reading communication packets)
-Nov 25 15:46:05 dorweb sudo[124497]:     root : TTY=pts/1 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan view:cache
-Nov 25 15:46:05 dorweb sudo[124497]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 15:46:05 dorweb sudo[124497]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 15:49:37 dorweb sudo[124514]:     root : TTY=pts/1 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan view:cache
-Nov 25 15:49:37 dorweb sudo[124514]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 15:49:37 dorweb sudo[124514]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 15:53:04 dorweb sudo[124540]:     root : TTY=pts/1 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker '--execute=$rows = DB::table("publication")->whereNotNull("publication_attachment")->where("publication_attachment", "!=", "")->select("id","office_id","publication_attachment")->orderByDesc("id")->limit(30)->get(); foreach ($rows as $r) { $p = public_path("uploads/publication/".$r->publication_attachment); echo "ID={$r->id} OFFICE={$r->office_id} FILE={$r->publication_attachment} EXISTS=".(is_file($p) ? "YES" : "NO").PHP_EOL; }'
-Nov 25 15:53:04 dorweb sudo[124540]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 15:53:04 dorweb sudo[124540]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 16:12:38 dorweb sudo[124785]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker '--execute=$f="publication_1795446381.pdf"; echo "CWD=".getcwd().PHP_EOL; echo "RELATIVE=".((file_exists("uploads/publication/".$f))?"YES":"NO").PHP_EOL; echo "ABSOLUTE=".((file_exists(public_path("uploads/publication/".$f)))?"YES":"NO").PHP_EOL; echo "PUBLIC_PATH=".public_path("uploads/publication/".$f).PHP_EOL;'
-Nov 25 16:12:38 dorweb sudo[124785]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 16:12:39 dorweb sudo[124785]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 16:13:36 dorweb sudo[124849]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan view:cache
-Nov 25 16:13:36 dorweb sudo[124849]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 16:13:37 dorweb sudo[124849]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 16:30:13 dorweb sudo[124936]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan view:cache
-Nov 25 16:30:13 dorweb sudo[124936]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 16:30:14 dorweb sudo[124936]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 16:42:22 dorweb sudo[125043]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan view:cache
-Nov 25 16:42:22 dorweb sudo[125043]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 16:42:22 dorweb sudo[125043]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 16:53:01 dorweb sudo[125074]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan view:cache
-Nov 25 16:53:01 dorweb sudo[125074]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 16:53:01 dorweb sudo[125074]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 16:57:12 dorweb sudo[125097]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan view:cache
-Nov 25 16:57:12 dorweb sudo[125097]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 16:57:13 dorweb sudo[125097]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 17:00:01 dorweb sudo[125111]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan view:cache
-Nov 25 17:00:01 dorweb sudo[125111]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 17:00:01 dorweb sudo[125111]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 17:03:01 dorweb sudo[125131]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan view:cache
-Nov 25 17:03:01 dorweb sudo[125131]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 17:03:01 dorweb sudo[125131]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 17:04:21 dorweb sudo[125138]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker '--execute=$tables = Illuminate\\Support\\Facades\\DB::select("SHOW TABLES"); foreach ($tables as $table) { $name = array_values((array) $table)[0]; if (str_starts_with($name, "pndc_")) { foreach (Illuminate\\Support\\Facades\\DB::select("SHOW COLUMNS FROM `".$name."`") as $column) { if (in_array($column->Type, ["text","mediumtext","longtext","varchar","char"])) { $field = $column->Field; $count = Illuminate\\Support\\Facades\\DB::table($name)->where($field, "like", "%सुचना%")->count(); if ($count) echo $name.".".$field.": ".$count.PHP_EOL; } } } }'
-Nov 25 17:04:21 dorweb sudo[125138]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 17:04:22 dorweb sudo[125138]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 17:04:48 dorweb sudo[125142]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker '--execute=$tables = Illuminate\\Support\\Facades\\DB::select("SHOW TABLES"); foreach ($tables as $table) { $name = array_values((array) $table)[0]; if (str_starts_with($name, "pndc_")) { foreach (Illuminate\\Support\\Facades\\DB::select("SHOW COLUMNS FROM `".$name."`") as $column) { if (preg_match("/^(varchar|char|text|mediumtext|longtext)/i", $column->Type)) { $field = $column->Field; $sql = "SELECT COUNT(*) AS total FROM `".$name."` WHERE `".$field."` LIKE ?"; $count = Illuminate\\Support\\Facades\\DB::selectOne($sql, ["%सुचना%"])->total; if ($count) echo $name.".".$field.": ".$count.PHP_EOL; } } } }'
-Nov 25 17:04:48 dorweb sudo[125142]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 17:04:49 dorweb sudo[125142]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 17:05:15 dorweb sudo[125149]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker '--execute=$tables = Illuminate\\Support\\Facades\\DB::select("SHOW TABLES"); foreach ($tables as $table) { $name = array_values((array) $table)[0]; if (str_starts_with($name, "pndc_")) { foreach (Illuminate\\Support\\Facades\\DB::select("SHOW COLUMNS FROM `".$name."`") as $column) { if (preg_match("/^(varchar|char|text|mediumtext|longtext)/i", $column->Type)) { $field = $column->Field; $sql = "SELECT COUNT(*) AS total FROM `".$name."` WHERE CONVERT(`".$field."` USING utf8mb4) COLLATE utf8mb4_unicode_ci LIKE ?"; $count = Illuminate\\Support\\Facades\\DB::selectOne($sql, ["%सुचना%"])->total; if ($count) echo $name.".".$field.": ".$count.PHP_EOL; } } } }'
-Nov 25 17:05:15 dorweb sudo[125149]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 17:05:16 dorweb sudo[125149]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 17:05:55 dorweb sudo[125154]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker '--execute=$items = [["pndc_notice_detail","notice_heading"],["pndc_notice_detail","notice_page_title"],["pndc_circular_detail","circular_heading"],["pndc_content_detail","content_heading"],["pndc_publication_detail","publication_heading"],["pndc_home_detail","home_description"],["pndc_notice_search_indexes","notice_heading"],["pndc_notice_search_terms","term"]]; foreach ($items as [$t,$f]) { $c = Illuminate\\Support\\Facades\\DB::selectOne("SHOW FULL COLUMNS FROM `".$t."` LIKE ?", [$f]); echo $t.".".$f." | ".$c->Type." | ".$c->Collation.PHP_EOL; $r = Illuminate\\Support\\Facades\\DB::select("SELECT `".$f."` AS sample FROM `".$t."` WHERE CONVERT(`".$f."` USING utf8mb4) COLLATE utf8mb4_unicode_ci LIKE ? LIMIT 1", ["%सुचना%"]); if ($r) echo "  SAMPLE: ".mb_substr($r[0]->sample,0,180).PHP_EOL; }'
-Nov 25 17:05:55 dorweb sudo[125154]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 17:05:55 dorweb sudo[125154]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 17:06:20 dorweb sudo[125160]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker '--execute=$items = [["pndc_notice_detail","notice_heading"],["pndc_notice_detail","notice_page_title"],["pndc_circular_detail","circular_heading"],["pndc_content_detail","content_heading"],["pndc_publication_detail","publication_heading"],["pndc_home_detail","home_description"],["pndc_notice_search_indexes","notice_heading"],["pndc_notice_search_terms","term"]]; foreach ($items as [$t,$f]) { $cols = Illuminate\\Support\\Facades\\DB::select("SHOW FULL COLUMNS FROM `".$t."`"); foreach ($cols as $c) { if ($c->Field === $f) { echo $t.".".$f." | ".$c->Type." | ".$c->Collation.PHP_EOL; break; } } }'
-Nov 25 17:06:20 dorweb sudo[125160]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 17:06:20 dorweb sudo[125160]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 17:18:07 dorweb sudo[125277]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan view:cache
-Nov 25 17:18:07 dorweb sudo[125277]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 17:18:07 dorweb sudo[125277]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 17:23:06 dorweb sudo[125304]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan view:cache
-Nov 25 17:23:06 dorweb sudo[125304]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 17:23:06 dorweb sudo[125304]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 18:06:31 dorweb sudo[126126]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan calendar:cache-bs-years
-Nov 25 18:06:31 dorweb sudo[126126]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 18:06:32 dorweb sudo[126126]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 18:42:17 dorweb sudo[126510]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan view:cache
-Nov 25 18:42:17 dorweb sudo[126510]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 18:42:18 dorweb sudo[126510]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 18:43:47 dorweb sudo[126518]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan --version
-Nov 25 18:43:47 dorweb sudo[126518]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 18:43:47 dorweb sudo[126518]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 18:43:59 dorweb sudo[126522]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan view:cache
-Nov 25 18:43:59 dorweb sudo[126522]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 18:43:59 dorweb sudo[126522]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 18:44:05 dorweb sudo[126527]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan config:cache
-Nov 25 18:44:05 dorweb sudo[126527]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 18:44:05 dorweb sudo[126527]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 18:45:03 dorweb sudo[126534]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan COMMAND
-Nov 25 18:45:03 dorweb sudo[126534]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 18:45:03 dorweb sudo[126534]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 18:55:19 dorweb sudo[126561]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan view:cache
-Nov 25 18:55:19 dorweb sudo[126561]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 18:55:19 dorweb sudo[126561]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 18:58:35 dorweb sudo[126575]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan view:cache
-Nov 25 18:58:35 dorweb sudo[126575]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 18:58:35 dorweb sudo[126575]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 19:00:02 dorweb sudo[126583]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan view:cache
-Nov 25 19:00:02 dorweb sudo[126583]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 19:00:02 dorweb sudo[126583]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 19:03:50 dorweb sudo[126612]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan route:list --path=404
-Nov 25 19:03:50 dorweb sudo[126612]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 19:03:51 dorweb sudo[126612]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 19:11:49 dorweb sudo[126769]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan view:cache
-Nov 25 19:11:49 dorweb sudo[126769]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 19:11:49 dorweb sudo[126769]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 19:42:45 dorweb sudo[126949]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan view:cache
-Nov 25 19:42:45 dorweb sudo[126949]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 19:42:46 dorweb sudo[126949]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 19:48:31 dorweb sudo[127067]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan view:cache
-Nov 25 19:48:31 dorweb sudo[127067]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 19:48:32 dorweb sudo[127067]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 21:13:13 dorweb sudo[127632]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan db:table pndc_language
-Nov 25 21:13:13 dorweb sudo[127632]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 21:13:13 dorweb sudo[127632]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 21:16:51 dorweb sudo[127646]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker '--execute=dump(DB::select("SELECT TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME, COLUMN_TYPE FROM information_schema.COLUMNS WHERE TABLE_SCHEMA IN (SELECT SCHEMA_NAME FROM information_schema.SCHEMATA WHERE SCHEMA_NAME LIKE \\"%dor%\\") AND TABLE_NAME = \\"pndc_language\\" ORDER BY TABLE_SCHEMA, ORDINAL_POSITION"));'
-Nov 25 21:16:51 dorweb sudo[127646]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 21:16:51 dorweb sudo[127646]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 21:17:35 dorweb sudo[127653]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker '--execute=dump(DB::select("SELECT SCHEMA_NAME FROM information_schema.SCHEMATA ORDER BY SCHEMA_NAME"));'
-Nov 25 21:17:35 dorweb sudo[127653]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 21:17:35 dorweb sudo[127653]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 21:20:13 dorweb sudo[127668]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker --execute=dump(DB::table("language")->get()->toArray());
-Nov 25 21:20:13 dorweb sudo[127668]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 21:20:13 dorweb sudo[127668]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 21:23:45 dorweb sudo[127672]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker '--execute=dump(DB::select("SHOW CREATE TABLE pndc_language")); dump(DB::select("SHOW TABLES LIKE \\"pndc_language_before_language_restore_20261125\\"")); dump(DB::table("language")->get()->toArray());'
-Nov 25 21:23:45 dorweb sudo[127672]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 21:23:45 dorweb sudo[127672]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 21:24:38 dorweb sudo[127676]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker '--execute=DB::statement("CREATE TABLE pndc_language_before_language_restore_20261125 LIKE pndc_language"); DB::statement("INSERT INTO pndc_language_before_language_restore_20261125 SELECT * FROM pndc_language"); dump(DB::select("SHOW CREATE TABLE pndc_language_before_language_restore_20261125")); dump(DB::table("pndc_language_before_language_restore_20261125")->get()->toArray());'
-Nov 25 21:24:38 dorweb sudo[127676]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 21:24:38 dorweb sudo[127676]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 21:25:30 dorweb sudo[127687]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker '--execute=dump(DB::select("SELECT * FROM pndc_language_before_language_restore_20261125"));'
-Nov 25 21:25:30 dorweb sudo[127687]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 21:25:30 dorweb sudo[127687]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 21:26:38 dorweb sudo[127691]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker '--execute=DB::statement("ALTER TABLE pndc_language ADD COLUMN language_name VARCHAR(100) NULL AFTER id, ADD COLUMN language_code VARCHAR(10) NULL AFTER language_name, ADD COLUMN created_by INT NULL AFTER language_code, ADD COLUMN updated_by INT NULL AFTER created_by, ADD COLUMN created_at DATETIME NULL AFTER is_deleted, ADD COLUMN updated_at DATETIME NULL AFTER created_at"); dump(DB::select("SHOW CREATE TABLE pndc_language"));'
-Nov 25 21:26:38 dorweb sudo[127691]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 21:26:39 dorweb sudo[127691]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 21:27:27 dorweb sudo[127699]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker '--execute=DB::transaction(function () { DB::table("language")->where("id", 1)->update(["language_name"=>"Nepali","language_code"=>"ne","created_by"=>1,"updated_by"=>1,"is_active"=>"1","is_deleted"=>"0","created_at"=>"2015-04-20 00:00:00","updated_at"=>"2015-04-20 00:00:00"]); DB::table("language")->insert([["id"=>2,"language_name"=>"English","language_code"=>"en","created_by"=>1,"updated_by"=>1,"is_active"=>"1","is_deleted"=>"0","created_at"=>"2015-04-20 00:00:00","updated_at"=>"2015-04-20 00:00:00"],["id"=>4,"language_name"=>"hindi","language_code"=>"hi","created_by"=>1,"updated_by"=>1,"is_active"=>"0","is_deleted"=>"0","created_at"=>"2015-04-22 00:00:00","updated_at"=>"2015-04-22 00:00:00"]]); }); dump(DB::table("language")->orderBy("id")->get()->toArray());'
-Nov 25 21:27:27 dorweb sudo[127699]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 21:27:27 dorweb sudo[127699]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 21:28:03 dorweb sudo[127703]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan route:list --path=notice
-Nov 25 21:28:03 dorweb sudo[127703]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 21:28:04 dorweb sudo[127703]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 21:28:04 dorweb sudo[127707]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan route:list --path=publication
-Nov 25 21:28:04 dorweb sudo[127707]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 21:28:05 dorweb sudo[127707]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 21:32:37 dorweb sudo[127721]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan route:list --path=notice
-Nov 25 21:32:37 dorweb sudo[127721]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 21:32:38 dorweb sudo[127721]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 21:32:38 dorweb sudo[127725]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan route:list --path=publication
-Nov 25 21:32:38 dorweb sudo[127725]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 21:32:39 dorweb sudo[127725]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 21:33:56 dorweb sudo[127734]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker --execute=DB::table(\'office\')->select(\'id\',\'office_name\',\'office_subdomain\')->whereNotNull(\'office_subdomain\')->where(\'office_subdomain\',\'!=\',\'\')->orderBy(\'id\')->get()->each(fn($o)=>dump($o->id,$o->office_name,$o->office_subdomain));
-Nov 25 21:33:56 dorweb sudo[127734]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 21:33:56 dorweb sudo[127734]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 21:34:28 dorweb sudo[127738]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker --execute=DB::table(\'office\')->select(\'id\',\'office_subdomain\')->whereNotNull(\'office_subdomain\')->where(\'office_subdomain\',\'!=\',\'\')->orderBy(\'id\')->get()->each(fn($o)=>dump($o->id,$o->office_subdomain));
-Nov 25 21:34:28 dorweb sudo[127738]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 21:34:29 dorweb sudo[127738]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 21:37:02 dorweb sudo[127750]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan db:table pndc_office
-Nov 25 21:37:02 dorweb sudo[127750]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 21:37:02 dorweb sudo[127750]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 21:48:53 dorweb sudo[127827]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker '--execute=dump(DB::select(\'SHOW TABLE STATUS LIKE "pndc_office"\')); dump(DB::table(\'migrations\')->where(\'migration\',\'like\',\'%office%\')->orderBy(\'id\')->get([\'id\',\'migration\',\'batch\']));'
-Nov 25 21:48:53 dorweb sudo[127827]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 21:48:53 dorweb sudo[127827]: pam_unix(sudo:session): session closed for user www-data
-Nov 25 21:51:28 dorweb sudo[127860]:     root : TTY=pts/0 ; PWD=/var/www/dor ; USER=www-data ; COMMAND=/usr/bin/env HOME=/tmp XDG_CONFIG_HOME=/tmp php artisan tinker --execute=dump(DB::table(\'office\')->get()->toArray());
-Nov 25 21:51:28 dorweb sudo[127860]: pam_unix(sudo:session): session opened for user www-data(uid=33) by root(uid=0)
-Nov 25 21:51:28 dorweb sudo[127860]: pam_unix(sudo:session): session closed for user www-data
+root@dorweb:/var/www/dor# cd /var/www/dor && echo "===== THEME CSS: CONTROL / OFFICER RULES =====" && grep -n -B 5 -A 12 -E 'footer-install-app-trigger|footer-qr-expand|head-office-contact-officers|head-office-officer|fontSizeToggle|header-controls' public/assets/css_2021/website-theme.css && echo "===== ALL VIEW / ASSET REFERENCES =====" && grep -Rni --include='*.php' --include='*.blade.php' --include='*.js' -E 'footer-install-app-trigger|footer-qr-expand|fontSizeToggle|headerLanguageSelect|beforeinstallprompt|appinstalled' resources public/assets
+===== THEME CSS: CONTROL / OFFICER RULES =====
+229-        font-size: 10.5px;
+230-    }
+231-}
+232-
+233-/* Compact, accessible DoR header controls */
+234:.top-header .header-controls {
+235-    margin-bottom: 4px;
+236-}
+237-
+238:.top-header .header-controls > ul,
+239:.top-header .header-controls ul {
+240-    display: flex;
+241-    flex-wrap: wrap;
+242-    justify-content: flex-end;
+243-    align-items: center;
+244-    gap: 7px;
+245-    margin: 0;
+246-    padding: 0;
+247-    list-style: none;
+248-}
+249-
+250:.top-header .header-controls ul li {
+251-    margin: 0;
+252-    color: #142D4E;
+253-    vertical-align: middle;
+254-}
+255-
+256-.top-header .header-icon-control {
+257-    display: inline-flex;
+258-    align-items: center;
+259-    justify-content: center;
+260-    min-width: 30px;
+261-    min-height: 30px;
+262-    padding: 4px 7px;
+--
+379-    background: #e8f1f8;
+380-    color: #1769AA;
+381-}
+382-
+383-@media (max-width: 991.98px) {
+384:    .top-header .header-controls > ul,
+385:    .top-header .header-controls ul {
+386-        justify-content: center;
+387-    }
+388-
+389-    .top-header .header-date-time {
+390-        white-space: normal;
+391-    }
+392-}
+393-
+394-/* DoR App footer entry and QR presentation */
+395:.bottom-footer .footer-install-app-trigger {
+396-    display: inline-flex;
+397-    align-items: center;
+398-    gap: 7px;
+399-    padding: 0;
+400-    border: 0;
+401-    background: transparent;
+402-    color: inherit;
+403-    font: inherit;
+404-    cursor: pointer;
+405-    transition: color .2s ease;
+406-}
+407:.bottom-footer .footer-install-app-trigger:hover,
+408:.bottom-footer .footer-install-app-trigger:focus-visible {
+409-    color: #1769AA;
+410-}
+411:.bottom-footer .footer-install-app-trigger:focus-visible {
+412-    outline: 2px solid currentColor;
+413-    outline-offset: 4px;
+414-}
+415-.dor-app-qr {
+416-    display: block;
+417-    width: 150px;
+418-    height: 150px;
+419-    max-width: 100%;
+420-    object-fit: contain;
+421-    margin: 0 auto;
+422-    padding: 6px;
+423-    background: #fff;
+--
+435-#dorAppModal .modal-content,
+436-#dorQrModal .modal-content {
+437-    border-radius: 12px;
+438-}
+439-@media (max-width: 767.98px) {
+440:    .bottom-footer .footer-install-app-trigger {
+441-        min-height: 36px;
+442-    }
+443-    .dor-app-qr {
+444-        width: 135px;
+445-        height: 135px;
+446-    }
+447-}
+448-
+449-
+450-/* Refined compact header controls */
+451:.top-header .header-controls > ul,
+452:.top-header .header-controls ul {
+453-    gap: 3px;
+454-}
+455-
+456-.top-header .header-icon-control {
+457-    min-width: 0;
+458-    min-height: 0;
+459-    width: auto;
+460-    height: auto;
+461-    padding: 2px 5px;
+462-    border: 0;
+463-    border-radius: 3px;
+464-    background: transparent;
+--
+544-}
+545-
+546-.top-header .divider-list ul li a,
+547-.top-header .top-inline-items .divider-list ul li a,
+548-.bottom-footer a,
+549:.bottom-footer .footer-install-app-trigger {
+550-    transition: color .18s ease;
+551-}
+552-
+553-.top-header .divider-list ul li a:hover,
+554-.top-header .top-inline-items .divider-list ul li a:hover,
+555-.bottom-footer a:hover,
+556:.bottom-footer .footer-install-app-trigger:hover {
+557-    color: #1769AA;
+558-    background: transparent;
+559-    text-decoration: none;
+560-    opacity: 1;
+561-}
+562-
+563-.top-header .header-sitemap-link a:hover,
+564-.top-header .header-sitemap-link a:focus-visible,
+565-.top-header .header-icon-control:hover,
+566-.top-header .header-icon-control:focus-visible {
+567-    background: transparent;
+568-    color: #1769AA;
+--
+571-}
+572-
+573-.top-header .header-icon-control:focus-visible,
+574-.top-header .header-sitemap-link a:focus-visible,
+575-.bottom-footer a:focus-visible,
+576:.bottom-footer .footer-install-app-trigger:focus-visible {
+577-    outline: 1px solid rgba(23, 105, 170, .45);
+578-    outline-offset: 2px;
+579-}
+580-
+581-/* Consistent text-link appearance across header and footer */
+582-.top-header .divider-list ul li a,
+583-.top-header .header-sitemap-link a,
+584-.bottom-footer a,
+585:.bottom-footer .footer-install-app-trigger {
+586-    color: #1769AA;
+587-    text-decoration: none !important;
+588-    background: transparent !important;
+589-    box-shadow: none !important;
+590-}
+591-
+592-.top-header .divider-list ul li a:hover,
+593-.top-header .header-sitemap-link a:hover,
+594-.bottom-footer a:hover,
+595:.bottom-footer .footer-install-app-trigger:hover {
+596-    color: #142D4E;
+597-    text-decoration: none !important;
+598-    background: transparent !important;
+599-    opacity: 1;
+600-}
+601-
+602-/* Make DoR App match footer text links exactly */
+603:.bottom-footer .footer-install-app-trigger,
+604:.bottom-footer .footer-install-app-trigger:link,
+605:.bottom-footer .footer-install-app-trigger:visited {
+606-    color: #1769AA !important;
+607-    text-decoration: none !important;
+608-    background: none !important;
+609-    border: 0 !important;
+610-    box-shadow: none !important;
+611-    transform: none !important;
+612-}
+613-
+614:.bottom-footer .footer-install-app-trigger:hover,
+615:.bottom-footer .footer-install-app-trigger:focus,
+616:.bottom-footer .footer-install-app-trigger:active {
+617-    color: #142D4E !important;
+618-    text-decoration: none !important;
+619-    background: none !important;
+620-    box-shadow: none !important;
+621-    transform: none !important;
+622-}
+623-
+624:.bottom-footer .footer-install-app-trigger::before,
+625:.bottom-footer .footer-install-app-trigger::after {
+626-    content: none !important;
+627-    display: none !important;
+628-}
+629-
+630-/* Make DoR App match footer text links exactly */
+631:.bottom-footer .footer-install-app-trigger,
+632:.bottom-footer .footer-install-app-trigger:link,
+633:.bottom-footer .footer-install-app-trigger:visited {
+634-    color: #1769AA !important;
+635-    text-decoration: none !important;
+636-    background: none !important;
+637-    border: 0 !important;
+638-    box-shadow: none !important;
+639-    transform: none !important;
+640-}
+641-
+642:.bottom-footer .footer-install-app-trigger:hover,
+643:.bottom-footer .footer-install-app-trigger:focus,
+644:.bottom-footer .footer-install-app-trigger:active {
+645-    color: #142D4E !important;
+646-    text-decoration: none !important;
+647-    background: none !important;
+648-    box-shadow: none !important;
+649-    transform: none !important;
+650-}
+651-
+652:.bottom-footer .footer-install-app-trigger::before,
+653:.bottom-footer .footer-install-app-trigger::after {
+654-    content: none !important;
+655-    display: none !important;
+656-}
+657-
+658-/* Header and footer: text hover colour only */
+659-.top-header .divider-list a,
+660-.top-header .header-sitemap-link a,
+661-.bottom-footer a,
+662:.bottom-footer .footer-install-app-trigger {
+663-    text-decoration: none !important;
+664-    background: transparent !important;
+665-    box-shadow: none !important;
+666-    transform: none !important;
+667-    transition: color .15s ease !important;
+668-}
+669-
+670-.top-header .divider-list a:hover,
+671-.top-header .header-sitemap-link a:hover,
+672-.bottom-footer a:hover,
+673:.bottom-footer .footer-install-app-trigger:hover {
+674-    color: #142D4E !important;
+675-    text-decoration: none !important;
+676-    background: transparent !important;
+677-    box-shadow: none !important;
+678-    transform: none !important;
+679-    opacity: 1 !important;
+680-}
+681-
+682-.top-header .divider-list a::before,
+683-.top-header .divider-list a::after,
+684-.top-header .header-sitemap-link a::before,
+685-.top-header .header-sitemap-link a::after,
+686-.bottom-footer a::before,
+687-.bottom-footer a::after,
+688:.bottom-footer .footer-install-app-trigger::before,
+689:.bottom-footer .footer-install-app-trigger::after {
+690-    content: none !important;
+691-    display: none !important;
+692-}
+693-
+694-.top-header .header-icon-control:hover,
+695-.top-header .header-icon-control:focus {
+696-    background: transparent !important;
+697-    box-shadow: none !important;
+698-    transform: none !important;
+699-}
+700-
+701-/* Final high-specificity link colour override */
+--
+716-    opacity: 1 !important;
+717-}
+718-
+719-.bottom-footer .divider-list ul li a,
+720-.bottom-footer .divider-list ul li a:hover,
+721:.bottom-footer .footer-install-app-trigger,
+722:.bottom-footer .footer-install-app-trigger:hover {
+723-    text-decoration: none !important;
+724-    background: transparent !important;
+725-    box-shadow: none !important;
+726-    transform: none !important;
+727-}
+728-
+729:.bottom-footer .footer-install-app-trigger {
+730-    color: #1769AA !important;
+731-}
+732-
+733:.bottom-footer .footer-install-app-trigger:hover {
+734-    color: #142D4E !important;
+735-}
+736-
+737-/* Match DoR App button with existing footer links */
+738:.bottom-footer .divider-list ul li .footer-install-app-trigger {
+739-    color: #00ADF7 !important;
+740-    font: inherit !important;
+741-    text-decoration: none !important;
+742-    background: transparent !important;
+743-    border: 0 !important;
+744-    box-shadow: none !important;
+745-    transform: none !important;
+746-    cursor: pointer;
+747-}
+748-
+749:.bottom-footer .divider-list ul li .footer-install-app-trigger:hover,
+750:.bottom-footer .divider-list ul li .footer-install-app-trigger:focus {
+751-    color: #142D4E !important;
+752-    text-decoration: none !important;
+753-    background: transparent !important;
+754-    box-shadow: none !important;
+755-    transform: none !important;
+756-}
+757-
+758-/* Consistent footer link appearance for all five items */
+759-.bottom-footer .divider-list ul li a,
+760-.bottom-footer .divider-list ul li a:link,
+761-.bottom-footer .divider-list ul li a:visited,
+762:.bottom-footer .divider-list ul li .footer-install-app-trigger {
+763-    color: #00ADF7 !important;
+764-    text-decoration: none !important;
+765-    background: transparent !important;
+766-    box-shadow: none !important;
+767-    transform: none !important;
+768-}
+769-
+770-.bottom-footer .divider-list ul li a:hover,
+771-.bottom-footer .divider-list ul li a:focus,
+772-.bottom-footer .divider-list ul li a:active,
+773:.bottom-footer .divider-list ul li .footer-install-app-trigger:hover,
+774:.bottom-footer .divider-list ul li .footer-install-app-trigger:focus {
+775-    color: #142D4E !important;
+776-    text-decoration: none !important;
+777-    background: transparent !important;
+778-    box-shadow: none !important;
+779-    transform: none !important;
+780-    outline-offset: 2px;
+781-}
+782-
+783-/* Final footer menu: color-only hover for all five items */
+784-.bottom-footer .divider-list ul li a,
+785-.bottom-footer .divider-list ul li a:link,
+786-.bottom-footer .divider-list ul li a:visited,
+787:.bottom-footer .divider-list ul li button.footer-install-app-trigger {
+788-    color: #00ADF7 !important;
+789-    text-decoration: none !important;
+790-    border: 0 !important;
+791-    border-bottom: 0 !important;
+792-    background: none !important;
+793-    background-image: none !important;
+794-    box-shadow: none !important;
+795-    transform: none !important;
+796-    transition: color .2s ease !important;
+797-}
+798-
+799-.bottom-footer .divider-list ul li a:hover,
+800-.bottom-footer .divider-list ul li a:focus,
+801-.bottom-footer .divider-list ul li a:active,
+802:.bottom-footer .divider-list ul li button.footer-install-app-trigger:hover,
+803:.bottom-footer .divider-list ul li button.footer-install-app-trigger:focus {
+804-    color: #ffffff !important;
+805-    text-decoration: none !important;
+806-    border: 0 !important;
+807-    border-bottom: 0 !important;
+808-    background: none !important;
+809-    background-image: none !important;
+810-    box-shadow: none !important;
+811-    transform: none !important;
+812-}
+813-
+814-.bottom-footer .divider-list ul li a::before,
+815-.bottom-footer .divider-list ul li a::after,
+816:.bottom-footer .divider-list ul li button.footer-install-app-trigger::before,
+817:.bottom-footer .divider-list ul li button.footer-install-app-trigger::after {
+818-    content: none !important;
+819-    display: none !important;
+820-}
+821-
+822-/* Single-row adaptive DoR primary navigation */
+823-@media (min-width: 992px) {
+824-    .nav-wrap .container,
+825-    .nav-wrap .navbar,
+826-    .nav-wrap .navbar > .container-fluid,
+827-    .nav-wrap .navbar-collapse {
+828-        min-width: 0;
+829-        width: 100%;
+--
+1254-.top-header .header-language-switch select:focus {
+1255-    outline: 1px solid rgba(23, 105, 170, .35);
+1256-    outline-offset: 1px;
+1257-}
+1258-
+1259:.top-header .header-controls > ul {
+1260-    justify-content: flex-end;
+1261-    align-items: center;
+1262-}
+1263-
+1264-
+1265-
+1266-/* Clean two-line DoR header layout */
+1267-@media (min-width: 992px) {
+1268:    .top-header .header-controls {
+1269-        margin-bottom: 2px;
+1270-    }
+1271-
+1272:    .top-header .header-controls > ul {
+1273-        display: flex;
+1274-        flex-wrap: nowrap;
+1275-        justify-content: flex-end;
+1276-        align-items: center;
+1277-        gap: 6px;
+1278-    }
+1279-
+1280-    .top-header .header-date-time {
+1281-        display: flex;
+1282-        flex-wrap: nowrap;
+1283-        align-items: center;
+1284-        gap: 5px;
+--
+1296-    .top-header .header-clock {
+1297-        display: inline;
+1298-        white-space: nowrap;
+1299-    }
+1300-
+1301:    .top-header .top-inline-items:not(.header-controls) {
+1302-        margin-top: 1px;
+1303-    }
+1304-
+1305:    .top-header .top-inline-items:not(.header-controls) > ul,
+1306:    .top-header .top-inline-items:not(.header-controls) .divider-list > ul {
+1307-        display: flex;
+1308-        flex-wrap: nowrap;
+1309-        justify-content: flex-end;
+1310-        align-items: center;
+1311-        gap: 0;
+1312-        margin: 0;
+1313-        padding: 0;
+1314-        list-style: none;
+1315-    }
+1316-
+1317:    .top-header .top-inline-items:not(.header-controls) > ul > li,
+1318:    .top-header .top-inline-items:not(.header-controls) .divider-list > ul > li {
+1319-        margin: 0;
+1320-        padding: 0 7px;
+1321-        white-space: nowrap;
+1322-    }
+1323-
+1324:    .top-header .top-inline-items:not(.header-controls) .divider-list {
+1325-        margin: 0;
+1326-    }
+1327-
+1328:    .top-header .top-inline-items:not(.header-controls) a,
+1329:    .top-header .top-inline-items:not(.header-controls) a:link,
+1330:    .top-header .top-inline-items:not(.header-controls) a:visited {
+1331-        display: inline;
+1332-        padding: 0;
+1333-        border: 0;
+1334-        background: transparent;
+1335-        color: #1769AA !important;
+1336-        font-size: 12px;
+1337-        font-weight: 400;
+1338-        text-decoration: none !important;
+1339-        box-shadow: none;
+1340-    }
+1341-
+1342:    .top-header .top-inline-items:not(.header-controls) a:hover {
+1343-        color: #142D4E !important;
+1344-        background: transparent;
+1345-        text-decoration: none !important;
+1346-    }
+1347-}
+1348-
+1349-
+1350-/* Refined compact header icons and office identity typography */
+1351-.top-header .header-icon-control {
+1352-    min-width: 22px;
+1353-    min-height: 22px;
+1354-    padding: 0 2px;
+--
+2571-    box-sizing: border-box !important;
+2572-    display: flex !important;
+2573-    flex-direction: column !important;
+2574-}
+2575-
+2576:.head-office-contact-officers,
+2577-.other-office-officers-frame {
+2578-    display: flex !important;
+2579-    flex-direction: column !important;
+2580-    height: 100% !important;
+2581-    min-height: 100% !important;
+2582-    max-height: none !important;
+2583-    box-sizing: border-box !important;
+2584-}
+2585-
+2586:.head-office-contact-officers > .media-block,
+2587-.other-office-officers-frame > .media-block {
+2588-    flex: 1 1 0 !important;
+2589-    min-height: 0 !important;
+2590-    height: auto !important;
+2591-    display: flex !important;
+2592-    align-items: center !important;
+2593-    box-sizing: border-box !important;
+2594-    padding-top: 6px !important;
+2595-    padding-bottom: 6px !important;
+2596-    margin-top: 0 !important;
+2597-    margin-bottom: 0 !important;
+2598-}
+2599-
+2600:.head-office-contact-officers .rounded-fig-wrap,
+2601-.other-office-officers-frame .rounded-fig-wrap {
+2602-    top: 50% !important;
+2603-    transform: translateY(-50%) !important;
+2604-}
+2605-
+2606:.head-office-contact-officers .media-desc,
+2607-.other-office-officers-frame .media-desc {
+2608-    min-width: 0 !important;
+2609-    line-height: 1.35 !important;
+2610-    overflow-wrap: anywhere !important;
+2611-}
+2612-
+2613:.head-office-contact-officers .media-desc h5,
+2614:.head-office-contact-officers .media-desc p,
+2615-.other-office-officers-frame .media-desc h5,
+2616-.other-office-officers-frame .media-desc p {
+2617-    white-space: normal !important;
+2618-    overflow-wrap: anywhere !important;
+2619-    word-break: normal !important;
+2620-    line-height: 1.35 !important;
+2621-}
+2622-
+2623-/* Keep the switch link plates visually consistent */
+2624-.butlike,
+2625-.back-btn {
+2626-    background: #eef2f5 !important;
+--
+2638-}
+2639-
+2640-/* Mobile: let content determine height to avoid clipping */
+2641-@media (max-width: 767.98px) {
+2642-    .home-officers-panel > .person-block,
+2643:    .head-office-contact-officers,
+2644-    .other-office-officers-frame {
+2645-        height: auto !important;
+2646-        min-height: 0 !important;
+2647-        max-height: none !important;
+2648-    }
+2649-
+2650:    .head-office-contact-officers > .media-block,
+2651-    .other-office-officers-frame > .media-block {
+2652-        flex: 0 0 auto !important;
+2653-        min-height: 76px !important;
+2654-        height: auto !important;
+2655-        padding-top: 8px !important;
+2656-        padding-bottom: 8px !important;
+2657-        align-items: center !important;
+2658-    }
+2659-
+2660:    .head-office-contact-officers .rounded-fig-wrap,
+2661-    .other-office-officers-frame .rounded-fig-wrap {
+2662-        top: 50% !important;
+2663-        transform: translateY(-50%) !important;
+2664-    }
+2665-}
+2666-
+2667-
+2668-/* Modern responsive External Tools - dynamic grid and collapsed by default */
+2669-.utility-group {
+2670-    display: flex;
+2671-    flex-direction: column;
+2672-    align-items: center;
+--
+4308-.top-header .footer-app-item {
+4309-    position: relative;
+4310-    overflow: visible;
+4311-}
+4312-
+4313:.top-header .footer-install-app-trigger {
+4314-    display: inline-flex;
+4315-    align-items: center;
+4316-    justify-content: center;
+4317-    gap: 4px;
+4318-    padding: 0;
+4319-    color: #1769AA;
+4320-    background: transparent;
+4321-    border: 0;
+4322-    box-shadow: none;
+4323-    font: inherit;
+4324-    font-size: 12px;
+4325-    font-weight: 600;
+4326-    cursor: pointer;
+4327-}
+4328-
+4329:.top-header .footer-install-app-trigger:hover,
+4330:.top-header .footer-install-app-trigger:focus-visible {
+4331-    color: #142D4E;
+4332-    background: transparent;
+4333-    outline-offset: 3px;
+4334-}
+4335-
+4336-.top-header .footer-app-mobile-icon,
+4337-.top-header .footer-app-qr-icon {
+4338-    display: none !important;
+4339-}
+4340-
+4341-.top-header .footer-app-item.is-installed .footer-app-qr-icon {
+4342-    display: inline-block !important;
+--
+4347-.top-header .footer-app-item.is-installed .footer-app-label,
+4348-.top-header .footer-app-item.is-installed .footer-qr-download {
+4349-    display: none !important;
+4350-}
+4351-
+4352:.top-header .footer-app-item.is-installed .footer-install-app-trigger {
+4353-    width: 34px;
+4354-    height: 34px;
+4355-    border: 1px solid rgba(20, 45, 78, .18);
+4356-    border-radius: 5px;
+4357-    background: #fff;
+4358-}
+4359-
+4360-.top-header .footer-app-popover {
+4361-    position: absolute;
+4362-    top: 100%;
+4363-    right: 0;
+4364-    left: auto;
+--
+4422-    border-top: 0;
+4423-}
+4424-
+4425-.top-header .footer-share-links .footer-qr-download,
+4426-.top-header .footer-share-links button.footer-native-share,
+4427:.top-header .footer-share-links button.footer-qr-expand {
+4428-    display: inline-flex !important;
+4429-    flex: 0 0 22px;
+4430-    align-items: center;
+4431-    justify-content: center;
+4432-    width: 22px;
+4433-    height: 22px;
+4434-    margin: 0 !important;
+4435-    padding: 0;
+4436-    color: #42566b;
+4437-    background: transparent;
+4438-    border: 0;
+4439-    border-radius: 0;
+--
+4443-    cursor: pointer;
+4444-}
+4445-
+4446-.top-header .footer-share-links .footer-qr-download:hover,
+4447-.top-header .footer-share-links button.footer-native-share:hover,
+4448:.top-header .footer-share-links button.footer-qr-expand:hover,
+4449-.top-header .footer-share-links .footer-qr-download:focus-visible,
+4450-.top-header .footer-share-links button.footer-native-share:focus-visible,
+4451:.top-header .footer-share-links button.footer-qr-expand:focus-visible {
+4452-    color: #1769AA;
+4453-    background: transparent;
+4454-    border-color: transparent;
+4455-    outline-offset: 2px;
+4456-}
+4457-
+4458-.top-header .footer-share-links button.footer-native-share svg {
+4459-    width: 15px;
+4460-    height: 15px;
+4461-}
+4462-
+4463-.top-header .footer-share-links .footer-qr-download i {
+--
+4727-    }
+4728-}
+4729-
+4730-
+4731-/* Head Office Contact Officers — single consolidated style section */
+4732:.head-office-contact-officers {
+4733-    display: flex !important;
+4734-    flex-direction: column !important;
+4735-    width: 100% !important;
+4736-    height: 100% !important;
+4737-    min-height: 0 !important;
+4738-    box-sizing: border-box !important;
+4739-}
+4740-
+4741:.head-office-contact-officers > .media-block {
+4742-    position: relative !important;
+4743-    display: flex !important;
+4744-    flex: 1 1 0 !important;
+4745-    align-items: center !important;
+4746-    min-width: 0 !important;
+4747-    min-height: 76px !important;
+4748-    margin: 0 !important;
+4749-    padding: 7px 0 7px 65px !important;
+4750-    border-bottom: 1px solid #edf1f5;
+4751-    box-sizing: border-box !important;
+4752-}
+4753-
+4754:.head-office-contact-officers > .media-block:last-child {
+4755-    border-bottom: 0;
+4756-}
+4757-
+4758:.head-office-contact-officers .rounded-fig-wrap {
+4759-    position: absolute !important;
+4760-    top: 50% !important;
+4761-    left: 0 !important;
+4762-    width: 52px !important;
+4763-    height: 52px !important;
+4764-    overflow: hidden !important;
+4765-    transform: translateY(-50%) !important;
+4766-}
+4767-
+4768:.head-office-contact-officers .rounded-fig-wrap a {
+4769-    position: relative;
+4770-    display: block;
+4771-    width: 100%;
+4772-    height: 100%;
+4773-    overflow: hidden;
+4774-}
+4775-
+4776:.head-office-contact-officers .rounded-fig-wrap img {
+4777-    display: block;
+4778-    width: 100% !important;
+4779-    height: 100% !important;
+4780-    object-fit: cover !important;
+4781-}
+4782-
+4783:.head-office-contact-officers .rounded-fig-wrap a::after {
+4784-    content: "+";
+4785-    position: absolute;
+4786-    inset: 0;
+4787-    display: flex;
+4788-    align-items: center;
+4789-    justify-content: center;
+4790-    border-radius: 50%;
+4791-    background: rgba(20, 45, 78, 0.68);
+4792-    color: #fff;
+4793-    font-size: 25px;
+4794-    font-weight: 400;
+4795-    line-height: 1;
+4796-    opacity: 0;
+4797-    transition: opacity 0.18s ease;
+4798-    pointer-events: none;
+4799-}
+4800-
+4801:.head-office-contact-officers .rounded-fig-wrap a:hover::after,
+4802:.head-office-contact-officers .rounded-fig-wrap a:focus-visible::after {
+4803-    opacity: 1;
+4804-}
+4805-
+4806:.head-office-contact-officers .media-desc {
+4807-    width: 100% !important;
+4808-    min-width: 0 !important;
+4809-    line-height: 1.25 !important;
+4810-    overflow-wrap: anywhere !important;
+4811-}
+4812-
+4813:.head-office-contact-officers .head-office-officer-detail-link {
+4814-    display: block;
+4815-    min-width: 0;
+4816-    color: inherit;
+4817-    text-decoration: none;
+4818-}
+4819-
+4820:.head-office-contact-officers .head-office-officer-name {
+4821-    margin: 0 0 2px !important;
+4822-    font-size: 9px !important;
+4823-    font-weight: 700 !important;
+4824-    line-height: 1.2 !important;
+4825-    white-space: normal !important;
+4826-    overflow-wrap: anywhere !important;
+4827-}
+4828-
+4829:.head-office-contact-officers .head-office-officer-designation {
+4830-    margin: 0 0 3px !important;
+4831-    font-size: 10px !important;
+4832-    font-weight: 500 !important;
+4833-    line-height: 1.2 !important;
+4834-    white-space: normal !important;
+4835-    overflow-wrap: anywhere !important;
+4836-}
+4837-
+4838:.head-office-contact-officers .head-office-officer-contact {
+4839-    margin: 2px 0 !important;
+4840-    font-size: 9px !important;
+4841-    font-weight: 400 !important;
+4842-    line-height: 1.2 !important;
+4843-    overflow-wrap: anywhere !important;
+4844-}
+4845-
+4846:.head-office-contact-officers .head-office-officer-contact a {
+4847-    color: inherit;
+4848-    text-decoration: none;
+4849-}
+4850-
+4851:.head-office-contact-officers .head-office-officer-contact a:hover {
+4852-    text-decoration: underline;
+4853-}
+4854-
+4855-@media (max-width: 767.98px) {
+4856:    .head-office-contact-officers {
+4857-        height: auto !important;
+4858-        min-height: 0 !important;
+4859-    }
+4860-
+4861:    .head-office-contact-officers > .media-block {
+4862-        flex: 0 0 auto !important;
+4863-        min-height: 76px !important;
+4864-        padding-top: 8px !important;
+4865-        padding-bottom: 8px !important;
+4866-    }
+4867-}
+4868-
+4869-@media (max-width: 380px) {
+4870:    .head-office-contact-officers > .media-block {
+4871-        padding-left: 55px !important;
+4872-    }
+4873-
+4874:    .head-office-contact-officers .rounded-fig-wrap {
+4875-        width: 46px !important;
+4876-        height: 46px !important;
+4877-    }
+4878-
+4879:    .head-office-contact-officers .head-office-officer-name {
+4880-        font-size: 8.5px !important;
+4881-    }
+4882-
+4883:    .head-office-contact-officers .head-office-officer-designation {
+4884-        font-size: 9px !important;
+4885-    }
+4886-}
+4887-
+4888-/* Head Office Contact Officers: responsive single-line contact details */
+4889:.head-office-contact-officers .head-office-officer-contact {
+4890-    display: block !important;
+4891-    width: 100% !important;
+4892-    max-width: 100% !important;
+4893-    margin: 2px 0 !important;
+4894-    font-size: clamp(5px, 2.5vw, 9px) !important;
+4895-    line-height: 1.2 !important;
+4896-    white-space: nowrap !important;
+4897-    overflow: hidden !important;
+4898-    text-overflow: clip !important;
+4899-}
+4900-
+4901:.head-office-contact-officers .head-office-officer-contact a {
+4902-    white-space: nowrap !important;
+4903-    font-size: inherit !important;
+4904-}
+4905-
+4906:.head-office-contact-officers .head-office-officer-contact i {
+4907-    margin-right: 2px !important;
+4908-    font-size: 0.9em !important;
+4909-}
+4910-
+4911-@media (max-width: 767.98px) {
+4912:    .head-office-contact-officers .head-office-officer-contact {
+4913-        font-size: clamp(5px, 2.5vw, 8px) !important;
+4914-    }
+4915-}
+4916-
+4917-
+4918-/* Head Office homepage officers: match desktop banner height */
+4919-@media (min-width: 992px) {
+4920:    .home-officers-panel > .person-block.head-office-contact-officers {
+4921-        height: 280px !important;
+4922-        min-height: 280px !important;
+4923-        max-height: 280px !important;
+4924-        flex: 0 0 280px !important;
+4925-        overflow: hidden !important;
+4926-        box-sizing: border-box !important;
+4927-    }
+4928-
+4929:    .home-officers-panel > .head-office-contact-officers > .person-header {
+4930-        flex: 0 0 0 !important;
+4931-        height: 0 !important;
+4932-        min-height: 0 !important;
+4933-        margin: 0 !important;
+4934-        padding: 0 !important;
+4935-        border: 0 !important;
+4936-        overflow: hidden !important;
+4937-    }
+4938-
+4939:    .home-officers-panel > .head-office-contact-officers > .media-block {
+4940-        flex: 1 1 0 !important;
+4941-        height: auto !important;
+4942-        min-height: 0 !important;
+4943-        padding: 3px 0 3px 55px !important;
+4944-        margin: 0 !important;
+4945-        box-sizing: border-box !important;
+4946-    }
+4947-
+4948:    .home-officers-panel .head-office-contact-officers .rounded-fig-wrap {
+4949-        width: 44px !important;
+4950-        height: 44px !important;
+4951-        left: 0 !important;
+4952-    }
+4953-
+4954:    .home-officers-panel .head-office-contact-officers .media-desc {
+4955-        line-height: 1.15 !important;
+4956-    }
+4957-
+4958:    .home-officers-panel .head-office-contact-officers .head-office-officer-name {
+4959-        font-size: 9px !important;
+4960-        line-height: 1.15 !important;
+4961-        margin-bottom: 1px !important;
+4962-    }
+4963-
+4964:    .home-officers-panel .head-office-contact-officers .head-office-officer-designation {
+4965-        font-size: 9px !important;
+4966-        line-height: 1.15 !important;
+4967-        margin-bottom: 1px !important;
+4968-    }
+4969-
+4970:    .home-officers-panel .head-office-contact-officers .head-office-officer-contact {
+4971-        margin: 1px 0 !important;
+4972-        line-height: 1.15 !important;
+4973-    }
+4974-}
+4975-
+4976-
+4977-
+4978-/* Shared Banner Caption: single-line responsive display */
+4979-.banner-block .slider-caption {
+4980-    height: 34px !important;
+4981-    min-height: 34px !important;
+4982-    max-height: 34px !important;
+--
+5182-        padding-bottom: 7px !important;
+5183-    }
+5184-}
+5185-
+5186-/* Contact Officer font refinement: Head Office and Other Offices */
+5187:.head-office-contact-officers .head-office-officer-name {
+5188-    font-size: 8.5px !important;
+5189-}
+5190:.head-office-contact-officers .head-office-officer-designation {
+5191-    font-size: 9px !important;
+5192-}
+5193:.head-office-contact-officers .head-office-officer-contact {
+5194-    font-size: 8px !important;
+5195-}
+5196-.other-office-officers-frame .media-desc h5 {
+5197-    font-size: 8.5px !important;
+5198-}
+5199-.other-office-officers-frame .media-desc p {
+5200-    font-size: 8.5px !important;
+5201-}
+5202-@media (max-width: 767.98px) {
+5203:    .head-office-contact-officers .head-office-officer-name,
+5204-    .other-office-officers-frame .media-desc h5 {
+5205-        font-size: 8px !important;
+5206-    }
+5207:    .head-office-contact-officers .head-office-officer-designation,
+5208-    .other-office-officers-frame .media-desc p {
+5209-        font-size: 8.5px !important;
+5210-    }
+5211:    .head-office-contact-officers .head-office-officer-contact {
+5212-        font-size: clamp(5px, 2.3vw, 7.5px) !important;
+5213-    }
+5214-}
+5215-
+5216-
+5217-
+5218-/* Final unified Contact Officers layout and compact banner caption */
+5219-
+5220-/* Same typography for Head Office and Other Offices */
+5221:.head-office-contact-officers .head-office-officer-name,
+5222-.other-office-officers-frame .media-desc h5 {
+5223-    font-size: 8.5px !important;
+5224-    font-weight: 700 !important;
+5225-    line-height: 1.2 !important;
+5226-    margin: 0 0 2px !important;
+5227-}
+5228:.head-office-contact-officers .head-office-officer-designation,
+5229-.other-office-officers-frame .media-desc .other-officer-position {
+5230-    font-size: 9px !important;
+5231-    font-weight: 500 !important;
+5232-    line-height: 1.2 !important;
+5233-    margin: 0 0 2px !important;
+5234-}
+5235:.head-office-contact-officers .head-office-officer-contact,
+5236-.other-office-officers-frame .media-desc p:not(.other-officer-position) {
+5237-    font-size: 8px !important;
+5238-    font-weight: 400 !important;
+5239-    line-height: 1.2 !important;
+5240-    overflow-wrap: anywhere !important;
+5241-}
+5242-
+5243-/* Display Other Office name first, designation second, then phone/email */
+5244-.other-office-officers-frame .media-desc > a {
+5245-    display: flex !important;
+5246-    flex-direction: column !important;
+5247-    min-width: 0 !important;
+===== ALL VIEW / ASSET REFERENCES =====
+resources/views/pwa/install.blade.php:120:        window.addEventListener('beforeinstallprompt', (event) => {
+resources/views/pwa/install.blade.php:127:        window.addEventListener('appinstalled', () => {
+resources/views/layout/client/header_2021.blade.php:102:                                        <select id="headerLanguageSelect" class="form-select form-select-sm"
+resources/views/layout/client/header_2021.blade.php:109:                                        <button type="button" id="fontSizeToggle" class="header-icon-control"
+resources/views/layout/client/header_2021.blade.php:226:                                <button type="button" class="footer-install-app-trigger"
+resources/views/layout/client/header_2021.blade.php:256:                                        <button type="button" class="footer-qr-expand"
+resources/views/layout/client/foot_2021.blade.php:65:        $('#headerLanguageSelect').on('change', function() {
+resources/views/layout/client/foot_2021.blade.php:81:        $('#fontSizeToggle').on('click', function() {
+resources/views/layout/client/foot_2021.blade.php:179:        const appTrigger = appItem?.querySelector('.footer-install-app-trigger');
+resources/views/layout/client/foot_2021.blade.php:181:        const expandButton = appItem?.querySelector('.footer-qr-expand');
+resources/views/layout/client/foot_2021.blade.php:246:                const appTrigger = appItem?.querySelector('.footer-install-app-trigger');
 root@dorweb:/var/www/dor#
